@@ -143,20 +143,20 @@ export default function SppPage() {
       <TopStatusBar title="Pembayaran SPP" />
 
       {/* Subtabs (Pembayaran Pendaftaran, SPP, Buku, Pengingat SPP & Buku WA) */}
-      <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto">
+      <div className="flex items-center gap-6 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveSubTab("pendaftaran")}
           className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative cursor-pointer ${
             activeSubTab === "pendaftaran"
-              ? "text-red-600 dark:text-red-400"
+              ? "text-blue-600 dark:text-sky-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <UserCheck className="w-4 h-4" />
           Pembayaran Pendaftaran
           {activeSubTab === "pendaftaran" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
           )}
         </button>
 
@@ -165,14 +165,14 @@ export default function SppPage() {
           onClick={() => setActiveSubTab("spp")}
           className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative cursor-pointer ${
             activeSubTab === "spp"
-              ? "text-red-600 dark:text-red-400"
+              ? "text-blue-600 dark:text-sky-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <CreditCard className="w-4 h-4" />
           SPP
           {activeSubTab === "spp" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
           )}
         </button>
 
@@ -181,14 +181,14 @@ export default function SppPage() {
           onClick={() => setActiveSubTab("buku")}
           className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative cursor-pointer ${
             activeSubTab === "buku"
-              ? "text-red-600 dark:text-red-400"
+              ? "text-blue-600 dark:text-sky-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <BookOpen className="w-4 h-4" />
           Buku
           {activeSubTab === "buku" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
           )}
         </button>
 
@@ -197,7 +197,7 @@ export default function SppPage() {
           onClick={() => setActiveSubTab("pengingat")}
           className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative cursor-pointer ${
             activeSubTab === "pengingat"
-              ? "text-red-600 dark:text-red-400"
+              ? "text-blue-600 dark:text-sky-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
@@ -207,7 +207,7 @@ export default function SppPage() {
             {unpaidCount}
           </span>
           {activeSubTab === "pengingat" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
           )}
         </button>
       </div>
@@ -228,9 +228,9 @@ export default function SppPage() {
           <button
             type="button"
             onClick={handleBatchSendWA}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all shadow-2xs cursor-pointer"
           >
-            <Bell className="w-3.5 h-3.5 text-red-600" />
+            <Bell className="w-3.5 h-3.5 text-blue-600" />
             Pengingat SPP H-2
             <span className="px-1.5 py-0.2 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-[10px] font-bold">
               {unpaidCount}
@@ -240,7 +240,7 @@ export default function SppPage() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Buat Invoice Baru
@@ -251,7 +251,7 @@ export default function SppPage() {
       {/* Toast Alert Feedback */}
       {toastMessage && (
         <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-900 dark:text-rose-200 flex items-center gap-2 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-red-600" />
+          <CheckCircle2 className="w-4 h-4 text-blue-600" />
           {toastMessage}
         </div>
       )}
@@ -267,7 +267,7 @@ export default function SppPage() {
               <span className="text-xs font-bold text-slate-900 dark:text-white">
                 {unpaidCount} Tagihan SPP Menjelang / Melewati Jatuh Tempo (H-2)
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-red-600 text-white text-[9px] font-extrabold tracking-wider uppercase">
+              <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-extrabold tracking-wider uppercase">
                 SISWA PERLU DIINGATKAN
               </span>
             </div>
@@ -281,7 +281,7 @@ export default function SppPage() {
           <button
             type="button"
             onClick={() => setIsCustomTemplateOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
           >
             <Edit2 className="w-3.5 h-3.5 text-slate-500" />
             Custom Kata-Kata
@@ -290,7 +290,7 @@ export default function SppPage() {
           <button
             type="button"
             onClick={handleBatchSendWA}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             Kirim WA ({unpaidCount})
@@ -299,7 +299,7 @@ export default function SppPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-[#0f1a36] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -307,14 +307,14 @@ export default function SppPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari nama siswa, nomor invoice, atau periode.."
-            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 font-medium"
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="ALL">Semua Pembayaran</option>
           <option value="BELUM_BAYAR">Belum Bayar</option>
@@ -323,10 +323,10 @@ export default function SppPage() {
       </div>
 
       {/* Invoice Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            <thead className="bg-slate-50 dark:bg-[#0b1329] border-b border-slate-200/80 dark:border-[#1d2d5a] text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4">NO INVOICE</th>
                 <th className="py-3 px-4">NAMA SISWA</th>
@@ -401,7 +401,7 @@ export default function SppPage() {
                             <button
                               type="button"
                               onClick={() => handleToggleCancelPaid(inv)}
-                              className="px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+                              className="px-3 py-1 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
                             >
                               Batal Lunas
                             </button>
@@ -409,7 +409,7 @@ export default function SppPage() {
                             <button
                               type="button"
                               onClick={() => setPayingInvoice(inv)}
-                              className="px-3 py-1 rounded-xl border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 text-[11px] font-bold text-red-700 dark:text-red-300 transition-all cursor-pointer"
+                              className="px-3 py-1 rounded-xl border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-[11px] font-bold text-blue-700 dark:text-sky-300 transition-all cursor-pointer"
                             >
                               Bayar / Cicil
                             </button>
@@ -427,7 +427,7 @@ export default function SppPage() {
                           <button
                             type="button"
                             onClick={() => handleSendSingleWA(inv)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
                             title="Kirim Notifikasi WA"
                           >
                             <Share2 className="w-3.5 h-3.5" />
@@ -436,7 +436,7 @@ export default function SppPage() {
                           <button
                             type="button"
                             onClick={() => deleteInvoice(inv.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
                             title="Hapus Invoice"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -455,8 +455,8 @@ export default function SppPage() {
       {/* Modal: Buat Invoice Baru */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                 Terbitkan Invoice SPP Baru
               </h3>
@@ -480,7 +480,7 @@ export default function SppPage() {
                   onChange={(e) =>
                     setForm({ ...form, studentId: e.target.value })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-semibold focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
                   {students.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -502,7 +502,7 @@ export default function SppPage() {
                     setForm({ ...form, period: e.target.value })
                   }
                   placeholder="Contoh: September 2026"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -517,7 +517,7 @@ export default function SppPage() {
                   onChange={(e) =>
                     setForm({ ...form, dueDate: e.target.value })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -532,7 +532,7 @@ export default function SppPage() {
                   onChange={(e) =>
                     setForm({ ...form, amount: parseInt(e.target.value) || 0 })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-bold focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -540,13 +540,13 @@ export default function SppPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold cursor-pointer transition-colors"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-extrabold cursor-pointer transition-colors"
                 >
                   Terbitkan
                 </button>
@@ -559,8 +559,8 @@ export default function SppPage() {
       {/* Modal: Bayar / Cicil Tagihan */}
       {payingInvoice && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                 Pencatatan Pembayaran SPP
               </h3>
@@ -573,7 +573,7 @@ export default function SppPage() {
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-800 space-y-1 text-xs">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-[#1d2d5a] space-y-1 text-xs">
               <div className="text-slate-400">Siswa:</div>
               <div className="font-extrabold text-slate-900 dark:text-white text-sm">
                 {payingInvoice.studentName}
@@ -581,7 +581,7 @@ export default function SppPage() {
               <div className="text-slate-500 dark:text-slate-400">
                 {payingInvoice.invoiceNo} • {payingInvoice.period}
               </div>
-              <div className="text-base font-extrabold text-red-600 dark:text-red-400 mt-2">
+              <div className="text-base font-extrabold text-blue-600 dark:text-sky-400 mt-2">
                 Rp {payingInvoice.amount.toLocaleString("id-ID")}
               </div>
             </div>
@@ -594,7 +594,7 @@ export default function SppPage() {
                 <button
                   type="button"
                   onClick={() => handleConfirmPayment("Tunai")}
-                  className="p-3 rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 text-xs font-bold text-red-800 dark:text-red-300 hover:bg-red-100 cursor-pointer"
+                  className="p-3 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-xs font-bold text-blue-800 dark:text-sky-300 hover:bg-blue-100 cursor-pointer"
                 >
                   💵 Tunai di Kasir
                 </button>
@@ -611,7 +611,7 @@ export default function SppPage() {
             <button
               type="button"
               onClick={() => setPayingInvoice(null)}
-              className="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 mt-2 cursor-pointer"
+              className="w-full py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 mt-2 cursor-pointer"
             >
               Tutup
             </button>
@@ -622,8 +622,8 @@ export default function SppPage() {
       {/* Modal: Custom Kata-Kata WhatsApp Template */}
       {isCustomTemplateOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                 Kustomisasi Format Pengingat WhatsApp
               </h3>
@@ -639,19 +639,19 @@ export default function SppPage() {
             <div className="space-y-2 text-xs">
               <p className="text-slate-500 dark:text-slate-400">
                 Gunakan variabel otomatis:{" "}
-                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-red-600 dark:text-red-400">
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-blue-600 dark:text-sky-400">
                   {"{nama_siswa}"}
                 </code>
                 ,{" "}
-                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-red-600 dark:text-red-400">
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-blue-600 dark:text-sky-400">
                   {"{periode}"}
                 </code>
                 ,{" "}
-                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-red-600 dark:text-red-400">
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-blue-600 dark:text-sky-400">
                   {"{nominal}"}
                 </code>
                 ,{" "}
-                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-red-600 dark:text-red-400">
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-blue-600 dark:text-sky-400">
                   {"{jatuh_tempo}"}
                 </code>
               </p>
@@ -660,7 +660,7 @@ export default function SppPage() {
                 rows={6}
                 value={waTemplate}
                 onChange={(e) => setWaTemplate(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white leading-relaxed font-sans focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                className="w-full p-3 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white leading-relaxed font-sans focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -668,7 +668,7 @@ export default function SppPage() {
               <button
                 type="button"
                 onClick={() => setIsCustomTemplateOpen(false)}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold cursor-pointer transition-colors"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-extrabold cursor-pointer transition-colors"
               >
                 Simpan Format Template
               </button>

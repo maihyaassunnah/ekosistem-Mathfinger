@@ -40,7 +40,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`${plusJakarta.variable} h-full antialiased font-sans`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] dark:bg-[#090d16] dark:text-[#f8fafc] font-sans transition-colors duration-200">
+      <body className="min-h-full flex flex-col bg-[#f0f6ff] text-[#0a192f] dark:bg-[#070d1e] dark:text-[#f8fafc] font-sans transition-colors duration-200">
         <AuthProvider>
           <ThemeProvider>
             <AppStoreProvider>{children}</AppStoreProvider>

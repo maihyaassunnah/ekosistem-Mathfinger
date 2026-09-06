@@ -74,7 +74,7 @@ export default function RiwayatSppPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <RotateCcw className="w-6 h-6 text-red-600 shrink-0" />
+            <RotateCcw className="w-6 h-6 text-blue-600 shrink-0" />
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
               Buku Besar & Riwayat Pembayaran
             </h1>
@@ -87,7 +87,7 @@ export default function RiwayatSppPage() {
         <button
           type="button"
           onClick={handleExportJSON}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
         >
           <FileSpreadsheet className="w-4 h-4" />
           Ekspor Jurnal Mutasi (JSON)
@@ -97,7 +97,7 @@ export default function RiwayatSppPage() {
       {/* 4 Financial Cards (Matching Screenshot 5) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: TOTAL TAGIHAN */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               TOTAL TAGIHAN
@@ -113,7 +113,7 @@ export default function RiwayatSppPage() {
         </div>
 
         {/* Card 2: KAS MASUK (REALISASI) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               KAS MASUK (REALISASI)
@@ -129,7 +129,7 @@ export default function RiwayatSppPage() {
         </div>
 
         {/* Card 3: OUTSTANDING (PIUTANG) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               OUTSTANDING (PIUTANG)
@@ -145,7 +145,7 @@ export default function RiwayatSppPage() {
         </div>
 
         {/* Card 4: TINGKAT KOLEKTIBILITAS */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               TINGKAT KOLEKTIBILITAS
@@ -162,7 +162,7 @@ export default function RiwayatSppPage() {
       </div>
 
       {/* Subtabs: Riwayat Transaksi & Buku Besar vs Leger Pembayaran Siswa */}
-      <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800 text-xs font-bold">
+      <div className="flex items-center gap-6 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold">
         <button
           type="button"
           onClick={() => setActiveSubTab("buku_besar")}
@@ -174,7 +174,7 @@ export default function RiwayatSppPage() {
         >
           Riwayat Transaksi & Buku Besar
           {activeSubTab === "buku_besar" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
           )}
         </button>
 
@@ -190,7 +190,7 @@ export default function RiwayatSppPage() {
           <FileText className="w-4 h-4" />
           Leger Pembayaran Siswa
           {activeSubTab === "leger" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
           )}
         </button>
       </div>
@@ -198,7 +198,7 @@ export default function RiwayatSppPage() {
       {activeSubTab === "buku_besar" && (
         <div className="space-y-4">
           {/* Search & Filters */}
-          <div className="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white dark:bg-[#0f1a36] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -206,7 +206,7 @@ export default function RiwayatSppPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari No Invoice, nama siswa, catatan..."
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -214,7 +214,7 @@ export default function RiwayatSppPage() {
               <select
                 value={selectedStudent}
                 onChange={(e) => setSelectedStudent(e.target.value)}
-                className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="ALL">Semua Siswa</option>
                 {students.map((s) => (
@@ -227,7 +227,7 @@ export default function RiwayatSppPage() {
               <select
                 value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value)}
-                className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="ALL">Semua Metode Pembayaran</option>
                 <option value="CICILAN">Cicilan</option>
@@ -238,10 +238,10 @@ export default function RiwayatSppPage() {
           </div>
 
           {/* Table (Matching Screenshot 5) */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200/80 dark:border-[#1d2d5a] text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-4">TANGGAL TERIMA</th>
                     <th className="py-3 px-4">NO INVOICE</th>
@@ -300,10 +300,10 @@ export default function RiwayatSppPage() {
       )}
 
       {activeSubTab === "leger" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-6 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
                 <img
                   src="/logo.png"
                   alt="Easy Learning House"
@@ -322,7 +322,7 @@ export default function RiwayatSppPage() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold"
             >
               <Download className="w-3.5 h-3.5" />
               Cetak Rekap
@@ -331,7 +331,7 @@ export default function RiwayatSppPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-slate-800 font-bold text-slate-600 dark:text-slate-400">
+              <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-[#1d2d5a] font-bold text-slate-600 dark:text-slate-400">
                 <tr>
                   <th className="py-3 px-3">Nama Siswa</th>
                   <th className="py-3 px-3">Kelas</th>

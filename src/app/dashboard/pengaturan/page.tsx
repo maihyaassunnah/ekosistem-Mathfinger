@@ -16,9 +16,9 @@ export default function PengaturanPage() {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
+      <div className="bg-white dark:bg-[#0f1a36] rounded-3xl p-6 border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-5">
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Shield className="w-4 h-4 text-red-600" />
+          <Shield className="w-4 h-4 text-blue-600" />
           Profil Pengguna Saat Ini
         </h2>
 
@@ -28,7 +28,7 @@ export default function PengaturanPage() {
             <input
               type="text"
               defaultValue={CURRENT_USER.name}
-              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <div>
@@ -36,16 +36,16 @@ export default function PengaturanPage() {
             <input
               type="email"
               defaultValue={CURRENT_USER.email}
-              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div className="pt-4 border-t border-slate-200 dark:border-[#1d2d5a] flex items-center justify-between">
           <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Hak Akses: Super Admin (Pusat)</span>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Save className="w-4 h-4" />
             Simpan Perubahan

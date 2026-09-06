@@ -258,7 +258,7 @@ export default function ArusKeuanganPage() {
         {/* Top Right Dropdowns: Bulan & Cabang */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Dropdown Bulan */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-2xs">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-xs text-slate-500 font-medium">Bulan:</span>
             <select
@@ -276,7 +276,7 @@ export default function ArusKeuanganPage() {
           </div>
 
           {/* Dropdown Cabang */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-2xs">
             <Building2 className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-xs text-slate-500 font-medium">Cabang:</span>
             <select
@@ -296,7 +296,7 @@ export default function ArusKeuanganPage() {
       </div>
 
       {/* 5 Subtabs Pill Switcher (Matching Screenshot) */}
-      <div className="bg-white/80 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 flex-wrap shadow-2xs">
+      <div className="bg-white/80 dark:bg-[#0f1a36] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] flex items-center gap-1.5 flex-wrap shadow-2xs">
         {[
           { id: "ringkasan", label: "Ringkasan", icon: null },
           { id: "pemasukan", label: "Pemasukan", icon: ArrowUpRight },
@@ -314,7 +314,7 @@ export default function ArusKeuanganPage() {
               onClick={() => setActiveSubTab(tab.id as any)}
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? "bg-red-600 text-white shadow-xs"
+                  ? "bg-blue-600 text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
               }`}
             >
@@ -339,7 +339,7 @@ export default function ArusKeuanganPage() {
           {/* 4 Financial Metric Cards (Matching Screenshot) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1: SALDO KAS SAAT INI */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+            <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   SALDO KAS SAAT INI
@@ -354,7 +354,7 @@ export default function ArusKeuanganPage() {
             </div>
 
             {/* Card 2: PEMASUKAN BULAN INI */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+            <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   PEMASUKAN BULAN INI
@@ -369,7 +369,7 @@ export default function ArusKeuanganPage() {
             </div>
 
             {/* Card 3: PENGELUARAN BULAN INI */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+            <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   PENGELUARAN BULAN INI
@@ -384,7 +384,7 @@ export default function ArusKeuanganPage() {
             </div>
 
             {/* Card 4: PROFIT BERSIH BULAN INI */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between">
+            <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 shadow-xs flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   PROFIT BERSIH BULAN INI
@@ -402,7 +402,7 @@ export default function ArusKeuanganPage() {
           {/* Lower Two-Column Section: Periodic Chart (Left) & Smart Insights (Right) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Column: Sebaran Pemasukan & Pengeluaran Periodik */}
-            <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-6 shadow-xs">
+            <div className="lg:col-span-8 bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-6 space-y-6 shadow-xs">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
                   Sebaran Pemasukan & Pengeluaran Periodik
@@ -414,12 +414,12 @@ export default function ArusKeuanganPage() {
 
               {/* Bar Chart Container */}
               <div className="pt-8 pb-4 px-2">
-                <div className="h-64 flex items-end justify-between gap-4 sm:gap-8 px-4 border-b border-slate-200 dark:border-slate-800 relative">
+                <div className="h-64 flex items-end justify-between gap-4 sm:gap-8 px-4 border-b border-slate-200 dark:border-[#1d2d5a] relative">
                   {/* Subtle Grid Lines */}
                   <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-40">
-                    <div className="border-b border-dashed border-slate-200 dark:border-slate-800 w-full" />
-                    <div className="border-b border-dashed border-slate-200 dark:border-slate-800 w-full" />
-                    <div className="border-b border-dashed border-slate-200 dark:border-slate-800 w-full" />
+                    <div className="border-b border-dashed border-slate-200 dark:border-[#1d2d5a] w-full" />
+                    <div className="border-b border-dashed border-slate-200 dark:border-[#1d2d5a] w-full" />
+                    <div className="border-b border-dashed border-slate-200 dark:border-[#1d2d5a] w-full" />
                   </div>
 
                   {/* Monthly Bars */}
@@ -440,7 +440,7 @@ export default function ArusKeuanganPage() {
                           {/* Blue Bar (Pemasukan) */}
                           <div
                             style={{ height: `${Math.max(incomeHeightPct, 6)}%` }}
-                            className="w-4 sm:w-6 bg-red-600 hover:bg-red-700 rounded-t-lg transition-all relative group cursor-pointer"
+                            className="w-4 sm:w-6 bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 rounded-t-lg transition-all relative group cursor-pointer"
                           >
                             <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-20 pointer-events-none transition-opacity">
                               Pemasukan: Rp {item.income.toLocaleString("id-ID")}
@@ -482,7 +482,7 @@ export default function ArusKeuanganPage() {
             </div>
 
             {/* Right Column: Analisis Keuangan Pintar (Matching Screenshot) */}
-            <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-4 shadow-xs">
+            <div className="lg:col-span-4 bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-6 space-y-4 shadow-xs">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-slate-100">
                   <Sparkles className="w-4 h-4 text-amber-500" />
@@ -496,7 +496,7 @@ export default function ArusKeuanganPage() {
               {/* 3 Insight Cards with rounded borders */}
               <div className="space-y-3 pt-1">
                 {/* Insight 1: Sumber pemasukan terbesar */}
-                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 flex items-start gap-3">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/50 dark:bg-[#0b1329] flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
                     <Info className="w-3.5 h-3.5" />
                   </div>
@@ -508,7 +508,7 @@ export default function ArusKeuanganPage() {
                 </div>
 
                 {/* Insight 2: Kategori pengeluaran terbesar */}
-                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 flex items-start gap-3">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/50 dark:bg-[#0b1329] flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
                     <Info className="w-3.5 h-3.5" />
                   </div>
@@ -520,7 +520,7 @@ export default function ArusKeuanganPage() {
                 </div>
 
                 {/* Insight 3: Kondisi keuangan & rasio */}
-                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 flex items-start gap-3">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/50 dark:bg-[#0b1329] flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
                     <Info className="w-3.5 h-3.5" />
                   </div>
@@ -550,17 +550,17 @@ export default function ArusKeuanganPage() {
             <button
               type="button"
               onClick={handleOpenAddIncome}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold cursor-pointer shadow-sm"
             >
               <Plus className="w-4 h-4" />
               Catat Pemasukan Baru
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500">
+                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-[#1d2d5a] text-[11px] font-bold text-slate-500">
                   <tr>
                     <th className="py-3 px-4">TANGGAL</th>
                     <th className="py-3 px-4">KATEGORI</th>
@@ -596,7 +596,7 @@ export default function ArusKeuanganPage() {
                           <button
                             type="button"
                             onClick={() => deleteTransaction(t.id)}
-                            className="p-1 rounded text-slate-400 hover:text-red-600"
+                            className="p-1 rounded text-slate-400 hover:text-blue-600"
                             title="Hapus Transaksi"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -633,10 +633,10 @@ export default function ArusKeuanganPage() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500">
+                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-[#1d2d5a] text-[11px] font-bold text-slate-500">
                   <tr>
                     <th className="py-3 px-4">TANGGAL</th>
                     <th className="py-3 px-4">KATEGORI</th>
@@ -672,7 +672,7 @@ export default function ArusKeuanganPage() {
                           <button
                             type="button"
                             onClick={() => deleteTransaction(t.id)}
-                            className="p-1 rounded text-slate-400 hover:text-red-600"
+                            className="p-1 rounded text-slate-400 hover:text-blue-600"
                             title="Hapus Transaksi"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -702,17 +702,17 @@ export default function ArusKeuanganPage() {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-bold text-slate-700 dark:text-slate-300"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] hover:bg-slate-50 text-xs font-bold text-slate-700 dark:text-slate-300"
             >
               <Download className="w-4 h-4" />
               Unduh CSV Ledger
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 uppercase">
+                <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-[#1d2d5a] text-[11px] font-bold text-slate-500 uppercase">
                   <tr>
                     <th className="py-3 px-4">TANGGAL</th>
                     <th className="py-3 px-4">URAIAN TRANSAKSI</th>
@@ -761,10 +761,10 @@ export default function ArusKeuanganPage() {
 
       {/* TAB 5: LAPORAN & EKSPOR */}
       {activeSubTab === "laporan" && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-6 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] p-6 space-y-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#1d2d5a] pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
+              <div className="w-11 h-11 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
                 <img
                   src="/logo.png"
                   alt="Easy Learning House"
@@ -792,7 +792,7 @@ export default function ArusKeuanganPage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold flex items-center gap-1.5"
               >
                 <Printer className="w-3.5 h-3.5" />
                 Cetak Laporan PDF
@@ -802,20 +802,20 @@ export default function ArusKeuanganPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
             {/* Rincian Pemasukan */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-3">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] space-y-3">
               <div className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
                 Rincian Arus Kas Masuk (Pemasukan)
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Penerimaan SPP Bulanan:</span>
                   <span className="font-bold text-blue-600">Rp 600.000</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Iuran Pendaftaran Baru:</span>
                   <span className="font-bold text-blue-600">Rp 200.000</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Penjualan Buku & Modul:</span>
                   <span className="font-bold text-blue-600">Rp 300.000</span>
                 </div>
@@ -827,20 +827,20 @@ export default function ArusKeuanganPage() {
             </div>
 
             {/* Rincian Pengeluaran */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-3">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] space-y-3">
               <div className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
                 Rincian Arus Kas Keluar (Pengeluaran)
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Penggandaan / Cetak Buku:</span>
                   <span className="font-bold text-rose-600">Rp 75.000</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Gaji & Honor Tutor:</span>
                   <span className="font-bold text-slate-400">Rp 0 (Jadwal Akhir Bulan)</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Operasional & ATK:</span>
                   <span className="font-bold text-slate-400">Rp 0</span>
                 </div>
@@ -857,8 +857,8 @@ export default function ArusKeuanganPage() {
       {/* Modal: Catat Pemasukan Baru */}
       {isAddIncomeOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Catat Pemasukan Kas Baru
               </h3>
@@ -887,7 +887,7 @@ export default function ArusKeuanganPage() {
                   required
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
                 />
               </div>
 
@@ -898,7 +898,7 @@ export default function ArusKeuanganPage() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
                 >
                   <option value="SPP">SPP Bulanan Siswa</option>
                   <option value="Pendaftaran">Uang Pendaftaran Siswa Baru</option>
@@ -919,7 +919,7 @@ export default function ArusKeuanganPage() {
                   onChange={(e) =>
                     setForm({ ...form, sourceOrRecipient: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -933,7 +933,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, branch: e.target.value as any })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-semibold"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>
@@ -951,7 +951,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, amount: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-bold"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-bold"
                   />
                 </div>
               </div>
@@ -966,7 +966,7 @@ export default function ArusKeuanganPage() {
                   placeholder="Misal: Pelunasan SPP September 2026"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -980,7 +980,7 @@ export default function ArusKeuanganPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold"
                 >
                   Simpan Pemasukan
                 </button>
@@ -993,8 +993,8 @@ export default function ArusKeuanganPage() {
       {/* Modal: Catat Pengeluaran Baru */}
       {isAddExpenseOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Catat Pengeluaran Kas Baru
               </h3>
@@ -1023,7 +1023,7 @@ export default function ArusKeuanganPage() {
                   required
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
                 />
               </div>
 
@@ -1034,7 +1034,7 @@ export default function ArusKeuanganPage() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
                 >
                   <option value="Cetak buku">Cetak Buku & Modul</option>
                   <option value="Gaji Tutor">Honor / Gaji Tutor Pengajar</option>
@@ -1056,7 +1056,7 @@ export default function ArusKeuanganPage() {
                   onChange={(e) =>
                     setForm({ ...form, sourceOrRecipient: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -1070,7 +1070,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, branch: e.target.value as any })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-semibold"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>
@@ -1088,7 +1088,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, amount: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100 font-bold text-rose-600"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-bold text-rose-600"
                   />
                 </div>
               </div>
@@ -1103,7 +1103,7 @@ export default function ArusKeuanganPage() {
                   placeholder="Misal: Biaya fotokopi lembar kerja kuis"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 

@@ -172,7 +172,7 @@ export default function CabangDanAdminPage() {
             onClick={() => setActiveTab("CABANG")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === "CABANG"
-                ? "bg-red-600 text-white shadow-xs"
+                ? "bg-blue-600 text-white shadow-xs"
                 : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -184,7 +184,7 @@ export default function CabangDanAdminPage() {
             onClick={() => setActiveTab("ADMIN")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === "ADMIN"
-                ? "bg-red-600 text-white shadow-xs"
+                ? "bg-blue-600 text-white shadow-xs"
                 : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -205,7 +205,7 @@ export default function CabangDanAdminPage() {
             <button
               type="button"
               onClick={handleOpenAddBranch}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               + Buka Cabang Baru
@@ -220,10 +220,10 @@ export default function CabangDanAdminPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 hover:border-red-300 dark:hover:border-red-800 transition-all flex flex-col justify-between"
+                  className="bg-white dark:bg-[#0f1a36] rounded-3xl p-6 border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-4 hover:border-blue-300 dark:hover:border-blue-800 transition-all flex flex-col justify-between"
                 >
                   <div>
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 flex items-center justify-center font-extrabold text-base shadow-xs">
                           {b.code}
@@ -255,7 +255,7 @@ export default function CabangDanAdminPage() {
                               deleteBranch(b.id);
                             }
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
                           title="Hapus Cabang"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ export default function CabangDanAdminPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 mt-4">
+                    <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-100 dark:border-[#1d2d5a]/60 mt-4">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
                         <span>{b.address}</span>
@@ -273,7 +273,7 @@ export default function CabangDanAdminPage() {
                         <span>Kontak: {b.phone}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-red-600 shrink-0" />
+                        <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
                         <span>
                           Admin Penanggung Jawab: <strong>{adminCount} Akun Terhubung</strong>
                         </span>
@@ -282,7 +282,7 @@ export default function CabangDanAdminPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-center">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-[#1d2d5a]/60 text-center">
                       <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
                         {studentCount || b.activeStudents}
                       </div>
@@ -291,8 +291,8 @@ export default function CabangDanAdminPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-center">
-                      <div className="text-2xl font-extrabold text-red-600 dark:text-red-400">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-[#1d2d5a]/60 text-center">
+                      <div className="text-2xl font-extrabold text-blue-600 dark:text-sky-400">
                         {adminCount}
                       </div>
                       <div className="text-[11px] text-slate-400 font-medium">
@@ -316,7 +316,7 @@ export default function CabangDanAdminPage() {
             <button
               type="button"
               onClick={handleOpenAddAdmin}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               + Tambah Akun Admin Cabang
@@ -324,8 +324,8 @@ export default function CabangDanAdminPage() {
           </div>
 
           {/* Admin Accounts Table */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
-            <div className="p-4 bg-slate-50 dark:bg-slate-950 font-bold text-xs text-slate-500 uppercase tracking-wider grid grid-cols-12">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
+            <div className="p-4 bg-slate-50 dark:bg-[#0b1329] font-bold text-xs text-slate-500 uppercase tracking-wider grid grid-cols-12">
               <div className="col-span-4">Nama Petugas Admin</div>
               <div className="col-span-3">Email & WhatsApp</div>
               <div className="col-span-2">Penugasan Cabang</div>
@@ -340,7 +340,7 @@ export default function CabangDanAdminPage() {
               >
                 {/* Name */}
                 <div className="col-span-4 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#1d2d5a]">
                     {adm.avatarUrl ? (
                       <img src={adm.avatarUrl} alt={adm.fullName} className="w-full h-full object-cover" />
                     ) : (
@@ -354,7 +354,7 @@ export default function CabangDanAdminPage() {
                         👑 Super Admin
                       </span>
                     ) : (
-                      <div className="text-[11px] text-red-600 dark:text-red-400 font-semibold">{adm.role}</div>
+                      <div className="text-[11px] text-blue-600 dark:text-sky-400 font-semibold">{adm.role}</div>
                     )}
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export default function CabangDanAdminPage() {
                         deleteBranchAdmin(adm.id);
                       }
                     }}
-                    className="p-1.5 rounded-lg hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                    className="p-1.5 rounded-lg hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
                     title="Hapus Akun"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -445,8 +445,8 @@ export default function CabangDanAdminPage() {
       {/* Modal Add / Edit Branch */}
       {(isAddBranchOpen || editingBranch) && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
               <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                 {editingBranch ? `Edit Cabang ${editingBranch.name}` : "Buka Cabang Baru"}
               </h3>
@@ -472,7 +472,7 @@ export default function CabangDanAdminPage() {
                     value={branchForm.name}
                     onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })}
                     placeholder="Contoh: Sarolangun"
-                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -486,7 +486,7 @@ export default function CabangDanAdminPage() {
                       setBranchForm({ ...branchForm, code: e.target.value.toUpperCase() })
                     }
                     placeholder="Contoh: SRL"
-                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-bold uppercase focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold uppercase focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -499,7 +499,7 @@ export default function CabangDanAdminPage() {
                   value={branchForm.address}
                   onChange={(e) => setBranchForm({ ...branchForm, address: e.target.value })}
                   placeholder="Alamat jalan, kelurahan, kecamatan..."
-                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -511,7 +511,7 @@ export default function CabangDanAdminPage() {
                   value={branchForm.phone}
                   onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value })}
                   placeholder="0812-..."
-                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -528,7 +528,7 @@ export default function CabangDanAdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-extrabold hover:bg-red-700 cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 cursor-pointer transition-colors"
                 >
                   {editingBranch ? "Simpan Perubahan" : "Buat Cabang"}
                 </button>
@@ -541,8 +541,8 @@ export default function CabangDanAdminPage() {
       {/* Modal Add / Edit Branch Admin Account */}
       {(isAddAdminOpen || editingAdmin) && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
               <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                 {editingAdmin ? `Edit Akun: ${editingAdmin.fullName}` : "Tambah Akun Admin Cabang"}
               </h3>
@@ -571,7 +571,7 @@ export default function CabangDanAdminPage() {
               </div>
 
               {/* Foto Profil dari Galeri */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 space-y-2">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-[#1d2d5a]/60 space-y-2">
                 <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs">
                   Foto Profil Akun (Pilih dari Galeri)
                 </label>
@@ -643,7 +643,7 @@ export default function CabangDanAdminPage() {
                   value={adminForm.fullName}
                   onChange={(e) => setAdminForm({ ...adminForm, fullName: e.target.value })}
                   placeholder="Contoh: Siti Aisyah, S.Pd"
-                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -656,7 +656,7 @@ export default function CabangDanAdminPage() {
                     value={adminForm.email}
                     onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                     placeholder="nama@gmail.com"
-                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
                     Gunakan Gmail agar bisa login Google
@@ -670,7 +670,7 @@ export default function CabangDanAdminPage() {
                     value={adminForm.password}
                     onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
                     placeholder="password123"
-                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
                     Untuk opsi login manual
@@ -686,7 +686,7 @@ export default function CabangDanAdminPage() {
                     onChange={(e) =>
                       setAdminForm({ ...adminForm, branchName: e.target.value as any })
                     }
-                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Semua Cabang (Pusat)">Semua Cabang (Pusat)</option>
                     {branches.map((b) => (
@@ -702,7 +702,7 @@ export default function CabangDanAdminPage() {
                   <select
                     value={adminForm.role}
                     onChange={(e) => setAdminForm({ ...adminForm, role: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Super Admin">Super Admin</option>
                     <option value="Admin Cabang">Admin Cabang</option>
@@ -719,7 +719,7 @@ export default function CabangDanAdminPage() {
                   value={adminForm.phone}
                   onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
                   placeholder="0812-..."
-                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -736,7 +736,7 @@ export default function CabangDanAdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-extrabold cursor-pointer transition-colors"
                 >
                   {editingAdmin ? "Simpan Akun" : "Terbitkan Akun"}
                 </button>

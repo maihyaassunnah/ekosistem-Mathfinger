@@ -158,7 +158,7 @@ export default function RaporPage() {
           }
           body {
             background: #ffffff !important;
-            color: #0f172a !important;
+            color: #0f1a36 !important;
           }
           body * {
             visibility: hidden !important;
@@ -193,10 +193,10 @@ export default function RaporPage() {
       </div>
 
       {/* Control Banner: Title, Filter Kelas, Pilih Siswa, and Action Buttons */}
-      <div className="no-print flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+      <div className="no-print flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#0f1a36] p-5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 dark:bg-red-950/80 dark:text-red-300 border border-red-200 dark:border-red-900/60 text-[10px] font-black uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-sky-300 border border-blue-200 dark:border-blue-900/60 text-[10px] font-black uppercase tracking-wider">
               Rapor Resmi
             </span>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
@@ -220,7 +220,7 @@ export default function RaporPage() {
               );
               if (firstInClass) setSelectedStudentId(firstInClass.id);
             }}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="ALL">Semua Kelas</option>
             {classes.map((c) => (
@@ -234,7 +234,7 @@ export default function RaporPage() {
           <select
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 max-w-[200px]"
+            className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[200px]"
           >
             {classFilteredStudents.map((s) => (
               <option key={s.id} value={s.id}>
@@ -247,16 +247,16 @@ export default function RaporPage() {
           <button
             type="button"
             onClick={() => setIsPreviewModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs"
           >
-            <Eye className="w-3.5 h-3.5 text-red-600" />
+            <Eye className="w-3.5 h-3.5 text-blue-600" />
             Preview Full
           </button>
 
           <button
             type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             Unduh / Cetak PDF
@@ -265,7 +265,7 @@ export default function RaporPage() {
           <button
             type="button"
             onClick={handleShareWA}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5" />
             WhatsApp
@@ -300,7 +300,7 @@ export default function RaporPage() {
             </div>
 
             <div className="sm:text-right space-y-1.5 flex flex-col sm:items-end">
-              <span className="inline-block px-3 py-1 rounded-md bg-red-950 text-red-200 text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase shadow-2xs">
+              <span className="inline-block px-3 py-1 rounded-md bg-[#0a1128] text-sky-200 text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase shadow-2xs">
                 RAPOR DIGITAL
               </span>
               <div className="text-xs sm:text-sm font-bold text-white tracking-wide">
@@ -345,7 +345,7 @@ export default function RaporPage() {
                 <div className="flex">
                   <span className="text-slate-500 w-28 shrink-0">Kelas Bimbingan</span>
                   <span className="text-slate-400 mr-2">:</span>
-                  <span className="font-black text-red-600">
+                  <span className="font-black text-blue-600">
                     {activeStudent.className}
                   </span>
                 </div>
@@ -370,11 +370,11 @@ export default function RaporPage() {
           {/* 3. Dua Kartu Metrik Side-by-Side */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Metrik 1: Persentase Presensi */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-red-50/70 border border-red-200 text-center space-y-0.5">
-              <div className="text-[10px] sm:text-[11px] font-extrabold uppercase text-red-700 tracking-wider">
+            <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/70 border border-blue-200 text-center space-y-0.5">
+              <div className="text-[10px] sm:text-[11px] font-extrabold uppercase text-blue-700 tracking-wider">
                 PERSENTASE PRESENSI
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-red-600 my-1">
+              <div className="text-3xl sm:text-4xl font-black text-blue-600 my-1">
                 {studentAttendanceCount.percentage}%
               </div>
               <div className="text-xs text-slate-500 font-medium">
@@ -430,7 +430,7 @@ export default function RaporPage() {
                         <td className="py-2.5 px-4 font-medium text-slate-800">
                           {g.topic}
                         </td>
-                        <td className="py-2.5 px-4 text-right font-bold text-red-600 font-mono">
+                        <td className="py-2.5 px-4 text-right font-bold text-blue-600 font-mono">
                           {g.score} / 100
                         </td>
                       </tr>
@@ -505,13 +505,13 @@ export default function RaporPage() {
                       <td className="py-2.5 px-4 font-medium text-slate-800">
                         {b.sessionTopic}
                       </td>
-                      <td className="py-2.5 px-3 text-center font-bold text-red-600">
+                      <td className="py-2.5 px-3 text-center font-bold text-blue-600">
                         {b.focus}
                       </td>
-                      <td className="py-2.5 px-3 text-center font-bold text-red-600">
+                      <td className="py-2.5 px-3 text-center font-bold text-blue-600">
                         {b.participation}
                       </td>
-                      <td className="py-2.5 px-3 text-center font-bold text-red-600">
+                      <td className="py-2.5 px-3 text-center font-bold text-blue-600">
                         {b.attitude}
                       </td>
                       <td className="py-2.5 px-3 text-center text-slate-400 font-mono">
@@ -564,7 +564,7 @@ export default function RaporPage() {
           <div className="bg-[#0b131b] rounded-3xl border border-slate-800 shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-white">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
                 <h3 className="text-sm font-bold tracking-wide">
                   Preview Rapor Cetak & Unduh: {activeStudent.name}
                 </h3>
@@ -573,7 +573,7 @@ export default function RaporPage() {
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Cetak / Unduh PDF
@@ -611,7 +611,7 @@ export default function RaporPage() {
                   </div>
 
                   <div className="sm:text-right space-y-1.5 flex flex-col sm:items-end">
-                    <span className="inline-block px-3 py-1 rounded-md bg-red-950 text-red-200 text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase shadow-2xs">
+                    <span className="inline-block px-3 py-1 rounded-md bg-[#0a1128] text-sky-200 text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase shadow-2xs">
                       RAPOR DIGITAL
                     </span>
                     <div className="text-xs sm:text-sm font-bold text-white tracking-wide">
@@ -656,7 +656,7 @@ export default function RaporPage() {
                       <div className="flex">
                         <span className="text-slate-500 w-28 shrink-0">Kelas Bimbingan</span>
                         <span className="text-slate-400 mr-2">:</span>
-                        <span className="font-black text-red-600">
+                        <span className="font-black text-blue-600">
                           {activeStudent.className}
                         </span>
                       </div>
@@ -680,11 +680,11 @@ export default function RaporPage() {
 
                 {/* 2 Metric Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 sm:p-5 rounded-2xl bg-red-50/70 border border-red-200 text-center space-y-0.5">
-                    <div className="text-[10px] sm:text-[11px] font-extrabold uppercase text-red-700 tracking-wider">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/70 border border-blue-200 text-center space-y-0.5">
+                    <div className="text-[10px] sm:text-[11px] font-extrabold uppercase text-blue-700 tracking-wider">
                       PERSENTASE PRESENSI
                     </div>
-                    <div className="text-3xl sm:text-4xl font-black text-red-600 my-1">
+                    <div className="text-3xl sm:text-4xl font-black text-blue-600 my-1">
                       {studentAttendanceCount.percentage}%
                     </div>
                     <div className="text-xs text-slate-500 font-medium">
@@ -732,7 +732,7 @@ export default function RaporPage() {
                             <td className="py-2.5 px-4 font-medium text-slate-800">
                               {g.topic}
                             </td>
-                            <td className="py-2.5 px-4 text-right font-bold text-red-600 font-mono">
+                            <td className="py-2.5 px-4 text-right font-bold text-blue-600 font-mono">
                               {g.score} / 100
                             </td>
                           </tr>
@@ -806,13 +806,13 @@ export default function RaporPage() {
                             <td className="py-2.5 px-4 font-medium text-slate-800">
                               {b.sessionTopic}
                             </td>
-                            <td className="py-2.5 px-3 text-center font-bold text-red-600">
+                            <td className="py-2.5 px-3 text-center font-bold text-blue-600">
                               {b.focus}
                             </td>
-                            <td className="py-2.5 px-3 text-center font-bold text-red-600">
+                            <td className="py-2.5 px-3 text-center font-bold text-blue-600">
                               {b.participation}
                             </td>
-                            <td className="py-2.5 px-3 text-center font-bold text-red-600">
+                            <td className="py-2.5 px-3 text-center font-bold text-blue-600">
                               {b.attitude}
                             </td>
                             <td className="py-2.5 px-3 text-center text-slate-400 font-mono">

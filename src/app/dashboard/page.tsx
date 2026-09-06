@@ -173,7 +173,7 @@ export default function DashboardPage() {
       label: "Kelola...",
       href: "/dashboard/cabang",
       icon: Building2,
-      color: "bg-red-50 text-red-600 border border-red-100 dark:bg-red-950/60 dark:text-red-400 dark:border-red-900/60",
+      color: "bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-sky-400 dark:border-blue-900/60",
     },
     {
       label: "Database...",
@@ -215,7 +215,7 @@ export default function DashboardPage() {
       label: "Pengatura...",
       href: "/dashboard/pengaturan",
       icon: Settings,
-      color: "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+      color: "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-[#1d2d5a]",
     },
   ];
 
@@ -236,7 +236,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           {/* Logo with colorful "Math Finger" letters */}
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 p-0.5 border border-red-100 dark:border-red-900/40 shadow-2xs flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-[#0f1a36] p-0.5 border border-blue-100 dark:border-blue-900/40 shadow-2xs flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Math Finger"
@@ -244,15 +244,15 @@ export default function DashboardPage() {
               />
             </div>
             <div className="font-extrabold text-sm sm:text-base tracking-tight font-sans flex items-center select-none">
-              <span className="text-[#ef4444]">M</span>
+              <span className="text-[#0ea5e9]">M</span>
               <span className="text-[#f59e0b]">a</span>
-              <span className="text-red-600">t</span>
+              <span className="text-blue-600">t</span>
               <span className="text-[#3b82f6]">h</span>
               <span className="ml-1 text-[#06b6d4]">F</span>
               <span className="text-[#ec4899]">i</span>
               <span className="text-[#3b82f6]">n</span>
               <span className="text-[#f59e0b]">g</span>
-              <span className="text-red-600">e</span>
+              <span className="text-blue-600">e</span>
               <span className="text-[#8b5cf6]">r</span>
             </div>
           </div>
@@ -262,17 +262,17 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setShowSyncToast(!showSyncToast)}
-              className="bg-red-50/90 dark:bg-red-950/70 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs cursor-pointer hover:bg-red-100/80 transition-colors"
+              className="bg-blue-50/90 dark:bg-blue-950/70 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-sky-300 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs cursor-pointer hover:bg-blue-100/80 transition-colors"
             >
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
               <span>Realtime</span>
-              <ChevronDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" />
             </button>
 
             {showSyncToast && (
-              <div className="absolute right-0 top-full mt-1.5 w-60 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 text-xs space-y-1 animate-in fade-in">
+              <div className="absolute right-0 top-full mt-1.5 w-60 p-3 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl z-50 text-xs space-y-1 animate-in fade-in">
                 <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-red-500" />
+                  <CheckCircle2 className="w-4 h-4 text-blue-500" />
                   Realtime Cloud Sync
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
@@ -292,13 +292,13 @@ export default function DashboardPage() {
               onClick={() => setShowBranchPicker(!showBranchPicker)}
               className="flex items-center gap-2.5 text-left group cursor-pointer"
             >
-              <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
                 <MapPin className="w-4 h-4 fill-white text-white" />
               </div>
               <div>
                 <div className="font-black text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1">
                   <span>Cabang {mobileBranch}</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-red-500" />
+                  <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-blue-500" />
                 </div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
                   {mobileBranch === "Singkut"
@@ -310,7 +310,7 @@ export default function DashboardPage() {
 
             {/* Branch Switcher Dropdown Popover */}
             {showBranchPicker && (
-              <div className="absolute left-0 top-full mt-2 w-56 p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 space-y-1 animate-in fade-in">
+              <div className="absolute left-0 top-full mt-2 w-56 p-2 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl z-50 space-y-1 animate-in fade-in">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
                   Pilih Cabang Aktif
                 </div>
@@ -323,12 +323,12 @@ export default function DashboardPage() {
                   }}
                   className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
                     mobileBranch === "Singkut"
-                      ? "bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold"
+                      ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-sky-300 font-bold"
                       : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
                   }`}
                 >
                   <span>Cabang Singkut</span>
-                  {mobileBranch === "Singkut" && <Check className="w-3.5 h-3.5 text-red-600" />}
+                  {mobileBranch === "Singkut" && <Check className="w-3.5 h-3.5 text-blue-600" />}
                 </button>
                 <button
                   type="button"
@@ -339,12 +339,12 @@ export default function DashboardPage() {
                   }}
                   className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
                     mobileBranch === "Bangko"
-                      ? "bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold"
+                      ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-sky-300 font-bold"
                       : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
                   }`}
                 >
                   <span>Cabang Bangko</span>
-                  {mobileBranch === "Bangko" && <Check className="w-3.5 h-3.5 text-red-600" />}
+                  {mobileBranch === "Bangko" && <Check className="w-3.5 h-3.5 text-blue-600" />}
                 </button>
               </div>
             )}
@@ -356,7 +356,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-amber-500 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] flex items-center justify-center text-amber-500 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title={theme === "dark" ? "Mode Terang" : "Mode Gelap"}
             >
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -366,7 +366,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setShowSearchModal(true)}
-              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Cari Data"
             >
               <Search className="w-4 h-4" />
@@ -377,7 +377,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowNotifPopover(!showNotifPopover)}
-                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
+                className="w-8 h-8 rounded-full border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
                 title="Notifikasi"
               >
                 <Bell className="w-4 h-4" />
@@ -385,10 +385,10 @@ export default function DashboardPage() {
               </button>
 
               {showNotifPopover && (
-                <div className="absolute right-0 top-full mt-2 w-64 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 text-xs space-y-2 animate-in fade-in">
+                <div className="absolute right-0 top-full mt-2 w-64 p-3 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl z-50 text-xs space-y-2 animate-in fade-in">
                   <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
                     <span>Notifikasi Terbaru</span>
-                    <span className="text-[10px] text-red-600 font-bold">2 Baru</span>
+                    <span className="text-[10px] text-blue-600 font-bold">2 Baru</span>
                   </div>
                   <div className="space-y-1.5 text-[11px]">
                     <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80">
@@ -407,7 +407,7 @@ export default function DashboardPage() {
             {/* 4. Profile Photo / Avatar */}
             <Link
               href="/dashboard/pengaturan"
-              className="w-8 h-8 rounded-full overflow-hidden border-2 border-red-500 shadow-2xs shrink-0 cursor-pointer hover:scale-105 transition-transform"
+              className="w-8 h-8 rounded-full overflow-hidden border-2 border-blue-500 shadow-2xs shrink-0 cursor-pointer hover:scale-105 transition-transform"
             >
               <div className="w-full h-full bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center">
                 WH
@@ -420,7 +420,7 @@ export default function DashboardPage() {
         <div className="relative">
           <div className="rounded-3xl p-5 text-white shadow-xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-rose-950 to-slate-950 border border-rose-900/40 min-h-[170px] flex flex-col justify-between space-y-3">
             {/* Subtle decorative glow */}
-            <div className="absolute top-0 right-0 w-44 h-44 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-44 h-44 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
             <div className="relative z-10 space-y-1.5">
               <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">
@@ -430,7 +430,7 @@ export default function DashboardPage() {
                 {bannerSlides[currentSlide].subtitle}
               </p>
               <div className="pt-0.5">
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-300">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-300">
                   {bannerSlides[currentSlide].pill}
                 </span>
               </div>
@@ -440,7 +440,7 @@ export default function DashboardPage() {
             <div className="relative z-10 flex items-center gap-2 pt-1">
               <Link
                 href={bannerSlides[currentSlide].btn1.href}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
               >
                 <span>{bannerSlides[currentSlide].btn1.label}</span>
               </Link>
@@ -462,7 +462,7 @@ export default function DashboardPage() {
                 onClick={() => setCurrentSlide(idx)}
                 className={`transition-all duration-300 cursor-pointer ${
                   currentSlide === idx
-                    ? "w-5 h-1.5 rounded-full bg-red-600"
+                    ? "w-5 h-1.5 rounded-full bg-blue-600"
                     : "w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
                 }`}
                 aria-label={`Slide ${idx + 1}`}
@@ -480,7 +480,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setShowQuickServices(!showQuickServices)}
-              className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+              className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
             >
               <span>{showQuickServices ? "Tutup" : "Buka"}</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -495,14 +495,14 @@ export default function DashboardPage() {
                   <Link
                     key={idx}
                     href={service.href}
-                    className="p-2 sm:p-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/90 dark:border-slate-800 flex flex-col items-center justify-center text-center shadow-2xs hover:shadow-xs hover:scale-[1.03] transition-all cursor-pointer group"
+                    className="p-2 sm:p-2.5 rounded-2xl bg-white/90 dark:bg-[#0f1a36]/90 backdrop-blur-xs border border-slate-200/90 dark:border-[#1d2d5a] flex flex-col items-center justify-center text-center shadow-2xs hover:shadow-xs hover:scale-[1.03] transition-all cursor-pointer group"
                   >
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center mb-1 transition-transform group-hover:scale-105 ${service.color}`}
                     >
                       <IconComponent className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate w-full group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate w-full group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors">
                       {service.label}
                     </span>
                   </Link>
@@ -515,7 +515,7 @@ export default function DashboardPage() {
         {/* Quick Search Modal Overlay */}
         {showSearchModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-start justify-center p-4 pt-16">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-sm w-full p-4 space-y-3 shadow-2xl">
+            <div className="bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-3xl max-w-sm w-full p-4 space-y-3 shadow-2xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                   Pencarian Cepat Siswa & Fitur
@@ -540,7 +540,7 @@ export default function DashboardPage() {
                   placeholder="Ketik nama siswa / menu..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-red-500 font-medium placeholder:text-slate-400"
+                  className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500 font-medium placeholder:text-slate-400"
                 />
               </div>
 
@@ -560,7 +560,7 @@ export default function DashboardPage() {
                             {student.levelCurriculum} • Cabang {student.branch}
                           </div>
                         </div>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-red-500" />
+                        <ArrowUpRight className="w-3.5 h-3.5 text-blue-500" />
                       </Link>
                     ))
                   ) : (
@@ -582,7 +582,7 @@ export default function DashboardPage() {
         {/* Top Header Bar with Easy Learning House Logo */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 shadow-xs flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] p-1 shadow-xs flex items-center justify-center shrink-0">
               <img
                 src="/logo.png"
                 alt="Easy Learning House"
@@ -603,7 +603,7 @@ export default function DashboardPage() {
       {/* Hero Banner Super Admin */}
       <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-rose-950 to-slate-950 text-white p-6 sm:p-8 shadow-xl border border-rose-900/40 relative overflow-hidden">
         {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-4 max-w-2xl">
@@ -644,7 +644,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedBranch("ALL")}
                   className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     selectedBranch === "ALL"
-                      ? "bg-red-600 text-white shadow-md scale-105"
+                      ? "bg-blue-600 text-white shadow-md scale-105"
                       : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
                   }`}
                 >
@@ -657,7 +657,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedBranch("Singkut")}
                   className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     selectedBranch === "Singkut"
-                      ? "bg-red-600 text-white shadow-md scale-105"
+                      ? "bg-blue-600 text-white shadow-md scale-105"
                       : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
                   }`}
                 >
@@ -670,7 +670,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedBranch("Bangko")}
                   className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     selectedBranch === "Bangko"
-                      ? "bg-red-600 text-white shadow-md scale-105"
+                      ? "bg-blue-600 text-white shadow-md scale-105"
                       : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
                   }`}
                 >
@@ -719,7 +719,7 @@ export default function DashboardPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <span className="text-red-500">✨</span>
+            <span className="text-blue-500">✨</span>
             <span>PUSAT KENDALI CEPAT SUPER ADMIN</span>
           </h2>
           <span className="text-[11px] text-slate-400">Akses langsung fitur esensial</span>
@@ -729,13 +729,13 @@ export default function DashboardPage() {
           {/* Card 1 */}
           <Link
             href="/dashboard/cabang"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-red-300 dark:hover:border-red-900 hover:shadow-md transition-all group space-y-2"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
           >
             <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-red-600 transition-colors">
+              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
                 Cabang & Admin
               </div>
               <div className="text-[10px] text-slate-400 truncate">Tambah & atur cabang</div>
@@ -745,13 +745,13 @@ export default function DashboardPage() {
           {/* Card 2 */}
           <Link
             href="/dashboard/siswa"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-red-300 dark:hover:border-red-900 hover:shadow-md transition-all group space-y-2"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
           >
-            <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-red-600 transition-colors">
+              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
                 Data Siswa
               </div>
               <div className="text-[10px] text-slate-400 truncate">Semua data siswa</div>
@@ -761,7 +761,7 @@ export default function DashboardPage() {
           {/* Card 3 */}
           <Link
             href="/dashboard/spp"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-900 hover:shadow-md transition-all group space-y-2"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-amber-300 dark:hover:border-amber-900 hover:shadow-md transition-all group space-y-2"
           >
             <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
               <CreditCard className="w-5 h-5" />
@@ -777,7 +777,7 @@ export default function DashboardPage() {
           {/* Card 4 */}
           <Link
             href="/dashboard/database"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
           >
             <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Database className="w-5 h-5" />
@@ -793,7 +793,7 @@ export default function DashboardPage() {
           {/* Card 5 */}
           <Link
             href="/dashboard/rapor"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900 hover:shadow-md transition-all group space-y-2"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-purple-300 dark:hover:border-purple-900 hover:shadow-md transition-all group space-y-2"
           >
             <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
               <TrendingUp className="w-5 h-5" />
@@ -809,7 +809,7 @@ export default function DashboardPage() {
           {/* Card 6 */}
           <Link
             href="/dashboard/pengaturan"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-pink-300 dark:hover:border-pink-900 hover:shadow-md transition-all group space-y-2"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-pink-300 dark:hover:border-pink-900 hover:shadow-md transition-all group space-y-2"
           >
             <div className="w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Settings className="w-5 h-5" />
@@ -827,7 +827,7 @@ export default function DashboardPage() {
       {/* 4 Metric Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Cabang Terdaftar */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="bg-white dark:bg-[#0f1a36] p-5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
             <span>CABANG TERDAFTAR</span>
             <span className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -838,9 +838,9 @@ export default function DashboardPage() {
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {filteredStats.branchCount} <span className="text-sm font-semibold text-slate-500">Cabang</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800 mt-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-[#1d2d5a] mt-3">
               <span>{filteredStats.adminCount} Admin & Asisten</span>
-              <Link href="/dashboard/cabang" className="text-red-600 dark:text-red-400 font-bold hover:underline">
+              <Link href="/dashboard/cabang" className="text-blue-600 dark:text-sky-400 font-bold hover:underline">
                 Kelola &gt;
               </Link>
             </div>
@@ -848,7 +848,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 2: Total Siswa Aktif */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="bg-white dark:bg-[#0f1a36] p-5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
             <span>TOTAL SISWA AKTIF</span>
             <span className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -857,9 +857,9 @@ export default function DashboardPage() {
           </div>
           <div>
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              {filteredStats.activeStudents} <span className="text-sm font-semibold text-red-600 dark:text-red-400">Siswa Aktif</span>
+              {filteredStats.activeStudents} <span className="text-sm font-semibold text-blue-600 dark:text-sky-400">Siswa Aktif</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800 mt-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-[#1d2d5a] mt-3">
               <span>0 Alumni Lulus</span>
               <span className="font-bold text-slate-700 dark:text-slate-300">{filteredStats.totalStudents} Total</span>
             </div>
@@ -867,7 +867,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 3: SPP Terkumpul */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="bg-white dark:bg-[#0f1a36] p-5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
             <span>SPP TERKUMPUL</span>
             <span className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -875,20 +875,20 @@ export default function DashboardPage() {
             </span>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight text-red-600 dark:text-red-400">
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight text-blue-600 dark:text-sky-400">
               Rp {filteredStats.sppCollected.toLocaleString("id-ID")}
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800 mt-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-[#1d2d5a] mt-3">
               <span className="text-rose-600 dark:text-rose-400 font-medium truncate">
                 Tunggakan: Rp {filteredStats.sppPending.toLocaleString("id-ID")}
               </span>
-              <span className="font-bold text-red-600 dark:text-red-400">{filteredStats.sppPercentage}%</span>
+              <span className="font-bold text-blue-600 dark:text-sky-400">{filteredStats.sppPercentage}%</span>
             </div>
           </div>
         </div>
 
         {/* Card 4: Kelas & Kurikulum */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="bg-white dark:bg-[#0f1a36] p-5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
             <span>KELAS & KURIKULUM</span>
             <span className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
@@ -899,7 +899,7 @@ export default function DashboardPage() {
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {classes.length} <span className="text-sm font-semibold text-slate-500">Kelas Aktif</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800 mt-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-[#1d2d5a] mt-3">
               <span>Kurikulum 10 Jari</span>
               <span className="font-bold text-slate-700 dark:text-slate-300">Level 1 - 4</span>
             </div>
@@ -908,8 +908,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Hub Manajemen Seluruh Cabang Bimbingan */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#1d2d5a]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <School className="w-5 h-5" />
@@ -926,7 +926,7 @@ export default function DashboardPage() {
 
           <Link
             href="/dashboard/cabang"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs"
           >
             <Plus className="w-4 h-4" />
             Tambah Cabang Baru
@@ -948,7 +948,7 @@ export default function DashboardPage() {
             return (
               <div
                 key={b.id}
-                className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-800 transition-all space-y-3"
+                className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-800 transition-all space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -957,8 +957,8 @@ export default function DashboardPage() {
                     </span>
                     <span className="font-bold text-slate-900 dark:text-white text-sm">{b.name}</span>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 dark:text-red-400 bg-red-100/60 dark:bg-red-950/60 px-2 py-0.5 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 dark:text-sky-400 bg-blue-100/60 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                     Cabang Aktif
                   </span>
                 </div>
@@ -968,13 +968,13 @@ export default function DashboardPage() {
                   <span>{b.address}</span>
                 </p>
 
-                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700 grid grid-cols-3 text-center text-xs">
+                <div className="pt-2 border-t border-slate-200/60 dark:border-[#1d2d5a] grid grid-cols-3 text-center text-xs">
                   <div>
                     <div className="font-bold text-slate-900 dark:text-white">{branchStudentCount}</div>
                     <div className="text-[10px] text-slate-400">Siswa Aktif</div>
                   </div>
                   <div>
-                    <div className="font-bold text-red-600 dark:text-red-400">
+                    <div className="font-bold text-blue-600 dark:text-sky-400">
                       Rp {(branchRevenue / 1000).toLocaleString("id-ID")}k
                     </div>
                     <div className="text-[10px] text-slate-400">Kas SPP</div>
@@ -982,7 +982,7 @@ export default function DashboardPage() {
                   <div>
                     <Link
                       href={`/dashboard/siswa?branch=${b.name}`}
-                      className="inline-flex items-center gap-1 font-bold text-red-600 dark:text-red-400 hover:underline pt-1"
+                      className="inline-flex items-center gap-1 font-bold text-blue-600 dark:text-sky-400 hover:underline pt-1"
                     >
                       Detail Siswa
                       <ArrowUpRight className="w-3 h-3" />

@@ -23,10 +23,10 @@ export default function RiwayatJurnalPage() {
 
       <div className="space-y-4">
         {logs.map((l, idx) => (
-          <div key={idx} className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2">
+          <div key={idx} className="bg-white dark:bg-[#0f1a36] rounded-3xl p-5 border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-950/80 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60 text-[11px] font-bold">
+                <span className="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 border border-blue-200 dark:border-blue-900/60 text-[11px] font-bold">
                   {l.class}
                 </span>
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{l.tutor}</span>

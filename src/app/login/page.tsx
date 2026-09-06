@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Check,
   ShieldAlert,
+  Fingerprint,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { signIn } from "next-auth/react";
@@ -38,35 +39,35 @@ function LoginForm() {
       name: "Wahyudin Hafiz, S.Pd",
       role: "Super Admin (Pusat)",
       email: "wahyudinhafiz123@gmail.com",
-      avatarBg: "bg-slate-800 text-white font-bold",
+      avatarBg: "bg-blue-600 text-white font-bold",
       initials: "WH",
     },
     {
       name: "ma assunnah",
       role: "Super Admin",
       email: "ma.ihyaassunnah@gmail.com",
-      avatarBg: "bg-slate-700 text-white font-bold",
+      avatarBg: "bg-sky-600 text-white font-bold",
       initials: "MA",
     },
     {
       name: "Admin Singkut",
       role: "Admin Cabang",
       email: "singkut.mathfingers@gmail.com",
-      avatarBg: "bg-red-700 text-white font-bold",
+      avatarBg: "bg-indigo-600 text-white font-bold",
       initials: "SK",
     },
     {
       name: "Admin Bangko",
       role: "Admin Cabang",
       email: "bangko.mathfingers@gmail.com",
-      avatarBg: "bg-purple-700 text-white font-bold",
+      avatarBg: "bg-blue-700 text-white font-bold",
       initials: "BK",
     },
     {
       name: "Tutor Kelas",
       role: "Pengajar",
       email: "tutor1.mathfingers@gmail.com",
-      avatarBg: "bg-blue-700 text-white font-bold",
+      avatarBg: "bg-sky-700 text-white font-bold",
       initials: "TR",
     },
   ];
@@ -103,7 +104,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-slate-900 via-rose-950 to-slate-950 flex flex-col justify-between items-center py-6 px-4 relative overflow-x-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#0052d4] via-[#4364f7] to-[#070d1e] dark:from-[#0a1128] dark:via-[#070d1e] dark:to-[#040814] flex flex-col justify-between items-center py-6 px-4 relative overflow-x-hidden">
       {/* Top Controls Bar */}
       <div className="w-full max-w-5xl flex items-center justify-between z-10">
         <button
@@ -133,11 +134,11 @@ function LoginForm() {
         </Link>
       </div>
 
-      {/* Main Login Card */}
-      <div className="w-full max-w-[450px] bg-white rounded-[28px] shadow-2xl p-6 sm:p-8 my-auto relative z-10 border border-slate-200">
-        {/* Logo Header */}
+      {/* Main Login Card - UNPIX Mobile Style */}
+      <div className="w-full max-w-[440px] bg-white dark:bg-[#0f1a36] rounded-[32px] shadow-2xl p-6 sm:p-8 my-auto relative z-10 border border-blue-100 dark:border-[#1d2d5a] transition-all">
+        {/* Logo Header with UNPIX inspired badge */}
         <div className="flex justify-center mb-3">
-          <div className="w-20 h-20 rounded-3xl bg-white shadow-md border border-slate-200 p-2 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-3xl bg-white dark:bg-[#0b1329] shadow-md border border-blue-100 dark:border-[#1d2d5a] p-2 flex items-center justify-center">
             <img
               src="/logo.png"
               alt="Easy Learning House Logo"
@@ -149,33 +150,33 @@ function LoginForm() {
         {/* Title & Badge */}
         <div className="text-center space-y-1 mb-5">
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               Easy Learning House
             </h1>
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-sky-300">
               v3.4
             </span>
           </div>
-          <p className="text-xs text-slate-500 font-normal">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
             Sistem Terpadu Bimbingan Belajar & Presensi Math Fingers
           </p>
         </div>
 
         {/* Access Restriction Notice */}
-        <div className="mb-4 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2 text-[11px] text-slate-600">
-          <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="mb-4 p-2.5 rounded-xl bg-blue-50/60 dark:bg-[#0b1329] border border-blue-100 dark:border-[#1d2d5a] flex items-start gap-2 text-[11px] text-slate-700 dark:text-slate-300">
+          <ShieldAlert className="w-4 h-4 text-blue-600 dark:text-sky-400 shrink-0 mt-0.5" />
           <p className="leading-snug">
             <strong>Area Terbatas:</strong> Hanya akun admin & tutor yang telah terdaftar resmi di sistem yang dapat masuk.
           </p>
         </div>
 
-        {/* URL Error Alerts (e.g. from Google OAuth AccessDenied) */}
+        {/* URL Error Alerts */}
         {urlError === "AccessDenied" && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-in fade-in">
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-2 animate-in fade-in">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
             <div>
               <strong className="font-bold">Akses Google Ditolak!</strong>
-              <p className="text-[11px] mt-0.5 text-rose-700">
+              <p className="text-[11px] mt-0.5 text-rose-700 dark:text-rose-300">
                 Akun Gmail Anda belum didaftarkan di sistem. Silakan hubungi Super Admin untuk mendaftarkan email Google Anda di menu Pengaturan Cabang & Akun.
               </p>
             </div>
@@ -184,17 +185,17 @@ function LoginForm() {
 
         {/* Custom Form Error Alert */}
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-in fade-in">
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-2 animate-in fade-in">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
             <div>
               <strong className="font-bold">Gagal Masuk</strong>
-              <p className="text-[11px] mt-0.5 text-rose-700">{errorMessage}</p>
+              <p className="text-[11px] mt-0.5 text-rose-700 dark:text-rose-300">{errorMessage}</p>
             </div>
           </div>
         )}
 
         {/* Auth Method Tabs */}
-        <div className="bg-slate-100/90 p-1 rounded-xl grid grid-cols-2 text-xs font-semibold mb-5 text-slate-600">
+        <div className="bg-blue-50/70 dark:bg-[#0b1329] p-1 rounded-xl grid grid-cols-2 text-xs font-semibold mb-5 text-slate-600 dark:text-slate-400 border border-blue-100/60 dark:border-[#1d2d5a]">
           <button
             type="button"
             onClick={() => {
@@ -203,8 +204,8 @@ function LoginForm() {
             }}
             className={`py-2 rounded-lg transition-all ${
               tab === "password"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "hover:text-slate-900"
+                ? "bg-white dark:bg-[#0f1a36] text-blue-600 dark:text-sky-300 font-bold shadow-xs"
+                : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             Password
@@ -217,8 +218,8 @@ function LoginForm() {
             }}
             className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               tab === "google"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "hover:text-slate-900"
+                ? "bg-white dark:bg-[#0f1a36] text-blue-600 dark:text-sky-300 font-bold shadow-xs"
+                : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <span className="font-bold text-red-500">G</span>
@@ -229,8 +230,8 @@ function LoginForm() {
         {/* Form or Google Tab */}
         {tab === "google" ? (
           <div className="space-y-4 py-2 animate-in fade-in">
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-xs border border-slate-200 flex items-center justify-center mx-auto">
+            <div className="p-5 rounded-2xl bg-blue-50/50 dark:bg-[#0b1329] border border-blue-100 dark:border-[#1d2d5a] text-center space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0f1a36] shadow-xs border border-blue-100 dark:border-[#1d2d5a] flex items-center justify-center mx-auto">
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -250,10 +251,10 @@ function LoginForm() {
                   />
                 </svg>
               </div>
-              <h3 className="font-extrabold text-slate-900 text-sm">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm">
                 Masuk Cepat dengan Akun Google
               </h3>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                 Gunakan akun Gmail Anda yang sudah didaftarkan oleh Super Admin di menu cabang & staf.
               </p>
             </div>
@@ -261,7 +262,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-sm shadow-xs hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer hover:border-slate-400"
+              className="w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0b1329] hover:bg-slate-50 dark:hover:bg-[#132042] text-slate-800 dark:text-white border border-slate-300 dark:border-[#1d2d5a] font-bold text-sm shadow-xs hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -287,7 +288,7 @@ function LoginForm() {
         ) : (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Email Terdaftar
               </label>
               <div className="relative">
@@ -303,19 +304,19 @@ function LoginForm() {
                     setErrorMessage(null);
                   }}
                   placeholder="nama@email.com"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all font-medium"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-semibold"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Password
                 </label>
                 <a
                   href="#lupa-sandi"
-                  className="text-[11px] font-medium text-red-600 hover:text-red-700"
+                  className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 dark:text-sky-400"
                 >
                   Lupa sandi?
                 </a>
@@ -333,12 +334,12 @@ function LoginForm() {
                     setErrorMessage(null);
                   }}
                   placeholder="Masukkan password Anda..."
-                  className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all font-medium"
+                  className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-semibold"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -349,31 +350,42 @@ function LoginForm() {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-75"
-            >
-              {isLoading ? (
-                <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : null}
-              Masuk ke Mathfingers V2
-            </button>
+            {/* UNPIX Dual Action: Submit Button & Biometric Icon Button */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-extrabold text-sm shadow-md shadow-blue-500/30 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+              >
+                {isLoading ? (
+                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : null}
+                Login
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleLogin({ preventDefault: () => {} } as any)}
+                className="w-12 h-12 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-[#0b1329] dark:hover:bg-[#132042] border border-sky-200 dark:border-[#1d2d5a] text-blue-600 dark:text-sky-400 flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                title="Login Cepat Biometrik"
+              >
+                <Fingerprint className="w-6 h-6" />
+              </button>
+            </div>
 
             {/* Quick Google Login Divider & Button */}
             <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="flex-grow border-t border-slate-200 dark:border-[#1d2d5a]"></div>
               <span className="flex-shrink mx-3 text-[10px] uppercase font-bold text-slate-400">
                 Atau
               </span>
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="flex-grow border-t border-slate-200 dark:border-[#1d2d5a]"></div>
             </div>
 
             <button
               type="button"
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-              className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-2xs"
+              className="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-[#0b1329] hover:bg-slate-50 dark:hover:bg-[#132042] text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-[#1d2d5a] font-bold text-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-2xs"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -399,12 +411,12 @@ function LoginForm() {
         )}
 
         {/* Quick Avatar Selector */}
-        <div className="mt-6 pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2.5">
-            <span className="font-semibold text-rose-900 flex items-center gap-1">
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#1d2d5a]">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">
+            <span className="font-bold text-blue-700 dark:text-sky-300 flex items-center gap-1">
               ✨ Pilih Akun Terdaftar di Sistem:
             </span>
-            <span className="text-slate-400 text-[10px]">Pilih akun</span>
+            <span className="text-slate-400 text-[10px]">Klik avatar</span>
           </div>
 
           <div className="flex items-center justify-start gap-3 overflow-x-auto pb-1">
@@ -416,7 +428,7 @@ function LoginForm() {
                 title={`${acc.name} (${acc.role})`}
                 className={`relative group p-0.5 rounded-full transition-all shrink-0 ${
                   selectedAvatar === idx
-                    ? "ring-2 ring-red-500 ring-offset-2 scale-105"
+                    ? "ring-2 ring-blue-500 ring-offset-2 scale-105"
                     : "opacity-75 hover:opacity-100"
                 }`}
               >
@@ -426,15 +438,15 @@ function LoginForm() {
                   {acc.initials}
                 </div>
                 {selectedAvatar === idx && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center border-2 border-white shadow-xs">
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center border-2 border-white dark:border-[#0f1a36] shadow-xs">
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
               </button>
             ))}
           </div>
-          <div className="text-[11px] text-slate-600 mt-2 font-medium">
-            Akun: <span className="text-red-600 font-semibold">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
+          <div className="text-[11px] text-slate-600 dark:text-slate-300 mt-2 font-medium">
+            Akun: <span className="text-blue-600 dark:text-sky-400 font-bold">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
           </div>
         </div>
 
@@ -445,16 +457,16 @@ function LoginForm() {
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-slate-300 cursor-pointer"
+            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-[#1d2d5a] dark:bg-[#0b1329] cursor-pointer"
           />
-          <label htmlFor="remember" className="text-xs text-slate-600 font-medium cursor-pointer">
+          <label htmlFor="remember" className="text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer">
             Ingat Sesi Login Perangkat Ini
           </label>
         </div>
       </div>
 
       {/* Footer copyright */}
-      <div className="text-xs text-white/70 text-center z-10">
+      <div className="text-xs text-white/80 text-center z-10 font-medium">
         © {new Date().getFullYear()} Les Mathfingers Management System • V2.0 Cloud VPS
       </div>
     </div>
@@ -465,7 +477,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center text-white text-sm">
+        <div className="min-h-screen w-full bg-[#0a1128] flex items-center justify-center text-white text-sm">
           Memuat halaman login...
         </div>
       }
