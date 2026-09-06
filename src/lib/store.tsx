@@ -1470,6 +1470,127 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((err) => console.warn("Live admins fetch failed:", err));
+
+    // Fetch live classes from PostgreSQL
+    fetch("/api/classes")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setClasses(data);
+          save("mf_classes", data);
+        }
+      })
+      .catch((err) => console.warn("Live classes fetch failed:", err));
+
+    // Fetch live journals from PostgreSQL
+    fetch("/api/journals")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setJournals(data);
+          save("mf_journals", data);
+        }
+      })
+      .catch((err) => console.warn("Live journals fetch failed:", err));
+
+    // Fetch live grades from PostgreSQL
+    fetch("/api/grades")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setGrades(data);
+          save("mf_grades", data);
+        }
+      })
+      .catch((err) => console.warn("Live grades fetch failed:", err));
+
+    // Fetch live curriculums from PostgreSQL
+    fetch("/api/curriculums")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCurriculumModules(data);
+          save("mf_curriculum", data);
+        }
+      })
+      .catch((err) => console.warn("Live curriculums fetch failed:", err));
+
+    // Fetch live invoices from PostgreSQL
+    fetch("/api/invoices")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setInvoices(data);
+          save("mf_invoices", data);
+        }
+      })
+      .catch((err) => console.warn("Live invoices fetch failed:", err));
+
+    // Fetch live transactions from PostgreSQL
+    fetch("/api/transactions")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTransactions(data);
+          save("mf_transactions", data);
+        }
+      })
+      .catch((err) => console.warn("Live transactions fetch failed:", err));
+
+    // Fetch live website hero from PostgreSQL
+    fetch("/api/website/hero")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.headline) {
+          setLandingHero(data);
+          save("mf_landing_hero", data);
+        }
+      })
+      .catch((err) => console.warn("Live website hero fetch failed:", err));
+
+    // Fetch live website programs from PostgreSQL
+    fetch("/api/website/programs")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLandingPrograms(data);
+          save("mf_landing_programs", data);
+        }
+      })
+      .catch((err) => console.warn("Live website programs fetch failed:", err));
+
+    // Fetch live website testimonials from PostgreSQL
+    fetch("/api/website/testimonials")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLandingTestimonials(data);
+          save("mf_landing_testi", data);
+        }
+      })
+      .catch((err) => console.warn("Live website testimonials fetch failed:", err));
+
+    // Fetch live website partners from PostgreSQL
+    fetch("/api/website/partners")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLandingPartners(data);
+          save("mf_landing_partners", data);
+        }
+      })
+      .catch((err) => console.warn("Live website partners fetch failed:", err));
+
+    // Fetch live website leads from PostgreSQL
+    fetch("/api/website/leads")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLandingLeads(data);
+          save("mf_landing_leads", data);
+        }
+      })
+      .catch((err) => console.warn("Live website leads fetch failed:", err));
   }, []);
 
   // Save to LocalStorage helper
@@ -1540,16 +1661,32 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Class CRUD
   const addClass = (cls: Omit<ClassItem, "id" | "enrolledCount">) => {
+    const tempId = `cls-${Date.now()}`;
+    const newCls: ClassItem = {
+      ...cls,
+      id: tempId,
+      enrolledCount: 0,
+    };
     setClasses((prev) => {
-      const newCls: ClassItem = {
-        ...cls,
-        id: `cls-${Date.now()}`,
-        enrolledCount: 0,
-      };
       const updated = [newCls, ...prev];
       save("mf_classes", updated);
       return updated;
     });
+
+    fetch("/api/classes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cls),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setClasses((prev) =>
+            prev.map((c) => (c.id === tempId ? { ...c, id: created.id } : c))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving class to PostgreSQL:", err));
   };
 
   const updateClass = (id: string, updated: Partial<ClassItem>) => {
@@ -1558,6 +1695,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_classes", updatedList);
       return updatedList;
     });
+
+    fetch("/api/classes", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...updated }),
+    }).catch((err) => console.error("Error updating class in PostgreSQL:", err));
   };
 
   const deleteClass = (id: string) => {
@@ -1566,6 +1709,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_classes", filtered);
       return filtered;
     });
+
+    fetch(`/api/classes?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting class in PostgreSQL:", err));
   };
 
   // Branch CRUD
@@ -1759,16 +1906,32 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Journals
   const addJournal = (j: Omit<JournalItem, "id" | "refCode">) => {
+    const tempId = `j-${Date.now()}`;
+    const newJ: JournalItem = {
+      ...j,
+      id: tempId,
+      refCode: `#${Math.random().toString(16).substring(2, 8)}`,
+    };
     setJournals((prev) => {
-      const newJ: JournalItem = {
-        ...j,
-        id: `j-${Date.now()}`,
-        refCode: `#${Math.random().toString(16).substring(2, 8)}`,
-      };
       const updated = [newJ, ...prev];
       save("mf_journals", updated);
       return updated;
     });
+
+    fetch("/api/journals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(j),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setJournals((prev) =>
+            prev.map((item) => (item.id === tempId ? { ...item, id: created.id, refCode: created.refCode } : item))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving journal to PostgreSQL:", err));
   };
 
   const deleteJournal = (id: string) => {
@@ -1777,6 +1940,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_journals", filtered);
       return filtered;
     });
+
+    fetch(`/api/journals?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting journal from PostgreSQL:", err));
   };
 
   // Grades / Nilai
@@ -1787,6 +1954,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_grades", updated);
       return updated;
     });
+
+    fetch("/api/grades", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newGrades),
+    }).catch((err) => console.error("Error saving grades to PostgreSQL:", err));
   };
 
   // Behaviors / Sikap & Keaktifan
@@ -1804,16 +1977,32 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Curriculum Modules
   const addCurriculumModule = (mod: Omit<CurriculumModule, "id" | "orderIndex">) => {
+    const tempId = `cur-${Date.now()}`;
+    const newMod: CurriculumModule = {
+      ...mod,
+      id: tempId,
+      orderIndex: curriculumModules.length + 1,
+    };
     setCurriculumModules((prev) => {
-      const newMod: CurriculumModule = {
-        ...mod,
-        id: `cur-${Date.now()}`,
-        orderIndex: prev.length + 1,
-      };
       const updated = [...prev, newMod];
       save("mf_curriculum", updated);
       return updated;
     });
+
+    fetch("/api/curriculums", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(mod),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setCurriculumModules((prev) =>
+            prev.map((c) => (c.id === tempId ? { ...c, id: created.id } : c))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving curriculum to PostgreSQL:", err));
   };
 
   const updateCurriculumModule = (id: string, mod: Partial<CurriculumModule>) => {
@@ -1822,6 +2011,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_curriculum", updated);
       return updated;
     });
+
+    fetch("/api/curriculums", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...mod }),
+    }).catch((err) => console.error("Error updating curriculum in PostgreSQL:", err));
   };
 
   const deleteCurriculumModule = (id: string) => {
@@ -1830,6 +2025,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_curriculum", filtered);
       return filtered;
     });
+
+    fetch(`/api/curriculums?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting curriculum from PostgreSQL:", err));
   };
 
   const resetCurriculumModules = () => {
@@ -1839,17 +2038,33 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Invoices & SPP
   const addInvoice = (inv: Omit<InvoiceItem, "id" | "invoiceNo">) => {
+    const tempId = `inv-${Date.now()}`;
+    const code = Math.floor(1000 + Math.random() * 9000);
+    const newInv: InvoiceItem = {
+      ...inv,
+      id: tempId,
+      invoiceNo: `INV/MF/2608/${code}`,
+    };
     setInvoices((prev) => {
-      const code = Math.floor(1000 + Math.random() * 9000);
-      const newInv: InvoiceItem = {
-        ...inv,
-        id: `inv-${Date.now()}`,
-        invoiceNo: `INV/MF/2608/${code}`,
-      };
       const updated = [newInv, ...prev];
       save("mf_invoices", updated);
       return updated;
     });
+
+    fetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(inv),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setInvoices((prev) =>
+            prev.map((i) => (i.id === tempId ? { ...i, id: created.id, invoiceNo: created.invoiceNo } : i))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving invoice to PostgreSQL:", err));
   };
 
   const updateInvoiceStatus = (
@@ -1873,6 +2088,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_invoices", updated);
       return updated;
     });
+
+    fetch("/api/invoices", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status, paidDate, paidMethod }),
+    }).catch((err) => console.error("Error updating invoice in PostgreSQL:", err));
   };
 
   const deleteInvoice = (id: string) => {
@@ -1881,6 +2102,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_invoices", filtered);
       return filtered;
     });
+
+    fetch(`/api/invoices?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting invoice from PostgreSQL:", err));
   };
 
   // Cash Mutations
@@ -1898,15 +2123,31 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Arus Keuangan & Buku Kas
   const addTransaction = (tx: Omit<CashTransactionItem, "id">) => {
+    const tempId = `tx-${Date.now()}`;
+    const newTx: CashTransactionItem = {
+      ...tx,
+      id: tempId,
+    };
     setTransactions((prev) => {
-      const newTx: CashTransactionItem = {
-        ...tx,
-        id: `tx-${Date.now()}`,
-      };
       const updated = [newTx, ...prev];
       save("mf_transactions", updated);
       return updated;
     });
+
+    fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(tx),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setTransactions((prev) =>
+            prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving transaction to PostgreSQL:", err));
   };
 
   const deleteTransaction = (id: string) => {
@@ -1915,6 +2156,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_transactions", filtered);
       return filtered;
     });
+
+    fetch(`/api/transactions?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting transaction from PostgreSQL:", err));
   };
 
   // Landing Hero
@@ -1924,19 +2169,41 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_hero", updated);
       return updated;
     });
+
+    fetch("/api/website/hero", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(hero),
+    }).catch((err) => console.error("Error updating website hero in PostgreSQL:", err));
   };
 
   // Landing Programs
   const addLandingProgram = (prog: Omit<LandingProgramItem, "id">) => {
+    const tempId = `prog-${Date.now()}`;
+    const newProg: LandingProgramItem = {
+      ...prog,
+      id: tempId,
+    };
     setLandingPrograms((prev) => {
-      const newProg: LandingProgramItem = {
-        ...prog,
-        id: `prog-${Date.now()}`,
-      };
       const updated = [...prev, newProg];
       save("mf_landing_programs", updated);
       return updated;
     });
+
+    fetch("/api/website/programs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(prog),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setLandingPrograms((prev) =>
+            prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving website program to PostgreSQL:", err));
   };
 
   const updateLandingProgram = (id: string, prog: Partial<LandingProgramItem>) => {
@@ -1945,6 +2212,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_programs", updated);
       return updated;
     });
+
+    fetch("/api/website/programs", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...prog }),
+    }).catch((err) => console.error("Error updating website program in PostgreSQL:", err));
   };
 
   const deleteLandingProgram = (id: string) => {
@@ -1953,19 +2226,39 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_programs", filtered);
       return filtered;
     });
+
+    fetch(`/api/website/programs?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting website program from PostgreSQL:", err));
   };
 
   // Landing Testimonials
   const addLandingTestimonial = (testi: Omit<LandingTestimonialItem, "id">) => {
+    const tempId = `testi-${Date.now()}`;
+    const newTesti: LandingTestimonialItem = {
+      ...testi,
+      id: tempId,
+    };
     setLandingTestimonials((prev) => {
-      const newTesti: LandingTestimonialItem = {
-        ...testi,
-        id: `testi-${Date.now()}`,
-      };
       const updated = [newTesti, ...prev];
       save("mf_landing_testi", updated);
       return updated;
     });
+
+    fetch("/api/website/testimonials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(testi),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setLandingTestimonials((prev) =>
+            prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving website testimonial to PostgreSQL:", err));
   };
 
   const deleteLandingTestimonial = (id: string) => {
@@ -1974,21 +2267,41 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_testi", filtered);
       return filtered;
     });
+
+    fetch(`/api/website/testimonials?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting website testimonial from PostgreSQL:", err));
   };
 
   // Landing Leads
   const addLandingLead = (lead: Omit<LandingLeadItem, "id" | "createdAt" | "status">) => {
+    const tempId = `lead-${Date.now()}`;
+    const newLead: LandingLeadItem = {
+      ...lead,
+      id: tempId,
+      createdAt: new Date().toISOString().split("T")[0],
+      status: "Baru",
+    };
     setLandingLeads((prev) => {
-      const newLead: LandingLeadItem = {
-        ...lead,
-        id: `lead-${Date.now()}`,
-        createdAt: new Date().toISOString().split("T")[0],
-        status: "Baru",
-      };
       const updated = [newLead, ...prev];
       save("mf_landing_leads", updated);
       return updated;
     });
+
+    fetch("/api/website/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(lead),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setLandingLeads((prev) =>
+            prev.map((l) => (l.id === tempId ? { ...l, id: created.id } : l))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving website lead to PostgreSQL:", err));
   };
 
   const updateLandingLeadStatus = (id: string, status: LandingLeadItem["status"]) => {
@@ -1997,6 +2310,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_leads", updated);
       return updated;
     });
+
+    fetch("/api/website/leads", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    }).catch((err) => console.error("Error updating website lead in PostgreSQL:", err));
   };
 
   const deleteLandingLead = (id: string) => {
@@ -2005,19 +2324,39 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_leads", filtered);
       return filtered;
     });
+
+    fetch(`/api/website/leads?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting website lead from PostgreSQL:", err));
   };
 
   // Landing Partners CRUD
   const addLandingPartner = (partner: Omit<LandingPartnerItem, "id">) => {
+    const tempId = `part-${Date.now()}`;
+    const newPartner: LandingPartnerItem = {
+      ...partner,
+      id: tempId,
+    };
     setLandingPartners((prev) => {
-      const newPartner: LandingPartnerItem = {
-        ...partner,
-        id: `part-${Date.now()}`,
-      };
       const updated = [...prev, newPartner];
       save("mf_landing_partners", updated);
       return updated;
     });
+
+    fetch("/api/website/partners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(partner),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setLandingPartners((prev) =>
+            prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving website partner to PostgreSQL:", err));
   };
 
   const updateLandingPartner = (id: string, partner: Partial<LandingPartnerItem>) => {
@@ -2026,6 +2365,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_partners", updated);
       return updated;
     });
+
+    fetch("/api/website/partners", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...partner }),
+    }).catch((err) => console.error("Error updating website partner in PostgreSQL:", err));
   };
 
   const deleteLandingPartner = (id: string) => {
@@ -2034,6 +2379,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_landing_partners", filtered);
       return filtered;
     });
+
+    fetch(`/api/website/partners?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting website partner from PostgreSQL:", err));
   };
 
   return (
