@@ -37,6 +37,7 @@ import {
 import { CURRENT_USER } from "@/lib/mock-data";
 import { useTheme } from "@/lib/theme";
 import { useAppStore } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 interface SidebarProps {
   mobileOpen?: boolean;
@@ -45,8 +46,8 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps = {}) {
   const pathname = usePathname();
-  const sessionResult = useSession();
-  const session = sessionResult?.data;
+  const currentUser = useCurrentUser();
+  const { isSuperAdmin, isBranchAdmin, isBranchAssistant, allowedBranch } = currentUser;
   const { theme, toggleTheme } = useTheme();
   const {
     students,
@@ -62,17 +63,32 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
   const [collapsed, setCollapsed] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // Automatically switch tab to WEBSITE if currently navigating /dashboard/website
+  // Automatically switch tab to WEBSITE if currently navigating /dashboard/website (Super Admin only)
   useEffect(() => {
-    if (pathname.startsWith("/dashboard/website")) {
+    if (isSuperAdmin && pathname.startsWith("/dashboard/website")) {
       setActiveTab("WEBSITE");
+    } else if (!isSuperAdmin) {
+      setActiveTab("UTAMA");
     }
-  }, [pathname]);
+  }, [pathname, isSuperAdmin]);
 
-  // Real Counts
-  const realStudentCount = students.length;
-  const realClassCount = classes.length;
-  const unpaidInvoicesCount = invoices.filter((i) => i.status === "BELUM BAYAR").length;
+  // Branch-scoped Counts
+  const scopedStudents = allowedBranch
+    ? students.filter((s) => s.branch === allowedBranch)
+    : students;
+  const scopedClasses = allowedBranch
+    ? classes.filter((c) => c.branch === allowedBranch)
+    : classes;
+  const scopedInvoices = allowedBranch
+    ? invoices.filter((inv) => {
+        const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+        return st?.branch === allowedBranch;
+      })
+    : invoices;
+
+  const realStudentCount = scopedStudents.length;
+  const realClassCount = scopedClasses.length;
+  const unpaidInvoicesCount = scopedInvoices.filter((i) => i.status === "BELUM BAYAR").length;
   const newLeadsCount = landingLeads.filter((l) => l.status === "Baru").length;
 
   const menuSections = [
@@ -148,30 +164,35 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
         },
       ],
     },
-    {
-      group: "KEUANGAN",
-      items: [
-        {
-          name: "Pembayaran SPP",
-          href: "/dashboard/spp",
-          icon: CreditCard,
-          badge: unpaidInvoicesCount > 0 ? `${unpaidInvoicesCount}` : null,
-          badgeColor: "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-extrabold",
-        },
-        {
-          name: "Riwayat SPP",
-          href: "/dashboard/riwayat-spp",
-          icon: Receipt,
-          badge: null,
-        },
-        {
-          name: "Arus Keuangan",
-          href: "/dashboard/arus-keuangan",
-          icon: Wallet,
-          badge: null,
-        },
-      ],
-    },
+    // KEUANGAN: Sembunyikan sepenuhnya untuk Asisten Cabang dan Tutor
+    ...(!isBranchAssistant && !currentUser.isTutor
+      ? [
+          {
+            group: "KEUANGAN",
+            items: [
+              {
+                name: "Pembayaran SPP",
+                href: "/dashboard/spp",
+                icon: CreditCard,
+                badge: unpaidInvoicesCount > 0 ? `${unpaidInvoicesCount}` : null,
+                badgeColor: "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-extrabold",
+              },
+              {
+                name: "Riwayat SPP",
+                href: "/dashboard/riwayat-spp",
+                icon: Receipt,
+                badge: null,
+              },
+              {
+                name: "Arus Keuangan",
+                href: "/dashboard/arus-keuangan",
+                icon: Wallet,
+                badge: null,
+              },
+            ],
+          },
+        ]
+      : []),
     {
       group: "AKUN & SISTEM",
       items: [
@@ -181,25 +202,30 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           icon: GraduationCap,
           badge: null,
         },
-        {
-          name: "Cabang & Admin",
-          href: "/dashboard/cabang",
-          icon: Building2,
-          badge: null,
-        },
-        {
-          name: "Database Cloud",
-          href: "/dashboard/database",
-          icon: Database,
-          badge: "17",
-          badgeColor: "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-sky-300 font-bold",
-        },
-        {
-          name: "Pengaturan",
-          href: "/dashboard/pengaturan",
-          icon: Settings,
-          badge: null,
-        },
+        // Cabang, Database, dan Pengaturan: Hanya bisa diakses oleh Super Admin
+        ...(isSuperAdmin
+          ? [
+              {
+                name: "Cabang & Admin",
+                href: "/dashboard/cabang",
+                icon: Building2,
+                badge: null,
+              },
+              {
+                name: "Database Cloud",
+                href: "/dashboard/database",
+                icon: Database,
+                badge: "17",
+                badgeColor: "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-sky-300 font-bold",
+              },
+              {
+                name: "Pengaturan",
+                href: "/dashboard/pengaturan",
+                icon: Settings,
+                badge: null,
+              },
+            ]
+          : []),
       ],
     },
   ];
@@ -265,16 +291,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
     },
   ];
 
-  const currentSections = activeTab === "UTAMA" ? menuSections : websiteSections;
+  // Non Super Admin can NEVER view website CMS sections
+  const currentSections = !isSuperAdmin || activeTab === "UTAMA" ? menuSections : websiteSections;
 
-  // Active user data from session or fallback
-  const userName = session?.user?.name || CURRENT_USER.name;
-  const userEmail = session?.user?.email || CURRENT_USER.email;
-  const userRole = (session?.user as any)?.role || CURRENT_USER.role;
-  const userPhoto =
-    session?.user?.image ||
-    CURRENT_USER.avatar ||
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80";
+  // Active user data from centralized hook
+  const userName = currentUser.name;
+  const userEmail = currentUser.email;
+  const userRole = currentUser.role;
+  const userPhoto = currentUser.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80";
 
   return (
     <aside
@@ -358,8 +382,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           )}
         </div>
 
-        {/* UTAMA vs WEBSITE Tab Switcher */}
-        {!collapsed && (
+        {/* UTAMA vs WEBSITE Tab Switcher - Hanya untuk Super Admin */}
+        {!collapsed && isSuperAdmin && (
           <div className="bg-blue-50/70 dark:bg-[#0f1a36] p-1 rounded-xl grid grid-cols-2 text-xs font-bold text-slate-600 dark:text-slate-400 border border-blue-100/80 dark:border-[#1d2d5a]">
             <button
               type="button"
@@ -460,8 +484,10 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                   {userName}
                 </div>
                 <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-sky-400 font-bold truncate">
-                  <span>👑</span>
-                  <span className="truncate">{userRole}</span>
+                  <span>{isSuperAdmin ? "👑" : "🏢"}</span>
+                  <span className="truncate">
+                    {userRole} {allowedBranch ? `(${allowedBranch})` : "(Pusat)"}
+                  </span>
                 </div>
               </div>
             )}

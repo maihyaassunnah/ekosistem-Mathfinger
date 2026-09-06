@@ -17,9 +17,11 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, CashMutationItem } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function RiwayatSppPage() {
   const { students, invoices, cashMutations } = useAppStore();
+  const { allowedBranch } = useCurrentUser();
 
   const [activeSubTab, setActiveSubTab] = useState<"buku_besar" | "leger">(
     "buku_besar"
@@ -30,9 +32,39 @@ export default function RiwayatSppPage() {
   const [selectedStudent, setSelectedStudent] = useState("ALL");
   const [selectedMethod, setSelectedMethod] = useState("ALL");
 
+  // Scoped Data by Branch
+  const scopedStudents = useMemo(() => {
+    if (!allowedBranch) return students;
+    return students.filter((s) => s.branch === allowedBranch);
+  }, [students, allowedBranch]);
+
+  const scopedInvoices = useMemo(() => {
+    if (!allowedBranch) return invoices;
+    return invoices.filter((i) => {
+      const st = students.find(
+        (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
+      );
+      return st?.branch === allowedBranch;
+    });
+  }, [invoices, students, allowedBranch]);
+
+  const scopedMutations = useMemo(() => {
+    if (!allowedBranch) return cashMutations;
+    return cashMutations.filter((m) => {
+      const st = students.find((s) => s.name.toLowerCase() === m.studentName.toLowerCase());
+      if (st) return st.branch === allowedBranch;
+      const inv = invoices.find((i) => i.invoiceNo.toLowerCase() === m.invoiceNo.toLowerCase());
+      if (inv) {
+        const invSt = students.find((s) => s.id === inv.studentId || s.name.toLowerCase() === inv.studentName.toLowerCase());
+        return invSt?.branch === allowedBranch;
+      }
+      return false;
+    });
+  }, [cashMutations, students, invoices, allowedBranch]);
+
   // Filtered mutations
   const filteredMutations = useMemo(() => {
-    return cashMutations.filter((m) => {
+    return scopedMutations.filter((m) => {
       const matchSearch =
         m.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,25 +79,25 @@ export default function RiwayatSppPage() {
 
       return matchSearch && matchStudent && matchMethod;
     });
-  }, [cashMutations, searchQuery, selectedStudent, selectedMethod]);
+  }, [scopedMutations, searchQuery, selectedStudent, selectedMethod]);
 
   // Dynamic Financial Calculations
   const totalTagihan = useMemo(() => {
-    return invoices.reduce((acc, curr) => acc + curr.amount, 0);
-  }, [invoices]);
+    return scopedInvoices.reduce((acc, curr) => acc + curr.amount, 0);
+  }, [scopedInvoices]);
 
   const totalRealisasi = useMemo(() => {
-    const paidSum = invoices
+    const paidSum = scopedInvoices
       .filter((i) => i.status === "LUNAS")
       .reduce((acc, curr) => acc + curr.amount, 0);
-    return paidSum > 0 ? paidSum : cashMutations.reduce((acc, curr) => acc + curr.amount, 0);
-  }, [invoices, cashMutations]);
+    return paidSum > 0 ? paidSum : scopedMutations.reduce((acc, curr) => acc + curr.amount, 0);
+  }, [scopedInvoices, scopedMutations]);
 
   const totalOutstanding = useMemo(() => {
-    return invoices
+    return scopedInvoices
       .filter((i) => i.status === "BELUM BAYAR")
       .reduce((acc, curr) => acc + curr.amount, 0);
-  }, [invoices]);
+  }, [scopedInvoices]);
 
   const tingkatKolektibilitas = useMemo(() => {
     if (totalTagihan <= 0) return "0.0";
@@ -240,7 +272,7 @@ export default function RiwayatSppPage() {
                 className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="ALL">Semua Siswa</option>
-                {students.map((s) => (
+                {scopedStudents.map((s) => (
                   <option key={s.id} value={s.name}>
                     {s.name}
                   </option>
@@ -365,7 +397,7 @@ export default function RiwayatSppPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {students.slice(0, 10).map((s, idx) => (
+                {scopedStudents.slice(0, 10).map((s, idx) => (
                   <tr key={s.id} className="hover:bg-slate-50/50">
                     <td className="py-3 px-3 font-bold text-slate-900 dark:text-slate-100">
                       {s.name}

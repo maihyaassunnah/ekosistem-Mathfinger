@@ -31,6 +31,7 @@ import {
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, GradeItem } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function InputNilaiPage() {
   const {
@@ -46,6 +47,17 @@ export default function InputNilaiPage() {
     saveStudentKeaktifan,
     deleteBehavior,
   } = useAppStore();
+
+  const currentUser = useCurrentUser();
+  const { isSuperAdmin, allowedBranch } = currentUser;
+
+  const scopedStudents = useMemo(() => {
+    return allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+  }, [students, allowedBranch]);
+
+  const scopedClasses = useMemo(() => {
+    return allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+  }, [classes, allowedBranch]);
 
   const [activeSubTab, setActiveSubTab] = useState<
     "input" | "keaktifan" | "leger"
@@ -69,7 +81,7 @@ export default function InputNilaiPage() {
       string,
       { isJoined: boolean; score: number; note: string }
     > = {};
-    students.forEach((s) => {
+    (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students).forEach((s) => {
       initial[s.id] = {
         isJoined: true,
         score: 0,
@@ -166,7 +178,7 @@ export default function InputNilaiPage() {
   };
 
   const filteredKeaktifanStudents = useMemo(() => {
-    return students
+    return scopedStudents
       .filter((s) => {
         const matchesSearch =
           s.name.toLowerCase().includes(keaktifanSearchQuery.toLowerCase()) ||
@@ -176,7 +188,7 @@ export default function InputNilaiPage() {
         return matchesSearch && matchesClass;
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [students, keaktifanSearchQuery, keaktifanClassFilter]);
+  }, [scopedStudents, keaktifanSearchQuery, keaktifanClassFilter]);
 
   // -------------------------------------------------------------
   // TAB 3: LEGER NILAI MATRIKS FULL CRUD
@@ -243,7 +255,7 @@ export default function InputNilaiPage() {
 
   // Filtered students for Leger Matrix
   const filteredLegerStudents = useMemo(() => {
-    return students
+    return scopedStudents
       .filter((s) => {
         const matchesSearch =
           s.name.toLowerCase().includes(legerSearchQuery.toLowerCase()) ||
@@ -253,7 +265,7 @@ export default function InputNilaiPage() {
         return matchesSearch && matchesClass;
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [students, legerClassFilter, legerSearchQuery]);
+  }, [scopedStudents, legerSearchQuery, legerClassFilter]);
 
   // Handle Add Session
   const handleCreateSession = async () => {
@@ -263,8 +275,8 @@ export default function InputNilaiPage() {
     }
     const targetStudents =
       newSessionForm.targetClass === "ALL"
-        ? students
-        : students.filter((s) => s.className === newSessionForm.targetClass);
+        ? scopedStudents
+        : scopedStudents.filter((s) => s.className === newSessionForm.targetClass);
 
     const newGradesToCreate: GradeItem[] = targetStudents.map((s) => ({
       id: `gr-${s.id}-${newSessionForm.examDate}-${Date.now().toString(36)}`,
@@ -426,7 +438,7 @@ export default function InputNilaiPage() {
   // TAB 1: INPUT NILAI HANDLERS
   // -------------------------------------------------------------
   const filteredStudents = useMemo(() => {
-    return students
+    return scopedStudents
       .filter((s) => {
         const matchesSearch =
           s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -442,7 +454,7 @@ export default function InputNilaiPage() {
         if (sortOrder === "A-Z") return a.name.localeCompare(b.name);
         return b.name.localeCompare(a.name);
       });
-  }, [students, searchQuery, selectedClass, selectedLetter, sortOrder]);
+  }, [scopedStudents, searchQuery, selectedClass, selectedLetter, sortOrder]);
 
   const handleToggleJoined = (studentId: string) => {
     setEntries((prev) => ({
@@ -679,7 +691,7 @@ export default function InputNilaiPage() {
                   className="w-full sm:w-48 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="ALL">Semua Kelas</option>
-                  {classes.map((c) => (
+                  {scopedClasses.map((c) => (
                     <option key={c.id} value={c.name}>
                       {c.name} ({c.branch})
                     </option>
@@ -920,8 +932,8 @@ export default function InputNilaiPage() {
               onChange={(e) => setKeaktifanClassFilter(e.target.value)}
               className="w-full sm:w-48 px-3 py-1.5 bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
             >
-              <option value="ALL">Semua Kelas ({students.length} Siswa)</option>
-              {classes.map((c) => (
+              <option value="ALL">Semua Kelas ({scopedStudents.length} Siswa)</option>
+              {scopedClasses.map((c) => (
                 <option key={c.id} value={c.name}>
                   {c.name} ({c.branch})
                 </option>
@@ -1228,8 +1240,8 @@ export default function InputNilaiPage() {
                 onChange={(e) => setLegerClassFilter(e.target.value)}
                 className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-emerald-500"
               >
-                <option value="ALL">Semua Kelas ({students.length})</option>
-                {classes.map((c) => (
+                <option value="ALL">Semua Kelas ({scopedStudents.length})</option>
+                {scopedClasses.map((c) => (
                   <option key={c.id} value={c.name}>
                     {c.name}
                   </option>

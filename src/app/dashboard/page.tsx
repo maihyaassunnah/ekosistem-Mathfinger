@@ -46,14 +46,22 @@ import {
 } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/store";
 import { useTheme } from "@/lib/theme";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function DashboardPage() {
   const { students, branches, invoices, branchAdmins, classes } = useAppStore();
   const { theme, toggleTheme } = useTheme();
-  const [selectedBranch, setSelectedBranch] = useState<"ALL" | "Singkut" | "Bangko">("ALL");
+  const currentUser = useCurrentUser();
+  const { isSuperAdmin, allowedBranch } = currentUser;
+
+  const [selectedBranch, setSelectedBranch] = useState<"ALL" | "Singkut" | "Bangko">(
+    allowedBranch || "ALL"
+  );
 
   // Mobile/Tablet specific state
-  const [mobileBranch, setMobileBranch] = useState<"Singkut" | "Bangko">("Singkut");
+  const [mobileBranch, setMobileBranch] = useState<"Singkut" | "Bangko">(
+    allowedBranch || "Singkut"
+  );
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showQuickServices, setShowQuickServices] = useState(true);
@@ -61,6 +69,14 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSyncToast, setShowSyncToast] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
+
+  // Sync state if allowedBranch is locked
+  useEffect(() => {
+    if (allowedBranch) {
+      setSelectedBranch(allowedBranch);
+      setMobileBranch(allowedBranch);
+    }
+  }, [allowedBranch]);
 
   // Auto rotate banner carousel
   useEffect(() => {
@@ -70,17 +86,37 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const totalStudentsCount = students.length;
-  const activeStudentsCount =
+  const scopedStudents =
     selectedBranch === "ALL"
-      ? students.length
-      : students.filter((s) => s.branch === selectedBranch).length;
+      ? students
+      : students.filter((s) => s.branch === selectedBranch);
 
-  const paidInvoices = invoices.filter((i) => i.status === "LUNAS");
-  const unpaidInvoices = invoices.filter((i) => i.status === "BELUM BAYAR");
+  const scopedClasses =
+    selectedBranch === "ALL"
+      ? classes
+      : classes.filter((c) => c.branch === selectedBranch);
+
+  const scopedInvoices =
+    selectedBranch === "ALL"
+      ? invoices
+      : invoices.filter((inv) => {
+          const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+          return st?.branch === selectedBranch;
+        });
+
+  const totalStudentsCount = scopedStudents.length;
+  const activeStudentsCount = scopedStudents.length;
+
+  const paidInvoices = scopedInvoices.filter((i) => i.status === "LUNAS");
+  const unpaidInvoices = scopedInvoices.filter((i) => i.status === "BELUM BAYAR");
   const totalSppCollected = paidInvoices.reduce((acc, curr) => acc + curr.amount, 0);
   const totalSppPending = unpaidInvoices.reduce((acc, curr) => acc + curr.amount, 0);
-  const sppRate = invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 100;
+  const sppRate = scopedInvoices.length > 0 ? Math.round((paidInvoices.length / scopedInvoices.length) * 100) : 100;
+
+  const scopedAdmins =
+    selectedBranch === "ALL"
+      ? branchAdmins
+      : branchAdmins.filter((a) => a.branchName === selectedBranch);
 
   const filteredStats = {
     activeStudents: activeStudentsCount,
@@ -88,8 +124,8 @@ export default function DashboardPage() {
     sppCollected: totalSppCollected,
     sppPending: totalSppPending,
     sppPercentage: sppRate,
-    branchCount: branches.length,
-    adminCount: branchAdmins.length,
+    branchCount: selectedBranch === "ALL" ? branches.length : 1,
+    adminCount: scopedAdmins.length,
   };
 
   const bannerSlides = [
@@ -287,29 +323,50 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between pt-1">
           {/* Branch Pill with Pin Icon */}
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowBranchPicker(!showBranchPicker)}
-              className="flex items-center gap-2.5 text-left group cursor-pointer"
-            >
-              <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                <MapPin className="w-4 h-4 fill-white text-white" />
-              </div>
-              <div>
-                <div className="font-black text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                  <span>Cabang {mobileBranch}</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-blue-500" />
+            {isSuperAdmin ? (
+              <button
+                type="button"
+                onClick={() => setShowBranchPicker(!showBranchPicker)}
+                className="flex items-center gap-2.5 text-left group cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <MapPin className="w-4 h-4 fill-white text-white" />
                 </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
-                  {mobileBranch === "Singkut"
-                    ? "Depan Ponpes Ihya' As-Sunnah..."
-                    : "Jl. Jenderal Sudirman No. 45..."}
+                <div>
+                  <div className="font-black text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                    <span>Cabang {mobileBranch}</span>
+                    <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-blue-500" />
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
+                    {mobileBranch === "Singkut"
+                      ? "Depan Ponpes Ihya' As-Sunnah..."
+                      : "Jl. Jenderal Sudirman No. 45..."}
+                  </div>
+                </div>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                  <MapPin className="w-4 h-4 fill-white text-white" />
+                </div>
+                <div>
+                  <div className="font-black text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                    <span>Cabang {allowedBranch}</span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-sky-300">
+                      Terkunci
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
+                    {allowedBranch === "Singkut"
+                      ? "Depan Ponpes Ihya' As-Sunnah..."
+                      : "Jl. Jenderal Sudirman No. 45..."}
+                  </div>
                 </div>
               </div>
-            </button>
+            )}
 
-            {/* Branch Switcher Dropdown Popover */}
-            {showBranchPicker && (
+            {/* Branch Switcher Dropdown Popover (Super Admin only) */}
+            {isSuperAdmin && showBranchPicker && (
               <div className="absolute left-0 top-full mt-2 w-56 p-2 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl z-50 space-y-1 animate-in fade-in">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
                   Pilih Cabang Aktif
@@ -639,52 +696,64 @@ export default function DashboardPage() {
                 <span>FOKUS TAMPILAN DATA CABANG:</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedBranch("ALL")}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    selectedBranch === "ALL"
-                      ? "bg-blue-600 text-white shadow-md scale-105"
-                      : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
-                  }`}
-                >
-                  <Building2 className="w-3.5 h-3.5" />
-                  Semua Cabang (Pusat)
-                </button>
+                {isSuperAdmin ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBranch("ALL")}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        selectedBranch === "ALL"
+                          ? "bg-blue-600 text-white shadow-md scale-105"
+                          : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
+                      }`}
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      Semua Cabang (Pusat)
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => setSelectedBranch("Singkut")}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    selectedBranch === "Singkut"
-                      ? "bg-blue-600 text-white shadow-md scale-105"
-                      : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
-                  }`}
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  Singkut
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBranch("Singkut")}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        selectedBranch === "Singkut"
+                          ? "bg-blue-600 text-white shadow-md scale-105"
+                          : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
+                      }`}
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      Singkut
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => setSelectedBranch("Bangko")}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    selectedBranch === "Bangko"
-                      ? "bg-blue-600 text-white shadow-md scale-105"
-                      : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
-                  }`}
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  Bangko
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBranch("Bangko")}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        selectedBranch === "Bangko"
+                          ? "bg-blue-600 text-white shadow-md scale-105"
+                          : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
+                      }`}
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      Bangko
+                    </button>
 
-                <Link
-                  href="/dashboard/cabang"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Kelola Cabang
-                </Link>
+                    <Link
+                      href="/dashboard/cabang"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Kelola Cabang
+                    </Link>
+                  </>
+                ) : (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold bg-blue-600 text-white shadow-md shadow-blue-500/25">
+                    <MapPin className="w-4 h-4 text-white" />
+                    <span>Cabang {allowedBranch}</span>
+                    <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] tracking-wide font-black">
+                      Terkunci
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -907,7 +976,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Hub Manajemen Seluruh Cabang Bimbingan */}
+      {/* Hub Manajemen Cabang Bimbingan */}
       <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#1d2d5a]">
           <div className="flex items-center gap-3">
@@ -916,34 +985,40 @@ export default function DashboardPage() {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                Hub Manajemen Seluruh Cabang Bimbingan
+                {isSuperAdmin ? "Hub Manajemen Seluruh Cabang Bimbingan" : `Informasi Operasional Cabang ${allowedBranch}`}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Pilih cabang untuk memfokuskan data atau mengelola operasional cabang secara spesifik
+                {isSuperAdmin
+                  ? "Pilih cabang untuk memfokuskan data atau mengelola operasional cabang secara spesifik"
+                  : `Data dan status operasional resmi Cabang ${allowedBranch}`}
               </p>
             </div>
           </div>
 
-          <Link
-            href="/dashboard/cabang"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs"
-          >
-            <Plus className="w-4 h-4" />
-            Tambah Cabang Baru
-          </Link>
+          {isSuperAdmin && (
+            <Link
+              href="/dashboard/cabang"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Cabang Baru
+            </Link>
+          )}
         </div>
 
         {/* Branch Cards List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {branches.map((b) => {
-            const branchStudentCount = students.filter((s) => s.branch === b.name).length;
-            const branchInvoices = invoices.filter((i) => {
-              const student = students.find((s) => s.name === i.studentName);
-              return student?.branch === b.name;
-            });
-            const branchRevenue = branchInvoices
-              .filter((i) => i.status === "LUNAS")
-              .reduce((acc, curr) => acc + curr.amount, 0);
+        <div className={`grid grid-cols-1 ${isSuperAdmin ? "md:grid-cols-2" : ""} gap-4`}>
+          {branches
+            .filter((b) => (isSuperAdmin ? true : b.name === allowedBranch))
+            .map((b) => {
+              const branchStudentCount = students.filter((s) => s.branch === b.name).length;
+              const branchInvoices = invoices.filter((i) => {
+                const student = students.find((s) => s.name === i.studentName);
+                return student?.branch === b.name;
+              });
+              const branchRevenue = branchInvoices
+                .filter((i) => i.status === "LUNAS")
+                .reduce((acc, curr) => acc + curr.amount, 0);
 
             return (
               <div

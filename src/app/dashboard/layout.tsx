@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { AppStoreProvider } from "@/lib/store";
-import { Menu, BookOpen, Sun, Moon, Home, Users, CheckSquare, Award } from "lucide-react";
+import { useCurrentUser } from "@/lib/useCurrentUser";
+import { Menu, BookOpen, Sun, Moon, Home, Users, CheckSquare, Award, ShieldAlert, ArrowLeft } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
 export default function DashboardLayout({
@@ -16,6 +17,8 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+  const currentUser = useCurrentUser();
+  const hasAccess = currentUser.canAccess(pathname);
   const isDashboardHome = pathname === "/dashboard";
 
   return (
@@ -92,7 +95,34 @@ export default function DashboardLayout({
 
         {/* Main Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pb-20 lg:pb-0">
-          {children}
+          {hasAccess ? (
+            children
+          ) : (
+            <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 text-center animate-in fade-in">
+              <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-600 flex items-center justify-center mb-4 shadow-lg">
+                <ShieldAlert className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
+                Akses Menu Dibatasi
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
+                Akun Anda dengan peran{" "}
+                <strong className="text-blue-600 dark:text-sky-400 font-bold">
+                  {currentUser.role} (
+                  {currentUser.allowedBranch ? `Cabang ${currentUser.allowedBranch}` : "Pusat"}
+                  )
+                </strong>{" "}
+                tidak memiliki izin untuk mengakses halaman ini.
+              </p>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Kembali ke Dashboard</span>
+              </Link>
+            </div>
+          )}
         </main>
 
         {/* Mobile & Tablet Bottom Navigation Dock (Persistent App Bar) */}

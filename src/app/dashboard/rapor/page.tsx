@@ -15,26 +15,36 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function RaporPage() {
   const { students, classes, attendances, grades, journals, behaviors } =
     useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
+
+  const scopedStudents = useMemo(() => {
+    return allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+  }, [students, allowedBranch]);
+
+  const scopedClasses = useMemo(() => {
+    return allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+  }, [classes, allowedBranch]);
 
   const [selectedClass, setSelectedClass] = useState("ALL");
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
-    students[0]?.id || "s-1"
+    scopedStudents[0]?.id || "s-1"
   );
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   // Selected student
   const activeStudent =
-    students.find((s) => s.id === selectedStudentId) || students[0];
+    scopedStudents.find((s) => s.id === selectedStudentId) || scopedStudents[0];
 
   // Filter student list by class
   const classFilteredStudents = useMemo(() => {
-    if (selectedClass === "ALL") return students;
-    return students.filter((s) => s.className === selectedClass);
-  }, [students, selectedClass]);
+    if (selectedClass === "ALL") return scopedStudents;
+    return scopedStudents.filter((s) => s.className === selectedClass);
+  }, [scopedStudents, selectedClass]);
 
   // Derived metrics for active student (sorted by examDate descending)
   const studentGrades = useMemo(() => {
@@ -215,7 +225,7 @@ export default function RaporPage() {
             value={selectedClass}
             onChange={(e) => {
               setSelectedClass(e.target.value);
-              const firstInClass = students.find(
+              const firstInClass = scopedStudents.find(
                 (s) => e.target.value === "ALL" || s.className === e.target.value
               );
               if (firstInClass) setSelectedStudentId(firstInClass.id);
@@ -223,9 +233,9 @@ export default function RaporPage() {
             className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="ALL">Semua Kelas</option>
-            {classes.map((c) => (
+            {scopedClasses.map((c) => (
               <option key={c.id} value={c.name}>
-                {c.name}
+                {c.name} ({c.branch})
               </option>
             ))}
           </select>

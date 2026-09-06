@@ -17,10 +17,12 @@ import {
   Sparkles,
   Share2,
   CheckCircle2,
+  MapPin,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 function StudentQrImage({
   student,
@@ -79,12 +81,19 @@ function StudentQrImage({
 
 export default function KartuQrPage() {
   const { students, classes } = useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [search, setSearch] = useState("");
-  const [branchFilter, setBranchFilter] = useState("ALL");
+  const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
   const [classFilter, setClassFilter] = useState("ALL");
   const [previewStudent, setPreviewStudent] = useState<StudentItem | null>(null);
   const [previewQrUrl, setPreviewQrUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (allowedBranch) {
+      setBranchFilter(allowedBranch);
+    }
+  }, [allowedBranch]);
 
   const filtered = students.filter((s) => {
     const matchSearch =
@@ -215,15 +224,22 @@ export default function KartuQrPage() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select
-            value={branchFilter}
-            onChange={(e) => setBranchFilter(e.target.value)}
-            className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
-          >
-            <option value="ALL">Semua Cabang</option>
-            <option value="Singkut">Cabang Singkut</option>
-            <option value="Bangko">Cabang Bangko</option>
-          </select>
+          {isSuperAdmin ? (
+            <select
+              value={branchFilter}
+              onChange={(e) => setBranchFilter(e.target.value)}
+              className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
+            >
+              <option value="ALL">Semua Cabang</option>
+              <option value="Singkut">Cabang Singkut</option>
+              <option value="Bangko">Cabang Bangko</option>
+            </select>
+          ) : (
+            <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 rounded-xl text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1.5 shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-blue-600" />
+              <span>Cabang {allowedBranch}</span>
+            </div>
+          )}
 
           <select
             value={classFilter}
@@ -231,12 +247,13 @@ export default function KartuQrPage() {
             className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
           >
             <option value="ALL">Semua Kelas</option>
-            <option value="Kelas A">Kelas A</option>
-            <option value="Kelas B">Kelas B</option>
-            <option value="CLASS A1">CLASS A1</option>
-            <option value="CLASS B">CLASS B</option>
-            <option value="CLASS C">CLASS C</option>
-            <option value="Kelas A2">Kelas A2</option>
+            {classes
+              .filter((c) => (branchFilter === "ALL" ? true : c.branch === branchFilter))
+              .map((c) => (
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
           </select>
         </div>
       </div>

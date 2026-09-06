@@ -23,10 +23,25 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, InvoiceItem } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function SppPage() {
   const { students, invoices, addInvoice, updateInvoiceStatus, deleteInvoice } =
     useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
+
+  const scopedStudents = useMemo(() => {
+    return allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+  }, [students, allowedBranch]);
+
+  const scopedInvoices = useMemo(() => {
+    return allowedBranch
+      ? invoices.filter((inv) => {
+          const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+          return st?.branch === allowedBranch;
+        })
+      : invoices;
+  }, [invoices, students, allowedBranch]);
 
   const [activeSubTab, setActiveSubTab] = useState<
     "pendaftaran" | "spp" | "buku" | "pengingat"
@@ -60,7 +75,7 @@ export default function SppPage() {
 
   // Filtered invoices
   const filteredInvoices = useMemo(() => {
-    return invoices.filter((inv) => {
+    return scopedInvoices.filter((inv) => {
       const matchSearch =
         inv.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
         inv.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,13 +90,13 @@ export default function SppPage() {
 
       return matchSearch && matchStatus;
     });
-  }, [invoices, searchQuery, statusFilter]);
+  }, [scopedInvoices, searchQuery, statusFilter]);
 
-  const unpaidCount = invoices.filter((i) => i.status === "BELUM BAYAR").length;
+  const unpaidCount = scopedInvoices.filter((i) => i.status === "BELUM BAYAR").length;
 
   const handleOpenAdd = () => {
     setForm({
-      studentId: students[0]?.id || "",
+      studentId: scopedStudents[0]?.id || "",
       period: "September 2026",
       dueDate: "2026-09-10",
       amount: 100000,
@@ -482,7 +497,7 @@ export default function SppPage() {
                   }
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
-                  {students.map((s) => (
+                  {scopedStudents.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name} ({s.className} - {s.branch})
                     </option>

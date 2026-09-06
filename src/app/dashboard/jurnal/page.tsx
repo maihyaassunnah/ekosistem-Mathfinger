@@ -13,20 +13,25 @@ import {
   X,
 } from "lucide-react";
 import { useAppStore, JournalItem } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function JurnalGuruPage() {
   const { journals, addJournal, deleteJournal, classes, students } = useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("ALL");
   const [studentFilter, setStudentFilter] = useState("ALL");
   const [isAddOpen, setIsAddOpen] = useState(false);
 
+  const scopedStudents = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+  const scopedClasses = allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+
   // Form state
   const [form, setForm] = useState({
-    studentName: "Aishwa Rahma Annida",
-    className: "Kelas A",
-    branch: "Singkut" as "Singkut" | "Bangko",
+    studentName: scopedStudents[0]?.name || "Aishwa Rahma Annida",
+    className: scopedClasses[0]?.name || "Kelas A",
+    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
     topic: "Pengurangan (jari turun)",
     content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
     teacher: "Febrianti Dewi, S.Pd",
@@ -34,6 +39,7 @@ export default function JurnalGuruPage() {
   });
 
   const filteredJournals = journals.filter((j) => {
+    const matchBranch = allowedBranch ? j.branch === allowedBranch : true;
     const matchSearch =
       j.topic.toLowerCase().includes(search.toLowerCase()) ||
       j.content.toLowerCase().includes(search.toLowerCase()) ||
@@ -42,7 +48,7 @@ export default function JurnalGuruPage() {
     const matchClass = classFilter === "ALL" ? true : j.className === classFilter;
     const matchStudent = studentFilter === "ALL" ? true : j.studentName === studentFilter;
 
-    return matchSearch && matchClass && matchStudent;
+    return matchBranch && matchSearch && matchClass && matchStudent;
   });
 
   const handleSubmitAdd = (e: React.FormEvent) => {
@@ -103,11 +109,11 @@ export default function JurnalGuruPage() {
             className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
           >
             <option value="ALL">Semua Kelas</option>
-            <option value="Kelas A">Kelas A</option>
-            <option value="Kelas B">Kelas B</option>
-            <option value="CLASS A1">CLASS A1</option>
-            <option value="CLASS B">CLASS B</option>
-            <option value="CLASS C">CLASS C</option>
+            {scopedClasses.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.name}
+              </option>
+            ))}
           </select>
 
           <select
@@ -116,7 +122,7 @@ export default function JurnalGuruPage() {
             className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white max-w-[180px]"
           >
             <option value="ALL">Semua Siswa</option>
-            {students.slice(0, 8).map((s) => (
+            {scopedStudents.map((s) => (
               <option key={s.id} value={s.name}>
                 {s.name}
               </option>

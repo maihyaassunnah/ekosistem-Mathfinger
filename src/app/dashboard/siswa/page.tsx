@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -16,20 +16,29 @@ import {
   Check,
   X,
   Share2,
+  MapPin,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function SiswaPage() {
-  const { students, addStudent, updateStudent, deleteStudent } = useAppStore();
+  const { students, addStudent, updateStudent, deleteStudent, classes } = useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
-  // Filters state (Matching Image 2)
+  // Filters state
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"A-Z" | "Z-A">("A-Z");
-  const [branchFilter, setBranchFilter] = useState("ALL");
+  const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
   const [classFilter, setClassFilter] = useState("ALL");
   const [genderFilter, setGenderFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
+
+  useEffect(() => {
+    if (allowedBranch) {
+      setBranchFilter(allowedBranch);
+    }
+  }, [allowedBranch]);
 
   // Selection states
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -82,9 +91,9 @@ export default function SiswaPage() {
       studentCode: `${Math.floor(10000 + Math.random() * 90000)}`,
       gender: "P",
       codeLabel: "8P",
-      branch: "Singkut",
+      branch: (allowedBranch || "Singkut") as any,
       className: "Kelas A",
-      birthPlace: "Singkut",
+      birthPlace: allowedBranch || "Singkut",
       birthDate: "2018-01-01",
       address: "Jl. Poros",
       gradeLevel: "Ket: Kelas 3",
@@ -198,16 +207,23 @@ export default function SiswaPage() {
           <option value="Z-A">Nama: Z - A</option>
         </select>
 
-        {/* Cabang */}
-        <select
-          value={branchFilter}
-          onChange={(e) => setBranchFilter(e.target.value)}
-          className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
-        >
-          <option value="ALL">Semua Cabang</option>
-          <option value="Singkut">Singkut</option>
-          <option value="Bangko">Bangko</option>
-        </select>
+        {/* Cabang Filter */}
+        {isSuperAdmin ? (
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+          >
+            <option value="ALL">Semua Cabang</option>
+            <option value="Singkut">Singkut</option>
+            <option value="Bangko">Bangko</option>
+          </select>
+        ) : (
+          <div className="px-3 py-2 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 rounded-xl text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1.5 shrink-0">
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <span>Cabang {allowedBranch}</span>
+          </div>
+        )}
 
         {/* Kelas */}
         <select
@@ -481,8 +497,9 @@ export default function SiswaPage() {
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Cabang</label>
                   <select
                     value={form.branch}
+                    disabled={!isSuperAdmin}
                     onChange={(e) => setForm({ ...form, branch: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>

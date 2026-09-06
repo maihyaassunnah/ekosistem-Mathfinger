@@ -21,6 +21,8 @@ export async function GET() {
           ? "Super Admin"
           : u.role === "BRANCH_ADMIN"
           ? "Admin Cabang"
+          : u.role === "BRANCH_ASSISTANT"
+          ? "Asisten Cabang"
           : "Tutor",
       status: u.status === "ACTIVE" ? "Aktif" : "Nonaktif",
       createdAt: u.createdAt.toISOString().split("T")[0],
@@ -71,9 +73,11 @@ export async function POST(req: Request) {
     }
 
     // Map role enum
-    let dbRole: "SUPER_ADMIN" | "BRANCH_ADMIN" | "TUTOR" = "BRANCH_ADMIN";
+    let dbRole: "SUPER_ADMIN" | "BRANCH_ADMIN" | "BRANCH_ASSISTANT" | "TUTOR" = "BRANCH_ADMIN";
     if (role === "Super Admin") dbRole = "SUPER_ADMIN";
-    else if (role === "Tutor" || role === "Asisten Cabang") dbRole = "TUTOR";
+    else if (role === "Asisten Cabang") dbRole = "BRANCH_ASSISTANT";
+    else if (role === "Tutor") dbRole = "TUTOR";
+    else dbRole = "BRANCH_ADMIN";
 
     // Hash password or default
     const plainPassword = password || "password123";
@@ -102,6 +106,8 @@ export async function POST(req: Request) {
             ? "Super Admin"
             : created.role === "BRANCH_ADMIN"
             ? "Admin Cabang"
+            : created.role === "BRANCH_ASSISTANT"
+            ? "Asisten Cabang"
             : "Tutor",
         status: created.status === "ACTIVE" ? "Aktif" : "Nonaktif",
         createdAt: created.createdAt.toISOString().split("T")[0],
@@ -136,11 +142,12 @@ export async function PUT(req: Request) {
       }
     }
 
-    let dbRole = undefined;
+    let dbRole: "SUPER_ADMIN" | "BRANCH_ADMIN" | "BRANCH_ASSISTANT" | "TUTOR" | undefined = undefined;
     if (role) {
-      if (role === "Super Admin") dbRole = "SUPER_ADMIN" as const;
-      else if (role === "Tutor" || role === "Asisten Cabang") dbRole = "TUTOR" as const;
-      else dbRole = "BRANCH_ADMIN" as const;
+      if (role === "Super Admin") dbRole = "SUPER_ADMIN";
+      else if (role === "Asisten Cabang") dbRole = "BRANCH_ASSISTANT";
+      else if (role === "Tutor") dbRole = "TUTOR";
+      else dbRole = "BRANCH_ADMIN";
     }
 
     let passwordHash = undefined;

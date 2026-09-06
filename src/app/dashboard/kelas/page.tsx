@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layers,
   Users,
@@ -16,22 +16,31 @@ import {
   BookOpen,
   X,
   Check,
+  MapPin,
 } from "lucide-react";
 import { useAppStore, ClassItem } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function KelasPage() {
   const { classes, addClass, updateClass, deleteClass, students } = useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [search, setSearch] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState("ALL");
+  const [selectedBranch, setSelectedBranch] = useState(allowedBranch || "ALL");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
   const [viewingStudentsClass, setViewingStudentsClass] = useState<ClassItem | null>(null);
 
+  useEffect(() => {
+    if (allowedBranch) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [allowedBranch]);
+
   // Form states for Add/Edit
   const [formData, setFormData] = useState({
     name: "",
-    branch: "Singkut" as "Singkut" | "Bangko",
+    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
     days: "Sabtu & Ahad",
     time: "14:00 - 15:30",
     teacher: "Febrianti Dewi, S.Pd",
@@ -40,10 +49,15 @@ export default function KelasPage() {
     maxCapacity: 12,
   });
 
-  // Calculate top stats
-  const totalClasses = classes.length;
-  const totalEnrolled = classes.reduce((sum, c) => sum + c.enrolledCount, 0);
-  const totalCapacity = classes.reduce((sum, c) => sum + c.maxCapacity, 0);
+  // Calculate top stats based on active branch
+  const scopedClassesForStats =
+    selectedBranch === "ALL"
+      ? classes
+      : classes.filter((c) => c.branch === selectedBranch);
+
+  const totalClasses = scopedClassesForStats.length;
+  const totalEnrolled = scopedClassesForStats.reduce((sum, c) => sum + c.enrolledCount, 0);
+  const totalCapacity = scopedClassesForStats.reduce((sum, c) => sum + c.maxCapacity, 0);
 
   // Filter classes
   const filteredClasses = classes.filter((c) => {
@@ -58,7 +72,7 @@ export default function KelasPage() {
   const handleOpenAdd = () => {
     setFormData({
       name: "",
-      branch: "Singkut",
+      branch: (allowedBranch || "Singkut") as any,
       days: "Sabtu & Ahad",
       time: "14:00 - 15:30",
       teacher: "Febrianti Dewi, S.Pd",
@@ -182,15 +196,22 @@ export default function KelasPage() {
           />
         </div>
 
-        <select
-          value={selectedBranch}
-          onChange={(e) => setSelectedBranch(e.target.value)}
-          className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
-        >
-          <option value="ALL">Semua Cabang</option>
-          <option value="Singkut">Cabang Singkut</option>
-          <option value="Bangko">Cabang Bangko</option>
-        </select>
+        {isSuperAdmin ? (
+          <select
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+            className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
+          >
+            <option value="ALL">Semua Cabang</option>
+            <option value="Singkut">Cabang Singkut</option>
+            <option value="Bangko">Cabang Bangko</option>
+          </select>
+        ) : (
+          <div className="w-full sm:w-auto px-4 py-2 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 rounded-xl text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1.5 shrink-0">
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <span>Cabang {allowedBranch}</span>
+          </div>
+        )}
       </div>
 
       {/* Class Cards Grid (Matches Image 1 - 3 Columns) */}
@@ -336,8 +357,9 @@ export default function KelasPage() {
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Pilihan Cabang</label>
                   <select
                     value={formData.branch}
+                    disabled={!isSuperAdmin}
                     onChange={(e) => setFormData({ ...formData, branch: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>

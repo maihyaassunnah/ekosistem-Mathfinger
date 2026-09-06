@@ -24,10 +24,12 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, CashTransactionItem } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function ArusKeuanganPage() {
   const { transactions, addTransaction, deleteTransaction, branches } =
     useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [activeSubTab, setActiveSubTab] = useState<
     "ringkasan" | "pemasukan" | "pengeluaran" | "ledger" | "laporan"
@@ -35,7 +37,9 @@ export default function ArusKeuanganPage() {
 
   // Filter Bar
   const [selectedMonth, setSelectedMonth] = useState("ALL");
-  const [selectedBranch, setSelectedBranch] = useState<"ALL" | "Singkut" | "Bangko">("ALL");
+  const [selectedBranch, setSelectedBranch] = useState<"ALL" | "Singkut" | "Bangko">(
+    (allowedBranch || "ALL") as "ALL" | "Singkut" | "Bangko"
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   // Modals
@@ -43,13 +47,20 @@ export default function ArusKeuanganPage() {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Sync selectedBranch if allowedBranch becomes available
+  React.useEffect(() => {
+    if (allowedBranch) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [allowedBranch]);
+
   // Form State
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     category: "SPP",
     title: "",
     amount: 100000,
-    branch: "Singkut" as "Singkut" | "Bangko",
+    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
     sourceOrRecipient: "",
     notes: "",
   });
@@ -59,13 +70,16 @@ export default function ArusKeuanganPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // Effective branch filter (locked to allowedBranch for branch users)
+  const effectiveBranch = allowedBranch || selectedBranch;
+
   // Filtered transactions by branch
   const branchFilteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      if (selectedBranch === "ALL") return true;
-      return t.branch === selectedBranch;
+      if (effectiveBranch === "ALL") return true;
+      return t.branch === effectiveBranch;
     });
-  }, [transactions, selectedBranch]);
+  }, [transactions, effectiveBranch]);
 
   // Current month active transactions (August/September 2026)
   const currentMonthTransactions = useMemo(() => {
@@ -163,7 +177,7 @@ export default function ArusKeuanganPage() {
       category: "SPP",
       title: "Pembayaran SPP Siswa",
       amount: 150000,
-      branch: selectedBranch === "ALL" ? "Singkut" : selectedBranch,
+      branch: (allowedBranch || (selectedBranch === "ALL" ? "Singkut" : selectedBranch)) as "Singkut" | "Bangko",
       sourceOrRecipient: "",
       notes: "Iuran SPP bulanan",
     });
@@ -176,7 +190,7 @@ export default function ArusKeuanganPage() {
       category: "Operasional & ATK",
       title: "Pengadaan Operasional Cabang",
       amount: 75000,
-      branch: selectedBranch === "ALL" ? "Singkut" : selectedBranch,
+      branch: (allowedBranch || (selectedBranch === "ALL" ? "Singkut" : selectedBranch)) as "Singkut" | "Bangko",
       sourceOrRecipient: "Vendor Toko ATK",
       notes: "Kebutuhan kertas & spidol",
     });
@@ -275,23 +289,36 @@ export default function ArusKeuanganPage() {
             </select>
           </div>
 
-          {/* Dropdown Cabang */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-2xs">
-            <Building2 className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-xs text-slate-500 font-medium">Cabang:</span>
-            <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value as any)}
-              className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none cursor-pointer"
-            >
-              <option value="ALL">Semua Cabang</option>
-              {branches.map((b) => (
-                <option key={b.id} value={b.name}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Dropdown Cabang / Locked Badge */}
+          {!isSuperAdmin && allowedBranch ? (
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 shadow-2xs">
+              <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs text-slate-500 font-medium">Cabang:</span>
+              <span className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
+                {allowedBranch}
+              </span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-200/70 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 font-bold uppercase">
+                Terkunci
+              </span>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-2xs">
+              <Building2 className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-xs text-slate-500 font-medium">Cabang:</span>
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value as any)}
+                className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none cursor-pointer"
+              >
+                <option value="ALL">Semua Cabang</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.name}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -929,11 +956,14 @@ export default function ArusKeuanganPage() {
                     Cabang *
                   </label>
                   <select
-                    value={form.branch}
+                    value={allowedBranch || form.branch}
+                    disabled={Boolean(allowedBranch)}
                     onChange={(e) =>
                       setForm({ ...form, branch: e.target.value as any })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
+                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold ${
+                      allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
+                    }`}
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>
@@ -1066,11 +1096,14 @@ export default function ArusKeuanganPage() {
                     Cabang *
                   </label>
                   <select
-                    value={form.branch}
+                    value={allowedBranch || form.branch}
+                    disabled={Boolean(allowedBranch)}
                     onChange={(e) =>
                       setForm({ ...form, branch: e.target.value as any })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
+                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold ${
+                      allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
+                    }`}
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>

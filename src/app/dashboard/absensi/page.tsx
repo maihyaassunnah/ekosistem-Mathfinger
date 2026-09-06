@@ -29,13 +29,16 @@ import {
   CheckCheck,
   Loader2,
   MessageSquare,
+  MapPin,
 } from "lucide-react";
 import jsQR from "jsqr";
 import { useAppStore, AttendanceItem } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 function AbsensiContent() {
   const searchParams = useSearchParams();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const {
     students,
     classes,
@@ -89,11 +92,17 @@ function AbsensiContent() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Rekap & History State
-  const [rekapBranchFilter, setRekapBranchFilter] = useState("ALL");
+  const [rekapBranchFilter, setRekapBranchFilter] = useState(allowedBranch || "ALL");
   const [rekapClassFilter, setRekapClassFilter] = useState("ALL");
   const [rekapStatusFilter, setRekapStatusFilter] = useState("ALL");
   const [rekapSearch, setRekapSearch] = useState("");
   const [rekapViewMode, setRekapViewMode] = useState<"LOG" | "PER_SISWA">("LOG");
+
+  useEffect(() => {
+    if (allowedBranch) {
+      setRekapBranchFilter(allowedBranch);
+    }
+  }, [allowedBranch]);
 
   // CRUD Modal State for History / Rekap
   const [showAddModal, setShowAddModal] = useState(false);
@@ -189,6 +198,14 @@ function AbsensiContent() {
       setScanResult({
         type: "NOT_FOUND",
         message: `Kartu QR dengan kode "${targetCode}" tidak ditemukan di database siswa.`,
+      });
+      return;
+    }
+
+    if (allowedBranch && student.branch !== allowedBranch) {
+      setScanResult({
+        type: "NOT_FOUND",
+        message: `Siswa "${student.name}" terdaftar di Cabang ${student.branch}. Presensi hanya dapat diproses untuk Cabang ${allowedBranch}.`,
       });
       return;
     }
@@ -321,18 +338,23 @@ function AbsensiContent() {
   }, [showScannerModal, isCameraActive]);
 
   // Filter students for today list
+  const branchScopedStudents = allowedBranch
+    ? students.filter((s) => s.branch === allowedBranch)
+    : students;
+  const branchScopedClasses = allowedBranch
+    ? classes.filter((c) => c.branch === allowedBranch)
+    : classes;
+
   const classList = [
-    { name: "Semua Kelas", count: students.length, value: "ALL" },
-    { name: "Kelas B", count: 7, value: "Kelas B" },
-    { name: "CLASS C", count: 10, value: "CLASS C" },
-    { name: "Kelas A", count: 7, value: "Kelas A" },
-    { name: "CLASS B", count: 13, value: "CLASS B" },
-    { name: "Kelas A2", count: 5, value: "Kelas A2" },
-    { name: "CLASS A1", count: 8, value: "CLASS A1" },
-    { name: "Tanpa Kelas", count: 1, value: "Tanpa Kelas" },
+    { name: "Semua Kelas", count: branchScopedStudents.length, value: "ALL" },
+    ...branchScopedClasses.map((c) => ({
+      name: c.name,
+      count: branchScopedStudents.filter((s) => s.className === c.name).length,
+      value: c.name,
+    })),
   ];
 
-  const filteredStudents = students
+  const filteredStudents = branchScopedStudents
     .filter((s) => {
       const matchSearch =
         s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1447,15 +1469,22 @@ function AbsensiContent() {
             <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-[#1d2d5a] text-xs">
               <span className="text-[11px] font-bold text-slate-400">Filter:</span>
 
-              <select
-                value={rekapBranchFilter}
-                onChange={(e) => setRekapBranchFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
-              >
-                <option value="ALL">Semua Cabang</option>
-                <option value="Singkut">Cabang Singkut</option>
-                <option value="Bangko">Cabang Bangko</option>
-              </select>
+              {isSuperAdmin ? (
+                <select
+                  value={rekapBranchFilter}
+                  onChange={(e) => setRekapBranchFilter(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  <option value="ALL">Semua Cabang</option>
+                  <option value="Singkut">Cabang Singkut</option>
+                  <option value="Bangko">Cabang Bangko</option>
+                </select>
+              ) : (
+                <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1 shrink-0">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Cabang {allowedBranch}</span>
+                </div>
+              )}
 
               <select
                 value={rekapClassFilter}
