@@ -45,14 +45,14 @@ function LoginForm() {
       name: "ma assunnah",
       role: "Super Admin",
       email: "ma.ihyaassunnah@gmail.com",
-      avatarBg: "bg-teal-700 text-white font-bold",
+      avatarBg: "bg-slate-700 text-white font-bold",
       initials: "MA",
     },
     {
       name: "Admin Singkut",
       role: "Admin Cabang",
       email: "singkut.mathfingers@gmail.com",
-      avatarBg: "bg-emerald-700 text-white font-bold",
+      avatarBg: "bg-red-700 text-white font-bold",
       initials: "SK",
     },
     {
@@ -103,7 +103,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-[#059669] via-[#047857] to-[#064E3B] flex flex-col justify-between items-center py-6 px-4 relative overflow-x-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-b from-slate-900 via-rose-950 to-slate-950 flex flex-col justify-between items-center py-6 px-4 relative overflow-x-hidden">
       {/* Top Controls Bar */}
       <div className="w-full max-w-5xl flex items-center justify-between z-10">
         <button
@@ -134,10 +134,10 @@ function LoginForm() {
       </div>
 
       {/* Main Login Card */}
-      <div className="w-full max-w-[450px] bg-white rounded-[28px] shadow-2xl p-6 sm:p-8 my-auto relative z-10 border border-emerald-100">
+      <div className="w-full max-w-[450px] bg-white rounded-[28px] shadow-2xl p-6 sm:p-8 my-auto relative z-10 border border-slate-200">
         {/* Logo Header */}
         <div className="flex justify-center mb-3">
-          <div className="w-20 h-20 rounded-3xl bg-white shadow-md border border-emerald-100 p-2 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-3xl bg-white shadow-md border border-slate-200 p-2 flex items-center justify-center">
             <img
               src="/logo.png"
               alt="Easy Learning House Logo"
@@ -152,7 +152,7 @@ function LoginForm() {
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               Easy Learning House
             </h1>
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800">
               v3.4
             </span>
           </div>
@@ -163,7 +163,7 @@ function LoginForm() {
 
         {/* Access Restriction Notice */}
         <div className="mb-4 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2 text-[11px] text-slate-600">
-          <ShieldAlert className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+          <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="leading-snug">
             <strong>Area Terbatas:</strong> Hanya akun admin & tutor yang telah terdaftar resmi di sistem yang dapat masuk.
           </p>
@@ -229,7 +229,7 @@ function LoginForm() {
         {/* Form or Google Tab */}
         {tab === "google" ? (
           <div className="space-y-4 py-2 animate-in fade-in">
-            <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-center space-y-2">
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-white shadow-xs border border-slate-200 flex items-center justify-center mx-auto">
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path
@@ -303,7 +303,7 @@ function LoginForm() {
                     setErrorMessage(null);
                   }}
                   placeholder="nama@email.com"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-medium"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all font-medium"
                 />
               </div>
             </div>
@@ -315,7 +315,7 @@ function LoginForm() {
                 </label>
                 <a
                   href="#lupa-sandi"
-                  className="text-[11px] font-medium text-emerald-700 hover:text-emerald-800"
+                  className="text-[11px] font-medium text-red-600 hover:text-red-700"
                 >
                   Lupa sandi?
                 </a>
@@ -333,7 +333,7 @@ function LoginForm() {
                     setErrorMessage(null);
                   }}
                   placeholder="Masukkan password Anda..."
-                  className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-medium"
+                  className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all font-medium"
                 />
                 <button
                   type="button"
@@ -353,7 +353,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-[#064E3B] hover:bg-[#053d2e] text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-75"
+              className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-75"
             >
               {isLoading ? (
                 <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -401,7 +401,7 @@ function LoginForm() {
         {/* Quick Avatar Selector */}
         <div className="mt-6 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2.5">
-            <span className="font-semibold text-emerald-800 flex items-center gap-1">
+            <span className="font-semibold text-rose-900 flex items-center gap-1">
               ✨ Pilih Akun Terdaftar di Sistem:
             </span>
             <span className="text-slate-400 text-[10px]">Pilih akun</span>
@@ -416,7 +416,7 @@ function LoginForm() {
                 title={`${acc.name} (${acc.role})`}
                 className={`relative group p-0.5 rounded-full transition-all shrink-0 ${
                   selectedAvatar === idx
-                    ? "ring-2 ring-emerald-500 ring-offset-2 scale-105"
+                    ? "ring-2 ring-red-500 ring-offset-2 scale-105"
                     : "opacity-75 hover:opacity-100"
                 }`}
               >
@@ -426,7 +426,7 @@ function LoginForm() {
                   {acc.initials}
                 </div>
                 {selectedAvatar === idx && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center border-2 border-white shadow-xs">
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center border-2 border-white shadow-xs">
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
@@ -434,7 +434,7 @@ function LoginForm() {
             ))}
           </div>
           <div className="text-[11px] text-slate-600 mt-2 font-medium">
-            Akun: <span className="text-emerald-700 font-semibold">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
+            Akun: <span className="text-red-600 font-semibold">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
           </div>
         </div>
 
@@ -445,7 +445,7 @@ function LoginForm() {
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
+            className="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-slate-300 cursor-pointer"
           />
           <label htmlFor="remember" className="text-xs text-slate-600 font-medium cursor-pointer">
             Ingat Sesi Login Perangkat Ini
@@ -465,7 +465,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen w-full bg-emerald-900 flex items-center justify-center text-white text-sm">
+        <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center text-white text-sm">
           Memuat halaman login...
         </div>
       }

@@ -2,23 +2,24 @@
 
 @layer base {
   :root {
-    --background: #f4f8f5;
+    --background: #f8fafc;
     --foreground: #0f172a;
     --card: #ffffff;
     --card-foreground: #0f172a;
-    --primary: #059669;
+    --primary: #dc2626;
     --primary-foreground: #ffffff;
-    --brand-dark: #064e3b;
-    --brand-emerald: #059669;
-    --brand-mint: #d1fae5;
+    --brand-dark: #881337;
+    --brand-red: #dc2626;
+    --brand-rose: #f43f5e;
+    --brand-tint: #ffe4e6;
     --muted: #f1f5f9;
-    --muted-foreground: #64748b;
+    --muted-foreground: #475569;
     --border: #e2e8f0;
     --radius: 0.75rem;
 
     /* Status Colors */
-    --status-success-text: #065f46;
-    --status-success-bg: #d1fae5;
+    --status-success-text: #166534;
+    --status-success-bg: #dcfce7;
     --status-danger-text: #991b1b;
     --status-danger-bg: #fee2e2;
     --status-warning-text: #92400e;
@@ -28,18 +29,19 @@
   }
 
   .dark {
-    --background: #08120e;
+    --background: #090d16;
     --foreground: #f8fafc;
-    --card: #0d1a15;
+    --card: #111827;
     --card-foreground: #f8fafc;
-    --primary: #10b981;
-    --primary-foreground: #022c22;
-    --brand-dark: #022c22;
-    --brand-emerald: #10b981;
-    --brand-mint: #064e3b;
-    --muted: #12241d;
-    --muted-foreground: #94a3b8;
-    --border: #1a3328;
+    --primary: #ef4444;
+    --primary-foreground: #ffffff;
+    --brand-dark: #4c0519;
+    --brand-red: #ef4444;
+    --brand-rose: #f43f5e;
+    --brand-tint: #881337;
+    --muted: #1f2937;
+    --muted-foreground: #9ca3af;
+    --border: #1f2937;
   }
 }
 
@@ -50,18 +52,27 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Math symbols wallpaper subtle pattern */
+/* Crisp Input Defaults (Ensures high contrast in Light Mode) */
+input, select, textarea {
+  color: #0f172a;
+}
+input::placeholder, textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1;
+}
+
+/* Math symbols wallpaper subtle pattern (Neutral/Crimson - NO GREEN) */
 .bg-math-pattern {
-  background-color: #f4f8f5;
-  background-image: radial-gradient(#10b981 0.45px, transparent 0.45px),
-    url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='15' y='32' fill='%23059669' fill-opacity='0.08' font-size='16' font-family='monospace' font-weight='bold'%3Ex%C2%B2%3C/text%3E%3Ctext x='78' y='22' fill='%23059669' fill-opacity='0.08' font-size='16' font-family='monospace' font-weight='bold'%3E%C3%B7%3C/text%3E%3Ctext x='112' y='42' fill='%23059669' fill-opacity='0.07' font-size='15' font-family='monospace'%3E%CF%80%3C/text%3E%3Ctext x='52' y='68' fill='%23059669' fill-opacity='0.08' font-size='17' font-family='monospace' font-weight='bold'%3E%E2%88%91%3C/text%3E%3Ctext x='15' y='108' fill='%23059669' fill-opacity='0.08' font-size='15' font-family='monospace' font-weight='bold'%3E123%3C/text%3E%3Ctext x='112' y='112' fill='%23059669' fill-opacity='0.08' font-size='19' font-family='monospace'%3E+%3C/text%3E%3Ctext x='72' y='125' fill='%23059669' fill-opacity='0.07' font-size='15' font-family='monospace'%3E%E2%88%9A%3C/text%3E%3C/svg%3E");
+  background-color: #f8fafc;
+  background-image: radial-gradient(#e2e8f0 0.75px, transparent 0.75px),
+    url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='15' y='32' fill='%23dc2626' fill-opacity='0.05' font-size='16' font-family='monospace' font-weight='bold'%3Ex%C2%B2%3C/text%3E%3Ctext x='78' y='22' fill='%23dc2626' fill-opacity='0.05' font-size='16' font-family='monospace' font-weight='bold'%3E%C3%B7%3C/text%3E%3Ctext x='112' y='42' fill='%23dc2626' fill-opacity='0.04' font-size='15' font-family='monospace'%3E%CF%80%3C/text%3E%3Ctext x='52' y='68' fill='%23dc2626' fill-opacity='0.05' font-size='17' font-family='monospace' font-weight='bold'%3E%E2%88%91%3C/text%3E%3Ctext x='15' y='108' fill='%23dc2626' fill-opacity='0.05' font-size='15' font-family='monospace' font-weight='bold'%3E123%3C/text%3E%3Ctext x='112' y='112' fill='%23dc2626' fill-opacity='0.05' font-size='19' font-family='monospace'%3E+%3C/text%3E%3Ctext x='72' y='125' fill='%23dc2626' fill-opacity='0.04' font-size='15' font-family='monospace'%3E%E2%88%9A%3C/text%3E%3C/svg%3E");
   background-size: 24px 24px, 140px 140px;
 }
 
 .dark .bg-math-pattern {
-  background-color: #08120e;
-  background-image: radial-gradient(#10b981 0.4px, transparent 0.4px),
-    url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='15' y='32' fill='%2310b981' fill-opacity='0.04' font-size='16' font-family='monospace' font-weight='bold'%3Ex%C2%B2%3C/text%3E%3Ctext x='78' y='22' fill='%2310b981' fill-opacity='0.04' font-size='16' font-family='monospace' font-weight='bold'%3E%C3%B7%3C/text%3E%3Ctext x='112' y='42' fill='%2310b981' fill-opacity='0.03' font-size='15' font-family='monospace'%3E%CF%80%3C/text%3E%3Ctext x='52' y='68' fill='%2310b981' fill-opacity='0.04' font-size='17' font-family='monospace' font-weight='bold'%3E%E2%88%91%3C/text%3E%3Ctext x='15' y='108' fill='%2310b981' fill-opacity='0.04' font-size='15' font-family='monospace' font-weight='bold'%3E123%3C/text%3E%3Ctext x='112' y='112' fill='%2310b981' fill-opacity='0.04' font-size='19' font-family='monospace'%3E+%3C/text%3E%3Ctext x='72' y='125' fill='%2310b981' fill-opacity='0.03' font-size='15' font-family='monospace'%3E%E2%88%9A%3C/text%3E%3C/svg%3E");
+  background-color: #090d16;
+  background-image: radial-gradient(#1f2937 0.75px, transparent 0.75px),
+    url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='15' y='32' fill='%23ef4444' fill-opacity='0.04' font-size='16' font-family='monospace' font-weight='bold'%3Ex%C2%B2%3C/text%3E%3Ctext x='78' y='22' fill='%23ef4444' fill-opacity='0.04' font-size='16' font-family='monospace' font-weight='bold'%3E%C3%B7%3C/text%3E%3Ctext x='112' y='42' fill='%23ef4444' fill-opacity='0.03' font-size='15' font-family='monospace'%3E%CF%80%3C/text%3E%3Ctext x='52' y='68' fill='%23ef4444' fill-opacity='0.04' font-size='17' font-family='monospace' font-weight='bold'%3E%E2%88%91%3C/text%3E%3Ctext x='15' y='108' fill='%23ef4444' fill-opacity='0.04' font-size='15' font-family='monospace' font-weight='bold'%3E123%3C/text%3E%3Ctext x='112' y='112' fill='%23ef4444' fill-opacity='0.04' font-size='19' font-family='monospace'%3E+%3C/text%3E%3Ctext x='72' y='125' fill='%23ef4444' fill-opacity='0.03' font-size='15' font-family='monospace'%3E%E2%88%9A%3C/text%3E%3C/svg%3E");
   background-size: 24px 24px, 140px 140px;
 }
 
@@ -78,62 +89,64 @@ body {
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #1e362c;
+  background: #334155;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Common Dark Mode Overrides for pristine aesthetics */
+/* High-Contrast Dark Mode Overrides (Crisp Slate/Neutral - NO GREEN) */
 .dark .bg-white {
-  background-color: #0e1c16 !important;
-  color: #f1f5f9;
+  background-color: #111827 !important;
+  color: #f9fafb !important;
 }
 .dark .bg-slate-50 {
-  background-color: #09130f !important;
+  background-color: #0b1120 !important;
 }
 .dark .bg-slate-100 {
-  background-color: #13241d !important;
+  background-color: #1f2937 !important;
 }
 .dark .border-slate-100,
 .dark .border-slate-200,
 .dark .border-slate-200\/80 {
-  border-color: #1a3328 !important;
+  border-color: #1f2937 !important;
 }
 .dark .text-slate-900 {
-  color: #f8fafc !important;
+  color: #f9fafb !important;
 }
 .dark .text-slate-800,
 .dark .text-slate-700 {
-  color: #e2e8f0 !important;
+  color: #e5e7eb !important;
 }
 .dark .text-slate-600,
 .dark .text-slate-500 {
-  color: #94a3b8 !important;
+  color: #9ca3af !important;
 }
+
+/* Form Controls in Dark Mode */
 .dark input,
 .dark select,
 .dark textarea {
-  background-color: #0b1812 !important;
-  border-color: #1e3b2e !important;
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
   color: #f8fafc !important;
 }
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #64748b !important;
+  color: #94a3b8 !important;
 }
 
 .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
 .dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #1a3328 !important;
+  border-color: #1f2937 !important;
 }
 
 .dark table thead th {
-  background-color: #0b1812 !important;
-  color: #94a3b8 !important;
-  border-color: #1a3328 !important;
+  background-color: #0f172a !important;
+  color: #cbd5e1 !important;
+  border-color: #1f2937 !important;
 }
 
 .dark table tbody tr:hover {
-  background-color: rgba(22, 42, 33, 0.4) !important;
+  background-color: rgba(30, 41, 59, 0.6) !important;
 }

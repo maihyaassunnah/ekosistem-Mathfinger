@@ -13,28 +13,28 @@ export default function RiwayatJurnalPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1200px] mx-auto">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           Riwayat Jurnal Guru
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
           Arsip kronologis pengajaran seluruh kelas dan tutor di tiap cabang
         </p>
       </div>
 
       <div className="space-y-4">
         {logs.map((l, idx) => (
-          <div key={idx} className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-2">
+          <div key={idx} className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                <span className="px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-950/80 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60 text-[11px] font-bold">
                   {l.class}
                 </span>
-                <span className="text-xs font-bold text-slate-700">{l.tutor}</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{l.tutor}</span>
               </div>
-              <span className="text-xs text-slate-400">{l.date}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{l.date}</span>
             </div>
-            <div className="text-sm font-bold text-slate-900">{l.topic}</div>
-            <p className="text-xs text-slate-500">{l.note}</p>
+            <div className="text-sm font-bold text-slate-900 dark:text-white">{l.topic}</div>
+            <p className="text-xs text-slate-600 dark:text-slate-400">{l.note}</p>
           </div>
         ))}
       </div>

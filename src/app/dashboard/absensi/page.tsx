@@ -577,13 +577,13 @@ function AbsensiContent() {
     <div className="p-3 sm:p-6 lg:p-8 pb-32 lg:pb-12 space-y-5 sm:space-y-6 max-w-[1400px] mx-auto relative">
       {/* Save Success Toast Banner */}
       {saveToast && (
-        <div className="fixed top-5 right-5 z-50 max-w-md w-full bg-white dark:bg-[#0e1c16] border-2 border-emerald-500 text-slate-900 dark:text-slate-100 p-4 rounded-2xl shadow-2xl flex items-start gap-3.5 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="fixed top-5 right-5 z-50 max-w-md w-full bg-white dark:bg-slate-900 border-2 border-red-500 text-slate-900 dark:text-slate-100 p-4 rounded-2xl shadow-2xl flex items-start gap-3.5 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 flex items-center justify-center shrink-0">
             <CheckCheck className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">
+              <h4 className="text-xs font-black text-blue-800 dark:text-blue-300 uppercase tracking-wide">
                 Presensi Berhasil Disimpan
               </h4>
               <span className="text-[10px] text-slate-400">Tersimpan</span>
@@ -610,7 +610,7 @@ function AbsensiContent() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
               Absensi Siswa
             </h1>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold">
+            <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold">
               v3.3 Terpadu
             </span>
           </div>
@@ -639,8 +639,8 @@ function AbsensiContent() {
             onClick={() => setActiveTab("HARI_INI")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "HARI_INI"
-                ? "bg-[#059669] text-white shadow-xs"
-                : "bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#13271f]"
+                ? "bg-red-600 text-white shadow-xs"
+                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -652,8 +652,8 @@ function AbsensiContent() {
             onClick={() => setActiveTab("REKAP")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "REKAP"
-                ? "bg-[#059669] text-white shadow-xs"
-                : "bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#13271f]"
+                ? "bg-red-600 text-white shadow-xs"
+                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
@@ -671,11 +671,11 @@ function AbsensiContent() {
       {activeTab === "HARI_INI" && (
         <div className="space-y-6">
           {/* Date Picker Bar */}
-          <div className="bg-white dark:bg-[#0e1c16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>Pilih Tanggal Sesi Bimbingan</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px]">
                   Hari: {getDayNameIndonesian(selectedDate)}
                 </span>
                 {lastSavedTime && (
@@ -695,17 +695,17 @@ function AbsensiContent() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3.5 py-1.5 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
+                  className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleMarkAllHadir}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-blue-800 dark:text-blue-300 border border-slate-200 dark:border-slate-800 text-xs font-bold transition-all shadow-2xs cursor-pointer"
                 title="Tandai seluruh siswa hadir untuk sesi hari ini"
               >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
                 <span>Hadir Semua</span>
               </button>
 
@@ -713,7 +713,7 @@ function AbsensiContent() {
                 type="button"
                 onClick={handleSaveTodayAttendance}
                 disabled={isSaving}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#059669] hover:bg-emerald-700 active:scale-95 text-white text-xs font-extrabold transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-extrabold transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50"
                 title="Simpan seluruh status presensi siswa tanggal ini ke database"
               >
                 {isSaving ? (
@@ -727,16 +727,16 @@ function AbsensiContent() {
           </div>
 
           {/* Class Selection Filter Pills */}
-          <div className="bg-white dark:bg-[#0e1c16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
                 PILIH KELAS BIMBINGAN UNTUK MENGABSEN:
               </span>
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="text-slate-600 dark:text-slate-300 font-semibold text-xs border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 bg-slate-50 dark:bg-[#08120e]"
+                className="text-slate-600 dark:text-slate-300 font-semibold text-xs border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-950"
               >
                 <option value="ALL">Semua Kelas ({students.length} Siswa)</option>
                 <option value="Kelas B">Kelas B</option>
@@ -756,8 +756,8 @@ function AbsensiContent() {
                   onClick={() => setSelectedClass(cl.value)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     selectedClass === cl.value
-                      ? "bg-[#059669] text-white shadow-xs"
-                      : "bg-slate-100/90 dark:bg-[#13271f] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1a382c] hover:text-slate-900"
+                      ? "bg-red-600 text-white shadow-xs"
+                      : "bg-slate-100/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900"
                   }`}
                 >
                   <span>{cl.name}</span>
@@ -776,7 +776,7 @@ function AbsensiContent() {
           </div>
 
           {/* Search & Sort Bar */}
-          <div className="bg-white dark:bg-[#0e1c16] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+          <div className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Search className="w-4 h-4" />
@@ -786,14 +786,14 @@ function AbsensiContent() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Cari nama siswa..."
-                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-100"
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
               />
             </div>
 
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as any)}
-              className="px-3 py-1.5 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
+              className="px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
             >
               <option value="A-Z">Nama: A - Z</option>
               <option value="Z-A">Nama: Z - A</option>
@@ -801,9 +801,9 @@ function AbsensiContent() {
           </div>
 
           {/* Unified Attendance Card Container (Exact Match to User Screenshot) */}
-          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden">
             {/* Action Bar Header */}
-            <div className="p-3.5 sm:p-5 space-y-3 bg-white dark:bg-[#0e1c16]">
+            <div className="p-3.5 sm:p-5 space-y-3 bg-white dark:bg-slate-900">
               <div className="flex items-center justify-between gap-2">
                 <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
                   <input
@@ -818,14 +818,14 @@ function AbsensiContent() {
                         setSelectedIds(filteredStudents.map((s) => s.id));
                       }
                     }}
-                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-red-500 cursor-pointer shrink-0"
                   />
                   <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
                     Batalkan Semua
                   </span>
                 </label>
 
-                <div className="text-xs sm:text-sm font-black text-[#059669] dark:text-emerald-400 text-right">
+                <div className="text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400 text-right">
                   {selectedIds.length} dari {filteredStudents.length} Siswa Dicentang
                 </div>
               </div>
@@ -841,7 +841,7 @@ function AbsensiContent() {
                 <button
                   type="button"
                   onClick={handleClearSelection}
-                  className="px-3.5 py-1.5 rounded-xl border border-rose-400 dark:border-rose-800 bg-white dark:bg-[#0e1c16] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl border border-rose-400 dark:border-rose-800 bg-white dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
                 >
                   Hapus Centang
                 </button>
@@ -852,7 +852,7 @@ function AbsensiContent() {
                     <button
                       type="button"
                       onClick={() => handleBatchSetSelectedStatus("HADIR")}
-                      className="px-2.5 py-1 rounded-lg bg-[#059669] hover:bg-[#047857] text-white font-black text-[10px] cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-black text-[10px] cursor-pointer"
                     >
                       + Hadir
                     </button>
@@ -913,8 +913,8 @@ function AbsensiContent() {
                     key={st.id}
                     className={`p-3 sm:p-4 transition-colors ${
                       isSelected
-                        ? "bg-emerald-50/30 dark:bg-emerald-950/20"
-                        : "hover:bg-slate-50/60 dark:hover:bg-[#13271f]/40"
+                        ? "bg-blue-50/30 dark:bg-blue-950/20"
+                        : "hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2.5 sm:gap-4">
@@ -931,13 +931,13 @@ function AbsensiContent() {
                                 : [...prev, st.id]
                             );
                           }}
-                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0 mt-1"
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-red-500 cursor-pointer shrink-0 mt-1"
                         />
 
                         <div className="space-y-1 min-w-0 flex-1">
                           {/* Badges Row */}
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#ecfdf5] dark:bg-emerald-950/70 text-[#059669] dark:text-emerald-300 border border-[#a7f3d0] dark:border-emerald-800/80 uppercase tracking-wide whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 uppercase tracking-wide whitespace-nowrap">
                               {shortLevel}
                             </span>
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5f3ff] dark:bg-purple-950/70 text-[#7c3aed] dark:text-purple-300 border border-[#ddd6fe] dark:border-purple-800/80 flex items-center gap-1 uppercase whitespace-nowrap">
@@ -945,7 +945,7 @@ function AbsensiContent() {
                               <span>{st.className}</span>
                             </span>
                             {record?.method === "QR_SCAN" && (
-                              <span className="px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-800 flex items-center gap-1 whitespace-nowrap">
+                              <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-1 whitespace-nowrap">
                                 <QrCode className="w-3 h-3" />
                                 <span>QR {record.time || "14:00"}</span>
                               </span>
@@ -954,7 +954,7 @@ function AbsensiContent() {
 
                           {/* Number Box + Student Name */}
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border border-[#a7f3d0] dark:border-emerald-700 bg-[#ecfdf5] dark:bg-emerald-950/50 text-[#059669] dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-black text-xs flex items-center justify-center shrink-0">
                               {idx + 1}
                             </span>
                             <div
@@ -967,7 +967,7 @@ function AbsensiContent() {
 
                           {/* Student Code tag + Note preview */}
                           <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                            <span className="px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-[#f0fdfa] dark:bg-teal-950/60 text-[#0d9488] dark:text-teal-300 border border-[#ccfbf1] dark:border-teal-900/60 inline-flex items-center">
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-flex items-center">
                               #{st.studentCode}
                             </span>
                             {currentNote && (
@@ -993,7 +993,7 @@ function AbsensiContent() {
                           }}
                           className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
                             currentNote
-                              ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700 shadow-xs"
+                              ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-slate-700 shadow-xs"
                               : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/90 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800"
                           }`}
                           title={currentNote ? `Catatan: ${currentNote}` : "Tulis Catatan Presensi"}
@@ -1007,7 +1007,7 @@ function AbsensiContent() {
                           onClick={() => handleCycleStatus(st.id)}
                           className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex flex-col items-center justify-center shadow-xs shrink-0 transition-transform active:scale-90 cursor-pointer select-none ${
                             currentStatus === "HADIR"
-                              ? "bg-[#059669] hover:bg-[#047857] text-white ring-2 ring-emerald-500/20"
+                              ? "bg-red-600 hover:bg-red-700 text-white ring-2 ring-blue-500/20"
                               : currentStatus === "IZIN"
                               ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-500/20"
                               : currentStatus === "SAKIT"
@@ -1061,15 +1061,15 @@ function AbsensiContent() {
 
                         {/* Status Menu Popover */}
                         {isStatusMenuOpen && (
-                          <div className="absolute right-0 top-full mt-1.5 z-40 p-1.5 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
+                          <div className="absolute right-0 top-full mt-1.5 z-40 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
                             <button
                               type="button"
                               onClick={() => handleStatusChange(st.id, "HADIR")}
-                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
                             >
                               <span>✓ Hadir</span>
                               {currentStatus === "HADIR" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                               )}
                             </button>
                             <button
@@ -1113,13 +1113,13 @@ function AbsensiContent() {
           </div>
 
           {/* Bottom Attendance Confirmation & Save Action Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0e1c16] border border-emerald-200/80 dark:border-emerald-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
                   Ringkasan Presensi ({selectedDate}):
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-bold">
                   ✓ Hadir: {todayHadirCount}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-xs font-bold">
@@ -1130,7 +1130,7 @@ function AbsensiContent() {
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <Info className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span>
                   {lastSavedTime
                     ? `Terakhir disimpan pada ${lastSavedTime}. Seluruh data tersimpan aman di sistem.`
@@ -1144,7 +1144,7 @@ function AbsensiContent() {
                 type="button"
                 onClick={handleSaveTodayAttendance}
                 disabled={isSaving}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-600 active:scale-98 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-98 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1157,9 +1157,9 @@ function AbsensiContent() {
           </div>
 
           {/* Mobile Floating Bottom Bar for Quick Thumb Save */}
-          <div className="lg:hidden fixed bottom-16 left-3 right-3 z-30 p-2.5 sm:p-3 rounded-2xl bg-white/95 dark:bg-[#0e1c16]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3">
+          <div className="lg:hidden fixed bottom-16 left-3 right-3 z-30 p-2.5 sm:p-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-xl flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3">
             <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-800 dark:text-slate-200">
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
+              <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
                 ✓ {todayHadirCount}
               </span>
               <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
@@ -1174,7 +1174,7 @@ function AbsensiContent() {
               type="button"
               onClick={handleSaveTodayAttendance}
               disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-emerald-700 active:scale-95 text-white text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
             >
               {isSaving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1194,7 +1194,7 @@ function AbsensiContent() {
         <div className="space-y-6">
           {/* 4 Rekap Stat Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Total Sesi Tercatat
               </span>
@@ -1204,17 +1204,17 @@ function AbsensiContent() {
               <div className="text-[11px] text-slate-500">Periode Agustus - September</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
                 Tingkat Kehadiran
               </span>
-              <div className="text-2xl font-black text-[#059669]">
+              <div className="text-2xl font-black text-blue-600">
                 {hadirPercent}%
               </div>
               <div className="text-[11px] text-slate-500">{hadirCount} kali Hadir</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
               <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
                 Total Izin & Sakit
               </span>
@@ -1224,7 +1224,7 @@ function AbsensiContent() {
               <div className="text-[11px] text-slate-500">Dengan konfirmasi wali</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
               <span className="text-xs font-bold text-rose-500 uppercase tracking-wider">
                 Absen / Alpa
               </span>
@@ -1236,7 +1236,7 @@ function AbsensiContent() {
           </div>
 
           {/* Filter & Action Bar */}
-          <div className="bg-white dark:bg-[#0e1c16] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               {/* Search Bar */}
               <div className="relative flex-1">
@@ -1246,7 +1246,7 @@ function AbsensiContent() {
                   value={rekapSearch}
                   onChange={(e) => setRekapSearch(e.target.value)}
                   placeholder="Cari siswa, kode, atau catatan riwayat..."
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-100"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                 />
               </div>
 
@@ -1255,13 +1255,13 @@ function AbsensiContent() {
                 <button
                   type="button"
                   onClick={openAddRecord}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>+ Presensi Susulan / Manual</span>
                 </button>
 
-                <div className="flex rounded-xl bg-slate-100 dark:bg-[#13271f] p-0.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+                <div className="flex rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 text-xs font-bold text-slate-600 dark:text-slate-300">
                   <button
                     type="button"
                     onClick={() => setRekapViewMode("LOG")}
@@ -1295,7 +1295,7 @@ function AbsensiContent() {
               <select
                 value={rekapBranchFilter}
                 onChange={(e) => setRekapBranchFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
               >
                 <option value="ALL">Semua Cabang</option>
                 <option value="Singkut">Cabang Singkut</option>
@@ -1305,7 +1305,7 @@ function AbsensiContent() {
               <select
                 value={rekapClassFilter}
                 onChange={(e) => setRekapClassFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
               >
                 <option value="ALL">Semua Kelas</option>
                 <option value="Kelas A">Kelas A</option>
@@ -1319,7 +1319,7 @@ function AbsensiContent() {
               <select
                 value={rekapStatusFilter}
                 onChange={(e) => setRekapStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
               >
                 <option value="ALL">Semua Status</option>
                 <option value="HADIR">Hadir</option>
@@ -1332,11 +1332,11 @@ function AbsensiContent() {
 
           {/* VIEW MODE 1: LOG RIWAYAT TABEL */}
           {rekapViewMode === "LOG" && (
-            <div className="bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#13271f]/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                       <th className="py-3 px-4">Tanggal & Waktu</th>
                       <th className="py-3 px-4">Siswa (Kode & Nama)</th>
                       <th className="py-3 px-4">Kelas & Cabang</th>
@@ -1357,7 +1357,7 @@ function AbsensiContent() {
                       filteredRekapArray.map((record) => (
                         <tr
                           key={record.key}
-                          className="hover:bg-slate-50/50 dark:hover:bg-[#13271f]/30 transition-colors"
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                         >
                           <td className="py-3 px-4">
                             <div className="font-bold text-slate-900 dark:text-slate-100">
@@ -1372,7 +1372,7 @@ function AbsensiContent() {
                             <div className="font-bold text-slate-900 dark:text-slate-100">
                               {record.studentName || "Siswa"}
                             </div>
-                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
+                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-mono">
                               #{record.studentCode || "-"}
                             </div>
                           </td>
@@ -1394,7 +1394,7 @@ function AbsensiContent() {
 
                           <td className="py-3 px-4">
                             {record.method === "QR_SCAN" ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-extrabold text-[10px]">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60 font-extrabold text-[10px]">
                                 <QrCode className="w-3 h-3" />
                                 <span>QR Scan</span>
                               </span>
@@ -1409,7 +1409,7 @@ function AbsensiContent() {
                             <span
                               className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${
                                 record.status === "HADIR"
-                                  ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300"
+                                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60"
                                   : record.status === "IZIN"
                                   ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
                                   : record.status === "SAKIT"
@@ -1458,11 +1458,11 @@ function AbsensiContent() {
 
           {/* VIEW MODE 2: REKAP PER SISWA */}
           {rekapViewMode === "PER_SISWA" && (
-            <div className="bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#13271f]/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                       <th className="py-3 px-4">Nama Siswa</th>
                       <th className="py-3 px-4">Kelas & Cabang</th>
                       <th className="py-3 px-4 text-center">Total Sesi</th>
@@ -1488,13 +1488,13 @@ function AbsensiContent() {
                       return (
                         <tr
                           key={st.id}
-                          className="hover:bg-slate-50/50 dark:hover:bg-[#13271f]/30 transition-colors"
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                         >
                           <td className="py-3.5 px-4">
                             <div className="font-bold text-slate-900 dark:text-slate-100">
                               {st.name}
                             </div>
-                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
+                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-mono">
                               #{st.studentCode}
                             </div>
                           </td>
@@ -1507,7 +1507,7 @@ function AbsensiContent() {
                           </td>
 
                           <td className="py-3.5 px-4 text-center font-bold">{totalS}</td>
-                          <td className="py-3.5 px-4 text-center font-extrabold text-emerald-600">
+                          <td className="py-3.5 px-4 text-center font-extrabold text-blue-600">
                             {hCount}
                           </td>
                           <td className="py-3.5 px-4 text-center font-semibold text-amber-600">
@@ -1524,7 +1524,7 @@ function AbsensiContent() {
                             <div className="flex items-center justify-end gap-2">
                               <div className="w-16 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                                 <div
-                                  className="bg-emerald-600 h-full rounded-full"
+                                  className="bg-blue-600 h-full rounded-full"
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
@@ -1547,7 +1547,7 @@ function AbsensiContent() {
       {/* ========================================================================= */}
       {showScannerModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[95vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[95vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => {
@@ -1561,7 +1561,7 @@ function AbsensiContent() {
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-[#059669] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-700 flex items-center justify-center font-bold">
                   <Camera className="w-4 h-4" />
                 </div>
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
@@ -1587,8 +1587,8 @@ function AbsensiContent() {
                     <canvas ref={canvasRef} className="hidden" />
                     {/* Scanner Targeting Reticle */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-48 h-48 border-2 border-emerald-400 rounded-2xl animate-pulse flex items-center justify-center">
-                        <div className="w-full h-0.5 bg-emerald-400/80 shadow-lg shadow-emerald-400 animate-bounce" />
+                      <div className="w-48 h-48 border-2 border-red-500 rounded-2xl animate-pulse flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-red-500/80 shadow-lg shadow-red-500 animate-bounce" />
                       </div>
                     </div>
                   </>
@@ -1602,7 +1602,7 @@ function AbsensiContent() {
                         setCameraError(null);
                         setIsCameraActive(true);
                       }}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs"
                     >
                       <Camera className="w-3.5 h-3.5" />
                       <span>Aktifkan Kamera Scanner</span>
@@ -1637,11 +1637,11 @@ function AbsensiContent() {
                   value={scannerInputCode}
                   onChange={(e) => setScannerInputCode(e.target.value)}
                   placeholder="Scan kartu atau ketik ID kode (contoh: 79000)..."
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-red-500 font-mono"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold shadow-xs cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
                   Proses
                 </button>
@@ -1659,7 +1659,7 @@ function AbsensiContent() {
                     key={st.id}
                     type="button"
                     onClick={() => handleProcessQrCode(st.studentCode)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#13271f] hover:bg-emerald-50 dark:hover:bg-emerald-950 text-slate-700 dark:text-slate-200 hover:text-emerald-700 text-[11px] font-semibold transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-700 dark:text-slate-200 hover:text-blue-700 text-[11px] font-semibold transition-colors"
                   >
                     #{st.studentCode} {st.name.split(" ")[0]}
                   </button>
@@ -1672,7 +1672,7 @@ function AbsensiContent() {
               <div
                 className={`p-4 rounded-2xl border text-xs space-y-2 animate-in fade-in ${
                   scanResult.type === "SUCCESS"
-                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
+                    ? "bg-blue-50 dark:bg-blue-950/40 border-slate-200 dark:border-slate-800 text-blue-900 dark:text-blue-200"
                     : scanResult.type === "WARNING_SCHEDULE"
                     ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
                     : scanResult.type === "ALREADY_PRESENT"
@@ -1682,7 +1682,7 @@ function AbsensiContent() {
               >
                 <div className="flex items-start gap-2.5">
                   {scanResult.type === "SUCCESS" ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                   ) : scanResult.type === "WARNING_SCHEDULE" ? (
                     <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   ) : scanResult.type === "ALREADY_PRESENT" ? (
@@ -1731,7 +1731,7 @@ function AbsensiContent() {
       {/* ========================================================================= */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">
                 Tambah Presensi Susulan
@@ -1763,7 +1763,7 @@ function AbsensiContent() {
                       branch: st?.branch || "Singkut",
                     });
                   }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                 >
                   {students.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -1783,7 +1783,7 @@ function AbsensiContent() {
                     required
                     value={crudForm.date}
                     onChange={(e) => setCrudForm({ ...crudForm, date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                 </div>
 
@@ -1796,7 +1796,7 @@ function AbsensiContent() {
                     value={crudForm.time}
                     onChange={(e) => setCrudForm({ ...crudForm, time: e.target.value })}
                     placeholder="14:00 WIB"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -1814,7 +1814,7 @@ function AbsensiContent() {
                         status: e.target.value as AttendanceItem["status"],
                       })
                     }
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   >
                     <option value="HADIR">Hadir</option>
                     <option value="IZIN">Izin</option>
@@ -1835,7 +1835,7 @@ function AbsensiContent() {
                         method: e.target.value as "QR_SCAN" | "MANUAL",
                       })
                     }
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   >
                     <option value="MANUAL">Manual</option>
                     <option value="QR_SCAN">Scan QR</option>
@@ -1852,7 +1852,7 @@ function AbsensiContent() {
                   value={crudForm.note}
                   onChange={(e) => setCrudForm({ ...crudForm, note: e.target.value })}
                   placeholder="Keterangan izin / catatan kehadiran..."
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -1866,7 +1866,7 @@ function AbsensiContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#059669] text-white text-xs font-bold shadow-xs hover:bg-[#047857]"
+                  className="px-5 py-2 rounded-xl bg-red-600 text-white text-xs font-bold shadow-xs hover:bg-red-700"
                 >
                   Simpan Presensi
                 </button>
@@ -1881,7 +1881,7 @@ function AbsensiContent() {
       {/* ========================================================================= */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">
                 Edit Data Presensi: {crudForm.studentName}
@@ -1906,7 +1906,7 @@ function AbsensiContent() {
                     required
                     value={crudForm.date}
                     onChange={(e) => setCrudForm({ ...crudForm, date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                 </div>
 
@@ -1918,7 +1918,7 @@ function AbsensiContent() {
                     type="text"
                     value={crudForm.time}
                     onChange={(e) => setCrudForm({ ...crudForm, time: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -1935,7 +1935,7 @@ function AbsensiContent() {
                       status: e.target.value as AttendanceItem["status"],
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                 >
                   <option value="HADIR">Hadir</option>
                   <option value="IZIN">Izin</option>
@@ -1952,7 +1952,7 @@ function AbsensiContent() {
                   type="text"
                   value={crudForm.note}
                   onChange={(e) => setCrudForm({ ...crudForm, note: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -1966,7 +1966,7 @@ function AbsensiContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#059669] text-white text-xs font-bold shadow-xs hover:bg-[#047857]"
+                  className="px-5 py-2 rounded-xl bg-red-600 text-white text-xs font-bold shadow-xs hover:bg-red-700"
                 >
                   Simpan Perubahan
                 </button>
@@ -1981,10 +1981,10 @@ function AbsensiContent() {
       {/* ========================================================================= */}
       {activeNoteStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-[#0e1c16] w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shrink-0">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
@@ -2025,7 +2025,7 @@ function AbsensiContent() {
                       onClick={() => {
                         setNoteInputText((prev) => (prev ? `${prev}, ${tag}` : tag));
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 text-[11px] font-semibold border border-slate-200/80 dark:border-slate-700 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-300 text-[11px] font-semibold border border-slate-200/80 dark:border-slate-700 cursor-pointer transition-colors"
                     >
                       + {tag}
                     </button>
@@ -2042,7 +2042,7 @@ function AbsensiContent() {
                   value={noteInputText}
                   onChange={(e) => setNoteInputText(e.target.value)}
                   placeholder="Tuliskan keterangan detail presensi di sini..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -2093,7 +2093,7 @@ function AbsensiContent() {
                       count: 1,
                     });
                   }}
-                  className="px-4 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-extrabold shadow-sm cursor-pointer"
+                  className="px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold shadow-sm cursor-pointer"
                 >
                   Simpan Catatan
                 </button>

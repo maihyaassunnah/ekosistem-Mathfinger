@@ -279,14 +279,14 @@ export default function InputNilaiPage() {
           onClick={() => setActiveSubTab("input")}
           className={`flex items-center gap-2 pb-3.5 transition-all relative ${
             activeSubTab === "input"
-              ? "text-[#059669] dark:text-[#10b981]"
+              ? "text-red-600 dark:text-red-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <Edit3 className="w-4 h-4" />
           Input & Riwayat Nilai
           {activeSubTab === "input" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] dark:bg-[#10b981] rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 dark:bg-red-500 rounded-full" />
           )}
         </button>
 
@@ -295,14 +295,14 @@ export default function InputNilaiPage() {
           onClick={() => setActiveSubTab("keaktifan")}
           className={`flex items-center gap-2 pb-3.5 transition-all relative ${
             activeSubTab === "keaktifan"
-              ? "text-[#059669] dark:text-[#10b981]"
+              ? "text-red-600 dark:text-red-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <Sparkles className="w-4 h-4" />
           Penilaian & Keaktifan Siswa
           {activeSubTab === "keaktifan" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] dark:bg-[#10b981] rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 dark:bg-red-500 rounded-full" />
           )}
         </button>
 
@@ -311,14 +311,14 @@ export default function InputNilaiPage() {
           onClick={() => setActiveSubTab("leger")}
           className={`flex items-center gap-2 pb-3.5 transition-all relative ${
             activeSubTab === "leger"
-              ? "text-[#059669] dark:text-[#10b981]"
+              ? "text-red-600 dark:text-red-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
           Leger Nilai (Matriks)
           {activeSubTab === "leger" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] dark:bg-[#10b981] rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 dark:bg-red-500 rounded-full" />
           )}
         </button>
       </div>
@@ -326,11 +326,11 @@ export default function InputNilaiPage() {
       {activeSubTab === "input" && (
         <div className="space-y-6">
           {/* Main Card: Panel Input Nilai Kelas (Langsung) */}
-          <div className="bg-white dark:bg-[#0e1c16] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             {/* Card Header */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
@@ -344,13 +344,13 @@ export default function InputNilaiPage() {
               </div>
 
               {saveSuccess && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-bold animate-in fade-in">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800 text-xs font-bold animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-red-600 dark:text-red-400" />
                   <span>Nilai Masuk ke Leger Berurutan!</span>
                   <button
                     type="button"
                     onClick={() => setActiveSubTab("leger")}
-                    className="underline hover:text-emerald-900 dark:hover:text-emerald-100 cursor-pointer ml-1"
+                    className="underline hover:text-red-900 dark:hover:text-red-100 cursor-pointer ml-1"
                   >
                     Lihat Leger →
                   </button>
@@ -369,7 +369,7 @@ export default function InputNilaiPage() {
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="Misal: Penjumlahan Kombinasi 5 (+4, +3)"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#0b1812] border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -382,7 +382,7 @@ export default function InputNilaiPage() {
                     type="date"
                     value={examDate}
                     onChange={(e) => setExamDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#0b1812] border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
               </div>
@@ -403,7 +403,7 @@ export default function InputNilaiPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari nama siswa..."
-                    className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                    className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
 
@@ -411,7 +411,7 @@ export default function InputNilaiPage() {
                 <select
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
-                  className="w-full sm:w-48 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                  className="w-full sm:w-48 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="ALL">Semua Kelas</option>
                   {classes.map((c) => (
@@ -425,7 +425,7 @@ export default function InputNilaiPage() {
                 <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as "A-Z" | "Z-A")}
-                  className="w-full sm:w-36 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                  className="w-full sm:w-36 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="A-Z">Nama: A - Z</option>
                   <option value="Z-A">Nama: Z - A</option>
@@ -446,7 +446,7 @@ export default function InputNilaiPage() {
                       onClick={() => setSelectedLetter(letter)}
                       className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                         isActive
-                          ? "bg-[#059669] text-white shadow-xs"
+                          ? "bg-red-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}
                     >
@@ -472,7 +472,7 @@ export default function InputNilaiPage() {
                           )
                         }
                         onChange={handleToggleSelectAll}
-                        className="rounded text-[#059669] focus:ring-[#059669] cursor-pointer"
+                        className="rounded text-red-600 focus:ring-red-500 cursor-pointer"
                       />
                     </th>
                     <th className="py-3 px-4">IKUT</th>
@@ -509,14 +509,14 @@ export default function InputNilaiPage() {
                               type="checkbox"
                               checked={isJoined}
                               onChange={() => handleToggleJoined(s.id)}
-                              className="rounded text-[#059669] focus:ring-[#059669] cursor-pointer"
+                              className="rounded text-red-600 focus:ring-red-500 cursor-pointer"
                             />
                           </td>
                           <td className="py-3.5 px-4">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 isJoined
-                                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
+                                  ? "bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300"
                                   : "bg-slate-200 dark:bg-slate-800 text-slate-500"
                               }`}
                             >
@@ -528,8 +528,8 @@ export default function InputNilaiPage() {
                               <span className="font-bold text-slate-900 dark:text-slate-100">
                                 {s.name}
                               </span>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30">
-                                <Sparkles className="w-2.5 h-2.5 text-emerald-500" />
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800 text-[10px] font-bold text-red-700 dark:text-red-400 bg-red-50/50 dark:bg-red-950/30">
+                                <Sparkles className="w-2.5 h-2.5 text-red-500" />
                                 {s.className}
                               </span>
                             </div>
@@ -544,7 +544,7 @@ export default function InputNilaiPage() {
                               onChange={(e) =>
                                 handleScoreChange(s.id, parseInt(e.target.value))
                               }
-                              className="w-20 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-xs font-bold text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#059669] disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                              className="w-20 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
                             />
                           </td>
                           <td className="py-3.5 px-4">
@@ -556,7 +556,7 @@ export default function InputNilaiPage() {
                                 handleNoteChange(s.id, e.target.value)
                               }
                               placeholder="Catatan performa / ketangkasan siswa..."
-                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
                             />
                           </td>
                         </tr>
@@ -593,7 +593,7 @@ export default function InputNilaiPage() {
                       return reset;
                     });
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] hover:bg-slate-50 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 hover:bg-slate-50 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
                   Reset Form
@@ -602,7 +602,7 @@ export default function InputNilaiPage() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   Simpan Nilai Uji Kompetensi
@@ -614,7 +614,7 @@ export default function InputNilaiPage() {
       )}
 
       {activeSubTab === "keaktifan" && (
-        <div className="bg-white dark:bg-[#0e1c16] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
               <Sparkles className="w-5 h-5" />
@@ -633,24 +633,24 @@ export default function InputNilaiPage() {
             {students.slice(0, 6).map((s) => (
               <div
                 key={s.id}
-                className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b1812] space-y-3"
+                className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                     {s.name}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 dark:bg-red-950/80 dark:text-red-300 border border-red-200 font-bold">
                     {s.className}
                   </span>
                 </div>
                 <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between">
                     <span>Akurasi Gerakan:</span>
-                    <span className="font-bold text-emerald-600">95%</span>
+                    <span className="font-bold text-red-600">95%</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Kecepatan Hitung:</span>
-                    <span className="font-bold text-emerald-600">1.8s / soal</span>
+                    <span className="font-bold text-red-600">1.8s / soal</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tingkat Fokus:</span>
@@ -664,7 +664,7 @@ export default function InputNilaiPage() {
       )}
 
       {activeSubTab === "leger" && (
-        <div className="bg-white dark:bg-[#0e1c16] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-5">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-5">
           {/* Header & Controls */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -672,7 +672,7 @@ export default function InputNilaiPage() {
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
                   Leger Nilai & Matriks Uji Kompetensi
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 border border-red-200 text-[10px] font-bold">
                   {evaluationColumns.length} Sesi Uji Kompetensi Berurutan
                 </span>
               </div>
@@ -686,7 +686,7 @@ export default function InputNilaiPage() {
               <select
                 value={legerClassFilter}
                 onChange={(e) => setLegerClassFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-[#059669]"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-red-500"
               >
                 <option value="ALL">Semua Kelas ({students.length})</option>
                 {classes.map((c) => (
@@ -704,7 +704,7 @@ export default function InputNilaiPage() {
                   placeholder="Cari siswa..."
                   value={legerSearchQuery}
                   onChange={(e) => setLegerSearchQuery(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-xs font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#059669] w-36 sm:w-48"
+                  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-red-500 w-36 sm:w-48"
                 />
               </div>
 
@@ -712,7 +712,7 @@ export default function InputNilaiPage() {
               <button
                 type="button"
                 onClick={handleDownloadLegerCSV}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 Unduh CSV Matriks
@@ -723,7 +723,7 @@ export default function InputNilaiPage() {
           {/* Matriks Table */}
           {evaluationColumns.length === 0 ? (
             <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-600 flex items-center justify-center mx-auto">
                 <FileSpreadsheet className="w-6 h-6" />
               </div>
               <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
@@ -753,7 +753,7 @@ export default function InputNilaiPage() {
                         className="py-3 px-4 text-center border-l border-slate-200/60 dark:border-slate-800 min-w-[150px]"
                       >
                         <div className="space-y-0.5">
-                          <span className="inline-block px-2 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold">
+                          <span className="inline-block px-2 py-0.2 rounded-md bg-red-50 dark:bg-red-950/80 text-red-700 dark:text-red-300 border border-red-200 text-[10px] font-extrabold">
                             Uji {idx + 1}
                           </span>
                           <div className="font-bold text-slate-800 dark:text-slate-200 text-xs truncate max-w-[160px]" title={col.topic}>
@@ -765,7 +765,7 @@ export default function InputNilaiPage() {
                         </div>
                       </th>
                     ))}
-                    <th className="py-3 px-4 text-center font-black text-slate-900 dark:text-slate-100 border-l border-slate-200 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/20 min-w-[100px]">
+                    <th className="py-3 px-4 text-center font-black text-slate-900 dark:text-slate-100 border-l border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/40 min-w-[100px]">
                       Rata-rata
                     </th>
                   </tr>
@@ -793,12 +793,12 @@ export default function InputNilaiPage() {
                     return (
                       <tr
                         key={s.id}
-                        className="hover:bg-slate-50/60 dark:hover:bg-[#0b1812] transition-colors"
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-950 transition-colors"
                       >
-                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono sticky left-0 bg-white dark:bg-[#0e1c16] z-10">
+                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono sticky left-0 bg-white dark:bg-slate-900 z-10">
                           {idx + 1}
                         </td>
-                        <td className="py-2.5 px-4 font-bold text-slate-900 dark:text-slate-100 sticky left-12 bg-white dark:bg-[#0e1c16] z-10">
+                        <td className="py-2.5 px-4 font-bold text-slate-900 dark:text-slate-100 sticky left-12 bg-white dark:bg-slate-900 z-10">
                           <div className="flex items-center gap-2">
                             <span>{s.name}</span>
                           </div>
@@ -817,7 +817,7 @@ export default function InputNilaiPage() {
                               <span
                                 className={`inline-block px-2.5 py-1 rounded-lg font-black text-xs ${
                                   score >= 85
-                                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                                    ? "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300"
                                     : score >= 70
                                     ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300"
                                     : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
@@ -832,9 +832,9 @@ export default function InputNilaiPage() {
                             )}
                           </td>
                         ))}
-                        <td className="py-2.5 px-4 text-center font-black text-slate-900 dark:text-slate-100 border-l border-slate-200 dark:border-slate-800 bg-emerald-50/30 dark:bg-emerald-950/10">
+                        <td className="py-2.5 px-4 text-center font-black text-slate-900 dark:text-slate-100 border-l border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-800/30">
                           {average !== "-" ? (
-                            <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
+                            <span className="text-red-600 dark:text-red-400 font-extrabold">
                               {average}
                             </span>
                           ) : (

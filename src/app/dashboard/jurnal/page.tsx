@@ -74,15 +74,15 @@ export default function JurnalGuruPage() {
         <button
           type="button"
           onClick={() => setIsAddOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           + Buat Jurnal Harian Kelas
         </button>
       </div>
 
-      {/* Filter Bar (Matches Image 5) */}
-      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+      {/* Filter Bar */}
+      <div className="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             <Search className="w-4 h-4" />
@@ -92,7 +92,7 @@ export default function JurnalGuruPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari materi jurnal, catatan, atau nama siswa..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
           />
         </div>
 
@@ -100,7 +100,7 @@ export default function JurnalGuruPage() {
           <select
             value={classFilter}
             onChange={(e) => setClassFilter(e.target.value)}
-            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+            className="px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white"
           >
             <option value="ALL">Semua Kelas</option>
             <option value="Kelas A">Kelas A</option>
@@ -113,7 +113,7 @@ export default function JurnalGuruPage() {
           <select
             value={studentFilter}
             onChange={(e) => setStudentFilter(e.target.value)}
-            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 max-w-[180px]"
+            className="px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white max-w-[180px]"
           >
             <option value="ALL">Semua Siswa</option>
             {students.slice(0, 8).map((s) => (
@@ -125,29 +125,29 @@ export default function JurnalGuruPage() {
         </div>
       </div>
 
-      {/* Date Pill (Matches Image 5) */}
+      {/* Date Pill */}
       <div className="flex justify-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white border border-slate-200 text-xs font-extrabold text-slate-700 shadow-2xs">
-          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-extrabold text-slate-800 dark:text-slate-200 shadow-2xs">
+          <Calendar className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
           MINGGU, 30 AGUSTUS 2026
         </div>
       </div>
 
-      {/* 2-Column Grid of Jurnal Cards (Matches Image 5) */}
+      {/* 2-Column Grid of Jurnal Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {filteredJournals.map((j) => (
           <div
             key={j.id}
-            className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3.5 hover:shadow-md transition-all flex flex-col justify-between"
+            className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 hover:shadow-md transition-all flex flex-col justify-between"
           >
             {/* Header: Name, Class Badge, Actions */}
             <div>
               <div className="flex items-center justify-between gap-2 pb-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-slate-900 text-base">
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                     {j.studentName}
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 dark:bg-red-950/80 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60">
                     {j.className}
                   </span>
                 </div>
@@ -156,10 +156,10 @@ export default function JurnalGuruPage() {
                   <button
                     type="button"
                     onClick={() => handleSendWA(j)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition-all"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer"
                     title="Kirim ke WhatsApp Wali"
                   >
-                    <Send className="w-3 h-3" />
+                    <Send className="w-3 h-3 text-red-600 dark:text-red-400" />
                     Kirim
                   </button>
 
@@ -170,7 +170,7 @@ export default function JurnalGuruPage() {
                         deleteJournal(j.id);
                       }
                     }}
-                    className="p-1 rounded-lg text-slate-400 hover:text-red-600 transition-colors"
+                    className="p-1 rounded-lg text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                     title="Hapus Jurnal"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -179,24 +179,24 @@ export default function JurnalGuruPage() {
               </div>
 
               {/* Topic Header */}
-              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800">
-                <BookOpen className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-red-700 dark:text-red-400">
+                <BookOpen className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
                 <span>Materi: {j.topic}</span>
               </div>
 
-              {/* Note Content (Quote style) */}
-              <div className="mt-3 p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 text-xs text-slate-600 leading-relaxed italic">
+              {/* Note Content */}
+              <div className="mt-3 p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic">
                 &ldquo;{j.content}&rdquo;
               </div>
             </div>
 
             {/* Footer: Teacher Name & Ref Code */}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-medium">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
               <div className="flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-slate-400" />
-                <span>Oleh: <strong className="text-slate-700">{j.teacher}</strong></span>
+                <span>Tutor: {j.teacher}</span>
               </div>
-              <span className="font-mono text-[11px] text-slate-400">Ref: {j.refCode}</span>
+              <span className="text-[10px] text-slate-400">ID #{j.id.slice(0, 6)}</span>
             </div>
           </div>
         ))}
@@ -204,16 +204,16 @@ export default function JurnalGuruPage() {
 
       {/* Modal Add Jurnal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-base">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                 Buat Jurnal Harian Kelas Baru
               </h3>
               <button
                 type="button"
                 onClick={() => setIsAddOpen(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -222,11 +222,11 @@ export default function JurnalGuruPage() {
             <form onSubmit={handleSubmitAdd} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Nama Siswa</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Nama Siswa</label>
                   <select
                     value={form.studentName}
                     onChange={(e) => setForm({ ...form, studentName: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   >
                     {students.map((s) => (
                       <option key={s.id} value={s.name}>
@@ -237,11 +237,11 @@ export default function JurnalGuruPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Pilihan Kelas</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Pilihan Kelas</label>
                   <select
                     value={form.className}
                     onChange={(e) => setForm({ ...form, className: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   >
                     {classes.map((c) => (
                       <option key={c.id} value={c.name}>
@@ -253,48 +253,49 @@ export default function JurnalGuruPage() {
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Topik / Materi Silabus</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Topik / Materi Silabus</label>
                 <input
                   type="text"
                   required
                   value={form.topic}
                   onChange={(e) => setForm({ ...form, topic: e.target.value })}
                   placeholder="Contoh: Pengurangan (jari turun)"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Catatan Evaluasi Guru</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Catatan Evaluasi Guru</label>
                 <textarea
                   rows={4}
                   required
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium leading-relaxed"
+                  placeholder="Tuliskan evaluasi harian siswa..."
+                  className="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 leading-relaxed focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Guru Pengajar</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Guru Pengajar</label>
                   <input
                     type="text"
                     required
                     value={form.teacher}
                     onChange={(e) => setForm({ ...form, teacher: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Tanggal</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Tanggal</label>
                   <input
                     type="date"
                     required
                     value={form.date}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   />
                 </div>
               </div>
@@ -303,13 +304,13 @@ export default function JurnalGuruPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#059669] text-white font-bold hover:bg-[#047857]"
+                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold cursor-pointer transition-all shadow-xs"
                 >
                   Simpan Jurnal
                 </button>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   Home,
   Users,
@@ -16,7 +17,6 @@ import {
   FileText,
   CreditCard,
   Receipt,
-  PieChart,
   Wallet,
   GraduationCap,
   Building2,
@@ -33,7 +33,6 @@ import {
   Globe,
   HeartHandshake,
   UserPlus,
-  ExternalLink,
 } from "lucide-react";
 import { CURRENT_USER } from "@/lib/mock-data";
 import { useTheme } from "@/lib/theme";
@@ -46,8 +45,19 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps = {}) {
   const pathname = usePathname();
+  const sessionResult = useSession();
+  const session = sessionResult?.data;
   const { theme, toggleTheme } = useTheme();
-  const { landingPrograms, landingTestimonials, landingLeads, landingPartners } = useAppStore();
+  const {
+    students,
+    classes,
+    invoices,
+    landingPrograms,
+    landingTestimonials,
+    landingLeads,
+    landingPartners,
+  } = useAppStore();
+
   const [activeTab, setActiveTab] = useState<"UTAMA" | "WEBSITE">("UTAMA");
   const [collapsed, setCollapsed] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -58,6 +68,12 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
       setActiveTab("WEBSITE");
     }
   }, [pathname]);
+
+  // Real Counts
+  const realStudentCount = students.length;
+  const realClassCount = classes.length;
+  const unpaidInvoicesCount = invoices.filter((i) => i.status === "BELUM BAYAR").length;
+  const newLeadsCount = landingLeads.filter((l) => l.status === "Baru").length;
 
   const menuSections = [
     {
@@ -73,14 +89,15 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           name: "Siswa",
           href: "/dashboard/siswa",
           icon: Users,
-          badge: "52",
-          badgeColor: "bg-lime-400 text-slate-900 font-bold",
+          badge: `${realStudentCount}`,
+          badgeColor: "bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 font-extrabold",
         },
         {
           name: "Kelas",
           href: "/dashboard/kelas",
           icon: LayoutGrid,
-          badge: null,
+          badge: realClassCount > 0 ? `${realClassCount}` : null,
+          badgeColor: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold",
         },
         {
           name: "Kartu QR Siswa",
@@ -138,8 +155,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           name: "Pembayaran SPP",
           href: "/dashboard/spp",
           icon: CreditCard,
-          badge: "29",
-          badgeColor: "bg-amber-400 text-slate-900 font-bold",
+          badge: unpaidInvoicesCount > 0 ? `${unpaidInvoicesCount}` : null,
+          badgeColor: "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-extrabold",
         },
         {
           name: "Riwayat SPP",
@@ -174,7 +191,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           name: "Database Cloud",
           href: "/dashboard/database",
           icon: Database,
-          badge: null,
+          badge: "17",
+          badgeColor: "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold",
         },
         {
           name: "Pengaturan",
@@ -195,7 +213,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/dashboard/website",
           icon: Sparkles,
           badge: "Hero & WA",
-          badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold",
+          badgeColor: "bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold",
         },
         {
           name: "Program & Biaya Les",
@@ -215,8 +233,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           name: "Mitra & Logo Bergulir",
           href: "/dashboard/website?tab=partners",
           icon: Building2,
-          badge: `${landingPartners?.filter((p) => p.active).length || 7}`,
-          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
+          badge: `${landingPartners?.filter((p) => p.active).length || 0}`,
+          badgeColor: "bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold",
         },
       ],
     },
@@ -227,8 +245,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           name: "Pendaftar Trial Class",
           href: "/dashboard/website?tab=leads",
           icon: UserPlus,
-          badge: `${landingLeads.filter((l) => l.status === "Baru").length} Baru`,
-          badgeColor: "bg-amber-400 text-slate-950 font-extrabold",
+          badge: newLeadsCount > 0 ? `${newLeadsCount} Baru` : null,
+          badgeColor: "bg-red-500 text-white font-extrabold",
         },
       ],
     },
@@ -240,7 +258,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/",
           icon: Globe,
           badge: "Live ↗",
-          badgeColor: "bg-emerald-600 text-white font-bold",
+          badgeColor: "bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold",
           external: true,
         },
       ],
@@ -249,31 +267,38 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
   const currentSections = activeTab === "UTAMA" ? menuSections : websiteSections;
 
+  // Active user data from session or fallback
+  const userName = session?.user?.name || CURRENT_USER.name;
+  const userEmail = session?.user?.email || CURRENT_USER.email;
+  const userRole = (session?.user as any)?.role || CURRENT_USER.role;
+  const userPhoto =
+    session?.user?.image ||
+    CURRENT_USER.avatar ||
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80";
+
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 lg:static h-screen bg-white dark:bg-[#0e1c16] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 shrink-0 ${
+      className={`fixed inset-y-0 left-0 z-50 lg:static h-screen bg-white dark:bg-[#0b0f19] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 shrink-0 ${
         collapsed ? "w-20" : "w-64"
       } ${
-        mobileOpen
-          ? "translate-x-0 shadow-2xl"
-          : "-translate-x-full lg:translate-x-0"
+        mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       }`}
     >
       {/* Top Header */}
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-4">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-4">
         {/* Mac-style Window Controls + Dark Mode & Collapse Button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
+            <span className="w-3 h-3 rounded-full bg-red-500 inline-block" />
             <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
-            <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
+            <span className="w-3 h-3 rounded-full bg-slate-400 inline-block" />
           </div>
 
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={toggleTheme}
-              className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer"
               title={theme === "dark" ? "Ganti ke Mode Terang" : "Ganti ke Mode Gelap"}
             >
               {theme === "dark" ? (
@@ -285,7 +310,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
             <button
               type="button"
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex w-7 h-7 rounded-full bg-[#059669] text-white items-center justify-center hover:bg-[#047857] transition-all shadow-xs"
+              className="hidden lg:flex w-7 h-7 rounded-full bg-red-600 text-white items-center justify-center hover:bg-red-700 transition-all shadow-xs"
               title={collapsed ? "Perluas Sidebar" : "Ciutkan Sidebar"}
             >
               {collapsed ? (
@@ -309,7 +334,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
         {/* Brand Header with Easy Learning House Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 dark:border-emerald-800 p-0.5 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 dark:border-slate-700 p-0.5 flex items-center justify-center shrink-0 shadow-xs">
             <img
               src="/logo.png"
               alt="Easy Learning House"
@@ -319,14 +344,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           {!collapsed && (
             <div className="overflow-hidden">
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-slate-900 dark:text-slate-100 text-sm tracking-tight truncate">
+                <span className="font-black text-slate-900 dark:text-white text-sm tracking-tight truncate">
                   Easy Learning
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300">
                   v3.3
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 truncate">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
                 House of Math Fingers
               </p>
             </div>
@@ -335,14 +360,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
         {/* UTAMA vs WEBSITE Tab Switcher */}
         {!collapsed && (
-          <div className="bg-slate-100/80 dark:bg-[#13271f] p-1 rounded-xl grid grid-cols-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+          <div className="bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl grid grid-cols-2 text-xs font-bold text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
             <button
               type="button"
               onClick={() => setActiveTab("UTAMA")}
-              className={`py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold ${
                 activeTab === "UTAMA"
-                  ? "bg-[#059669] text-white shadow-xs"
-                  : "hover:text-slate-900 dark:hover:text-slate-100"
+                  ? "bg-red-600 text-white shadow-xs"
+                  : "hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               UTAMA
@@ -350,10 +375,10 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
             <button
               type="button"
               onClick={() => setActiveTab("WEBSITE")}
-              className={`py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold ${
                 activeTab === "WEBSITE"
-                  ? "bg-[#059669] text-white shadow-xs"
-                  : "hover:text-slate-900 dark:hover:text-slate-100"
+                  ? "bg-red-600 text-white shadow-xs"
+                  : "hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               WEBSITE
@@ -367,7 +392,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
         {currentSections.map((section, sIdx) => (
           <div key={sIdx} className="space-y-1">
             {!collapsed && (
-              <div className="px-3 text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1">
+              <div className="px-3 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-1">
                 {section.group}
               </div>
             )}
@@ -381,16 +406,16 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                   href={item.href}
                   onClick={onCloseMobile}
                   title={item.name}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? "bg-[#059669] text-white shadow-sm"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#13271f] hover:text-slate-900 dark:hover:text-slate-100"
+                      ? "bg-red-600 text-white shadow-sm"
+                      : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-3 truncate">
                     <Icon
                       className={`w-4 h-4 shrink-0 ${
-                        isActive ? "text-white" : "text-slate-500"
+                        isActive ? "text-white" : "text-slate-500 dark:text-slate-400"
                       }`}
                     />
                     {!collapsed && <span className="truncate">{item.name}</span>}
@@ -398,8 +423,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
                   {!collapsed && item.badge && (
                     <span
-                      className={`px-1.5 py-0.5 text-[10px] rounded-full shrink-0 ${
-                        item.badgeColor || "bg-slate-100 text-slate-700"
+                      className={`px-2 py-0.5 text-[10px] rounded-full shrink-0 shadow-2xs ${
+                        item.badgeColor || "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
                       }`}
                     >
                       {item.badge}
@@ -412,25 +437,31 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
         ))}
       </div>
 
-      {/* User Profile Footer */}
-      <div className="p-3 border-t border-slate-100 relative">
+      {/* User Profile Footer (Fixed at Bottom Left with Photo Profile) */}
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] relative">
         <div
-          className={`flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 ${
+          className={`flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs ${
             collapsed ? "flex-col gap-2" : ""
           }`}
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-              WH
+            <div className="relative shrink-0">
+              <img
+                src={userPhoto}
+                alt={userName}
+                className="w-9 h-9 rounded-xl object-cover ring-2 ring-red-500/25 shadow-xs"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
             </div>
+
             {!collapsed && (
               <div className="overflow-hidden">
-                <div className="text-xs font-bold text-slate-900 truncate">
-                  {CURRENT_USER.name}
+                <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                  {userName}
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-amber-600 font-semibold">
+                <div className="flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400 font-bold truncate">
                   <span>👑</span>
-                  <span>{CURRENT_USER.role}</span>
+                  <span className="truncate">{userRole}</span>
                 </div>
               </div>
             )}
@@ -440,35 +471,38 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
             <button
               type="button"
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-200/60"
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              title="Menu Profil"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
 
             {showProfileMenu && (
-              <div className="absolute bottom-full right-0 mb-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 text-xs font-medium">
-                <div className="px-3 py-2 border-b border-slate-100">
-                  <div className="font-semibold text-slate-900">
-                    {CURRENT_USER.name}
+              <div className="absolute bottom-full right-0 mb-2 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-1.5 z-50 text-xs font-medium animate-in fade-in">
+                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="font-bold text-slate-900 dark:text-white truncate">
+                    {userName}
                   </div>
-                  <div className="text-[11px] text-slate-400">
-                    {CURRENT_USER.email}
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    {userEmail}
                   </div>
                 </div>
                 <Link
                   href="/dashboard/pengaturan"
-                  className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold transition"
                 >
-                  <Settings className="w-3.5 h-3.5" />
+                  <Settings className="w-3.5 h-3.5 text-slate-400" />
                   Pengaturan Akun
                 </Link>
-                <Link
-                  href="/login"
-                  className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50"
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 font-bold transition text-left cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3.5 h-3.5 text-red-500" />
                   Keluar (Logout)
-                </Link>
+                </button>
               </div>
             )}
           </div>

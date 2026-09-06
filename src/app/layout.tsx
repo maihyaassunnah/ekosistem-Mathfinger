@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme";
 import { AppStoreProvider } from "@/lib/store";
+import AuthProvider from "@/components/providers/AuthProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -39,10 +40,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`${plusJakarta.variable} h-full antialiased font-sans`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] dark:bg-[#07110c] dark:text-[#f8fafc] font-sans transition-colors duration-200">
-        <ThemeProvider>
-          <AppStoreProvider>{children}</AppStoreProvider>
-        </ThemeProvider>
+      <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] dark:bg-[#090d16] dark:text-[#f8fafc] font-sans transition-colors duration-200">
+        <AuthProvider>
+          <ThemeProvider>
+            <AppStoreProvider>{children}</AppStoreProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

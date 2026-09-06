@@ -166,14 +166,14 @@ export default function CabangDanAdminPage() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300">
           <button
             type="button"
             onClick={() => setActiveTab("CABANG")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all ${
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === "CABANG"
-                ? "bg-[#059669] text-white shadow-xs"
-                : "hover:text-slate-900"
+                ? "bg-red-600 text-white shadow-xs"
+                : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
@@ -182,10 +182,10 @@ export default function CabangDanAdminPage() {
           <button
             type="button"
             onClick={() => setActiveTab("ADMIN")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all ${
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === "ADMIN"
-                ? "bg-[#059669] text-white shadow-xs"
-                : "hover:text-slate-900"
+                ? "bg-red-600 text-white shadow-xs"
+                : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -198,14 +198,14 @@ export default function CabangDanAdminPage() {
         /* TAB 1: KELOLA CABANG */
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+            <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               Daftar Seluruh Cabang Terdaftar
             </span>
 
             <button
               type="button"
               onClick={handleOpenAddBranch}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               + Buka Cabang Baru
@@ -220,16 +220,16 @@ export default function CabangDanAdminPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4 hover:border-emerald-300 transition-all flex flex-col justify-between"
+                  className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 hover:border-red-300 dark:hover:border-red-800 transition-all flex flex-col justify-between"
                 >
                   <div>
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-extrabold text-base shadow-xs">
+                        <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 flex items-center justify-center font-extrabold text-base shadow-xs">
                           {b.code}
                         </div>
                         <div>
-                          <h2 className="font-extrabold text-slate-900 text-lg">
+                          <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">
                             Cabang {b.name}
                           </h2>
                           <p className="text-xs text-slate-400">Kode Cabang: #{b.code}</p>
@@ -237,13 +237,13 @@ export default function CabangDanAdminPage() {
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
                           {b.status}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleOpenEditBranch(b)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                           title="Edit Cabang"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -255,7 +255,7 @@ export default function CabangDanAdminPage() {
                               deleteBranch(b.id);
                             }
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                           title="Hapus Cabang"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ export default function CabangDanAdminPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-4">
+                    <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 mt-4">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
                         <span>{b.address}</span>
@@ -273,7 +273,7 @@ export default function CabangDanAdminPage() {
                         <span>Kontak: {b.phone}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <ShieldCheck className="w-4 h-4 text-red-600 shrink-0" />
                         <span>
                           Admin Penanggung Jawab: <strong>{adminCount} Akun Terhubung</strong>
                         </span>
@@ -282,8 +282,8 @@ export default function CabangDanAdminPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                      <div className="text-2xl font-extrabold text-slate-900">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-center">
+                      <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
                         {studentCount || b.activeStudents}
                       </div>
                       <div className="text-[11px] text-slate-400 font-medium">
@@ -291,8 +291,8 @@ export default function CabangDanAdminPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                      <div className="text-2xl font-extrabold text-emerald-700">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-center">
+                      <div className="text-2xl font-extrabold text-red-600 dark:text-red-400">
                         {adminCount}
                       </div>
                       <div className="text-[11px] text-slate-400 font-medium">
@@ -309,14 +309,14 @@ export default function CabangDanAdminPage() {
         /* TAB 2: KELOLA AKUN ADMIN CABANG */
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+            <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               Daftar Akun Petugas & Admin Cabang
             </span>
 
             <button
               type="button"
               onClick={handleOpenAddAdmin}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               + Tambah Akun Admin Cabang
@@ -324,8 +324,8 @@ export default function CabangDanAdminPage() {
           </div>
 
           {/* Admin Accounts Table */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-            <div className="p-4 bg-slate-50 font-bold text-xs text-slate-500 uppercase tracking-wider grid grid-cols-12">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
+            <div className="p-4 bg-slate-50 dark:bg-slate-950 font-bold text-xs text-slate-500 uppercase tracking-wider grid grid-cols-12">
               <div className="col-span-4">Nama Petugas Admin</div>
               <div className="col-span-3">Email & WhatsApp</div>
               <div className="col-span-2">Penugasan Cabang</div>
@@ -336,11 +336,11 @@ export default function CabangDanAdminPage() {
             {branchAdmins.map((adm) => (
               <div
                 key={adm.id}
-                className="p-4 grid grid-cols-12 items-center text-xs hover:bg-slate-50/70 transition-colors"
+                className="p-4 grid grid-cols-12 items-center text-xs hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
               >
                 {/* Name */}
                 <div className="col-span-4 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200">
+                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
                     {adm.avatarUrl ? (
                       <img src={adm.avatarUrl} alt={adm.fullName} className="w-full h-full object-cover" />
                     ) : (
@@ -348,24 +348,24 @@ export default function CabangDanAdminPage() {
                     )}
                   </div>
                   <div>
-                    <div className="font-extrabold text-slate-900 text-sm">{adm.fullName}</div>
+                    <div className="font-extrabold text-slate-900 dark:text-white text-sm">{adm.fullName}</div>
                     {adm.role === "Super Admin" ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-md">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-1.5 py-0.2 rounded-md">
                         👑 Super Admin
                       </span>
                     ) : (
-                      <div className="text-[11px] text-emerald-700 font-semibold">{adm.role}</div>
+                      <div className="text-[11px] text-red-600 dark:text-red-400 font-semibold">{adm.role}</div>
                     )}
                   </div>
                 </div>
 
                 {/* Contact */}
                 <div className="col-span-3 space-y-0.5">
-                  <div className="text-slate-700 flex items-center gap-1">
+                  <div className="text-slate-700 dark:text-slate-200 flex items-center gap-1">
                     <Mail className="w-3 h-3 text-slate-400" />
-                    <span>{adm.email}</span>
+                    <span className="truncate">{adm.email}</span>
                   </div>
-                  <div className="text-slate-500 flex items-center gap-1">
+                  <div className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                     <Phone className="w-3 h-3 text-slate-400" />
                     <span>{adm.phone}</span>
                   </div>
@@ -376,8 +376,8 @@ export default function CabangDanAdminPage() {
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-bold inline-block ${
                       adm.branchName === "Semua Cabang (Pusat)"
-                        ? "bg-amber-100 text-amber-900"
-                        : "bg-purple-100 text-purple-800"
+                        ? "bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200"
+                        : "bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300"
                     }`}
                   >
                     {adm.branchName === "Semua Cabang (Pusat)"
@@ -397,8 +397,8 @@ export default function CabangDanAdminPage() {
                     }
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
                       adm.status === "Aktif"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-slate-100 text-slate-500"
+                        ? "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                     }`}
                   >
                     {adm.status}
@@ -410,7 +410,7 @@ export default function CabangDanAdminPage() {
                   <button
                     type="button"
                     onClick={() => handleOpenEditAdmin(adm)}
-                    className="p-1.5 rounded-lg hover:text-indigo-600 hover:bg-slate-100"
+                    className="p-1.5 rounded-lg hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                     title="Edit Admin"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -418,7 +418,7 @@ export default function CabangDanAdminPage() {
                   <button
                     type="button"
                     onClick={() => alert(`Password baru dikirim ke email: ${adm.email}`)}
-                    className="p-1.5 rounded-lg hover:text-amber-600 hover:bg-slate-100"
+                    className="p-1.5 rounded-lg hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                     title="Reset Password"
                   >
                     <Key className="w-3.5 h-3.5" />
@@ -430,7 +430,7 @@ export default function CabangDanAdminPage() {
                         deleteBranchAdmin(adm.id);
                       }
                     }}
-                    className="p-1.5 rounded-lg hover:text-red-600 hover:bg-red-50"
+                    className="p-1.5 rounded-lg hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                     title="Hapus Akun"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -445,9 +445,9 @@ export default function CabangDanAdminPage() {
       {/* Modal Add / Edit Branch */}
       {(isAddBranchOpen || editingBranch) && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-base">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                 {editingBranch ? `Edit Cabang ${editingBranch.name}` : "Buka Cabang Baru"}
               </h3>
               <button
@@ -456,7 +456,7 @@ export default function CabangDanAdminPage() {
                   setIsAddBranchOpen(false);
                   setEditingBranch(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -465,18 +465,18 @@ export default function CabangDanAdminPage() {
             <form onSubmit={handleSubmitBranch} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Nama Cabang</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nama Cabang</label>
                   <input
                     type="text"
                     required
                     value={branchForm.name}
                     onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })}
                     placeholder="Contoh: Sarolangun"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Kode Cabang (3 Huruf)</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Kode Cabang (3 Huruf)</label>
                   <input
                     type="text"
                     required
@@ -486,32 +486,32 @@ export default function CabangDanAdminPage() {
                       setBranchForm({ ...branchForm, code: e.target.value.toUpperCase() })
                     }
                     placeholder="Contoh: SRL"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold uppercase"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-bold uppercase focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Alamat Kantor Cabang</label>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Alamat Kantor Cabang</label>
                 <textarea
                   rows={2}
                   required
                   value={branchForm.address}
                   onChange={(e) => setBranchForm({ ...branchForm, address: e.target.value })}
                   placeholder="Alamat jalan, kelurahan, kecamatan..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Nomor Telepon / WhatsApp</label>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nomor Telepon / WhatsApp</label>
                 <input
                   type="text"
                   required
                   value={branchForm.phone}
                   onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value })}
                   placeholder="0812-..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -522,13 +522,13 @@ export default function CabangDanAdminPage() {
                     setIsAddBranchOpen(false);
                     setEditingBranch(null);
                   }}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#059669] text-white font-bold hover:bg-[#047857]"
+                  className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-extrabold hover:bg-red-700 cursor-pointer transition-colors"
                 >
                   {editingBranch ? "Simpan Perubahan" : "Buat Cabang"}
                 </button>
@@ -540,10 +540,10 @@ export default function CabangDanAdminPage() {
 
       {/* Modal Add / Edit Branch Admin Account */}
       {(isAddAdminOpen || editingAdmin) && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-base">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                 {editingAdmin ? `Edit Akun: ${editingAdmin.fullName}` : "Tambah Akun Admin Cabang"}
               </h3>
               <button
@@ -552,7 +552,7 @@ export default function CabangDanAdminPage() {
                   setIsAddAdminOpen(false);
                   setEditingAdmin(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -560,23 +560,23 @@ export default function CabangDanAdminPage() {
 
             <form onSubmit={handleSubmitAdmin} className="space-y-3.5 text-xs">
               {/* Info Banner untuk Autentikasi Google & Password */}
-              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 flex items-start gap-2.5">
+              <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-[11px] text-rose-900 dark:text-rose-200 flex items-start gap-2.5">
                 <span className="text-base leading-none">🔐</span>
                 <div className="leading-snug">
-                  <strong className="font-bold text-emerald-950">Akses Login Terintegrasi:</strong>
-                  <p className="text-emerald-800 text-[10.5px] mt-0.5">
+                  <strong className="font-bold text-rose-950 dark:text-rose-100">Akses Login Terintegrasi:</strong>
+                  <p className="text-rose-800 dark:text-rose-300 text-[10.5px] mt-0.5">
                     Akun yang Anda daftarkan di sini dapat masuk ke aplikasi menggunakan <strong>Email & Password</strong> ATAU menggunakan <strong>Akun Google</strong> (jika Anda mendaftarkan alamat Gmail). Akun yang belum terdaftar di sini tidak akan diizinkan login.
                   </p>
                 </div>
               </div>
 
               {/* Foto Profil dari Galeri */}
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2">
-                <label className="block text-slate-700 font-bold text-xs">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 space-y-2">
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs">
                   Foto Profil Akun (Pilih dari Galeri)
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-200 border border-slate-300 flex items-center justify-center shrink-0 shadow-2xs">
+                  <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 shadow-2xs">
                     {adminForm.avatarUrl ? (
                       <img
                         src={adminForm.avatarUrl}
@@ -584,7 +584,7 @@ export default function CabangDanAdminPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm">
+                      <div className="w-full h-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-black flex items-center justify-center text-sm">
                         {adminForm.fullName
                           ? adminForm.fullName.charAt(0).toUpperCase()
                           : "A"}
@@ -594,7 +594,7 @@ export default function CabangDanAdminPage() {
 
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-[11px] font-bold text-slate-700 shadow-2xs transition-all">
+                      <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition-all">
                         <span>🖼️ Unggah Foto Galeri</span>
                         <input
                           type="file"
@@ -636,27 +636,27 @@ export default function CabangDanAdminPage() {
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Nama Lengkap Admin / Guru</label>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nama Lengkap Admin / Guru</label>
                 <input
                   type="text"
                   required
                   value={adminForm.fullName}
                   onChange={(e) => setAdminForm({ ...adminForm, fullName: e.target.value })}
                   placeholder="Contoh: Siti Aisyah, S.Pd"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Email Akun</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Email Akun</label>
                   <input
                     type="email"
                     required
                     value={adminForm.email}
                     onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                     placeholder="nama@gmail.com"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
                     Gunakan Gmail agar bisa login Google
@@ -664,13 +664,13 @@ export default function CabangDanAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Kata Sandi (Password)</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Kata Sandi (Password)</label>
                   <input
                     type="text"
                     value={adminForm.password}
                     onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
                     placeholder="password123"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
                     Untuk opsi login manual
@@ -680,13 +680,13 @@ export default function CabangDanAdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Penugasan Cabang</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Penugasan Cabang</label>
                   <select
                     value={adminForm.branchName}
                     onChange={(e) =>
                       setAdminForm({ ...adminForm, branchName: e.target.value as any })
                     }
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   >
                     <option value="Semua Cabang (Pusat)">Semua Cabang (Pusat)</option>
                     {branches.map((b) => (
@@ -698,11 +698,11 @@ export default function CabangDanAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Peran / Jabatan</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Peran / Jabatan</label>
                   <select
                     value={adminForm.role}
                     onChange={(e) => setAdminForm({ ...adminForm, role: e.target.value as any })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                    className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   >
                     <option value="Super Admin">Super Admin</option>
                     <option value="Admin Cabang">Admin Cabang</option>
@@ -712,14 +712,14 @@ export default function CabangDanAdminPage() {
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Nomor Telepon / WhatsApp</label>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nomor Telepon / WhatsApp</label>
                 <input
                   type="text"
                   required
                   value={adminForm.phone}
                   onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
                   placeholder="0812-..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -730,13 +730,13 @@ export default function CabangDanAdminPage() {
                     setIsAddAdminOpen(false);
                     setEditingAdmin(null);
                   }}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#059669] text-white font-bold hover:bg-[#047857]"
+                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold cursor-pointer transition-colors"
                 >
                   {editingAdmin ? "Simpan Akun" : "Terbitkan Akun"}
                 </button>

@@ -39,7 +39,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         {/* Mobile & Tablet Header Bar (Visible on < lg, hidden on /dashboard home as it has native app header) */}
         {!isDashboardHome && (
-          <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/95 dark:bg-[#0e1c16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shrink-0 z-30 shadow-2xs">
+          <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shrink-0 z-30 shadow-2xs">
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
@@ -51,7 +51,7 @@ export default function DashboardLayout({
               </button>
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-emerald-100 dark:border-emerald-800 flex items-center justify-center font-bold shadow-2xs">
+                <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-slate-200 dark:border-slate-800 flex items-center justify-center font-bold shadow-2xs">
                   <img
                     src="/logo.png"
                     alt="Easy Learning House"
@@ -62,7 +62,7 @@ export default function DashboardLayout({
                   <span className="font-black text-sm text-slate-900 dark:text-slate-100 tracking-tight">
                     Easy Learning
                   </span>
-                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[9px] font-bold">
+                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-[9px] font-bold">
                     v3.3
                   </span>
                 </div>
@@ -96,7 +96,7 @@ export default function DashboardLayout({
         </main>
 
         {/* Mobile & Tablet Bottom Navigation Dock (Persistent App Bar) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0e1c16]/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 px-3 pt-1.5 pb-2.5 shadow-2xl">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 px-3 pt-1.5 pb-2.5 shadow-2xl">
           <div className="max-w-md md:max-w-xl mx-auto flex items-end justify-around relative">
             {/* 1. Home (Elevated circle when on /dashboard or clicked) */}
             <Link
@@ -104,9 +104,9 @@ export default function DashboardLayout({
               className="flex flex-col items-center group cursor-pointer"
             >
               <div
-                className={`w-11 h-11 -mt-4 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border-4 border-white dark:border-[#0e1c16] ${
+                className={`w-11 h-11 -mt-4 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border-4 border-white dark:border-slate-900 ${
                   pathname === "/dashboard"
-                    ? "bg-emerald-500 text-white ring-2 ring-emerald-500/30"
+                    ? "bg-red-600 text-white ring-2 ring-red-500/30"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 }`}
               >
@@ -115,7 +115,7 @@ export default function DashboardLayout({
               <span
                 className={`text-[10px] font-extrabold mt-0.5 ${
                   pathname === "/dashboard"
-                    ? "text-emerald-600 dark:text-emerald-400"
+                    ? "text-red-600 dark:text-red-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -131,14 +131,14 @@ export default function DashboardLayout({
               <Users
                 className={`w-5 h-5 ${
                   pathname.startsWith("/dashboard/siswa")
-                    ? "text-emerald-600 dark:text-emerald-400"
+                    ? "text-red-600 dark:text-red-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
                   pathname.startsWith("/dashboard/siswa")
-                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                    ? "text-red-600 dark:text-red-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -154,14 +154,14 @@ export default function DashboardLayout({
               <CheckSquare
                 className={`w-5 h-5 ${
                   pathname.startsWith("/dashboard/absensi")
-                    ? "text-emerald-600 dark:text-emerald-400"
+                    ? "text-red-600 dark:text-red-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
                   pathname.startsWith("/dashboard/absensi")
-                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                    ? "text-red-600 dark:text-red-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -177,14 +177,14 @@ export default function DashboardLayout({
               <Award
                 className={`w-5 h-5 ${
                   pathname.startsWith("/dashboard/input-nilai") || pathname.startsWith("/dashboard/rapor")
-                    ? "text-emerald-600 dark:text-emerald-400"
+                    ? "text-red-600 dark:text-red-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
                   pathname.startsWith("/dashboard/input-nilai") || pathname.startsWith("/dashboard/rapor")
-                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                    ? "text-red-600 dark:text-red-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
