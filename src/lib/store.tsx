@@ -1437,6 +1437,28 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
+
+    // Fetch live students from PostgreSQL
+    fetch("/api/students")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setStudents(data);
+          save("mf_students", data);
+        }
+      })
+      .catch((err) => console.warn("Live students fetch failed:", err));
+
+    // Fetch live branches from PostgreSQL
+    fetch("/api/branches")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBranches(data);
+          save("mf_branches", data);
+        }
+      })
+      .catch((err) => console.warn("Live branches fetch failed:", err));
   }, []);
 
   // Save to LocalStorage helper
@@ -1450,16 +1472,33 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Student CRUD
   const addStudent = (st: Omit<StudentItem, "id" | "index">) => {
+    const tempId = `s-${Date.now()}`;
+    const newSt: StudentItem = {
+      ...st,
+      id: tempId,
+      index: students.length + 1,
+    };
     setStudents((prev) => {
-      const newSt: StudentItem = {
-        ...st,
-        id: `s-${Date.now()}`,
-        index: prev.length + 1,
-      };
       const updated = [newSt, ...prev];
       save("mf_students", updated);
       return updated;
     });
+
+    // Synchronize to PostgreSQL database
+    fetch("/api/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(st),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setStudents((prev) =>
+            prev.map((s) => (s.id === tempId ? { ...s, id: created.id, studentCode: created.studentCode } : s))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving student to PostgreSQL:", err));
   };
 
   const updateStudent = (id: string, updated: Partial<StudentItem>) => {
@@ -1468,6 +1507,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_students", updatedList);
       return updatedList;
     });
+
+    fetch("/api/students", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...updated }),
+    }).catch((err) => console.error("Error updating student in PostgreSQL:", err));
   };
 
   const deleteStudent = (id: string) => {
@@ -1476,6 +1521,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_students", filtered);
       return filtered;
     });
+
+    fetch(`/api/students?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting student in PostgreSQL:", err));
   };
 
   // Class CRUD
