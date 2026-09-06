@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  BookOpen,
   Sun,
   Moon,
   QrCode,
@@ -12,22 +11,27 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Info,
+  AlertCircle,
   Check,
+  ShieldAlert,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { signIn } from "next-auth/react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error");
+
   const { theme, toggleTheme } = useTheme();
   const [tab, setTab] = useState<"password" | "google">("password");
   const [email, setEmail] = useState("wahyudinhafiz123@gmail.com");
-  const [password, setPassword] = useState("••••••••••••");
+  const [password, setPassword] = useState("password123");
   const [showPassword, setShowPassword] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(0);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const demoAccounts = [
     {
@@ -36,6 +40,13 @@ export default function LoginPage() {
       email: "wahyudinhafiz123@gmail.com",
       avatarBg: "bg-slate-800 text-white font-bold",
       initials: "WH",
+    },
+    {
+      name: "ma assunnah",
+      role: "Super Admin",
+      email: "ma.ihyaassunnah@gmail.com",
+      avatarBg: "bg-teal-700 text-white font-bold",
+      initials: "MA",
     },
     {
       name: "Admin Singkut",
@@ -64,14 +75,31 @@ export default function LoginPage() {
     setSelectedAvatar(index);
     setEmail(demoAccounts[index].email);
     setPassword("password123");
+    setErrorMessage(null);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 600);
+    setErrorMessage(null);
+
+    try {
+      const res = await signIn("credentials", {
+        email: email.trim(),
+        password: password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setErrorMessage("Email atau kata sandi tidak cocok, atau akun Anda belum diaktifkan.");
+        setIsLoading(false);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch {
+      setErrorMessage("Terjadi gangguan saat menghubungkan ke server. Silakan coba lagi.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -106,8 +134,8 @@ export default function LoginPage() {
       </div>
 
       {/* Main Login Card */}
-      <div className="w-full max-w-[440px] bg-white rounded-[28px] shadow-2xl p-6 sm:p-8 my-auto relative z-10 border border-emerald-100">
-        {/* Easy Learning House Logo Header */}
+      <div className="w-full max-w-[450px] bg-white rounded-[28px] shadow-2xl p-6 sm:p-8 my-auto relative z-10 border border-emerald-100">
+        {/* Logo Header */}
         <div className="flex justify-center mb-3">
           <div className="w-20 h-20 rounded-3xl bg-white shadow-md border border-emerald-100 p-2 flex items-center justify-center">
             <img
@@ -125,7 +153,7 @@ export default function LoginPage() {
               Easy Learning House
             </h1>
             <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800">
-              v3.3
+              v3.4
             </span>
           </div>
           <p className="text-xs text-slate-500 font-normal">
@@ -133,12 +161,46 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Access Restriction Notice */}
+        <div className="mb-4 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2 text-[11px] text-slate-600">
+          <ShieldAlert className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+          <p className="leading-snug">
+            <strong>Area Terbatas:</strong> Hanya akun admin & tutor yang telah terdaftar resmi di sistem yang dapat masuk.
+          </p>
+        </div>
+
+        {/* URL Error Alerts (e.g. from Google OAuth AccessDenied) */}
+        {urlError === "AccessDenied" && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <div>
+              <strong className="font-bold">Akses Google Ditolak!</strong>
+              <p className="text-[11px] mt-0.5 text-rose-700">
+                Akun Gmail Anda belum didaftarkan di sistem. Silakan hubungi Super Admin untuk mendaftarkan email Google Anda di menu Pengaturan Cabang & Akun.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Form Error Alert */}
+        {errorMessage && (
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <div>
+              <strong className="font-bold">Gagal Masuk</strong>
+              <p className="text-[11px] mt-0.5 text-rose-700">{errorMessage}</p>
+            </div>
+          </div>
+        )}
 
         {/* Auth Method Tabs */}
         <div className="bg-slate-100/90 p-1 rounded-xl grid grid-cols-2 text-xs font-semibold mb-5 text-slate-600">
           <button
             type="button"
-            onClick={() => setTab("password")}
+            onClick={() => {
+              setTab("password");
+              setErrorMessage(null);
+            }}
             className={`py-2 rounded-lg transition-all ${
               tab === "password"
                 ? "bg-white text-slate-900 shadow-xs"
@@ -149,7 +211,10 @@ export default function LoginPage() {
           </button>
           <button
             type="button"
-            onClick={() => setTab("google")}
+            onClick={() => {
+              setTab("google");
+              setErrorMessage(null);
+            }}
             className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               tab === "google"
                 ? "bg-white text-slate-900 shadow-xs"
@@ -164,7 +229,7 @@ export default function LoginPage() {
         {/* Form or Google Tab */}
         {tab === "google" ? (
           <div className="space-y-4 py-2 animate-in fade-in">
-            <div className="p-5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800 text-center space-y-2">
+            <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-center space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-white shadow-xs border border-slate-200 flex items-center justify-center mx-auto">
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path
@@ -185,18 +250,18 @@ export default function LoginPage() {
                   />
                 </svg>
               </div>
-              <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
-                Masuk Cepat & Aman dengan Akun Google
+              <h3 className="font-extrabold text-slate-900 text-sm">
+                Masuk Cepat dengan Akun Google
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
-                Gunakan akun Gmail Anda untuk langsung masuk ke sistem manajemen Math Fingers.
+              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                Gunakan akun Gmail Anda yang sudah didaftarkan oleh Super Admin di menu cabang & staf.
               </p>
             </div>
 
             <button
               type="button"
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer hover:border-slate-400"
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-sm shadow-xs hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer hover:border-slate-400"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -216,24 +281,27 @@ export default function LoginPage() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              Lanjutkan dengan Akun Google
+              Lanjutkan dengan Akun Google Terdaftar
             </button>
           </div>
         ) : (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                Username atau Email
+                Email Terdaftar
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <User className="w-4 h-4" />
                 </div>
                 <input
-                  type="text"
+                  type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorMessage(null);
+                  }}
                   placeholder="nama@email.com"
                   className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-medium"
                 />
@@ -260,7 +328,10 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMessage(null);
+                  }}
                   placeholder="Masukkan password Anda..."
                   className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-medium"
                 />
@@ -322,7 +393,7 @@ export default function LoginPage() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              Masuk dengan Akun Google
+              Masuk dengan Akun Google Terdaftar
             </button>
           </form>
         )}
@@ -331,19 +402,19 @@ export default function LoginPage() {
         <div className="mt-6 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2.5">
             <span className="font-semibold text-emerald-800 flex items-center gap-1">
-              ✨ Pilih Akun Cabang Terdaftar:
+              ✨ Pilih Akun Terdaftar di Sistem:
             </span>
-            <span className="text-slate-400 text-[10px]">Pilih profil</span>
+            <span className="text-slate-400 text-[10px]">Pilih akun</span>
           </div>
 
-          <div className="flex items-center justify-start gap-3">
+          <div className="flex items-center justify-start gap-3 overflow-x-auto pb-1">
             {demoAccounts.map((acc, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleSelectAccount(idx)}
                 title={`${acc.name} (${acc.role})`}
-                className={`relative group p-0.5 rounded-full transition-all ${
+                className={`relative group p-0.5 rounded-full transition-all shrink-0 ${
                   selectedAvatar === idx
                     ? "ring-2 ring-emerald-500 ring-offset-2 scale-105"
                     : "opacity-75 hover:opacity-100"
@@ -363,7 +434,7 @@ export default function LoginPage() {
             ))}
           </div>
           <div className="text-[11px] text-slate-600 mt-2 font-medium">
-            Login sebagai: <span className="text-emerald-700 font-semibold">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
+            Akun: <span className="text-emerald-700 font-semibold">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
           </div>
         </div>
 
@@ -387,5 +458,19 @@ export default function LoginPage() {
         © {new Date().getFullYear()} Les Mathfingers Management System • V2.0 Cloud VPS
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen w-full bg-emerald-900 flex items-center justify-center text-white text-sm">
+          Memuat halaman login...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

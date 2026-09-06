@@ -559,6 +559,17 @@ export default function CabangDanAdminPage() {
             </div>
 
             <form onSubmit={handleSubmitAdmin} className="space-y-3.5 text-xs">
+              {/* Info Banner untuk Autentikasi Google & Password */}
+              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 flex items-start gap-2.5">
+                <span className="text-base leading-none">🔐</span>
+                <div className="leading-snug">
+                  <strong className="font-bold text-emerald-950">Akses Login Terintegrasi:</strong>
+                  <p className="text-emerald-800 text-[10.5px] mt-0.5">
+                    Akun yang Anda daftarkan di sini dapat masuk ke aplikasi menggunakan <strong>Email & Password</strong> ATAU menggunakan <strong>Akun Google</strong> (jika Anda mendaftarkan alamat Gmail). Akun yang belum terdaftar di sini tidak akan diizinkan login.
+                  </p>
+                </div>
+              </div>
+
               {/* Foto Profil dari Galeri */}
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2">
                 <label className="block text-slate-700 font-bold text-xs">
@@ -625,7 +636,7 @@ export default function CabangDanAdminPage() {
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Nama Lengkap Admin</label>
+                <label className="block text-slate-500 font-bold mb-1">Nama Lengkap Admin / Guru</label>
                 <input
                   type="text"
                   required
@@ -638,19 +649,22 @@ export default function CabangDanAdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Email Login</label>
+                  <label className="block text-slate-500 font-bold mb-1">Email Akun</label>
                   <input
                     type="email"
                     required
                     value={adminForm.email}
                     onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
-                    placeholder="nama@mathfingers.com"
+                    placeholder="nama@gmail.com"
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
                   />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">
+                    Gunakan Gmail agar bisa login Google
+                  </span>
                 </div>
 
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Password Default</label>
+                  <label className="block text-slate-500 font-bold mb-1">Kata Sandi (Password)</label>
                   <input
                     type="text"
                     value={adminForm.password}
@@ -658,6 +672,9 @@ export default function CabangDanAdminPage() {
                     placeholder="password123"
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
                   />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">
+                    Untuk opsi login manual
+                  </span>
                 </div>
               </div>
 

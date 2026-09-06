@@ -1459,6 +1459,17 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((err) => console.warn("Live branches fetch failed:", err));
+
+    // Fetch live admins from PostgreSQL
+    fetch("/api/admins")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBranchAdmins(data);
+          save("mf_branchAdmins", data);
+        }
+      })
+      .catch((err) => console.warn("Live admins fetch failed:", err));
   }, []);
 
   // Save to LocalStorage helper
@@ -1591,16 +1602,32 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Branch Admin CRUD
   const addBranchAdmin = (ad: Omit<BranchAdminItem, "id" | "createdAt">) => {
+    const tempId = `adm-${Date.now()}`;
+    const newAd: BranchAdminItem = {
+      ...ad,
+      id: tempId,
+      createdAt: new Date().toISOString().split("T")[0],
+    };
     setBranchAdmins((prev) => {
-      const newAd: BranchAdminItem = {
-        ...ad,
-        id: `adm-${Date.now()}`,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
       const updated = [newAd, ...prev];
       save("mf_branchAdmins", updated);
       return updated;
     });
+
+    fetch("/api/admins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ad),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setBranchAdmins((prev) =>
+            prev.map((a) => (a.id === tempId ? { ...a, id: created.id } : a))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving admin to PostgreSQL:", err));
   };
 
   const updateBranchAdmin = (id: string, updated: Partial<BranchAdminItem>) => {
@@ -1609,6 +1636,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_branchAdmins", updatedList);
       return updatedList;
     });
+
+    fetch("/api/admins", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...updated }),
+    }).catch((err) => console.error("Error updating admin in PostgreSQL:", err));
   };
 
   const deleteBranchAdmin = (id: string) => {
@@ -1617,6 +1650,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_branchAdmins", filtered);
       return filtered;
     });
+
+    fetch(`/api/admins?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting admin from PostgreSQL:", err));
   };
 
   // Attendance
