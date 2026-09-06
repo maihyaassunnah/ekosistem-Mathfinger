@@ -756,7 +756,7 @@ function AbsensiContent() {
                   onClick={() => setSelectedClass(cl.value)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     selectedClass === cl.value
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-emerald-600 text-white shadow-xs"
                       : "bg-slate-100/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900"
                   }`}
                 >
@@ -800,7 +800,7 @@ function AbsensiContent() {
             </select>
           </div>
 
-          {/* Unified Attendance Card Container (Exact Match to User Screenshot) */}
+          {/* Unified Attendance Card Container (Desktop matches Screenshot 1, Mobile/Tablet touch cards) */}
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200/90 dark:border-[#1d2d5a] shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden">
             {/* Action Bar Header */}
             <div className="p-3.5 sm:p-5 space-y-3 bg-white dark:bg-[#0f1a36]">
@@ -818,14 +818,14 @@ function AbsensiContent() {
                         setSelectedIds(filteredStudents.map((s) => s.id));
                       }
                     }}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
                   <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
                     Batalkan Semua
                   </span>
                 </label>
 
-                <div className="text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400 text-right">
+                <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 text-right">
                   {selectedIds.length} dari {filteredStudents.length} Siswa Dicentang
                 </div>
               </div>
@@ -852,7 +852,7 @@ function AbsensiContent() {
                     <button
                       type="button"
                       onClick={() => handleBatchSetSelectedStatus("HADIR")}
-                      className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-black text-[10px] cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-black text-[10px] cursor-pointer"
                     >
                       + Hadir
                     </button>
@@ -873,7 +873,7 @@ function AbsensiContent() {
                     <button
                       type="button"
                       onClick={() => handleBatchSetSelectedStatus("ABSEN")}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-black text-[10px] cursor-pointer"
                     >
                       + Ghaib
                     </button>
@@ -882,7 +882,7 @@ function AbsensiContent() {
               </div>
             </div>
 
-            {/* Student Rows (Divided by clean hairline borders) */}
+            {/* Student Rows */}
             {filteredStudents.length === 0 ? (
               <div className="p-8 text-center text-slate-400 text-xs font-semibold">
                 Tidak ada data siswa yang cocok dengan filter kelas atau pencarian.
@@ -896,31 +896,31 @@ function AbsensiContent() {
                 const isSelected = selectedIds.includes(st.id);
                 const isStatusMenuOpen = statusMenuStudentId === st.id;
 
-                // Format short level name e.g. "L. DASAR", "LEVEL 1", etc.
+                // Format short level name e.g. "LEVEL DASAR", "LEVEL TERAMPIL", etc.
                 const rawLevel = st.levelCurriculum || "";
                 const shortLevel = rawLevel.toUpperCase().includes("DASAR")
-                  ? "L. DASAR"
+                  ? "LEVEL DASAR"
                   : rawLevel.toUpperCase().includes("TERAMPIL")
-                  ? "L. TERAMPIL"
+                  ? "LEVEL TERAMPIL"
                   : rawLevel.toUpperCase().includes("MAHIR")
-                  ? "L. MAHIR"
+                  ? "LEVEL MAHIR"
                   : rawLevel.toUpperCase().includes("PRA")
                   ? "PRA-DASAR"
-                  : rawLevel.split(":")[0].trim().toUpperCase() || "L. DASAR";
+                  : rawLevel.split(":")[0].trim().toUpperCase() || "LEVEL DASAR";
 
                 return (
                   <div
                     key={st.id}
-                    className={`p-3 sm:p-4 transition-colors ${
+                    className={`transition-colors ${
                       isSelected
-                        ? "bg-blue-50/30 dark:bg-blue-950/20"
+                        ? "bg-emerald-50/20 dark:bg-emerald-950/15"
                         : "hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2.5 sm:gap-4">
-                      {/* Left Column: Checkbox, Badges, Number, Name, Code */}
-                      <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
-                        {/* Checkbox */}
+                    {/* 1. DESKTOP VIEW (hidden lg:flex) - Exactly matching Screenshot 1 */}
+                    <div className="hidden lg:flex items-center justify-between gap-4 p-4">
+                      {/* Left Column */}
+                      <div className="flex items-center gap-3.5 min-w-0 flex-1">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -931,179 +931,334 @@ function AbsensiContent() {
                                 : [...prev, st.id]
                             );
                           }}
-                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0 mt-1"
+                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                         />
 
+                        {/* Green number badge */}
+                        <span className="w-6 h-6 rounded-md border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+
                         <div className="space-y-1 min-w-0 flex-1">
-                          {/* Badges Row */}
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 uppercase tracking-wide whitespace-nowrap">
+                          {/* Badges + Student Name + Code + Wali in structured line */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold border border-emerald-400 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/40 uppercase tracking-wide">
                               {shortLevel}
                             </span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5f3ff] dark:bg-purple-950/70 text-[#7c3aed] dark:text-purple-300 border border-[#ddd6fe] dark:border-purple-800/80 flex items-center gap-1 uppercase whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/40 flex items-center gap-1 uppercase">
                               <span>🏫</span>
                               <span>{st.className}</span>
                             </span>
                             {record?.method === "QR_SCAN" && (
-                              <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-[#1d2d5a] flex items-center gap-1 whitespace-nowrap">
+                              <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-[#1d2d5a] flex items-center gap-1">
                                 <QrCode className="w-3 h-3" />
                                 <span>QR {record.time || "14:00"}</span>
                               </span>
                             )}
                           </div>
 
-                          {/* Number Box + Student Name */}
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-black text-xs flex items-center justify-center shrink-0">
-                              {idx + 1}
-                            </span>
-                            <div
-                              title={st.name}
-                              className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm md:text-base truncate leading-tight"
-                            >
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="font-extrabold text-slate-900 dark:text-white text-sm">
                               {st.name}
-                            </div>
-                          </div>
-
-                          {/* Student Code tag + Note preview */}
-                          <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                            <span className="px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1d2d5a] inline-flex items-center">
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1d2d5a]">
                               #{st.studentCode}
                             </span>
-                            {currentNote && (
-                              <span
-                                title={currentNote}
-                                className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic truncate max-w-[130px] sm:max-w-[220px]"
-                              >
-                                💬 {currentNote}
+                            {st.parentName && (
+                              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                Wali: {st.parentName} {st.parentWhatsapp ? `(${st.parentWhatsapp})` : ""}
                               </span>
                             )}
+                          </div>
+
+                          {/* Quick note shortcuts row below student */}
+                          <div className="flex items-center gap-2 pt-0.5 flex-wrap">
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                              Pintasan Catatan:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleAddQuickNote(st.id, "Izin Makan")}
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
+                            >
+                              + Izin Makan
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAddQuickNote(st.id, "Hadir Kembali")}
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
+                            >
+                              + Hadir Kembali
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAddQuickNote(st.id, "Izin Sakit")}
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
+                            >
+                              + Izin Sakit
+                            </button>
                           </div>
                         </div>
                       </div>
 
-                      {/* Right Column: Note/Chat button + Circular Status Button */}
-                      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
-                        {/* Note Button [ 💬 ] */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveNoteStudent({ id: st.id, name: st.name });
-                            setNoteInputText(currentNote);
-                          }}
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
-                            currentNote
-                              ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-[#1d2d5a] shadow-xs"
-                              : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/90 dark:border-[#1d2d5a] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800"
-                          }`}
-                          title={currentNote ? `Catatan: ${currentNote}` : "Tulis Catatan Presensi"}
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                        </button>
+                      {/* Right Column: Segmented Buttons + Inline Note Input */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        {/* Segmented 3-Status Selector */}
+                        <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-2xl">
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(st.id, "HADIR")}
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                              currentStatus === "HADIR"
+                                ? "bg-emerald-600 text-white shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Hadir</span>
+                          </button>
 
-                        {/* Circular Status Button (Cycles: Hadir -> Ijin -> Sakit -> Ghaib) */}
-                        <button
-                          type="button"
-                          onClick={() => handleCycleStatus(st.id)}
-                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex flex-col items-center justify-center shadow-xs shrink-0 transition-transform active:scale-90 cursor-pointer select-none ${
-                            currentStatus === "HADIR"
-                              ? "bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white ring-2 ring-blue-500/20"
-                              : currentStatus === "IZIN"
-                              ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-500/20"
-                              : currentStatus === "SAKIT"
-                              ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/20"
-                              : "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-500/20"
-                          }`}
-                          title="Klik untuk ganti status: Hadir ➜ Ijin ➜ Sakit ➜ Ghaib"
-                        >
-                          {currentStatus === "HADIR" ? (
-                            <>
-                              <Check className="w-4 h-4 stroke-[3]" />
-                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
-                                HADIR
-                              </span>
-                            </>
-                          ) : currentStatus === "IZIN" ? (
-                            <>
-                              <Info className="w-4 h-4 stroke-[2.5]" />
-                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
-                                IJIN
-                              </span>
-                            </>
-                          ) : currentStatus === "SAKIT" ? (
-                            <>
-                              <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
-                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
-                                SAKIT
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <X className="w-4 h-4 stroke-[3]" />
-                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
-                                GHAIB
-                              </span>
-                            </>
-                          )}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(st.id, "IZIN")}
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                              currentStatus === "IZIN" || currentStatus === "SAKIT"
+                                ? "bg-amber-500 text-white shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Izin</span>
+                          </button>
 
-                        {/* Direct Status Selector Menu Trigger */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setStatusMenuStudentId(isStatusMenuOpen ? null : st.id)
-                          }
-                          className="p-1 -ml-1 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 cursor-pointer"
-                          title="Pilih status spesifik"
-                        >
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(st.id, "ABSEN")}
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                              currentStatus === "ABSEN"
+                                ? "bg-slate-700 dark:bg-slate-600 text-white shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <X className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Absen</span>
+                          </button>
+                        </div>
 
-                        {/* Status Menu Popover */}
-                        {isStatusMenuOpen && (
-                          <div className="absolute right-0 top-full mt-1.5 z-40 p-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(st.id, "HADIR")}
-                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
-                            >
-                              <span>✓ Hadir</span>
-                              {currentStatus === "HADIR" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                        {/* Inline Note Input + Send Button */}
+                        <div className="flex items-center gap-1.5 w-64">
+                          <input
+                            type="text"
+                            value={notesState[st.id] !== undefined ? notesState[st.id] : record?.note || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setNotesState((prev) => ({ ...prev, [st.id]: val }));
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleSaveSingleNote(st.id);
+                              }
+                            }}
+                            placeholder="Catatan..."
+                            className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSaveSingleNote(st.id)}
+                            className="p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer transition-colors shrink-0"
+                            title="Simpan Catatan"
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. MOBILE & TABLET VIEW (lg:hidden) - Touch-friendly card with Cycle Button */}
+                    <div className="lg:hidden p-3 sm:p-4">
+                      <div className="flex items-center justify-between gap-2.5 sm:gap-4">
+                        {/* Left Column */}
+                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedIds((prev) =>
+                                prev.includes(st.id)
+                                  ? prev.filter((id) => id !== st.id)
+                                  : [...prev, st.id]
+                              );
+                            }}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0 mt-1"
+                          />
+
+                          <div className="space-y-1 min-w-0 flex-1">
+                            {/* Badges Row */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wide whitespace-nowrap">
+                                {shortLevel}
+                              </span>
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5f3ff] dark:bg-purple-950/70 text-[#7c3aed] dark:text-purple-300 border border-[#ddd6fe] dark:border-purple-800/80 flex items-center gap-1 uppercase whitespace-nowrap">
+                                <span>🏫</span>
+                                <span>{st.className}</span>
+                              </span>
+                              {record?.method === "QR_SCAN" && (
+                                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-[#1d2d5a] flex items-center gap-1 whitespace-nowrap">
+                                  <QrCode className="w-3 h-3" />
+                                  <span>QR {record.time || "14:00"}</span>
+                                </span>
                               )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(st.id, "IZIN")}
-                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
-                            >
-                              <span>ℹ Ijin</span>
-                              {currentStatus === "IZIN" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            </div>
+
+                            {/* Number Box + Student Name */}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                                {idx + 1}
+                              </span>
+                              <div
+                                title={st.name}
+                                className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm md:text-base truncate leading-tight"
+                              >
+                                {st.name}
+                              </div>
+                            </div>
+
+                            {/* Student Code tag + Note preview */}
+                            <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                              <span className="px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1d2d5a] inline-flex items-center">
+                                #{st.studentCode}
+                              </span>
+                              {currentNote && (
+                                <span
+                                  title={currentNote}
+                                  className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic truncate max-w-[130px] sm:max-w-[220px]"
+                                >
+                                  💬 {currentNote}
+                                </span>
                               )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(st.id, "SAKIT")}
-                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 cursor-pointer"
-                            >
-                              <span>🏥 Sakit</span>
-                              {currentStatus === "SAKIT" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                              )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(st.id, "ABSEN")}
-                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
-                            >
-                              <span>✕ Ghaib</span>
-                              {currentStatus === "ABSEN" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                              )}
-                            </button>
+                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Right Column: Note/Chat button + Circular Status Button */}
+                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveNoteStudent({ id: st.id, name: st.name });
+                              setNoteInputText(currentNote);
+                            }}
+                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
+                              currentNote
+                                ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-[#1d2d5a] shadow-xs"
+                                : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/90 dark:border-[#1d2d5a] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800"
+                            }`}
+                            title={currentNote ? `Catatan: ${currentNote}` : "Tulis Catatan Presensi"}
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleCycleStatus(st.id)}
+                            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex flex-col items-center justify-center shadow-xs shrink-0 transition-transform active:scale-90 cursor-pointer select-none ${
+                              currentStatus === "HADIR"
+                                ? "bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white ring-2 ring-emerald-500/20"
+                                : currentStatus === "IZIN"
+                                ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-500/20"
+                                : currentStatus === "SAKIT"
+                                ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/20"
+                                : "bg-slate-700 hover:bg-slate-800 text-white ring-2 ring-slate-500/20"
+                            }`}
+                            title="Klik untuk ganti status: Hadir ➜ Ijin ➜ Sakit ➜ Ghaib"
+                          >
+                            {currentStatus === "HADIR" ? (
+                              <>
+                                <Check className="w-4 h-4 stroke-[3]" />
+                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                  HADIR
+                                </span>
+                              </>
+                            ) : currentStatus === "IZIN" ? (
+                              <>
+                                <Info className="w-4 h-4 stroke-[2.5]" />
+                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                  IJIN
+                                </span>
+                              </>
+                            ) : currentStatus === "SAKIT" ? (
+                              <>
+                                <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
+                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                  SAKIT
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <X className="w-4 h-4 stroke-[3]" />
+                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                  GHAIB
+                                </span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setStatusMenuStudentId(isStatusMenuOpen ? null : st.id)
+                            }
+                            className="p-1 -ml-1 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 cursor-pointer"
+                            title="Pilih status spesifik"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+
+                          {isStatusMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1.5 z-40 p-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
+                              <button
+                                type="button"
+                                onClick={() => handleStatusChange(st.id, "HADIR")}
+                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
+                              >
+                                <span>✓ Hadir</span>
+                                {currentStatus === "HADIR" && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleStatusChange(st.id, "IZIN")}
+                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
+                              >
+                                <span>ℹ Ijin</span>
+                                {currentStatus === "IZIN" && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleStatusChange(st.id, "SAKIT")}
+                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 cursor-pointer"
+                              >
+                                <span>🏥 Sakit</span>
+                                {currentStatus === "SAKIT" && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleStatusChange(st.id, "ABSEN")}
+                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                              >
+                                <span>✕ Ghaib</span>
+                                {currentStatus === "ABSEN" && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

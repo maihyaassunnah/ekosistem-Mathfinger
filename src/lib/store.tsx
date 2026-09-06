@@ -227,10 +227,36 @@ interface AppStoreContextType {
   // Grades / Nilai
   grades: GradeItem[];
   saveGrades: (newGrades: GradeItem[]) => void;
+  updateSingleGrade: (grade: {
+    id?: string;
+    studentId: string;
+    studentName?: string;
+    className?: string;
+    topic: string;
+    examDate: string;
+    score: number;
+    note?: string;
+    isJoined?: boolean;
+  }) => Promise<void>;
+  deleteGradeSession: (topic: string, examDate: string) => Promise<void>;
+  renameGradeSession: (oldTopic: string, oldExamDate: string, newTopic: string, newExamDate: string) => Promise<void>;
+  deleteSingleGrade: (id: string) => Promise<void>;
 
   // Behavior / Sikap & Keaktifan
   behaviors: BehaviorItem[];
   addBehavior: (behavior: Omit<BehaviorItem, "id">) => void;
+  saveStudentKeaktifan: (behavior: {
+    id?: string;
+    studentId: string;
+    studentName?: string;
+    date?: string;
+    sessionTopic?: string;
+    focus?: string;
+    participation?: string;
+    attitude?: string;
+    note?: string;
+  }) => Promise<void>;
+  deleteBehavior: (id: string) => Promise<void>;
 
   // Curriculum
   curriculumModules: CurriculumModule[];
@@ -1504,6 +1530,17 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((err) => console.warn("Live grades fetch failed:", err));
 
+    // Fetch live behaviors/keaktifan from PostgreSQL
+    fetch("/api/behaviors")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBehaviors(data);
+          save("mf_behaviors", data);
+        }
+      })
+      .catch((err) => console.warn("Live behaviors fetch failed:", err));
+
     // Fetch live curriculums from PostgreSQL
     fetch("/api/curriculums")
       .then((res) => (res.ok ? res.json() : null))
@@ -1962,6 +1999,129 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error saving grades to PostgreSQL:", err));
   };
 
+  const updateSingleGrade = async (grade: {
+    id?: string;
+    studentId: string;
+    studentName?: string;
+    className?: string;
+    topic: string;
+    examDate: string;
+    score: number;
+    note?: string;
+    isJoined?: boolean;
+  }) => {
+    setGrades((prev) => {
+      const idx = prev.findIndex(
+        (g) =>
+          (grade.id && g.id === grade.id) ||
+          (g.studentId === grade.studentId && g.topic === grade.topic && g.examDate === grade.examDate)
+      );
+      let updated: GradeItem[];
+      if (idx >= 0) {
+        const item = { ...prev[idx], ...grade, score: Number(grade.score) };
+        updated = [...prev];
+        updated[idx] = item;
+      } else {
+        const newG: GradeItem = {
+          id: grade.id || `gr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          studentId: grade.studentId,
+          studentName: grade.studentName || "Siswa",
+          className: grade.className || "Kelas Reguler",
+          topic: grade.topic,
+          examDate: grade.examDate,
+          score: Number(grade.score),
+          note: grade.note || "",
+          isJoined: grade.isJoined !== undefined ? grade.isJoined : true,
+        };
+        updated = [newG, ...prev];
+      }
+      save("mf_grades", updated);
+      return updated;
+    });
+
+    try {
+      const res = await fetch("/api/grades", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(grade),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        if (saved && saved.id) {
+          setGrades((prev) => {
+            const next = prev.map((g) =>
+              (grade.id && g.id === grade.id) ||
+              (g.studentId === saved.studentId && g.topic === saved.topic && g.examDate === saved.examDate)
+                ? { ...g, ...saved }
+                : g
+            );
+            save("mf_grades", next);
+            return next;
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error updating grade in PostgreSQL:", err);
+    }
+  };
+
+  const deleteGradeSession = async (topic: string, examDate: string) => {
+    setGrades((prev) => {
+      const filtered = prev.filter((g) => !(g.topic === topic && g.examDate === examDate));
+      save("mf_grades", filtered);
+      return filtered;
+    });
+
+    try {
+      await fetch(`/api/grades?topic=${encodeURIComponent(topic)}&examDate=${encodeURIComponent(examDate)}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Error deleting grade session:", err);
+    }
+  };
+
+  const renameGradeSession = async (
+    oldTopic: string,
+    oldExamDate: string,
+    newTopic: string,
+    newExamDate: string
+  ) => {
+    setGrades((prev) => {
+      const updated = prev.map((g) =>
+        g.topic === oldTopic && g.examDate === oldExamDate
+          ? { ...g, topic: newTopic, examDate: newExamDate }
+          : g
+      );
+      save("mf_grades", updated);
+      return updated;
+    });
+
+    try {
+      await fetch("/api/grades", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldTopic, oldExamDate, newTopic, newExamDate }),
+      });
+    } catch (err) {
+      console.error("Error renaming grade session:", err);
+    }
+  };
+
+  const deleteSingleGrade = async (id: string) => {
+    setGrades((prev) => {
+      const filtered = prev.filter((g) => g.id !== id);
+      save("mf_grades", filtered);
+      return filtered;
+    });
+
+    try {
+      await fetch(`/api/grades?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Error deleting single grade:", err);
+    }
+  };
+
   // Behaviors / Sikap & Keaktifan
   const addBehavior = (b: Omit<BehaviorItem, "id">) => {
     setBehaviors((prev) => {
@@ -1973,6 +2133,94 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_behaviors", updated);
       return updated;
     });
+  };
+
+  const saveStudentKeaktifan = async (b: {
+    id?: string;
+    studentId: string;
+    studentName?: string;
+    date?: string;
+    sessionTopic?: string;
+    focus?: string;
+    participation?: string;
+    attitude?: string;
+    note?: string;
+  }) => {
+    const tempId = b.id || `beh-${Date.now()}`;
+    const today = b.date || new Date().toISOString().split("T")[0];
+
+    setBehaviors((prev) => {
+      const existingIdx = prev.findIndex(
+        (item) => (b.id && item.id === b.id) || item.studentId === b.studentId
+      );
+      let updated: BehaviorItem[];
+      if (existingIdx >= 0) {
+        const item: BehaviorItem = {
+          ...prev[existingIdx],
+          ...b,
+          id: prev[existingIdx].id,
+          date: today,
+          sessionTopic: b.sessionTopic || prev[existingIdx].sessionTopic || "Observasi Keaktifan",
+          focus: b.focus || prev[existingIdx].focus || "Sangat Tinggi",
+          participation: b.participation || prev[existingIdx].participation || "95%",
+          attitude: b.attitude || prev[existingIdx].attitude || "1.8s",
+          note: b.note !== undefined ? b.note : prev[existingIdx].note || "",
+        };
+        updated = [...prev];
+        updated[existingIdx] = item;
+      } else {
+        const newB: BehaviorItem = {
+          id: tempId,
+          studentId: b.studentId,
+          studentName: b.studentName || "Siswa",
+          date: today,
+          sessionTopic: b.sessionTopic || "Observasi Keaktifan",
+          focus: b.focus || "Sangat Tinggi",
+          participation: b.participation || "95%",
+          attitude: b.attitude || "1.8s",
+          note: b.note || "",
+        };
+        updated = [newB, ...prev];
+      }
+      save("mf_behaviors", updated);
+      return updated;
+    });
+
+    try {
+      const res = await fetch("/api/behaviors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(b),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        if (saved && saved.id) {
+          setBehaviors((prev) => {
+            const next = prev.map((item) =>
+              item.studentId === saved.studentId ? { ...item, ...saved } : item
+            );
+            save("mf_behaviors", next);
+            return next;
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error saving keaktifan to PostgreSQL:", err);
+    }
+  };
+
+  const deleteBehavior = async (id: string) => {
+    setBehaviors((prev) => {
+      const filtered = prev.filter((item) => item.id !== id);
+      save("mf_behaviors", filtered);
+      return filtered;
+    });
+
+    try {
+      await fetch(`/api/behaviors?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Error deleting behavior:", err);
+    }
   };
 
   // Curriculum Modules
@@ -2415,8 +2663,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         deleteJournal,
         grades,
         saveGrades,
+        updateSingleGrade,
+        deleteGradeSession,
+        renameGradeSession,
+        deleteSingleGrade,
         behaviors,
         addBehavior,
+        saveStudentKeaktifan,
+        deleteBehavior,
         curriculumModules,
         addCurriculumModule,
         updateCurriculumModule,
