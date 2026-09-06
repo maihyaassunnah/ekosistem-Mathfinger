@@ -42,6 +42,20 @@ services:
     networks:
       - mathfingers-network
 
+  # Web-based Database Manager (PGWeb - Modern, Ultra-Fast & Responsive)
+  db-web:
+    image: sosedoff/pgweb:latest
+    container_name: mathfingers-db-web
+    restart: always
+    command: ["/usr/bin/pgweb", "--bind=0.0.0.0", "--listen=8081", "--url=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@db:5432/${POSTGRES_DB:-mathfingers_db}?sslmode=disable", "--auth-user=admin", "--auth-pass=MathFingers2026!"]
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mathfingers-network
+
 volumes:
   postgres_data:
     driver: local
