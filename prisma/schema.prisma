@@ -1,0 +1,188 @@
+// Prisma Schema for Les Mathfingers Management System
+// Multi-Branch Architecture with PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------
+// ENUMS
+// ----------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  BRANCH_ADMIN
+  TUTOR
+}
+
+enum CommonStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+}
+
+enum InvoiceType {
+  SPP
+  BOOK
+  REGISTRATION
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  MANUAL_CASH
+  MANUAL_TRANSFER
+  GATEWAY
+}
+
+enum AttendanceMethod {
+  QR_SCAN
+  MANUAL
+}
+
+enum AttendanceStatus {
+  HADIR
+  IZIN
+  SAKIT
+  ALPHA
+}
+
+// ----------------------------------------------------
+// MODELS
+// ----------------------------------------------------
+
+model Branch {
+  id          String       @id @default(uuid())
+  branchCode  String       @unique @map("branch_code")
+  branchName  String       @map("branch_name")
+  address     String       @db.Text
+  phone       String?
+  status      CommonStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  users       User[]
+  students    Student[]
+  invoices    Invoice[]
+  attendances Attendance[]
+
+  @@map("branches")
+}
+
+model User {
+  id           String       @id @default(uuid())
+  branchId     String?      @map("branch_id")
+  fullName     String       @map("full_name")
+  email        String       @unique
+  passwordHash String       @map("password_hash")
+  role         Role         @default(TUTOR)
+  status       CommonStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  branch       Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  attendances  Attendance[] @relation("TutorAttendances")
+
+  @@map("users")
+}
+
+model Level {
+  id              String    @id @default(uuid())
+  levelName       String    @map("level_name")
+  description     String?   @db.Text
+  orderIndex      Int       @default(1) @map("order_index")
+  bookPrice       Decimal   @default(0) @db.Decimal(12, 2) @map("book_price")
+  defaultSppPrice Decimal   @default(0) @db.Decimal(12, 2) @map("default_spp_price")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  students        Student[]
+
+  @@map("levels")
+}
+
+model Student {
+  id             String        @id @default(uuid())
+  branchId       String        @map("branch_id")
+  studentCode    String        @unique @map("student_code")
+  qrIdentifier   String        @unique @map("qr_identifier")
+  studentName    String        @map("student_name")
+  parentName     String        @map("parent_name")
+  parentWhatsapp String        @map("parent_whatsapp")
+  currentLevelId String        @map("current_level_id")
+  status         StudentStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  branch         Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  currentLevel   Level         @relation(fields: [currentLevelId], references: [id])
+  invoices       Invoice[]
+  attendances    Attendance[]
+
+  @@map("students")
+}
+
+model Invoice {
+  id              String         @id @default(uuid())
+  invoiceNumber   String         @unique @map("invoice_number")
+  studentId       String         @map("student_id")
+  branchId        String         @map("branch_id")
+  type            InvoiceType    @default(SPP)
+  amount          Decimal        @db.Decimal(12, 2)
+  dueDate         DateTime       @map("due_date")
+  status          InvoiceStatus  @default(UNPAID)
+  paymentMethod   PaymentMethod? @map("payment_method")
+  paymentProofUrl String?        @map("payment_proof_url")
+  gatewayRef      String?        @map("gateway_ref")
+  paidAt          DateTime?      @map("paid_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  student         Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  branch          Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@index([branchId, status])
+  @@map("invoices")
+}
+
+model Attendance {
+  id             String           @id @default(uuid())
+  studentId      String           @map("student_id")
+  branchId       String           @map("branch_id")
+  tutorId        String           @map("tutor_id")
+  attendanceDate DateTime         @map("attendance_date")
+  method         AttendanceMethod @default(MANUAL)
+  status         AttendanceStatus @default(HADIR)
+  notes          String?          @db.Text
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  branch         Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  tutor          User             @relation("TutorAttendances", fields: [tutorId], references: [id])
+
+  @@unique([studentId, attendanceDate])
+  @@index([branchId, attendanceDate])
+  @@map("attendances")
+}

@@ -1,0 +1,2115 @@
+"use client";
+
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Search,
+  Check,
+  X,
+  Send,
+  Plus,
+  Users,
+  Camera,
+  QrCode,
+  AlertTriangle,
+  FileText,
+  Filter,
+  Edit2,
+  Trash2,
+  Download,
+  Printer,
+  ChevronDown,
+  Info,
+  ShieldCheck,
+  Sparkles,
+  Save,
+  CheckCheck,
+  Loader2,
+  MessageSquare,
+} from "lucide-react";
+import jsQR from "jsqr";
+import { useAppStore, AttendanceItem } from "@/lib/store";
+import { StudentItem } from "@/lib/mock-data";
+
+function AbsensiContent() {
+  const searchParams = useSearchParams();
+  const {
+    students,
+    classes,
+    attendances,
+    setAttendance,
+    batchSetAttendance,
+    addAttendanceRecord,
+    updateAttendanceRecord,
+    deleteAttendanceRecord,
+  } = useAppStore();
+
+  const [activeTab, setActiveTab] = useState<"HARI_INI" | "REKAP">("HARI_INI");
+  const [selectedDate, setSelectedDate] = useState("2026-09-06");
+  const [selectedClass, setSelectedClass] = useState("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState<"A-Z" | "Z-A">("A-Z");
+  const [selectedIds, setSelectedIds] = useState<string[]>(students.map((s) => s.id));
+  const [notesState, setNotesState] = useState<{ [id: string]: string }>({});
+
+  // Quick Note & Status Menu State
+  const [activeNoteStudent, setActiveNoteStudent] = useState<{ id: string; name: string } | null>(null);
+  const [noteInputText, setNoteInputText] = useState("");
+  const [statusMenuStudentId, setStatusMenuStudentId] = useState<string | null>(null);
+
+  // Save State & Toast Feedback
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>("12:00 WIB");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveToast, setSaveToast] = useState<{ message: string; count: number } | null>(null);
+
+  useEffect(() => {
+    if (saveToast) {
+      const timer = setTimeout(() => setSaveToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveToast]);
+
+  // QR Scanner Modal State
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [scannerInputCode, setScannerInputCode] = useState("");
+  const [scanResult, setScanResult] = useState<{
+    type: "SUCCESS" | "WARNING_SCHEDULE" | "ALREADY_PRESENT" | "NOT_FOUND";
+    student?: StudentItem;
+    message: string;
+    scheduleInfo?: string;
+  } | null>(null);
+
+  // Camera stream refs
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  // Rekap & History State
+  const [rekapBranchFilter, setRekapBranchFilter] = useState("ALL");
+  const [rekapClassFilter, setRekapClassFilter] = useState("ALL");
+  const [rekapStatusFilter, setRekapStatusFilter] = useState("ALL");
+  const [rekapSearch, setRekapSearch] = useState("");
+  const [rekapViewMode, setRekapViewMode] = useState<"LOG" | "PER_SISWA">("LOG");
+
+  // CRUD Modal State for History / Rekap
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAttendanceKey, setEditingAttendanceKey] = useState<string | null>(null);
+
+  const [crudForm, setCrudForm] = useState<AttendanceItem>({
+    studentId: "",
+    studentName: "",
+    studentCode: "",
+    className: "",
+    branch: "Singkut",
+    date: selectedDate,
+    time: "14:00 WIB",
+    status: "HADIR",
+    method: "MANUAL",
+    note: "",
+  });
+
+  // Automatically open scanner if URL query contains ?scan=true or scanId
+  useEffect(() => {
+    if (searchParams.get("scan") === "true") {
+      setShowScannerModal(true);
+    }
+    const scanId = searchParams.get("scanId");
+    if (scanId) {
+      const found = students.find((s) => s.id === scanId);
+      if (found) {
+        setShowScannerModal(true);
+        handleProcessQrCode(found.studentCode);
+      }
+    }
+  }, [searchParams, students]);
+
+  // Helper: Get Day Name in Indonesian from YYYY-MM-DD
+  const getDayNameIndonesian = (dateStr: string) => {
+    const days = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const d = new Date(dateStr);
+    return days[d.getDay()];
+  };
+
+  // Helper: Find class schedule for a student
+  const getStudentClassSchedule = (className: string, branch: string) => {
+    const found = classes.find(
+      (c) =>
+        c.name.toLowerCase() === className.toLowerCase() &&
+        c.branch.toLowerCase() === branch.toLowerCase()
+    );
+    return found ? { days: found.days, time: found.time } : { days: "Sabtu & Ahad", time: "14:00 - 15:30" };
+  };
+
+  // Helper: Verify if date matches class days
+  const isDateMatchingSchedule = (dateStr: string, scheduleDays: string) => {
+    const dayName = getDayNameIndonesian(dateStr);
+    return scheduleDays.toLowerCase().includes(dayName.toLowerCase());
+  };
+
+  // Process Scanned QR Code
+  const handleProcessQrCode = (rawPayload: string) => {
+    setScanResult(null);
+    if (!rawPayload.trim()) return;
+
+    let targetCode = rawPayload.trim();
+    let targetId = "";
+
+    // Parse JSON payload if present
+    try {
+      if (rawPayload.startsWith("{") && rawPayload.endsWith("}")) {
+        const parsed = JSON.parse(rawPayload);
+        targetCode = parsed.code || targetCode;
+        targetId = parsed.studentId || "";
+      } else if (rawPayload.startsWith("MF-QR:")) {
+        const parts = rawPayload.split(":");
+        targetId = parts[1] || "";
+        targetCode = parts[2] || targetCode;
+      } else if (rawPayload.startsWith("MF-")) {
+        targetCode = rawPayload.replace("MF-", "").trim();
+      }
+    } catch {
+      // fallback to literal string
+    }
+
+    // Find student
+    const student = students.find(
+      (s) =>
+        (targetId && s.id === targetId) ||
+        s.studentCode === targetCode ||
+        s.studentCode === targetCode.replace(/^#/, "") ||
+        s.name.toLowerCase() === targetCode.toLowerCase()
+    );
+
+    if (!student) {
+      setScanResult({
+        type: "NOT_FOUND",
+        message: `Kartu QR dengan kode "${targetCode}" tidak ditemukan di database siswa.`,
+      });
+      return;
+    }
+
+    const schedule = getStudentClassSchedule(student.className, student.branch);
+    const dayToday = getDayNameIndonesian(selectedDate);
+    const isScheduleMatch = isDateMatchingSchedule(selectedDate, schedule.days);
+
+    // Check if already checked-in today
+    const existingKey = `${student.id}_${selectedDate}`;
+    const existing = attendances[existingKey];
+    if (existing && existing.status === "HADIR" && existing.method === "QR_SCAN") {
+      setScanResult({
+        type: "ALREADY_PRESENT",
+        student,
+        message: `${student.name} sudah melakukan absensi QR hari ini pada ${existing.time || "pukul 14:00 WIB"}.`,
+        scheduleInfo: `${schedule.days} • ${schedule.time}`,
+      });
+      return;
+    }
+
+    // Check schedule match
+    const currentTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+
+    if (!isScheduleMatch) {
+      setScanResult({
+        type: "WARNING_SCHEDULE",
+        student,
+        message: `Perhatian: Hari ini adalah hari ${dayToday}, sedangkan jadwal reguler kelas ${student.className} adalah [${schedule.days}].`,
+        scheduleInfo: `${schedule.days} • ${schedule.time}`,
+      });
+      return;
+    }
+
+    // Success Check-in!
+    setAttendance(
+      student.id,
+      selectedDate,
+      "HADIR",
+      "Scan QR Presensi berhasil",
+      currentTime,
+      "QR_SCAN"
+    );
+
+    setScanResult({
+      type: "SUCCESS",
+      student,
+      message: `Presensi Berhasil! ${student.name} tercatat HADIR pada ${currentTime} sesuai jadwal.`,
+      scheduleInfo: `${schedule.days} • ${schedule.time}`,
+    });
+
+    setScannerInputCode("");
+  };
+
+  // Force record attendance when schedule warning is displayed
+  const handleForceConfirmAttendance = (student: StudentItem) => {
+    const currentTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+
+    setAttendance(
+      student.id,
+      selectedDate,
+      "HADIR",
+      `Absensi Khusus/Pengganti (Sesi ${getDayNameIndonesian(selectedDate)})`,
+      currentTime,
+      "QR_SCAN"
+    );
+
+    setScanResult({
+      type: "SUCCESS",
+      student,
+      message: `Presensi Khusus Disetujui! ${student.name} tercatat HADIR pada ${currentTime}.`,
+    });
+  };
+
+  // Camera Scanner Loop
+  useEffect(() => {
+    let animationFrameId: number;
+    let stream: MediaStream | null = null;
+
+    if (showScannerModal && isCameraActive && videoRef.current && canvasRef.current) {
+      navigator.mediaDevices
+        ?.getUserMedia({ video: { facingMode: "environment" } })
+        .then((s) => {
+          stream = s;
+          if (videoRef.current) {
+            videoRef.current.srcObject = s;
+            videoRef.current.play();
+          }
+
+          const scanLoop = () => {
+            if (videoRef.current && canvasRef.current && isCameraActive) {
+              const video = videoRef.current;
+              const canvas = canvasRef.current;
+              const ctx = canvas.getContext("2d");
+
+              if (video.readyState === video.HAVE_ENOUGH_DATA && ctx) {
+                canvas.height = video.videoHeight;
+                canvas.width = video.videoWidth;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                  inversionAttempts: "dontInvert",
+                });
+
+                if (code && code.data) {
+                  handleProcessQrCode(code.data);
+                  setIsCameraActive(false);
+                  return;
+                }
+              }
+            }
+            animationFrameId = requestAnimationFrame(scanLoop);
+          };
+
+          animationFrameId = requestAnimationFrame(scanLoop);
+        })
+        .catch((err) => {
+          setCameraError("Kamera tidak dapat diakses atau tidak memiliki izin browser.");
+          setIsCameraActive(false);
+        });
+    }
+
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
+  }, [showScannerModal, isCameraActive]);
+
+  // Filter students for today list
+  const classList = [
+    { name: "Semua Kelas", count: students.length, value: "ALL" },
+    { name: "Kelas B", count: 7, value: "Kelas B" },
+    { name: "CLASS C", count: 10, value: "CLASS C" },
+    { name: "Kelas A", count: 7, value: "Kelas A" },
+    { name: "CLASS B", count: 13, value: "CLASS B" },
+    { name: "Kelas A2", count: 5, value: "Kelas A2" },
+    { name: "CLASS A1", count: 8, value: "CLASS A1" },
+    { name: "Tanpa Kelas", count: 1, value: "Tanpa Kelas" },
+  ];
+
+  const filteredStudents = students
+    .filter((s) => {
+      const matchSearch =
+        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.studentCode.includes(searchTerm) ||
+        s.parentName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchClass = selectedClass === "ALL" ? true : s.className === selectedClass;
+      return matchSearch && matchClass;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "A-Z") return a.name.localeCompare(b.name);
+      return b.name.localeCompare(a.name);
+    });
+
+  const getStatus = (studentId: string): "HADIR" | "IZIN" | "SAKIT" | "ABSEN" => {
+    const record = attendances[`${studentId}_${selectedDate}`];
+    return record?.status || "HADIR";
+  };
+
+  const handleStatusChange = (
+    studentId: string,
+    status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN"
+  ) => {
+    setAttendance(studentId, selectedDate, status, notesState[studentId]);
+    setStatusMenuStudentId(null);
+  };
+
+  const handleCycleStatus = (studentId: string) => {
+    const current = getStatus(studentId);
+    let next: "HADIR" | "IZIN" | "SAKIT" | "ABSEN" = "HADIR";
+    if (current === "HADIR") next = "IZIN";
+    else if (current === "IZIN") next = "SAKIT";
+    else if (current === "SAKIT") next = "ABSEN";
+    else if (current === "ABSEN") next = "HADIR";
+
+    handleStatusChange(studentId, next);
+  };
+
+  const handleAddQuickNote = (studentId: string, text: string) => {
+    const current = notesState[studentId] || "";
+    const updated = current ? `${current}, ${text}` : text;
+    setNotesState((prev) => ({ ...prev, [studentId]: updated }));
+    setAttendance(studentId, selectedDate, getStatus(studentId), updated);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(filteredStudents.map((s) => s.id));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const handleMarkAllHadir = () => {
+    batchSetAttendance(selectedDate, "HADIR");
+    const formattedTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
+      " WIB";
+    setLastSavedTime(formattedTime);
+    setSaveToast({
+      message: `Seluruh siswa (${students.length}) berhasil ditandai HADIR untuk tanggal ${selectedDate}!`,
+      count: students.length,
+    });
+  };
+
+  // Today's summary stats for current filtered view
+  const todayHadirCount = filteredStudents.filter((s) => getStatus(s.id) === "HADIR").length;
+  const todayIzinCount = filteredStudents.filter(
+    (s) => getStatus(s.id) === "IZIN" || getStatus(s.id) === "SAKIT"
+  ).length;
+  const todayAbsenCount = filteredStudents.filter((s) => getStatus(s.id) === "ABSEN").length;
+
+  const handleSaveTodayAttendance = () => {
+    setIsSaving(true);
+    const count = filteredStudents.length;
+    const currentTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+
+    filteredStudents.forEach((st) => {
+      const status = getStatus(st.id);
+      const note =
+        notesState[st.id] !== undefined
+          ? notesState[st.id]
+          : attendances[`${st.id}_${selectedDate}`]?.note || "";
+      const existingRec = attendances[`${st.id}_${selectedDate}`];
+      setAttendance(
+        st.id,
+        selectedDate,
+        status,
+        note,
+        existingRec?.time || currentTime,
+        (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL"
+      );
+    });
+
+    const formattedTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
+      " WIB";
+    setLastSavedTime(formattedTime);
+    setIsSaving(false);
+    setSaveToast({
+      message: `Presensi ${count} siswa untuk sesi tanggal ${selectedDate} (${getDayNameIndonesian(
+        selectedDate
+      )}) berhasil disimpan ke sistem!`,
+      count,
+    });
+  };
+
+  const handleBatchSetSelectedStatus = (status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => {
+    if (selectedIds.length === 0) return;
+    const currentTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+    selectedIds.forEach((id) => {
+      const existingRec = attendances[`${id}_${selectedDate}`];
+      setAttendance(
+        id,
+        selectedDate,
+        status,
+        notesState[id],
+        existingRec?.time || currentTime,
+        (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL"
+      );
+    });
+    const formattedTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
+      " WIB";
+    setLastSavedTime(formattedTime);
+    setSaveToast({
+      message: `${selectedIds.length} siswa terpilih berhasil ditandai sebagai "${status}" dan disimpan.`,
+      count: selectedIds.length,
+    });
+  };
+
+  const handleSaveSingleNote = (studentId: string) => {
+    const st = students.find((s) => s.id === studentId);
+    const status = getStatus(studentId);
+    const note = notesState[studentId] || "";
+    const existingRec = attendances[`${studentId}_${selectedDate}`];
+    const currentTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+    setAttendance(
+      studentId,
+      selectedDate,
+      status,
+      note,
+      existingRec?.time || currentTime,
+      (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL"
+    );
+    setSaveToast({
+      message: `Catatan presensi untuk ${st?.name || "siswa"} berhasil disimpan!`,
+      count: 1,
+    });
+  };
+
+  // Convert Attendances Record into array for Rekap & Riwayat Table
+  const allAttendanceArray = Object.entries(attendances).map(([key, item]) => ({
+    key,
+    ...item,
+  }));
+
+  // Filtered Rekap Array
+  const filteredRekapArray = allAttendanceArray
+    .filter((item) => {
+      if (rekapBranchFilter !== "ALL" && item.branch !== rekapBranchFilter) return false;
+      if (rekapClassFilter !== "ALL" && item.className !== rekapClassFilter) return false;
+      if (rekapStatusFilter !== "ALL" && item.status !== rekapStatusFilter) return false;
+      if (rekapSearch) {
+        const q = rekapSearch.toLowerCase();
+        const matchName = (item.studentName || "").toLowerCase().includes(q);
+        const matchCode = (item.studentCode || "").toLowerCase().includes(q);
+        const matchNote = (item.note || "").toLowerCase().includes(q);
+        if (!matchName && !matchCode && !matchNote) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  // Rekap Stats
+  const totalRekapCount = allAttendanceArray.length;
+  const hadirCount = allAttendanceArray.filter((a) => a.status === "HADIR").length;
+  const izinSakitCount = allAttendanceArray.filter(
+    (a) => a.status === "IZIN" || a.status === "SAKIT"
+  ).length;
+  const absenCount = allAttendanceArray.filter((a) => a.status === "ABSEN").length;
+  const hadirPercent =
+    totalRekapCount > 0 ? Math.round((hadirCount / totalRekapCount) * 100) : 0;
+
+  // CRUD Handlers for Rekap
+  const openAddRecord = () => {
+    setCrudForm({
+      studentId: students[0]?.id || "",
+      studentName: students[0]?.name || "",
+      studentCode: students[0]?.studentCode || "",
+      className: students[0]?.className || "",
+      branch: students[0]?.branch || "Singkut",
+      date: selectedDate,
+      time: "14:00 WIB",
+      status: "HADIR",
+      method: "MANUAL",
+      note: "",
+    });
+    setShowAddModal(true);
+  };
+
+  const openEditRecord = (key: string, item: AttendanceItem) => {
+    setEditingAttendanceKey(key);
+    setCrudForm({ ...item });
+    setShowEditModal(true);
+  };
+
+  const handleSaveAddRecord = (e: React.FormEvent) => {
+    e.preventDefault();
+    const st = students.find((s) => s.id === crudForm.studentId);
+    addAttendanceRecord({
+      ...crudForm,
+      studentName: st?.name || crudForm.studentName,
+      studentCode: st?.studentCode || crudForm.studentCode,
+      className: st?.className || crudForm.className,
+      branch: st?.branch || crudForm.branch,
+    });
+    setShowAddModal(false);
+  };
+
+  const handleSaveEditRecord = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAttendanceKey) return;
+    updateAttendanceRecord(editingAttendanceKey, {
+      date: crudForm.date,
+      time: crudForm.time,
+      status: crudForm.status,
+      note: crudForm.note,
+    });
+    setShowEditModal(false);
+  };
+
+  const handleDeleteRecord = (key: string, name?: string) => {
+    if (confirm(`Hapus catatan kehadiran untuk ${name || "siswa ini"}?`)) {
+      deleteAttendanceRecord(key);
+    }
+  };
+
+  return (
+    <div className="p-3 sm:p-6 lg:p-8 pb-32 lg:pb-12 space-y-5 sm:space-y-6 max-w-[1400px] mx-auto relative">
+      {/* Save Success Toast Banner */}
+      {saveToast && (
+        <div className="fixed top-5 right-5 z-50 max-w-md w-full bg-white dark:bg-[#0e1c16] border-2 border-emerald-500 text-slate-900 dark:text-slate-100 p-4 rounded-2xl shadow-2xl flex items-start gap-3.5 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 flex items-center justify-center shrink-0">
+            <CheckCheck className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">
+                Presensi Berhasil Disimpan
+              </h4>
+              <span className="text-[10px] text-slate-400">Tersimpan</span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+              {saveToast.message}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSaveToast(null)}
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 -mr-1 -mt-1 cursor-pointer"
+            aria-label="Tutup Notifikasi"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Top Header with Mode Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+              Absensi Siswa
+            </h1>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold">
+              v3.3 Terpadu
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Pencatatan harian, scanner QR presensi sesuai jadwal kelas, dan rekapitulasi riwayat kehadiran.
+          </p>
+        </div>
+
+        {/* Action & Tab Switcher */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick Scanner Launch Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setScanResult(null);
+              setShowScannerModal(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+          >
+            <Camera className="w-4 h-4 text-slate-950" />
+            <span>Scan QR Presensi</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("HARI_INI")}
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "HARI_INI"
+                ? "bg-[#059669] text-white shadow-xs"
+                : "bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#13271f]"
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Pencatatan Hari Ini</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("REKAP")}
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "REKAP"
+                ? "bg-[#059669] text-white shadow-xs"
+                : "bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#13271f]"
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>Riwayat & Rekap Absensi</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px]">
+              {totalRekapCount}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 1: PENCATATAN HARI INI */}
+      {/* ========================================================================= */}
+      {activeTab === "HARI_INI" && (
+        <div className="space-y-6">
+          {/* Date Picker Bar */}
+          <div className="bg-white dark:bg-[#0e1c16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>Pilih Tanggal Sesi Bimbingan</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px]">
+                  Hari: {getDayNameIndonesian(selectedDate)}
+                </span>
+                {lastSavedTime && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-slate-400 font-normal">
+                    • Terakhir disimpan: {lastSavedTime}
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] text-slate-400">
+                Siswa aktif terdaftar bimbingan matematika jaritmatika.
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="relative">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-3.5 py-1.5 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleMarkAllHadir}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                title="Tandai seluruh siswa hadir untuk sesi hari ini"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Hadir Semua</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveTodayAttendance}
+                disabled={isSaving}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#059669] hover:bg-emerald-700 active:scale-95 text-white text-xs font-extrabold transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50"
+                title="Simpan seluruh status presensi siswa tanggal ini ke database"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>Simpan Presensi</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Class Selection Filter Pills */}
+          <div className="bg-white dark:bg-[#0e1c16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                PILIH KELAS BIMBINGAN UNTUK MENGABSEN:
+              </span>
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="text-slate-600 dark:text-slate-300 font-semibold text-xs border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 bg-slate-50 dark:bg-[#08120e]"
+              >
+                <option value="ALL">Semua Kelas ({students.length} Siswa)</option>
+                <option value="Kelas B">Kelas B</option>
+                <option value="CLASS C">CLASS C</option>
+                <option value="Kelas A">Kelas A</option>
+                <option value="CLASS B">CLASS B</option>
+                <option value="Kelas A2">Kelas A2</option>
+                <option value="CLASS A1">CLASS A1</option>
+              </select>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {classList.map((cl, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedClass(cl.value)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    selectedClass === cl.value
+                      ? "bg-[#059669] text-white shadow-xs"
+                      : "bg-slate-100/90 dark:bg-[#13271f] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1a382c] hover:text-slate-900"
+                  }`}
+                >
+                  <span>{cl.name}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      selectedClass === cl.value
+                        ? "bg-white/20 text-white"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    {cl.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search & Sort Bar */}
+          <div className="bg-white dark:bg-[#0e1c16] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative flex-1 w-full">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Search className="w-4 h-4" />
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Cari nama siswa..."
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-100"
+              />
+            </div>
+
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as any)}
+              className="px-3 py-1.5 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
+            >
+              <option value="A-Z">Nama: A - Z</option>
+              <option value="Z-A">Nama: Z - A</option>
+            </select>
+          </div>
+
+          {/* Unified Attendance Card Container (Exact Match to User Screenshot) */}
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden">
+            {/* Action Bar Header */}
+            <div className="p-3.5 sm:p-5 space-y-3 bg-white dark:bg-[#0e1c16]">
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedIds.length === filteredStudents.length && filteredStudents.length > 0
+                    }
+                    onChange={() => {
+                      if (selectedIds.length === filteredStudents.length) {
+                        setSelectedIds([]);
+                      } else {
+                        setSelectedIds(filteredStudents.map((s) => s.id));
+                      }
+                    }}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                  />
+                  <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
+                    Batalkan Semua
+                  </span>
+                </label>
+
+                <div className="text-xs sm:text-sm font-black text-[#059669] dark:text-emerald-400 text-right">
+                  {selectedIds.length} dari {filteredStudents.length} Siswa Dicentang
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                >
+                  Pilih Semua
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="px-3.5 py-1.5 rounded-xl border border-rose-400 dark:border-rose-800 bg-white dark:bg-[#0e1c16] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                >
+                  Hapus Centang
+                </button>
+
+                {selectedIds.length > 0 && (
+                  <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                    <span className="text-[10px] text-slate-400 font-medium">Ubah Terpilih:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("HADIR")}
+                      className="px-2.5 py-1 rounded-lg bg-[#059669] hover:bg-[#047857] text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Hadir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("IZIN")}
+                      className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Ijin
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("SAKIT")}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Sakit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("ABSEN")}
+                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Ghaib
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Student Rows (Divided by clean hairline borders) */}
+            {filteredStudents.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs font-semibold">
+                Tidak ada data siswa yang cocok dengan filter kelas atau pencarian.
+              </div>
+            ) : (
+              filteredStudents.map((st, idx) => {
+                const currentStatus = getStatus(st.id); // "HADIR" | "IZIN" | "SAKIT" | "ABSEN"
+                const record = attendances[`${st.id}_${selectedDate}`];
+                const currentNote =
+                  notesState[st.id] !== undefined ? notesState[st.id] : record?.note || "";
+                const isSelected = selectedIds.includes(st.id);
+                const isStatusMenuOpen = statusMenuStudentId === st.id;
+
+                // Format short level name e.g. "L. DASAR", "LEVEL 1", etc.
+                const rawLevel = st.levelCurriculum || "";
+                const shortLevel = rawLevel.toUpperCase().includes("DASAR")
+                  ? "L. DASAR"
+                  : rawLevel.toUpperCase().includes("TERAMPIL")
+                  ? "L. TERAMPIL"
+                  : rawLevel.toUpperCase().includes("MAHIR")
+                  ? "L. MAHIR"
+                  : rawLevel.toUpperCase().includes("PRA")
+                  ? "PRA-DASAR"
+                  : rawLevel.split(":")[0].trim().toUpperCase() || "L. DASAR";
+
+                return (
+                  <div
+                    key={st.id}
+                    className={`p-3 sm:p-4 transition-colors ${
+                      isSelected
+                        ? "bg-emerald-50/30 dark:bg-emerald-950/20"
+                        : "hover:bg-slate-50/60 dark:hover:bg-[#13271f]/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2.5 sm:gap-4">
+                      {/* Left Column: Checkbox, Badges, Number, Name, Code */}
+                      <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
+                        {/* Checkbox */}
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            setSelectedIds((prev) =>
+                              prev.includes(st.id)
+                                ? prev.filter((id) => id !== st.id)
+                                : [...prev, st.id]
+                            );
+                          }}
+                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0 mt-1"
+                        />
+
+                        <div className="space-y-1 min-w-0 flex-1">
+                          {/* Badges Row */}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#ecfdf5] dark:bg-emerald-950/70 text-[#059669] dark:text-emerald-300 border border-[#a7f3d0] dark:border-emerald-800/80 uppercase tracking-wide whitespace-nowrap">
+                              {shortLevel}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5f3ff] dark:bg-purple-950/70 text-[#7c3aed] dark:text-purple-300 border border-[#ddd6fe] dark:border-purple-800/80 flex items-center gap-1 uppercase whitespace-nowrap">
+                              <span>🏫</span>
+                              <span>{st.className}</span>
+                            </span>
+                            {record?.method === "QR_SCAN" && (
+                              <span className="px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-800 flex items-center gap-1 whitespace-nowrap">
+                                <QrCode className="w-3 h-3" />
+                                <span>QR {record.time || "14:00"}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Number Box + Student Name */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border border-[#a7f3d0] dark:border-emerald-700 bg-[#ecfdf5] dark:bg-emerald-950/50 text-[#059669] dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                              {idx + 1}
+                            </span>
+                            <div
+                              title={st.name}
+                              className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm md:text-base truncate leading-tight"
+                            >
+                              {st.name}
+                            </div>
+                          </div>
+
+                          {/* Student Code tag + Note preview */}
+                          <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-[#f0fdfa] dark:bg-teal-950/60 text-[#0d9488] dark:text-teal-300 border border-[#ccfbf1] dark:border-teal-900/60 inline-flex items-center">
+                              #{st.studentCode}
+                            </span>
+                            {currentNote && (
+                              <span
+                                title={currentNote}
+                                className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic truncate max-w-[130px] sm:max-w-[220px]"
+                              >
+                                💬 {currentNote}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Note/Chat button + Circular Status Button */}
+                      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
+                        {/* Note Button [ 💬 ] */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveNoteStudent({ id: st.id, name: st.name });
+                            setNoteInputText(currentNote);
+                          }}
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
+                            currentNote
+                              ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700 shadow-xs"
+                              : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/90 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800"
+                          }`}
+                          title={currentNote ? `Catatan: ${currentNote}` : "Tulis Catatan Presensi"}
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+
+                        {/* Circular Status Button (Cycles: Hadir -> Ijin -> Sakit -> Ghaib) */}
+                        <button
+                          type="button"
+                          onClick={() => handleCycleStatus(st.id)}
+                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex flex-col items-center justify-center shadow-xs shrink-0 transition-transform active:scale-90 cursor-pointer select-none ${
+                            currentStatus === "HADIR"
+                              ? "bg-[#059669] hover:bg-[#047857] text-white ring-2 ring-emerald-500/20"
+                              : currentStatus === "IZIN"
+                              ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-500/20"
+                              : currentStatus === "SAKIT"
+                              ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/20"
+                              : "bg-rose-600 hover:bg-rose-700 text-white ring-2 ring-rose-500/20"
+                          }`}
+                          title="Klik untuk ganti status: Hadir ➜ Ijin ➜ Sakit ➜ Ghaib"
+                        >
+                          {currentStatus === "HADIR" ? (
+                            <>
+                              <Check className="w-4 h-4 stroke-[3]" />
+                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                HADIR
+                              </span>
+                            </>
+                          ) : currentStatus === "IZIN" ? (
+                            <>
+                              <Info className="w-4 h-4 stroke-[2.5]" />
+                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                IJIN
+                              </span>
+                            </>
+                          ) : currentStatus === "SAKIT" ? (
+                            <>
+                              <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
+                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                SAKIT
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <X className="w-4 h-4 stroke-[3]" />
+                              <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                GHAIB
+                              </span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* Direct Status Selector Menu Trigger */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setStatusMenuStudentId(isStatusMenuOpen ? null : st.id)
+                          }
+                          className="p-1 -ml-1 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 cursor-pointer"
+                          title="Pilih status spesifik"
+                        >
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Status Menu Popover */}
+                        {isStatusMenuOpen && (
+                          <div className="absolute right-0 top-full mt-1.5 z-40 p-1.5 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
+                            <button
+                              type="button"
+                              onClick={() => handleStatusChange(st.id, "HADIR")}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
+                            >
+                              <span>✓ Hadir</span>
+                              {currentStatus === "HADIR" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleStatusChange(st.id, "IZIN")}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
+                            >
+                              <span>ℹ Ijin</span>
+                              {currentStatus === "IZIN" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleStatusChange(st.id, "SAKIT")}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 cursor-pointer"
+                            >
+                              <span>🏥 Sakit</span>
+                              {currentStatus === "SAKIT" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleStatusChange(st.id, "ABSEN")}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer"
+                            >
+                              <span>✕ Ghaib</span>
+                              {currentStatus === "ABSEN" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Bottom Attendance Confirmation & Save Action Card */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0e1c16] border border-emerald-200/80 dark:border-emerald-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                  Ringkasan Presensi ({selectedDate}):
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+                  ✓ Hadir: {todayHadirCount}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-xs font-bold">
+                  ⚠ Izin/Sakit: {todayIzinCount}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 text-xs font-bold">
+                  ✕ Absen: {todayAbsenCount}
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>
+                  {lastSavedTime
+                    ? `Terakhir disimpan pada ${lastSavedTime}. Seluruh data tersimpan aman di sistem.`
+                    : `Klik tombol simpan untuk memfinalisasi dan menyimpan absensi ${filteredStudents.length} siswa hari ini.`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleSaveTodayAttendance}
+                disabled={isSaving}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-600 active:scale-98 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                <span>Simpan Seluruh Presensi ({filteredStudents.length} Siswa)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Floating Bottom Bar for Quick Thumb Save */}
+          <div className="lg:hidden fixed bottom-16 left-3 right-3 z-30 p-2.5 sm:p-3 rounded-2xl bg-white/95 dark:bg-[#0e1c16]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3">
+            <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-800 dark:text-slate-200">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
+                ✓ {todayHadirCount}
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
+                ⚠ {todayIzinCount}
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300">
+                ✕ {todayAbsenCount}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSaveTodayAttendance}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-emerald-700 active:scale-95 text-white text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
+            >
+              {isSaving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+              <span>Simpan Presensi</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 2: RIWAYAT & REKAP ABSENSI (FULL CRUD & STATS) */}
+      {/* ========================================================================= */}
+      {activeTab === "REKAP" && (
+        <div className="space-y-6">
+          {/* 4 Rekap Stat Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Total Sesi Tercatat
+              </span>
+              <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                {totalRekapCount} Sesi
+              </div>
+              <div className="text-[11px] text-slate-500">Periode Agustus - September</div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
+                Tingkat Kehadiran
+              </span>
+              <div className="text-2xl font-black text-[#059669]">
+                {hadirPercent}%
+              </div>
+              <div className="text-[11px] text-slate-500">{hadirCount} kali Hadir</div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+              <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
+                Total Izin & Sakit
+              </span>
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
+                {izinSakitCount}
+              </div>
+              <div className="text-[11px] text-slate-500">Dengan konfirmasi wali</div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+              <span className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+                Absen / Alpa
+              </span>
+              <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                {absenCount}
+              </div>
+              <div className="text-[11px] text-slate-500">Tanpa keterangan</div>
+            </div>
+          </div>
+
+          {/* Filter & Action Bar */}
+          <div className="bg-white dark:bg-[#0e1c16] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  value={rekapSearch}
+                  onChange={(e) => setRekapSearch(e.target.value)}
+                  placeholder="Cari siswa, kode, atau catatan riwayat..."
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              {/* Action Buttons: Add Retroactive & View Mode */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openAddRecord}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Presensi Susulan / Manual</span>
+                </button>
+
+                <div className="flex rounded-xl bg-slate-100 dark:bg-[#13271f] p-0.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+                  <button
+                    type="button"
+                    onClick={() => setRekapViewMode("LOG")}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      rekapViewMode === "LOG"
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
+                        : ""
+                    }`}
+                  >
+                    Log Riwayat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRekapViewMode("PER_SISWA")}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      rekapViewMode === "PER_SISWA"
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
+                        : ""
+                    }`}
+                  >
+                    Rekap per Siswa
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sub Filters */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-[11px] font-bold text-slate-400">Filter:</span>
+
+              <select
+                value={rekapBranchFilter}
+                onChange={(e) => setRekapBranchFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                <option value="ALL">Semua Cabang</option>
+                <option value="Singkut">Cabang Singkut</option>
+                <option value="Bangko">Cabang Bangko</option>
+              </select>
+
+              <select
+                value={rekapClassFilter}
+                onChange={(e) => setRekapClassFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                <option value="ALL">Semua Kelas</option>
+                <option value="Kelas A">Kelas A</option>
+                <option value="Kelas B">Kelas B</option>
+                <option value="CLASS A1">CLASS A1</option>
+                <option value="CLASS B">CLASS B</option>
+                <option value="CLASS C">CLASS C</option>
+                <option value="Kelas A2">Kelas A2</option>
+              </select>
+
+              <select
+                value={rekapStatusFilter}
+                onChange={(e) => setRekapStatusFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                <option value="ALL">Semua Status</option>
+                <option value="HADIR">Hadir</option>
+                <option value="IZIN">Izin</option>
+                <option value="SAKIT">Sakit</option>
+                <option value="ABSEN">Absen</option>
+              </select>
+            </div>
+          </div>
+
+          {/* VIEW MODE 1: LOG RIWAYAT TABEL */}
+          {rekapViewMode === "LOG" && (
+            <div className="bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#13271f]/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <th className="py-3 px-4">Tanggal & Waktu</th>
+                      <th className="py-3 px-4">Siswa (Kode & Nama)</th>
+                      <th className="py-3 px-4">Kelas & Cabang</th>
+                      <th className="py-3 px-4">Metode Absen</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Catatan</th>
+                      <th className="py-3 px-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredRekapArray.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-slate-400">
+                          Tidak ada data riwayat presensi yang sesuai filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRekapArray.map((record) => (
+                        <tr
+                          key={record.key}
+                          className="hover:bg-slate-50/50 dark:hover:bg-[#13271f]/30 transition-colors"
+                        >
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-slate-900 dark:text-slate-100">
+                              {record.date}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              {record.time || "-"}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-slate-900 dark:text-slate-100">
+                              {record.studentName || "Siswa"}
+                            </div>
+                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
+                              #{record.studentCode || "-"}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-4">
+                            <div className="font-semibold text-slate-800 dark:text-slate-200">
+                              {record.className}
+                            </div>
+                            <span
+                              className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                                record.branch === "Singkut"
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                                  : "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
+                              }`}
+                            >
+                              {record.branch}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-4">
+                            {record.method === "QR_SCAN" ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-extrabold text-[10px]">
+                                <QrCode className="w-3 h-3" />
+                                <span>QR Scan</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold text-[10px]">
+                                <span>Manual</span>
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${
+                                record.status === "HADIR"
+                                  ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300"
+                                  : record.status === "IZIN"
+                                  ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
+                                  : record.status === "SAKIT"
+                                  ? "bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300"
+                                  : "bg-rose-100 text-rose-900 dark:bg-rose-950/80 dark:text-rose-300"
+                              }`}
+                            >
+                              {record.status}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-4 max-w-xs truncate text-slate-600 dark:text-slate-400">
+                            {record.note || "-"}
+                          </td>
+
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => openEditRecord(record.key, record)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                title="Edit Record Kehadiran"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteRecord(record.key, record.studentName)
+                                }
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                title="Hapus Record"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW MODE 2: REKAP PER SISWA */}
+          {rekapViewMode === "PER_SISWA" && (
+            <div className="bg-white dark:bg-[#0e1c16] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#13271f]/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <th className="py-3 px-4">Nama Siswa</th>
+                      <th className="py-3 px-4">Kelas & Cabang</th>
+                      <th className="py-3 px-4 text-center">Total Sesi</th>
+                      <th className="py-3 px-4 text-center">Hadir</th>
+                      <th className="py-3 px-4 text-center">Izin</th>
+                      <th className="py-3 px-4 text-center">Sakit</th>
+                      <th className="py-3 px-4 text-center">Absen</th>
+                      <th className="py-3 px-4 text-right">Persentase</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {students.map((st) => {
+                      const studentRecords = allAttendanceArray.filter(
+                        (a) => a.studentId === st.id
+                      );
+                      const totalS = studentRecords.length;
+                      const hCount = studentRecords.filter((a) => a.status === "HADIR").length;
+                      const iCount = studentRecords.filter((a) => a.status === "IZIN").length;
+                      const sCount = studentRecords.filter((a) => a.status === "SAKIT").length;
+                      const aCount = studentRecords.filter((a) => a.status === "ABSEN").length;
+                      const pct = totalS > 0 ? Math.round((hCount / totalS) * 100) : 0;
+
+                      return (
+                        <tr
+                          key={st.id}
+                          className="hover:bg-slate-50/50 dark:hover:bg-[#13271f]/30 transition-colors"
+                        >
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-slate-900 dark:text-slate-100">
+                              {st.name}
+                            </div>
+                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
+                              #{st.studentCode}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="font-semibold text-slate-800 dark:text-slate-200">
+                              {st.className}
+                            </div>
+                            <span className="text-[10px] text-slate-400">{st.branch}</span>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-center font-bold">{totalS}</td>
+                          <td className="py-3.5 px-4 text-center font-extrabold text-emerald-600">
+                            {hCount}
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-semibold text-amber-600">
+                            {iCount}
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-semibold text-purple-600">
+                            {sCount}
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-semibold text-rose-600">
+                            {aCount}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-16 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className="bg-emerald-600 h-full rounded-full"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="font-extrabold text-xs">{pct}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: SCANNER QR PRESENSI REAL-TIME */}
+      {/* ========================================================================= */}
+      {showScannerModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[95vh] overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setShowScannerModal(false);
+                setIsCameraActive(false);
+              }}
+              className="absolute top-5 right-5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              ✕
+            </button>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-[#059669] flex items-center justify-center font-bold">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                  Scan QR Presensi Sesuai Jadwal
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Pindai kartu ID siswa via kamera, scanner barcode USB, atau input kode siswa langsung.
+              </p>
+            </div>
+
+            {/* Camera View / Video Element */}
+            <div className="space-y-2">
+              <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-video flex items-center justify-center border border-slate-800">
+                {isCameraActive ? (
+                  <>
+                    <video
+                      ref={videoRef}
+                      className="w-full h-full object-cover"
+                      playsInline
+                      muted
+                    />
+                    <canvas ref={canvasRef} className="hidden" />
+                    {/* Scanner Targeting Reticle */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-48 h-48 border-2 border-emerald-400 rounded-2xl animate-pulse flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-emerald-400/80 shadow-lg shadow-emerald-400 animate-bounce" />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-6 text-center space-y-2 text-slate-400">
+                    <QrCode className="w-12 h-12 text-slate-600 mx-auto stroke-1" />
+                    <div className="text-xs font-semibold">Kamera Belum Aktif</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCameraError(null);
+                        setIsCameraActive(true);
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Aktifkan Kamera Scanner</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {cameraError && (
+                <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{cameraError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Alternative Input for Barcode Scanner Wedge / Manual Code */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleProcessQrCode(scannerInputCode);
+              }}
+              className="space-y-2 pt-1"
+            >
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Atau Tempel / Scan via Scanner Barcode USB:
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  autoFocus
+                  value={scannerInputCode}
+                  onChange={(e) => setScannerInputCode(e.target.value)}
+                  placeholder="Scan kartu atau ketik ID kode (contoh: 79000)..."
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  Proses
+                </button>
+              </div>
+            </form>
+
+            {/* Quick Test Simulator Button */}
+            <div className="pt-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                Simulasi Cepat Scan Siswa:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {students.slice(0, 4).map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => handleProcessQrCode(st.studentCode)}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#13271f] hover:bg-emerald-50 dark:hover:bg-emerald-950 text-slate-700 dark:text-slate-200 hover:text-emerald-700 text-[11px] font-semibold transition-colors"
+                  >
+                    #{st.studentCode} {st.name.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Scan Feedback Result Banner */}
+            {scanResult && (
+              <div
+                className={`p-4 rounded-2xl border text-xs space-y-2 animate-in fade-in ${
+                  scanResult.type === "SUCCESS"
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
+                    : scanResult.type === "WARNING_SCHEDULE"
+                    ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+                    : scanResult.type === "ALREADY_PRESENT"
+                    ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200"
+                    : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200"
+                }`}
+              >
+                <div className="flex items-start gap-2.5">
+                  {scanResult.type === "SUCCESS" ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : scanResult.type === "WARNING_SCHEDULE" ? (
+                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  ) : scanResult.type === "ALREADY_PRESENT" ? (
+                    <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                  )}
+
+                  <div className="space-y-1">
+                    <div className="font-extrabold text-sm">{scanResult.message}</div>
+                    {scanResult.scheduleInfo && (
+                      <div className="text-[11px] font-semibold opacity-90">
+                        Jadwal Terdaftar: {scanResult.scheduleInfo}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* If warning schedule, offer override button */}
+                {scanResult.type === "WARNING_SCHEDULE" && scanResult.student && (
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleForceConfirmAttendance(scanResult.student!)}
+                      className="px-3.5 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700 transition-colors"
+                    >
+                      Izinkan Absen Sesi Pengganti
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScanResult(null)}
+                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300 text-xs"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: TAMBAH PRESENSI SUSULAN / MANUAL (CRUD - CREATE) */}
+      {/* ========================================================================= */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">
+                Tambah Presensi Susulan
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAddRecord} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Pilih Siswa
+                </label>
+                <select
+                  value={crudForm.studentId}
+                  onChange={(e) => {
+                    const st = students.find((s) => s.id === e.target.value);
+                    setCrudForm({
+                      ...crudForm,
+                      studentId: e.target.value,
+                      studentName: st?.name || "",
+                      studentCode: st?.studentCode || "",
+                      className: st?.className || "",
+                      branch: st?.branch || "Singkut",
+                    });
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                >
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      #{s.studentCode} - {s.name} ({s.className})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Tanggal Sesi
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={crudForm.date}
+                    onChange={(e) => setCrudForm({ ...crudForm, date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Jam Sesi
+                  </label>
+                  <input
+                    type="text"
+                    value={crudForm.time}
+                    onChange={(e) => setCrudForm({ ...crudForm, time: e.target.value })}
+                    placeholder="14:00 WIB"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Status Kehadiran
+                  </label>
+                  <select
+                    value={crudForm.status}
+                    onChange={(e) =>
+                      setCrudForm({
+                        ...crudForm,
+                        status: e.target.value as AttendanceItem["status"],
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  >
+                    <option value="HADIR">Hadir</option>
+                    <option value="IZIN">Izin</option>
+                    <option value="SAKIT">Sakit</option>
+                    <option value="ABSEN">Absen</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Metode Catat
+                  </label>
+                  <select
+                    value={crudForm.method}
+                    onChange={(e) =>
+                      setCrudForm({
+                        ...crudForm,
+                        method: e.target.value as "QR_SCAN" | "MANUAL",
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  >
+                    <option value="MANUAL">Manual</option>
+                    <option value="QR_SCAN">Scan QR</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Catatan Guru
+                </label>
+                <input
+                  type="text"
+                  value={crudForm.note}
+                  onChange={(e) => setCrudForm({ ...crudForm, note: e.target.value })}
+                  placeholder="Keterangan izin / catatan kehadiran..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#059669] text-white text-xs font-bold shadow-xs hover:bg-[#047857]"
+                >
+                  Simpan Presensi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 3: EDIT RECORD KEHADIRAN (CRUD - UPDATE) */}
+      {/* ========================================================================= */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">
+                Edit Data Presensi: {crudForm.studentName}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditRecord} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Tanggal Sesi
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={crudForm.date}
+                    onChange={(e) => setCrudForm({ ...crudForm, date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Jam Sesi
+                  </label>
+                  <input
+                    type="text"
+                    value={crudForm.time}
+                    onChange={(e) => setCrudForm({ ...crudForm, time: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Status Kehadiran
+                </label>
+                <select
+                  value={crudForm.status}
+                  onChange={(e) =>
+                    setCrudForm({
+                      ...crudForm,
+                      status: e.target.value as AttendanceItem["status"],
+                    })
+                  }
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                >
+                  <option value="HADIR">Hadir</option>
+                  <option value="IZIN">Izin</option>
+                  <option value="SAKIT">Sakit</option>
+                  <option value="ABSEN">Absen</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Catatan Guru
+                </label>
+                <input
+                  type="text"
+                  value={crudForm.note}
+                  onChange={(e) => setCrudForm({ ...crudForm, note: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#059669] text-white text-xs font-bold shadow-xs hover:bg-[#047857]"
+                >
+                  Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* QUICK NOTE MODAL (DIREKOMENDASIKAN UNTUK PRESENSI SISWA) */}
+      {/* ========================================================================= */}
+      {activeNoteStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#0e1c16] w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
+                    Catatan Presensi
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    {activeNoteStudent.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveNoteStudent(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                  Pilih Keterangan Cepat:
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "Izin urusan keluarga",
+                    "Sakit demam / flu",
+                    "Terlambat sesi",
+                    "Lupa bawa modul",
+                    "Izin kegiatan sekolah",
+                    "Tugas dinas ortu",
+                  ].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        setNoteInputText((prev) => (prev ? `${prev}, ${tag}` : tag));
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 text-[11px] font-semibold border border-slate-200/80 dark:border-slate-700 cursor-pointer transition-colors"
+                    >
+                      + {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                  Teks Catatan Presensi:
+                </label>
+                <textarea
+                  rows={3}
+                  value={noteInputText}
+                  onChange={(e) => setNoteInputText(e.target.value)}
+                  placeholder="Tuliskan keterangan detail presensi di sini..."
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#08120e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setNoteInputText("");
+                  setNotesState((prev) => ({ ...prev, [activeNoteStudent.id]: "" }));
+                  setAttendance(
+                    activeNoteStudent.id,
+                    selectedDate,
+                    getStatus(activeNoteStudent.id),
+                    ""
+                  );
+                  setActiveNoteStudent(null);
+                }}
+                className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+              >
+                Hapus Catatan
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveNoteStudent(null)}
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNotesState((prev) => ({
+                      ...prev,
+                      [activeNoteStudent.id]: noteInputText,
+                    }));
+                    setAttendance(
+                      activeNoteStudent.id,
+                      selectedDate,
+                      getStatus(activeNoteStudent.id),
+                      noteInputText
+                    );
+                    setActiveNoteStudent(null);
+                    setSaveToast({
+                      message: `Catatan presensi untuk ${activeNoteStudent.name} berhasil disimpan!`,
+                      count: 1,
+                    });
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-extrabold shadow-sm cursor-pointer"
+                >
+                  Simpan Catatan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function AbsensiPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Memuat Modul Absensi...</div>}>
+      <AbsensiContent />
+    </Suspense>
+  );
+}

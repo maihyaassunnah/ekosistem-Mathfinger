@@ -1,0 +1,323 @@
+"use client";
+
+import React, { useState } from "react";
+import {
+  BookOpen,
+  Plus,
+  Search,
+  Send,
+  Trash2,
+  Calendar,
+  User,
+  Check,
+  X,
+} from "lucide-react";
+import { useAppStore, JournalItem } from "@/lib/store";
+
+export default function JurnalGuruPage() {
+  const { journals, addJournal, deleteJournal, classes, students } = useAppStore();
+
+  const [search, setSearch] = useState("");
+  const [classFilter, setClassFilter] = useState("ALL");
+  const [studentFilter, setStudentFilter] = useState("ALL");
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
+  // Form state
+  const [form, setForm] = useState({
+    studentName: "Aishwa Rahma Annida",
+    className: "Kelas A",
+    branch: "Singkut" as "Singkut" | "Bangko",
+    topic: "Pengurangan (jari turun)",
+    content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
+    teacher: "Febrianti Dewi, S.Pd",
+    date: "2026-08-30",
+  });
+
+  const filteredJournals = journals.filter((j) => {
+    const matchSearch =
+      j.topic.toLowerCase().includes(search.toLowerCase()) ||
+      j.content.toLowerCase().includes(search.toLowerCase()) ||
+      j.studentName.toLowerCase().includes(search.toLowerCase());
+
+    const matchClass = classFilter === "ALL" ? true : j.className === classFilter;
+    const matchStudent = studentFilter === "ALL" ? true : j.studentName === studentFilter;
+
+    return matchSearch && matchClass && matchStudent;
+  });
+
+  const handleSubmitAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    addJournal(form);
+    setIsAddOpen(false);
+  };
+
+  const handleSendWA = (j: JournalItem) => {
+    const text = encodeURIComponent(
+      `Halo Orang Tua dari ${j.studentName},\n\nBerikut catatan jurnal guru les Mathfingers (${j.className}):\nMateri: ${j.topic}\n\n"${j.content}"\n\nPengajar: ${j.teacher}\nLes Mathfingers Cabang ${j.branch}`
+    );
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto">
+      {/* Top Header (Matches Image 5) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Catatan Jurnal Guru
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Input satu kali jurnal untuk semua siswa aktif yang hadir secara bersamaan berdasarkan hari atau kelompok kelas.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsAddOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          + Buat Jurnal Harian Kelas
+        </button>
+      </div>
+
+      {/* Filter Bar (Matches Image 5) */}
+      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <Search className="w-4 h-4" />
+          </div>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari materi jurnal, catatan, atau nama siswa..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+          >
+            <option value="ALL">Semua Kelas</option>
+            <option value="Kelas A">Kelas A</option>
+            <option value="Kelas B">Kelas B</option>
+            <option value="CLASS A1">CLASS A1</option>
+            <option value="CLASS B">CLASS B</option>
+            <option value="CLASS C">CLASS C</option>
+          </select>
+
+          <select
+            value={studentFilter}
+            onChange={(e) => setStudentFilter(e.target.value)}
+            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 max-w-[180px]"
+          >
+            <option value="ALL">Semua Siswa</option>
+            {students.slice(0, 8).map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Date Pill (Matches Image 5) */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white border border-slate-200 text-xs font-extrabold text-slate-700 shadow-2xs">
+          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+          MINGGU, 30 AGUSTUS 2026
+        </div>
+      </div>
+
+      {/* 2-Column Grid of Jurnal Cards (Matches Image 5) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {filteredJournals.map((j) => (
+          <div
+            key={j.id}
+            className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3.5 hover:shadow-md transition-all flex flex-col justify-between"
+          >
+            {/* Header: Name, Class Badge, Actions */}
+            <div>
+              <div className="flex items-center justify-between gap-2 pb-2">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-extrabold text-slate-900 text-base">
+                    {j.studentName}
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    {j.className}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSendWA(j)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition-all"
+                    title="Kirim ke WhatsApp Wali"
+                  >
+                    <Send className="w-3 h-3" />
+                    Kirim
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Hapus catatan jurnal ini?")) {
+                        deleteJournal(j.id);
+                      }
+                    }}
+                    className="p-1 rounded-lg text-slate-400 hover:text-red-600 transition-colors"
+                    title="Hapus Jurnal"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Topic Header */}
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800">
+                <BookOpen className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Materi: {j.topic}</span>
+              </div>
+
+              {/* Note Content (Quote style) */}
+              <div className="mt-3 p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 text-xs text-slate-600 leading-relaxed italic">
+                &ldquo;{j.content}&rdquo;
+              </div>
+            </div>
+
+            {/* Footer: Teacher Name & Ref Code */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-medium">
+              <div className="flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-slate-400" />
+                <span>Oleh: <strong className="text-slate-700">{j.teacher}</strong></span>
+              </div>
+              <span className="font-mono text-[11px] text-slate-400">Ref: {j.refCode}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal Add Jurnal */}
+      {isAddOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-extrabold text-slate-900 text-base">
+                Buat Jurnal Harian Kelas Baru
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitAdd} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Nama Siswa</label>
+                  <select
+                    value={form.studentName}
+                    onChange={(e) => setForm({ ...form, studentName: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  >
+                    {students.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name} ({s.branch})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Pilihan Kelas</label>
+                  <select
+                    value={form.className}
+                    onChange={(e) => setForm({ ...form, className: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  >
+                    {classes.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name} ({c.branch})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Topik / Materi Silabus</label>
+                <input
+                  type="text"
+                  required
+                  value={form.topic}
+                  onChange={(e) => setForm({ ...form, topic: e.target.value })}
+                  placeholder="Contoh: Pengurangan (jari turun)"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Catatan Evaluasi Guru</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={form.content}
+                  onChange={(e) => setForm({ ...form, content: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium leading-relaxed"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Guru Pengajar</label>
+                  <input
+                    type="text"
+                    required
+                    value={form.teacher}
+                    onChange={(e) => setForm({ ...form, teacher: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Tanggal</label>
+                  <input
+                    type="date"
+                    required
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-[#059669] text-white font-bold hover:bg-[#047857]"
+                >
+                  Simpan Jurnal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

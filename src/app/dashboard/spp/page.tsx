@@ -1,0 +1,680 @@
+"use client";
+
+import React, { useState, useMemo } from "react";
+import {
+  CreditCard,
+  BookOpen,
+  UserCheck,
+  MessageSquare,
+  Bell,
+  Plus,
+  Edit2,
+  Send,
+  Search,
+  ChevronDown,
+  Download,
+  Share2,
+  Trash2,
+  Calendar,
+  Check,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
+import TopStatusBar from "@/components/dashboard/TopStatusBar";
+import { useAppStore, InvoiceItem } from "@/lib/store";
+
+export default function SppPage() {
+  const { students, invoices, addInvoice, updateInvoiceStatus, deleteInvoice } =
+    useAppStore();
+
+  const [activeSubTab, setActiveSubTab] = useState<
+    "pendaftaran" | "spp" | "buku" | "pengingat"
+  >("spp");
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "BELUM_BAYAR" | "LUNAS">("ALL");
+
+  // Modals
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [payingInvoice, setPayingInvoice] = useState<InvoiceItem | null>(null);
+  const [isCustomTemplateOpen, setIsCustomTemplateOpen] = useState(false);
+  const [waTemplate, setWaTemplate] = useState(
+    "Assalamu'alaikum Ayah/Bunda {nama_siswa},\n\nMengingatkan kembali tagihan SPP bimbingan Math Fingers periode {periode} sebesar {nominal} dengan jatuh tempo pada {jatuh_tempo}.\n\nPembayaran dapat dilakukan secara tunai di cabang atau transfer. Terima kasih. 🙏"
+  );
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Form for new invoice
+  const [form, setForm] = useState({
+    studentId: "",
+    period: "September 2026",
+    dueDate: "2026-09-10",
+    amount: 100000,
+  });
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Filtered invoices
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((inv) => {
+      const matchSearch =
+        inv.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        inv.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        inv.period.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchStatus =
+        statusFilter === "ALL"
+          ? true
+          : statusFilter === "LUNAS"
+          ? inv.status === "LUNAS"
+          : inv.status === "BELUM BAYAR";
+
+      return matchSearch && matchStatus;
+    });
+  }, [invoices, searchQuery, statusFilter]);
+
+  const unpaidCount = invoices.filter((i) => i.status === "BELUM BAYAR").length;
+
+  const handleOpenAdd = () => {
+    setForm({
+      studentId: students[0]?.id || "",
+      period: "September 2026",
+      dueDate: "2026-09-10",
+      amount: 100000,
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleSubmitAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    const st = students.find((s) => s.id === form.studentId);
+    if (!st) return;
+
+    addInvoice({
+      studentId: st.id,
+      studentName: st.name,
+      period: form.period,
+      dueDate: form.dueDate,
+      amount: form.amount,
+      status: "BELUM BAYAR",
+    });
+    setIsAddOpen(false);
+    showToast(`Invoice baru berhasil diterbitkan untuk ${st.name}!`);
+  };
+
+  const handleConfirmPayment = (method: string) => {
+    if (!payingInvoice) return;
+    updateInvoiceStatus(
+      payingInvoice.id,
+      "LUNAS",
+      new Date().toISOString().split("T")[0],
+      method
+    );
+    setPayingInvoice(null);
+    showToast(`Pembayaran tagihan ${payingInvoice.invoiceNo} berhasil diverifikasi Lunas!`);
+  };
+
+  const handleToggleCancelPaid = (inv: InvoiceItem) => {
+    updateInvoiceStatus(inv.id, "BELUM BAYAR");
+    showToast(`Status pembayaran ${inv.invoiceNo} dikembalikan ke Belum Bayar.`);
+  };
+
+  const handleSendSingleWA = (inv: InvoiceItem) => {
+    const text = waTemplate
+      .replace("{nama_siswa}", inv.studentName)
+      .replace("{periode}", inv.period)
+      .replace("{nominal}", `Rp ${inv.amount.toLocaleString("id-ID")}`)
+      .replace("{jatuh_tempo}", inv.dueDate);
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const handleBatchSendWA = () => {
+    showToast(`Pengingat WhatsApp berhasil dikirimkan ke 28 wali siswa!`);
+  };
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
+      {/* Top Status Bar */}
+      <TopStatusBar title="Pembayaran SPP" />
+
+      {/* Subtabs (Pembayaran Pendaftaran, SPP, Buku, Pengingat SPP & Buku WA) */}
+      <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("pendaftaran")}
+          className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative ${
+            activeSubTab === "pendaftaran"
+              ? "text-[#059669] dark:text-[#10b981]"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          <UserCheck className="w-4 h-4" />
+          Pembayaran Pendaftaran
+          {activeSubTab === "pendaftaran" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] rounded-full" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("spp")}
+          className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative ${
+            activeSubTab === "spp"
+              ? "text-[#059669] dark:text-[#10b981]"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          SPP
+          {activeSubTab === "spp" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] rounded-full" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("buku")}
+          className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative ${
+            activeSubTab === "buku"
+              ? "text-[#059669] dark:text-[#10b981]"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          Buku
+          {activeSubTab === "buku" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] rounded-full" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("pengingat")}
+          className={`flex items-center gap-2 pb-3.5 transition-all shrink-0 relative ${
+            activeSubTab === "pengingat"
+              ? "text-[#059669] dark:text-[#10b981]"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Pengingat SPP & Buku (WA)
+          <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+            28
+          </span>
+          {activeSubTab === "pengingat" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#059669] rounded-full" />
+          )}
+        </button>
+      </div>
+
+      {/* Main Title Banner & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+            SPP & Invoice Manajemen
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Terbitkan tagihan SPP bulanan, catat pembayaran lunas/cicilan, pengingat otomatis H-2, dan ekspor kuitansi PDF.
+          </p>
+        </div>
+
+        {/* Action buttons: Pengingat SPP H-2 (28) & + Buat Invoice Baru */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={handleBatchSendWA}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-white dark:bg-[#0e1c16] hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-xs font-bold text-emerald-800 dark:text-emerald-300 transition-all shadow-2xs cursor-pointer"
+          >
+            <Bell className="w-3.5 h-3.5 text-emerald-600" />
+            Pengingat SPP H-2
+            <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-[10px]">
+              28
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Buat Invoice Baru
+          </button>
+        </div>
+      </div>
+
+      {/* Toast Alert Feedback */}
+      {toastMessage && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Banner Alert: 28 Tagihan SPP Menjelang / Melewati Jatuh Tempo (H-2) */}
+      <div className="rounded-2xl p-4 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+            <Bell className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                28 Tagihan SPP Menjelang / Melewati Jatuh Tempo (H-2)
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-[#059669] text-white text-[9px] font-extrabold tracking-wider uppercase">
+                SISWA PERLU DIINGATKAN
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Notifikasi instan ke WhatsApp wali murid dalam 1 klik dengan format pesan sopan & profesional.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsCustomTemplateOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0e1c16] hover:bg-slate-50 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+            Custom Kata-Kata
+          </button>
+
+          <button
+            type="button"
+            onClick={handleBatchSendWA}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#064E3B] hover:bg-[#043d2e] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <Send className="w-3.5 h-3.5" />
+            Kirim WA (28)
+          </button>
+        </div>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div className="bg-white dark:bg-[#0e1c16] p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari nama siswa, nomor invoice, atau periode.."
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+          />
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+        >
+          <option value="ALL">Semua Pembayaran</option>
+          <option value="BELUM_BAYAR">Belum Bayar</option>
+          <option value="LUNAS">Lunas</option>
+        </select>
+      </div>
+
+      {/* Invoice Table (Matching Screenshot 4) */}
+      <div className="bg-white dark:bg-[#0e1c16] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th className="py-3 px-4">NO INVOICE</th>
+                <th className="py-3 px-4">NAMA SISWA</th>
+                <th className="py-3 px-4">PERIODE & TEMPO</th>
+                <th className="py-3 px-4">JUMLAH BIAYA</th>
+                <th className="py-3 px-4">STATUS</th>
+                <th className="py-3 px-4 text-center">TINDAKAN</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {filteredInvoices.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                    Tidak ada tagihan yang cocok dengan filter pencarian.
+                  </td>
+                </tr>
+              ) : (
+                filteredInvoices.map((inv) => {
+                  const isPaid = inv.status === "LUNAS";
+
+                  return (
+                    <tr
+                      key={inv.id}
+                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-slate-100">
+                        <div className="flex items-center gap-1.5">
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{inv.invoiceNo}</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
+                        {inv.studentName}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="font-medium text-slate-800 dark:text-slate-200">
+                          {inv.period}
+                        </div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          Tempo: {inv.dueDate}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 font-extrabold text-slate-900 dark:text-slate-100">
+                        Rp {inv.amount.toLocaleString("id-ID")}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        {isPaid ? (
+                          <div>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold text-[10px]">
+                              <Check className="w-3 h-3" />
+                              LUNAS
+                            </span>
+                            <div className="text-[10px] text-slate-400 mt-0.5 font-mono">
+                              {inv.paidDate || "2026-09-05"} ({inv.paidMethod || "Tunai"})
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-[10px]">
+                            BELUM BAYAR
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {isPaid ? (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCancelPaid(inv)}
+                              className="px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+                            >
+                              Batal Lunas
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setPayingInvoice(inv)}
+                              className="px-3 py-1 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/40 hover:bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 transition-all cursor-pointer"
+                            >
+                              Bayar / Cicil
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                            title="Unduh Kwitansi"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleSendSingleWA(inv)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 cursor-pointer"
+                            title="Kirim Notifikasi WA"
+                          >
+                            <Share2 className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteInvoice(inv.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+                            title="Hapus Invoice"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal: Buat Invoice Baru */}
+      {isAddOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                Terbitkan Invoice SPP Baru
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitAdd} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  Pilih Siswa *
+                </label>
+                <select
+                  required
+                  value={form.studentId}
+                  onChange={(e) =>
+                    setForm({ ...form, studentId: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-slate-900 dark:text-slate-100 font-semibold"
+                >
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.className} - {s.branch})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  Periode Tagihan *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={form.period}
+                  onChange={(e) =>
+                    setForm({ ...form, period: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  Tanggal Jatuh Tempo *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={form.dueDate}
+                  onChange={(e) =>
+                    setForm({ ...form, dueDate: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  Nominal Tagihan (Rp) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={form.amount}
+                  onChange={(e) =>
+                    setForm({ ...form, amount: parseInt(e.target.value) || 0 })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1812] text-slate-900 dark:text-slate-100 font-bold"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold"
+                >
+                  Terbitkan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Bayar / Cicil Tagihan */}
+      {payingInvoice && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                Pencatatan Pembayaran SPP
+              </h3>
+              <button
+                type="button"
+                onClick={() => setPayingInvoice(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b1812] border border-slate-100 dark:border-slate-800 space-y-1 text-xs">
+              <div className="text-slate-400">Siswa:</div>
+              <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                {payingInvoice.studentName}
+              </div>
+              <div className="text-slate-500">
+                {payingInvoice.invoiceNo} • {payingInvoice.period}
+              </div>
+              <div className="text-base font-extrabold text-emerald-700 dark:text-emerald-400 mt-2">
+                Rp {payingInvoice.amount.toLocaleString("id-ID")}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Pilih Metode Pembayaran:
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleConfirmPayment("Tunai")}
+                  className="p-3 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 cursor-pointer"
+                >
+                  💵 Tunai di Kasir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmPayment("Transfer")}
+                  className="p-3 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-xs font-bold text-blue-800 dark:text-blue-300 hover:bg-blue-100 cursor-pointer"
+                >
+                  🏦 Transfer Bank / QRIS
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setPayingInvoice(null)}
+              className="w-full py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 mt-2"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Custom Kata-Kata WhatsApp Template */}
+      {isCustomTemplateOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0e1c16] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                Kustomisasi Format Pengingat WhatsApp
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsCustomTemplateOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <p className="text-slate-500">
+                Gunakan variabel otomatis:{" "}
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-700 dark:text-emerald-400">
+                  {"{nama_siswa}"}
+                </code>
+                ,{" "}
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-700 dark:text-emerald-400">
+                  {"{periode}"}
+                </code>
+                ,{" "}
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-700 dark:text-emerald-400">
+                  {"{nominal}"}
+                </code>
+                ,{" "}
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-700 dark:text-emerald-400">
+                  {"{jatuh_tempo}"}
+                </code>
+              </p>
+
+              <textarea
+                rows={6}
+                value={waTemplate}
+                onChange={(e) => setWaTemplate(e.target.value)}
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b1812] text-slate-900 dark:text-slate-100 leading-relaxed font-sans"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsCustomTemplateOpen(false)}
+                className="px-4 py-2 rounded-xl bg-[#059669] text-white text-xs font-bold"
+              >
+                Simpan Format Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
