@@ -134,12 +134,12 @@ export default function RiwayatSppPage() {
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               OUTSTANDING (PIUTANG)
             </div>
-            <div className="text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400">
+            <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
               Rp 2.825.000
             </div>
             <div className="text-[11px] text-slate-400">Tagihan belum terbayar</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center shrink-0">
             <TrendingDown className="w-5 h-5" />
           </div>
         </div>

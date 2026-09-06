@@ -255,7 +255,7 @@ function WebsiteManagementContent() {
       {/* Toast Notification */}
       {saveAlert && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl shadow-lg animate-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-5 h-5 text-rose-200" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-200" />
           <span>{saveAlert}</span>
         </div>
       )}
@@ -1223,7 +1223,7 @@ function WebsiteManagementContent() {
           </div>
 
           {/* Partner Preview & Live Marquee Demonstration */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-rose-50 to-slate-50 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-3">
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-slate-50 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-blue-950 dark:text-sky-300 dark:text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -1276,7 +1276,7 @@ function WebsiteManagementContent() {
                       className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       <td className="py-3.5 px-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-rose-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
                           {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
                         </div>
                       </td>

@@ -289,7 +289,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
         {/* Mac-style Window Controls + Dark Mode & Collapse Button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-rose-500 inline-block" />
+            <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
             <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
             <span className="w-3 h-3 rounded-full bg-sky-400 inline-block" />
           </div>
@@ -498,9 +498,9 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-bold transition text-left cursor-pointer"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 font-bold transition text-left cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                  <LogOut className="w-3.5 h-3.5 text-emerald-500" />
                   Keluar (Logout)
                 </button>
               </div>

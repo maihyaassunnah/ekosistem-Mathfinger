@@ -374,11 +374,11 @@ export default function ArusKeuanganPage() {
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   PENGELUARAN BULAN INI
                 </div>
-                <div className="text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400">
+                <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                   Rp {pengeluaranBulanIni.toLocaleString("id-ID")}
                 </div>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center shrink-0">
                 <ArrowDownRight className="w-5 h-5" />
               </div>
             </div>
@@ -450,7 +450,7 @@ export default function ArusKeuanganPage() {
                           {/* Pink/Red Bar (Pengeluaran) */}
                           <div
                             style={{ height: `${Math.max(expenseHeightPct, 6)}%` }}
-                            className="w-4 sm:w-6 bg-[#f43f5e] hover:bg-[#e11d48] rounded-t-lg transition-all relative group cursor-pointer"
+                            className="w-4 sm:w-6 bg-amber-500 hover:bg-amber-600 rounded-t-lg transition-all relative group cursor-pointer"
                           >
                             <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-20 pointer-events-none transition-opacity">
                               Pengeluaran: Rp {item.expense.toLocaleString("id-ID")}
@@ -474,7 +474,7 @@ export default function ArusKeuanganPage() {
                     <span>Pemasukan</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    <span className="w-3 h-3 rounded-full bg-[#f43f5e]" />
+                    <span className="w-3 h-3 rounded-full bg-amber-500" />
                     <span>Pengeluaran</span>
                   </div>
                 </div>
@@ -626,7 +626,7 @@ export default function ArusKeuanganPage() {
             <button
               type="button"
               onClick={handleOpenAddExpense}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer shadow-sm"
             >
               <Plus className="w-4 h-4" />
               Catat Pengeluaran Baru
@@ -656,7 +656,7 @@ export default function ArusKeuanganPage() {
                           {t.date}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                             {t.category}
                           </span>
                         </td>
@@ -665,7 +665,7 @@ export default function ArusKeuanganPage() {
                         </td>
                         <td className="py-3 px-4 text-slate-500">{t.branch}</td>
                         <td className="py-3 px-4 text-slate-500 italic">{t.title}</td>
-                        <td className="py-3 px-4 text-right font-extrabold text-rose-600">
+                        <td className="py-3 px-4 text-right font-extrabold text-emerald-600">
                           - Rp {t.amount.toLocaleString("id-ID")}
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -742,7 +742,7 @@ export default function ArusKeuanganPage() {
                           ? `+ Rp ${row.amount.toLocaleString("id-ID")}`
                           : "-"}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-rose-600">
+                      <td className="py-3 px-4 text-right font-bold text-emerald-600">
                         {row.type === "EXPENSE"
                           ? `- Rp ${row.amount.toLocaleString("id-ID")}`
                           : "-"}
@@ -834,7 +834,7 @@ export default function ArusKeuanganPage() {
               <div className="space-y-2">
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Penggandaan / Cetak Buku:</span>
-                  <span className="font-bold text-rose-600">Rp 75.000</span>
+                  <span className="font-bold text-emerald-600">Rp 75.000</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Gaji & Honor Tutor:</span>
@@ -846,7 +846,7 @@ export default function ArusKeuanganPage() {
                 </div>
                 <div className="flex justify-between pt-2 text-sm font-extrabold text-slate-900 dark:text-slate-100">
                   <span>Total Pengeluaran:</span>
-                  <span className="text-rose-600">Rp {pengeluaranBulanIni.toLocaleString("id-ID")}</span>
+                  <span className="text-emerald-600">Rp {pengeluaranBulanIni.toLocaleString("id-ID")}</span>
                 </div>
               </div>
             </div>
@@ -1088,7 +1088,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, amount: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-bold text-rose-600"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-bold text-emerald-600"
                   />
                 </div>
               </div>
@@ -1117,7 +1117,7 @@ export default function ArusKeuanganPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                 >
                   Simpan Pengeluaran
                 </button>

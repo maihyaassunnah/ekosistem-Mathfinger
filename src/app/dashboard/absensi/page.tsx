@@ -841,7 +841,7 @@ function AbsensiContent() {
                 <button
                   type="button"
                   onClick={handleClearSelection}
-                  className="px-3.5 py-1.5 rounded-xl border border-rose-400 dark:border-rose-800 bg-white dark:bg-[#0f1a36] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl border border-emerald-400 dark:border-emerald-800 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
                 >
                   Hapus Centang
                 </button>
@@ -873,7 +873,7 @@ function AbsensiContent() {
                     <button
                       type="button"
                       onClick={() => handleBatchSetSelectedStatus("ABSEN")}
-                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] cursor-pointer"
                     >
                       + Ghaib
                     </button>
@@ -1012,7 +1012,7 @@ function AbsensiContent() {
                               ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-500/20"
                               : currentStatus === "SAKIT"
                               ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/20"
-                              : "bg-rose-600 hover:bg-rose-700 text-white ring-2 ring-rose-500/20"
+                              : "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-500/20"
                           }`}
                           title="Klik untuk ganti status: Hadir ➜ Ijin ➜ Sakit ➜ Ghaib"
                         >
@@ -1095,11 +1095,11 @@ function AbsensiContent() {
                             <button
                               type="button"
                               onClick={() => handleStatusChange(st.id, "ABSEN")}
-                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer"
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
                             >
                               <span>✕ Ghaib</span>
                               {currentStatus === "ABSEN" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                               )}
                             </button>
                           </div>
@@ -1125,7 +1125,7 @@ function AbsensiContent() {
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-xs font-bold">
                   ⚠ Izin/Sakit: {todayIzinCount}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 text-xs font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
                   ✕ Absen: {todayAbsenCount}
                 </span>
               </div>
@@ -1165,7 +1165,7 @@ function AbsensiContent() {
               <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
                 ⚠ {todayIzinCount}
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
                 ✕ {todayAbsenCount}
               </span>
             </div>
@@ -1225,10 +1225,10 @@ function AbsensiContent() {
             </div>
 
             <div className="p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-1">
-              <span className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+              <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">
                 Absen / Alpa
               </span>
-              <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 {absenCount}
               </div>
               <div className="text-[11px] text-slate-500">Tanpa keterangan</div>
@@ -1414,7 +1414,7 @@ function AbsensiContent() {
                                   ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
                                   : record.status === "SAKIT"
                                   ? "bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300"
-                                  : "bg-rose-100 text-rose-900 dark:bg-rose-950/80 dark:text-rose-300"
+                                  : "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300"
                               }`}
                             >
                               {record.status}
@@ -1440,7 +1440,7 @@ function AbsensiContent() {
                                 onClick={() =>
                                   handleDeleteRecord(record.key, record.studentName)
                                 }
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                                 title="Hapus Record"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1516,7 +1516,7 @@ function AbsensiContent() {
                           <td className="py-3.5 px-4 text-center font-semibold text-purple-600">
                             {sCount}
                           </td>
-                          <td className="py-3.5 px-4 text-center font-semibold text-rose-600">
+                          <td className="py-3.5 px-4 text-center font-semibold text-emerald-600">
                             {aCount}
                           </td>
 
@@ -1612,7 +1612,7 @@ function AbsensiContent() {
               </div>
 
               {cameraError && (
-                <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{cameraError}</span>
                 </div>
@@ -1677,7 +1677,7 @@ function AbsensiContent() {
                     ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
                     : scanResult.type === "ALREADY_PRESENT"
                     ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200"
-                    : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200"
+                    : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
                 }`}
               >
                 <div className="flex items-start gap-2.5">
@@ -1688,7 +1688,7 @@ function AbsensiContent() {
                   ) : scanResult.type === "ALREADY_PRESENT" ? (
                     <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                   ) : (
-                    <X className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                    <X className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   )}
 
                   <div className="space-y-1">
@@ -2061,7 +2061,7 @@ function AbsensiContent() {
                   );
                   setActiveNoteStudent(null);
                 }}
-                className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
               >
                 Hapus Catatan
               </button>

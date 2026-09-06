@@ -62,9 +62,9 @@ export default function DatabasePage() {
     { name: "teacher_journals", label: "Jurnal Mengajar", count: journals.length, icon: Table, color: "text-slate-700 bg-slate-100 dark:text-slate-300 dark:bg-slate-800" },
     { name: "student_grades", label: "Nilai & Evaluasi", count: grades.length, icon: Award, color: "text-orange-700 bg-orange-50 dark:text-orange-300 dark:bg-orange-950/40" },
     { name: "student_behaviors", label: "Sikap & Keaktifan", count: "Realtime", icon: Sparkles, color: "text-pink-700 bg-pink-50 dark:text-pink-300 dark:bg-pink-950/40" },
-    { name: "invoices", label: "Tagihan & SPP", count: invoices.length, icon: CreditCard, color: "text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/40" },
+    { name: "invoices", label: "Tagihan & SPP", count: invoices.length, icon: CreditCard, color: "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40" },
     { name: "cash_mutations", label: "Mutasi Kasir", count: "Realtime", icon: CreditCard, color: "text-blue-700 bg-blue-50 dark:text-sky-300 dark:bg-blue-950/40" },
-    { name: "cash_transactions", label: "Buku Kas & Transaksi", count: transactions.length, icon: CreditCard, color: "text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/40" },
+    { name: "cash_transactions", label: "Buku Kas & Transaksi", count: transactions.length, icon: CreditCard, color: "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40" },
   ];
 
   const tablesWebsite = [
@@ -106,7 +106,7 @@ export default function DatabasePage() {
             href="https://db.mathfingers.my.id"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-bold hover:shadow-lg hover:shadow-red-600/25 transition shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold hover:shadow-lg hover:shadow-emerald-600/25 transition shadow-sm"
           >
             <Database className="w-4 h-4" />
             Buka PGWeb Viewer

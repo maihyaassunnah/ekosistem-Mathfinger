@@ -299,7 +299,7 @@ export default function SiswaPage() {
                         <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                           #{st.studentCode}
                         </span>
-                        <span className="px-1 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="px-1 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           {st.gender}
                         </span>
                         <span className="px-1 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">

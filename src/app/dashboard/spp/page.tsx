@@ -203,7 +203,7 @@ export default function SppPage() {
         >
           <MessageSquare className="w-4 h-4" />
           Pengingat SPP & Buku (WA)
-          <span className="px-1.5 py-0.2 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-[10px] font-extrabold">
+          <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold">
             {unpaidCount}
           </span>
           {activeSubTab === "pengingat" && (
@@ -232,7 +232,7 @@ export default function SppPage() {
           >
             <Bell className="w-3.5 h-3.5 text-blue-600" />
             Pengingat SPP H-2
-            <span className="px-1.5 py-0.2 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-[10px] font-bold">
+            <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
               {unpaidCount}
             </span>
           </button>
@@ -250,16 +250,16 @@ export default function SppPage() {
 
       {/* Toast Alert Feedback */}
       {toastMessage && (
-        <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-900 dark:text-rose-200 flex items-center gap-2 animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-blue-600" />
           {toastMessage}
         </div>
       )}
 
       {/* Banner Alert: Tagihan SPP Menjelang / Melewati Jatuh Tempo (H-2) */}
-      <div className="rounded-2xl p-4 bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+      <div className="rounded-2xl p-4 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
             <Bell className="w-5 h-5" />
           </div>
           <div>

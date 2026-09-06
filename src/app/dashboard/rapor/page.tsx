@@ -256,7 +256,7 @@ export default function RaporPage() {
           <button
             type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             Unduh / Cetak PDF
@@ -281,15 +281,15 @@ export default function RaporPage() {
           className="w-full max-w-[760px] bg-white text-slate-900 rounded-[24px] sm:rounded-[30px] shadow-2xl p-5 sm:p-8 space-y-6"
         >
           {/* 1. Header Box: Signature Red Gradient */}
-          <div className="bg-gradient-to-r from-red-600 to-rose-600 rounded-2xl p-5 sm:p-6 text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-5 sm:p-6 text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-rose-200" />
+                <Sparkles className="w-5 h-5 text-emerald-200" />
                 <h2 className="text-xl sm:text-2xl font-black tracking-wider uppercase">
                   MATH FINGERS
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-rose-100 font-medium">
+              <p className="text-xs sm:text-sm text-emerald-100 font-medium">
                 Berhitung Cepat & Akurat Tanpa Alat
               </p>
               <div className="pt-1">
@@ -573,7 +573,7 @@ export default function RaporPage() {
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Cetak / Unduh PDF
@@ -592,15 +592,15 @@ export default function RaporPage() {
             <div className="flex justify-center p-2">
               <div className="w-full max-w-[760px] bg-white text-slate-900 rounded-[28px] shadow-2xl p-6 sm:p-8 space-y-6">
                 {/* Header Box */}
-                <div className="bg-gradient-to-r from-red-600 to-rose-600 rounded-2xl p-5 sm:p-6 text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-5 sm:p-6 text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-rose-200" />
+                      <Sparkles className="w-5 h-5 text-emerald-200" />
                       <h2 className="text-xl sm:text-2xl font-black tracking-wider uppercase">
                         MATH FINGERS
                       </h2>
                     </div>
-                    <p className="text-xs sm:text-sm text-rose-100 font-medium">
+                    <p className="text-xs sm:text-sm text-emerald-100 font-medium">
                       Berhitung Cepat & Akurat Tanpa Alat
                     </p>
                     <div className="pt-1">
