@@ -49,6 +49,29 @@ export default function RiwayatSppPage() {
     });
   }, [cashMutations, searchQuery, selectedStudent, selectedMethod]);
 
+  // Dynamic Financial Calculations
+  const totalTagihan = useMemo(() => {
+    return invoices.reduce((acc, curr) => acc + curr.amount, 0);
+  }, [invoices]);
+
+  const totalRealisasi = useMemo(() => {
+    const paidSum = invoices
+      .filter((i) => i.status === "LUNAS")
+      .reduce((acc, curr) => acc + curr.amount, 0);
+    return paidSum > 0 ? paidSum : cashMutations.reduce((acc, curr) => acc + curr.amount, 0);
+  }, [invoices, cashMutations]);
+
+  const totalOutstanding = useMemo(() => {
+    return invoices
+      .filter((i) => i.status === "BELUM BAYAR")
+      .reduce((acc, curr) => acc + curr.amount, 0);
+  }, [invoices]);
+
+  const tingkatKolektibilitas = useMemo(() => {
+    if (totalTagihan <= 0) return "0.0";
+    return ((totalRealisasi / totalTagihan) * 100).toFixed(1);
+  }, [totalTagihan, totalRealisasi]);
+
   // Export JSON
   const handleExportJSON = () => {
     const dataStr =
@@ -103,7 +126,7 @@ export default function RiwayatSppPage() {
               TOTAL TAGIHAN
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              Rp 10.430.000
+              Rp {totalTagihan.toLocaleString("id-ID")}
             </div>
             <div className="text-[11px] text-slate-400">Akumulasi iuran terbit</div>
           </div>
@@ -119,7 +142,7 @@ export default function RiwayatSppPage() {
               KAS MASUK (REALISASI)
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-              Rp 7.605.000
+              Rp {totalRealisasi.toLocaleString("id-ID")}
             </div>
             <div className="text-[11px] text-slate-400">Lunas + Hasil Cicilan</div>
           </div>
@@ -135,7 +158,7 @@ export default function RiwayatSppPage() {
               OUTSTANDING (PIUTANG)
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              Rp 2.825.000
+              Rp {totalOutstanding.toLocaleString("id-ID")}
             </div>
             <div className="text-[11px] text-slate-400">Tagihan belum terbayar</div>
           </div>
@@ -151,7 +174,7 @@ export default function RiwayatSppPage() {
               TINGKAT KOLEKTIBILITAS
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
-              72.9%
+              {tingkatKolektibilitas}%
             </div>
             <div className="text-[11px] text-slate-400">Persentase keberhasilan bayar</div>
           </div>

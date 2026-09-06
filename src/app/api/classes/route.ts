@@ -6,21 +6,28 @@ export async function GET() {
   try {
     const classes = await prisma.class.findMany({
       include: { branch: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
 
-    const formatted = classes.map((c) => ({
-      id: c.id,
-      name: c.className,
-      branch: (c.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
-      days: c.days,
-      time: c.time,
-      teacher: c.teacherName || "Tutor Belum Ditentukan",
-      room: c.room || "Ruang 1",
-      level: c.levelName || "Tingkat Dasar",
-      enrolledCount: c.enrolledCount,
-      maxCapacity: c.maxCapacity,
-    }));
+    const formatted = await Promise.all(
+      classes.map(async (c) => {
+        const studentCount = await prisma.student.count({
+          where: { className: c.className, status: "ACTIVE" },
+        });
+        return {
+          id: c.id,
+          name: c.className,
+          branch: (c.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+          days: c.days,
+          time: c.time,
+          teacher: c.teacherName || "Tutor Belum Ditentukan",
+          room: c.room || "Ruang 1",
+          level: c.levelName || "Tingkat Dasar",
+          enrolledCount: studentCount > 0 ? studentCount : c.enrolledCount,
+          maxCapacity: c.maxCapacity,
+        };
+      })
+    );
 
     return NextResponse.json(formatted);
   } catch (error: any) {

@@ -1563,6 +1563,46 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((err) => console.warn("Live invoices fetch failed:", err));
 
+    // Fetch live cash mutations from PostgreSQL
+    fetch("/api/mutations")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCashMutations(data);
+          save("mf_mutations", data);
+        }
+      })
+      .catch((err) => console.warn("Live cash mutations fetch failed:", err));
+
+    // Fetch live attendances from PostgreSQL
+    fetch("/api/attendances")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const map: Record<string, AttendanceItem> = {};
+          data.forEach((att: any) => {
+            const dateStr = att.attendanceDate ? att.attendanceDate.split("T")[0] : "";
+            const key = `${att.studentId}_${dateStr}`;
+            map[key] = {
+              id: att.id,
+              studentId: att.studentId,
+              studentName: att.student?.studentName || "Siswa",
+              studentCode: att.student?.studentCode || "",
+              className: att.student?.className || "",
+              branch: att.branch?.branchName || "Singkut",
+              date: dateStr,
+              time: "14:00 WIB",
+              status: att.status || "HADIR",
+              method: att.method || "MANUAL",
+              note: att.notes || "",
+            };
+          });
+          setAttendances((prev) => ({ ...prev, ...map }));
+          save("mf_attendances", map);
+        }
+      })
+      .catch((err) => console.warn("Live attendances fetch failed:", err));
+
     // Fetch live transactions from PostgreSQL
     fetch("/api/transactions")
       .then((res) => (res.ok ? res.json() : null))
@@ -2321,21 +2361,53 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     paidDate?: string,
     paidMethod?: string
   ) => {
+    let targetInv: InvoiceItem | undefined;
     setInvoices((prev) => {
       const updated = prev.map((inv) => {
         if (inv.id === id) {
-          return {
+          targetInv = {
             ...inv,
             status,
             paidDate: status === "LUNAS" ? paidDate || new Date().toISOString().split("T")[0] : undefined,
             paidMethod: status === "LUNAS" ? paidMethod || "Tunai" : undefined,
           };
+          return targetInv;
         }
         return inv;
       });
       save("mf_invoices", updated);
       return updated;
     });
+
+    if (status === "LUNAS") {
+      setCashMutations((prev) => {
+        const inv = targetInv || invoices.find((i) => i.id === id);
+        if (!inv) return prev;
+        const exists = prev.some((m) => m.invoiceNo === inv.invoiceNo);
+        if (exists) return prev;
+        const newMut: CashMutationItem = {
+          id: `mut-${Date.now()}`,
+          date: paidDate || new Date().toISOString().split("T")[0],
+          invoiceNo: inv.invoiceNo,
+          studentName: inv.studentName,
+          period: inv.period,
+          method: paidMethod?.toUpperCase().includes("TRANSFER") ? "TRANSFER" : "TUNAI",
+          description: "Pelunasan Penuh",
+          amount: inv.amount,
+        };
+        const next = [newMut, ...prev];
+        save("mf_mutations", next);
+        return next;
+      });
+    } else {
+      setCashMutations((prev) => {
+        const inv = invoices.find((i) => i.id === id);
+        if (!inv) return prev;
+        const filtered = prev.filter((m) => m.invoiceNo !== inv.invoiceNo);
+        save("mf_mutations", filtered);
+        return filtered;
+      });
+    }
 
     fetch("/api/invoices", {
       method: "PUT",
@@ -2358,15 +2430,31 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Cash Mutations
   const addCashMutation = (mut: Omit<CashMutationItem, "id">) => {
+    const tempId = `mut-${Date.now()}`;
+    const newMut: CashMutationItem = {
+      ...mut,
+      id: tempId,
+    };
     setCashMutations((prev) => {
-      const newMut: CashMutationItem = {
-        ...mut,
-        id: `mut-${Date.now()}`,
-      };
       const updated = [newMut, ...prev];
       save("mf_mutations", updated);
       return updated;
     });
+
+    fetch("/api/mutations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(mut),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setCashMutations((prev) =>
+            prev.map((m) => (m.id === tempId ? { ...m, id: created.id } : m))
+          );
+        }
+      })
+      .catch((err) => console.error("Error saving cash mutation to PostgreSQL:", err));
   };
 
   // Arus Keuangan & Buku Kas

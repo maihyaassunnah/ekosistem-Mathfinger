@@ -9,7 +9,7 @@ export async function GET() {
         branch: true,
         currentLevel: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
 
     const formatted = students.map((s, idx) => ({
@@ -17,18 +17,19 @@ export async function GET() {
       index: idx + 1,
       studentCode: s.studentCode,
       name: s.studentName,
-      gender: s.qrIdentifier?.includes("P") ? "P" : "L",
-      codeLabel: s.currentLevel?.levelName?.includes("Dasar") ? "8P" : "6L",
+      gender: (s.gender as "P" | "L") || (s.qrIdentifier?.includes("P") ? "P" : "L"),
+      codeLabel: s.gender === "L" ? "6L" : "8P",
       branch: (s.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
-      className: "Kelas A",
-      birthPlace: "-",
-      birthDate: "-",
-      address: "-",
-      gradeLevel: s.currentLevel?.levelName || "Tingkat Dasar",
+      className: s.className || "Kelas A",
+      birthPlace: s.birthPlace || "Singkut",
+      birthDate: s.birthDate || "2018-01-01",
+      address: s.address || "Jl. Poros Singkut",
+      gradeLevel: s.gradeLevel || (s.currentLevel?.levelName ? `Ket: ${s.currentLevel.levelName}` : "Ket: Kelas 3"),
       parentName: s.parentName,
       parentWhatsapp: s.parentWhatsapp,
-      levelCurriculum: s.currentLevel?.levelName || "Level Dasar",
-      registeredDate: s.createdAt.toISOString().split("T")[0],
+      levelCurriculum: s.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari",
+      registeredDate: s.registeredDate ? s.registeredDate.toISOString().split("T")[0] : s.createdAt.toISOString().split("T")[0],
+      status: s.status,
     }));
 
     return NextResponse.json(formatted);
@@ -81,10 +82,18 @@ export async function POST(req: Request) {
         studentCode: code,
         qrIdentifier: `MF-QR-${code}`,
         studentName: studentName,
+        gender: body.gender || "P",
+        className: body.className || "Kelas A",
+        birthPlace: body.birthPlace || "Singkut",
+        birthDate: body.birthDate || "2018-01-01",
+        address: body.address || "Jl. Poros Singkut",
+        schoolOrigin: body.schoolOrigin || (branchName === "Singkut" ? "SDN 1 Singkut" : "SDN 1 Bangko"),
+        gradeLevel: body.gradeLevel || "Ket: Kelas 3",
         parentName: parentName,
         parentWhatsapp: parentWhatsapp,
         branchId: branch!.id,
         currentLevelId: level!.id,
+        registeredDate: body.registeredDate ? new Date(body.registeredDate) : new Date(),
       },
       include: {
         branch: true,
@@ -97,18 +106,19 @@ export async function POST(req: Request) {
       index: 1,
       studentCode: created.studentCode,
       name: created.studentName,
-      gender: created.qrIdentifier?.includes("P") ? "P" : "L",
-      codeLabel: created.currentLevel?.levelName?.includes("Dasar") ? "8P" : "6L",
+      gender: (created.gender as "P" | "L") || "P",
+      codeLabel: created.gender === "L" ? "6L" : "8P",
       branch: created.branch?.branchName || "Singkut",
-      className: "Kelas A",
-      birthPlace: "-",
-      birthDate: "-",
-      address: "-",
-      gradeLevel: created.currentLevel?.levelName || "Tingkat Dasar",
+      className: created.className || "Kelas A",
+      birthPlace: created.birthPlace || "-",
+      birthDate: created.birthDate || "-",
+      address: created.address || "-",
+      gradeLevel: created.gradeLevel || "Ket: Kelas 3",
       parentName: created.parentName,
       parentWhatsapp: created.parentWhatsapp,
-      levelCurriculum: created.currentLevel?.levelName || "Level Dasar",
-      registeredDate: created.createdAt.toISOString().split("T")[0],
+      levelCurriculum: created.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari",
+      registeredDate: created.registeredDate ? created.registeredDate.toISOString().split("T")[0] : created.createdAt.toISOString().split("T")[0],
+      status: created.status,
     };
 
     return NextResponse.json(formatted, { status: 201 });
@@ -122,10 +132,26 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    const { id, name, parentName, parentWhatsapp } = body;
+    const { id, name, parentName, parentWhatsapp, gender, className, birthPlace, birthDate, address, gradeLevel, levelCurriculum, branch } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 });
+    }
+
+    let branchId: string | undefined = undefined;
+    if (branch) {
+      const b = await prisma.branch.findFirst({
+        where: { branchName: { contains: branch, mode: "insensitive" } },
+      });
+      if (b) branchId = b.id;
+    }
+
+    let currentLevelId: string | undefined = undefined;
+    if (levelCurriculum) {
+      const l = await prisma.level.findFirst({
+        where: { levelName: { contains: levelCurriculum.replace("Ket: ", ""), mode: "insensitive" } },
+      });
+      if (l) currentLevelId = l.id;
     }
 
     const updated = await prisma.student.update({
@@ -134,10 +160,38 @@ export async function PUT(req: Request) {
         ...(name ? { studentName: name } : {}),
         ...(parentName ? { parentName } : {}),
         ...(parentWhatsapp ? { parentWhatsapp } : {}),
+        ...(gender ? { gender } : {}),
+        ...(className ? { className } : {}),
+        ...(birthPlace ? { birthPlace } : {}),
+        ...(birthDate ? { birthDate } : {}),
+        ...(address ? { address } : {}),
+        ...(gradeLevel ? { gradeLevel } : {}),
+        ...(branchId ? { branchId } : {}),
+        ...(currentLevelId ? { currentLevelId } : {}),
+      },
+      include: {
+        branch: true,
+        currentLevel: true,
       },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json({
+      id: updated.id,
+      studentCode: updated.studentCode,
+      name: updated.studentName,
+      gender: updated.gender,
+      codeLabel: updated.gender === "L" ? "6L" : "8P",
+      branch: updated.branch?.branchName || "Singkut",
+      className: updated.className || "Kelas A",
+      birthPlace: updated.birthPlace,
+      birthDate: updated.birthDate,
+      address: updated.address,
+      gradeLevel: updated.gradeLevel,
+      parentName: updated.parentName,
+      parentWhatsapp: updated.parentWhatsapp,
+      levelCurriculum: updated.currentLevel?.levelName,
+      status: updated.status,
+    });
   } catch (error: any) {
     console.error("Error updating student:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

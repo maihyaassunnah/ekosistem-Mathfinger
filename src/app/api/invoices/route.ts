@@ -17,6 +17,7 @@ export async function GET() {
       invoiceNo: inv.invoiceNumber,
       studentId: inv.studentId,
       studentName: inv.student?.studentName || "Siswa",
+      branch: (inv.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
       period: inv.period || "Bulan Berjalan",
       dueDate: inv.dueDate.toISOString().split("T")[0],
       amount: Number(inv.amount),
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
         dueDate: due,
         status: status === "LUNAS" ? "PAID" : "UNPAID",
       },
-      include: { student: true },
+      include: { student: true, branch: true },
     });
 
     return NextResponse.json(
@@ -78,6 +79,7 @@ export async function POST(req: Request) {
         invoiceNo: created.invoiceNumber,
         studentId: created.studentId,
         studentName: created.student.studentName,
+        branch: (created.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
         period: created.period,
         dueDate: created.dueDate.toISOString().split("T")[0],
         amount: Number(created.amount),
@@ -109,14 +111,35 @@ export async function PUT(req: Request) {
         paidAt: isPaid ? (paidDate ? new Date(paidDate) : new Date()) : null,
         paidMethod: isPaid ? (paidMethod || "Tunai") : null,
       },
-      include: { student: true },
+      include: { student: true, branch: true },
     });
+
+    // Synchronize CashMutation
+    if (isPaid) {
+      const existingMut = await prisma.cashMutation.findFirst({ where: { invoiceId: updated.id } });
+      if (!existingMut) {
+        await prisma.cashMutation.create({
+          data: {
+            invoiceId: updated.id,
+            studentName: updated.student?.studentName || "Siswa",
+            period: updated.period || "September 2026",
+            method: paidMethod?.toUpperCase().includes("TRANSFER") ? "TRANSFER" : "TUNAI",
+            description: "Pelunasan Penuh",
+            amount: updated.amount,
+            mutationDate: paidDate ? new Date(paidDate) : new Date(),
+          },
+        });
+      }
+    } else {
+      await prisma.cashMutation.deleteMany({ where: { invoiceId: updated.id } });
+    }
 
     return NextResponse.json({
       id: updated.id,
       invoiceNo: updated.invoiceNumber,
       studentId: updated.studentId,
       studentName: updated.student.studentName,
+      branch: (updated.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
       period: updated.period,
       dueDate: updated.dueDate.toISOString().split("T")[0],
       amount: Number(updated.amount),

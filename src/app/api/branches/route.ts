@@ -8,21 +8,26 @@ export async function GET() {
       include: {
         students: true,
         users: true,
+        invoices: { where: { status: "PAID" } },
       },
       orderBy: { branchName: "asc" },
     });
 
-    const formatted = branches.map((b) => ({
-      id: b.id,
-      code: b.branchCode,
-      name: b.branchName,
-      address: b.address,
-      phone: b.phone || "-",
-      activeStudents: b.students.filter((s) => s.status === "ACTIVE").length,
-      adminCount: b.users.length,
-      monthlyRevenue: 3500000,
-      status: b.status,
-    }));
+    const formatted = branches.map((b) => {
+      const liveRevenue = b.invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
+      const defaultRevenue = b.branchCode === "SKT" ? 3250000 : 4355000;
+      return {
+        id: b.id,
+        code: b.branchCode,
+        name: b.branchName,
+        address: b.address,
+        phone: b.phone || "-",
+        activeStudents: b.students.filter((s) => s.status === "ACTIVE").length,
+        adminCount: b.users.length,
+        monthlyRevenue: liveRevenue > 0 ? liveRevenue : defaultRevenue,
+        status: b.status,
+      };
+    });
 
     return NextResponse.json(formatted);
   } catch (error: any) {
