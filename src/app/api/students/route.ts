@@ -29,7 +29,10 @@ export async function GET() {
       gradeLevel: s.gradeLevel || (s.currentLevel?.levelName ? `Ket: ${s.currentLevel.levelName}` : "Ket: Kelas 3"),
       parentName: s.parentName,
       parentWhatsapp: s.parentWhatsapp,
-      levelCurriculum: s.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari",
+      levelCurriculum:
+        s.programType === "MEMBACA"
+          ? (s.gradeLevel || "Level 1: Pra-Membaca & Pengenalan Huruf")
+          : (s.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari"),
       registeredDate: s.registeredDate ? s.registeredDate.toISOString().split("T")[0] : s.createdAt.toISOString().split("T")[0],
       status: s.status,
       programType: s.programType || "MATEMATIKA",
@@ -76,9 +79,39 @@ export async function POST(req: Request) {
       level = await prisma.level.findFirst();
     }
 
-    const code =
-      body.studentCode ||
-      Math.floor(10000 + Math.random() * 90000).toString();
+    let code = (body.studentCode || "").trim();
+    if (!code) {
+      if (body.programType === "MEMBACA") {
+        const count = await prisma.student.count({ where: { programType: "MEMBACA" } });
+        code = `MB-${101 + count}`;
+      } else {
+        code = Math.floor(10000 + Math.random() * 90000).toString();
+      }
+    }
+
+    // Ensure studentCode & qrIdentifier are guaranteed unique in PostgreSQL
+    let existing = await prisma.student.findFirst({
+      where: {
+        OR: [{ studentCode: code }, { qrIdentifier: `MF-QR-${code}` }],
+      },
+    });
+    while (existing) {
+      if (body.programType === "MEMBACA") {
+        code = `MB-${Math.floor(100 + Math.random() * 900)}`;
+      } else {
+        code = Math.floor(10000 + Math.random() * 90000).toString();
+      }
+      existing = await prisma.student.findFirst({
+        where: {
+          OR: [{ studentCode: code }, { qrIdentifier: `MF-QR-${code}` }],
+        },
+      });
+    }
+
+    const safeRegisteredDate =
+      body.registeredDate && !isNaN(new Date(body.registeredDate).getTime())
+        ? new Date(body.registeredDate)
+        : new Date();
 
     const created = await prisma.student.create({
       data: {
@@ -86,17 +119,20 @@ export async function POST(req: Request) {
         qrIdentifier: `MF-QR-${code}`,
         studentName: studentName,
         gender: body.gender || "P",
-        className: body.className || "Kelas A",
+        className: body.className || (body.programType === "MEMBACA" ? "Kelas Membaca 1" : "Kelas A"),
         birthPlace: body.birthPlace || "Singkut",
         birthDate: body.birthDate || "2018-01-01",
         address: body.address || "Jl. Poros Singkut",
         schoolOrigin: body.schoolOrigin || (branchName === "Singkut" ? "SDN 1 Singkut" : "SDN 1 Bangko"),
-        gradeLevel: body.gradeLevel || "Ket: Kelas 3",
+        gradeLevel:
+          body.programType === "MEMBACA"
+            ? (body.levelCurriculum || body.gradeLevel || "Level 1: Pra-Membaca & Pengenalan Huruf")
+            : (body.gradeLevel || "Ket: Kelas 3"),
         parentName: parentName,
         parentWhatsapp: parentWhatsapp,
         branchId: branch!.id,
         currentLevelId: level!.id,
-        registeredDate: body.registeredDate ? new Date(body.registeredDate) : new Date(),
+        registeredDate: safeRegisteredDate,
         programType: (body.programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA") as any,
       },
       include: {
@@ -122,7 +158,10 @@ export async function POST(req: Request) {
       gradeLevel: created.gradeLevel || "Ket: Kelas 3",
       parentName: created.parentName,
       parentWhatsapp: created.parentWhatsapp,
-      levelCurriculum: created.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari",
+      levelCurriculum:
+        created.programType === "MEMBACA"
+          ? (created.gradeLevel || "Level 1: Pra-Membaca & Pengenalan Huruf")
+          : (created.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari"),
       registeredDate: created.registeredDate ? created.registeredDate.toISOString().split("T")[0] : created.createdAt.toISOString().split("T")[0],
       status: created.status,
       programType: created.programType || "MATEMATIKA",

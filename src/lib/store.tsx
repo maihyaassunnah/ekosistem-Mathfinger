@@ -185,7 +185,7 @@ export interface LandingPartnerItem {
 interface AppStoreContextType {
   // Students
   students: StudentItem[];
-  addStudent: (student: Omit<StudentItem, "id" | "index">) => void;
+  addStudent: (student: Omit<StudentItem, "id" | "index">) => Promise<StudentItem | null> | void;
   updateStudent: (id: string, updated: Partial<StudentItem>) => void;
   deleteStudent: (id: string) => void;
 
@@ -1720,7 +1720,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   }, [fetchAllLiveData]);
 
   // Student CRUD
-  const addStudent = (st: Omit<StudentItem, "id" | "index">) => {
+  const addStudent = async (st: Omit<StudentItem, "id" | "index">): Promise<StudentItem | null> => {
     const tempId = `s-${Date.now()}`;
     const newSt: StudentItem = {
       ...st,
@@ -1734,20 +1734,39 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Synchronize to PostgreSQL database
-    fetch("/api/students", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(st),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((created) => {
+    try {
+      const res = await fetch("/api/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(st),
+      });
+      if (res.ok) {
+        const created = await res.json();
         if (created && created.id) {
-          setStudents((prev) =>
-            prev.map((s) => (s.id === tempId ? { ...s, id: created.id, studentCode: created.studentCode } : s))
-          );
+          setStudents((prev) => {
+            const updated = prev.map((s) =>
+              s.id === tempId
+                ? {
+                    ...s,
+                    id: created.id,
+                    studentCode: created.studentCode,
+                    programType: created.programType || (st as any).programType,
+                  }
+                : s
+            );
+            save("mf_students", updated);
+            return updated;
+          });
+          return created;
         }
-      })
-      .catch((err) => console.error("Error saving student to PostgreSQL:", err));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        console.error("Failed to add student to PostgreSQL:", err);
+      }
+    } catch (err) {
+      console.error("Error saving student to PostgreSQL:", err);
+    }
+    return newSt;
   };
 
   const updateStudent = (id: string, updated: Partial<StudentItem>) => {

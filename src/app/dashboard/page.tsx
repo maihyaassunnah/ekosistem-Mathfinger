@@ -56,6 +56,21 @@ function DashboardContent() {
   const currentUser = useCurrentUser();
   const { isSuperAdmin, allowedBranch } = currentUser;
 
+  const displayName = currentUser.name || (isSuperAdmin ? "Wahyudin Hafiz, S.Pd" : "Ustadzah Febri");
+  const userInitials = (displayName || "WH")
+    .split(" ")
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+  const currentDateFormatted = new Date().toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   const searchParams = useSearchParams();
   const currentProgram = searchParams?.get("program");
   const isMembaca = currentProgram === "MEMBACA";
@@ -474,9 +489,13 @@ function DashboardContent() {
               href="/dashboard/pengaturan"
               className="w-8 h-8 rounded-full overflow-hidden border-2 border-emerald-500 shadow-2xs shrink-0 cursor-pointer hover:scale-105 transition-transform"
             >
-              <div className="w-full h-full bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center">
-                WH
-              </div>
+              {currentUser.avatarUrl ? (
+                <img src={currentUser.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center">
+                  {userInitials}
+                </div>
+              )}
             </Link>
           </div>
         </div>
@@ -676,24 +695,28 @@ function DashboardContent() {
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-500/40 text-emerald-200">
                 <Sparkles className="w-3.5 h-3.5" />
-                PUSAT KENDALI SUPER ADMIN
+                {isSuperAdmin
+                  ? "PUSAT KENDALI SUPER ADMIN"
+                  : `PANEL ADMIN CABANG ${allowedBranch?.toUpperCase() || ""}`}
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300">
                 <Calendar className="w-3.5 h-3.5" />
-                Minggu, 6 September 2026
+                {currentDateFormatted}
               </span>
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold">
-                {branches.length} Cabang Aktif
+                {isSuperAdmin ? `${branches.length} Cabang Aktif` : `Cabang ${allowedBranch || "Singkut"}`}
               </span>
             </div>
 
             {/* Title */}
             <div>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
-                {CURRENT_USER.name} <span className="text-xl">👑</span>
+                {displayName} <span className="text-xl">{isSuperAdmin ? "👑" : "🌸"}</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1.5">
-                Panel eksekutif pusat untuk mengelola data cabang, akun admin cabang, keuangan SPP global, serta memantau perkembangan seluruh siswa Math Fingers.
+                {isSuperAdmin
+                  ? "Panel eksekutif pusat untuk mengelola data cabang, akun admin cabang, keuangan SPP global, serta memantau perkembangan seluruh siswa Math Fingers."
+                  : `Panel administrasi cabang untuk mengelola data siswa, presensi harian, nilai, dan operasional bimbingan belajar Math Fingers cabang ${allowedBranch || ""}.`}
               </p>
             </div>
 
@@ -772,7 +795,9 @@ function DashboardContent() {
               </div>
             </div>
             <p className="text-xs text-slate-200 leading-normal">
-              Sistem Pusat Math Fingers Multi-Cabang Cloud Ready
+              {isSuperAdmin
+                ? "Sistem Pusat Math Fingers Multi-Cabang Cloud Ready"
+                : `Panel Operasional Cabang ${allowedBranch || ""} - Math Fingers`}
             </p>
             <div className="pt-1 flex items-center justify-between text-[11px] text-emerald-300 font-semibold border-t border-white/10">
               <span>Status: Online</span>

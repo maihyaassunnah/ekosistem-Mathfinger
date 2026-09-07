@@ -44,14 +44,14 @@ export const BRANCHES_DATA: BranchItem[] = [
   {
     "id": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
     "code": "BGK",
-    "name": "Bangko",
+    "name": "Tabir Timur",
     "address": "Jl. Merak / Kenari, Kec. Bangko, Kab. Merangin, Jambi",
     "phone": "0813-7972-0841",
     "activeStudents": 29,
     "adminCount": 4,
     "monthlyRevenue": 4355000,
     "status": "ACTIVE",
-    "programs": ["MATEMATIKA", "MEMBACA"]
+    "programs": ["MATEMATIKA"]
   },
   {
     "id": "58fc6af5-537e-4dbf-9297-3a8b7859934f",

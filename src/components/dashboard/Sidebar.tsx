@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Home,
@@ -47,6 +47,7 @@ interface SidebarProps {
 function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const currentProgram = searchParams?.get("program");
 
   const currentUser = useCurrentUser();
@@ -67,16 +68,30 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // Check if branch has Membaca / Matematika program
-  const currentBranch = branches?.find((b) => b.name === allowedBranch);
-  const hasMembacaProgram =
-    isSuperAdmin ||
-    (currentBranch?.programs ? currentBranch.programs.includes("MEMBACA") : true);
-  const hasMatematikaProgram =
-    isSuperAdmin ||
-    (currentBranch?.programs ? currentBranch.programs.includes("MATEMATIKA") : true);
+  // Check if branch has Membaca / Matematika program strictly from settings/DB
+  const currentBranch = branches?.find(
+    (b) =>
+      b.name?.toLowerCase() === allowedBranch?.toLowerCase() ||
+      b.name?.toLowerCase() === allowedBranch?.replace(/^Cabang\s+/i, "").toLowerCase()
+  );
 
-  // Available tabs calculation
+  const branchPrograms: string[] = currentBranch
+    ? Array.isArray(currentBranch.programs)
+      ? currentBranch.programs
+      : typeof currentBranch.programs === "string"
+      ? (currentBranch.programs as string).split(",").map((p) => p.trim())
+      : ["MATEMATIKA"]
+    : allowedBranch === "Singkut"
+    ? ["MATEMATIKA", "MEMBACA"]
+    : ["MATEMATIKA"];
+
+  const hasMembacaProgram = isSuperAdmin || branchPrograms.includes("MEMBACA");
+  const hasMatematikaProgram = isSuperAdmin || branchPrograms.includes("MATEMATIKA");
+
+  // Available tabs calculation:
+  // - Super Admin: UTAMA, MEMBACA, WEBSITE (3 tabs)
+  // - Admin Cabang (if Membaca checked): UTAMA, MEMBACA (2 tabs)
+  // - Admin Cabang (if Membaca not checked): UTAMA (1 tab, switcher hidden)
   const availableTabs: ("UTAMA" | "MEMBACA" | "WEBSITE")[] = [];
   if (hasMatematikaProgram) availableTabs.push("UTAMA");
   if (hasMembacaProgram) availableTabs.push("MEMBACA");
@@ -84,16 +99,38 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
   // Automatically switch tab based on current pathname & query parameter
   useEffect(() => {
-    if (isSuperAdmin && pathname.startsWith("/dashboard/website")) {
+    if (pathname.startsWith("/dashboard/website")) {
       setActiveTab("WEBSITE");
     } else if (pathname.startsWith("/dashboard/rapor-membaca") || currentProgram === "MEMBACA") {
       setActiveTab("MEMBACA");
-    } else if (currentProgram === "MATEMATIKA") {
-      setActiveTab("UTAMA");
-    } else if (!currentProgram && activeTab === "WEBSITE" && !pathname.startsWith("/dashboard/website")) {
+    } else {
       setActiveTab("UTAMA");
     }
-  }, [pathname, currentProgram, isSuperAdmin, activeTab]);
+  }, [pathname, currentProgram]);
+
+  const handleTabClick = (tab: "UTAMA" | "MEMBACA" | "WEBSITE") => {
+    setActiveTab(tab);
+    if (tab === "WEBSITE") {
+      router.push("/dashboard/website");
+    } else if (tab === "MEMBACA") {
+      if (pathname === "/dashboard/rapor") {
+        router.push("/dashboard/rapor-membaca");
+      } else if (pathname.startsWith("/dashboard/website")) {
+        router.push("/dashboard?program=MEMBACA");
+      } else {
+        router.push(`${pathname}?program=MEMBACA`);
+      }
+    } else {
+      // "UTAMA" (Matematika)
+      if (pathname === "/dashboard/rapor-membaca") {
+        router.push("/dashboard/rapor");
+      } else if (pathname.startsWith("/dashboard/website")) {
+        router.push("/dashboard");
+      } else {
+        router.push(pathname);
+      }
+    }
+  };
 
   // Branch-scoped Collections
   const scopedStudents = allowedBranch
@@ -592,14 +629,14 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           <div
             className={`bg-emerald-50/70 dark:bg-[#0f1a36] p-1 rounded-xl grid ${
               availableTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
-            } text-xs font-bold text-slate-600 dark:text-slate-400 border border-emerald-100/80 dark:border-[#1d2d5a]`}
+            } gap-1 text-slate-600 dark:text-slate-400 border border-emerald-100/80 dark:border-[#1d2d5a]`}
           >
             {availableTabs.map((tab) => (
               <button
                 key={tab}
                 type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold text-center truncate px-1 text-[11px] sm:text-xs ${
+                onClick={() => handleTabClick(tab)}
+                className={`py-2 px-1 rounded-lg transition-all cursor-pointer font-black text-center whitespace-nowrap text-[10.5px] sm:text-xs uppercase tracking-tight leading-none ${
                   activeTab === tab
                     ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
                     : "hover:text-emerald-600 dark:hover:text-white"
