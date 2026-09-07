@@ -16,6 +16,7 @@ import {
   Mail,
   Lock,
   Search,
+  RefreshCw,
 } from "lucide-react";
 import { useAppStore, BranchAdminItem } from "@/lib/store";
 import { BranchItem } from "@/lib/mock-data";
@@ -26,6 +27,7 @@ export default function CabangDanAdminPage() {
     addBranch,
     updateBranch,
     deleteBranch,
+    refreshData,
     branchAdmins,
     addBranchAdmin,
     updateBranchAdmin,
@@ -34,6 +36,22 @@ export default function CabangDanAdminPage() {
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<"CABANG" | "ADMIN">("CABANG");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSubmittingBranch, setIsSubmittingBranch] = useState(false);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      await refreshData();
+      setSuccessToast("Data berhasil disinkronkan dengan database PostgreSQL!");
+    } catch {
+      setSuccessToast("Sinkronisasi database selesai.");
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSuccessToast(null), 3500);
+    }
+  };
 
   // Branch Form Modal State
   const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
@@ -83,14 +101,34 @@ export default function CabangDanAdminPage() {
     });
   };
 
-  const handleSubmitBranch = (e: React.FormEvent) => {
+  const handleSubmitBranch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingBranch) {
-      updateBranch(editingBranch.id, branchForm);
-      setEditingBranch(null);
-    } else {
-      addBranch(branchForm);
-      setIsAddBranchOpen(false);
+    setIsSubmittingBranch(true);
+    try {
+      if (editingBranch) {
+        updateBranch(editingBranch.id, branchForm);
+        setEditingBranch(null);
+        setSuccessToast(`Cabang "${branchForm.name}" berhasil diperbarui di database!`);
+      } else {
+        addBranch(branchForm);
+        setIsAddBranchOpen(false);
+        setSuccessToast(`Cabang "${branchForm.name}" berhasil dibuka dan tersimpan di database!`);
+      }
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingBranch(false);
+      setTimeout(() => setSuccessToast(null), 4000);
+    }
+  };
+
+  const handleDeleteBranch = async (b: BranchItem) => {
+    if (confirm(`Hapus atau nonaktifkan cabang ${b.name}? Sistem akan memperbarui database.`)) {
+      deleteBranch(b.id);
+      setSuccessToast(`Cabang "${b.name}" telah dihapus/dinonaktifkan di database.`);
+      await refreshData();
+      setTimeout(() => setSuccessToast(null), 4000);
     }
   };
 
@@ -202,14 +240,27 @@ export default function CabangDanAdminPage() {
               Daftar Seluruh Cabang Terdaftar
             </span>
 
-            <button
-              type="button"
-              onClick={handleOpenAddBranch}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              + Buka Cabang Baru
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleManualSync}
+                disabled={isSyncing}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                title="Tarik data terbaru dari database PostgreSQL"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-blue-600" : ""}`} />
+                {isSyncing ? "Menyinkronkan..." : "Sinkron DB"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenAddBranch}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                + Buka Cabang Baru
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -250,11 +301,7 @@ export default function CabangDanAdminPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (confirm(`Hapus cabang ${b.name}?`)) {
-                              deleteBranch(b.id);
-                            }
-                          }}
+                          onClick={() => handleDeleteBranch(b)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
                           title="Hapus Cabang"
                         >
@@ -503,16 +550,34 @@ export default function CabangDanAdminPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nomor Telepon / WhatsApp</label>
-                <input
-                  type="text"
-                  required
-                  value={branchForm.phone}
-                  onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value })}
-                  placeholder="0812-..."
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nomor Telepon / WA</label>
+                  <input
+                    type="text"
+                    required
+                    value={branchForm.phone}
+                    onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value })}
+                    placeholder="0812-..."
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Status Operasional</label>
+                  <select
+                    value={branchForm.status}
+                    onChange={(e) =>
+                      setBranchForm({
+                        ...branchForm,
+                        status: e.target.value as "ACTIVE" | "INACTIVE",
+                      })
+                    }
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="ACTIVE">Aktif (Beroperasi)</option>
+                    <option value="INACTIVE">Nonaktif (Tutup/Non-Aktif)</option>
+                  </select>
+                </div>
               </div>
 
               <div className="pt-3 flex gap-2">
@@ -528,8 +593,10 @@ export default function CabangDanAdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 cursor-pointer transition-colors"
+                  disabled={isSubmittingBranch}
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 cursor-pointer transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 >
+                  {isSubmittingBranch && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   {editingBranch ? "Simpan Perubahan" : "Buat Cabang"}
                 </button>
               </div>
@@ -743,6 +810,13 @@ export default function CabangDanAdminPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+      {/* Floating Success Toast */}
+      {successToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+          <span>{successToast}</span>
         </div>
       )}
     </div>

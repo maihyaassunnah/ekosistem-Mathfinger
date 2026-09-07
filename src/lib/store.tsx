@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { StudentItem, BranchItem, STUDENTS_DATA, BRANCHES_DATA } from "./mock-data";
 
 export interface ClassItem {
@@ -197,6 +197,7 @@ interface AppStoreContextType {
   addBranch: (branch: Omit<BranchItem, "id" | "activeStudents" | "adminCount" | "monthlyRevenue">) => void;
   updateBranch: (id: string, updated: Partial<BranchItem>) => void;
   deleteBranch: (id: string) => void;
+  refreshData: () => Promise<void>;
 
   // Branch Admins
   branchAdmins: BranchAdminItem[];
@@ -1386,7 +1387,150 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [landingLeads, setLandingLeads] = useState<LandingLeadItem[]>(INITIAL_LANDING_LEADS);
   const [landingPartners, setLandingPartners] = useState<LandingPartnerItem[]>(INITIAL_LANDING_PARTNERS);
 
-  // Load from LocalStorage if available
+  // Save to LocalStorage helper
+  const save = useCallback((key: string, value: any) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Realtime Data Fetcher from PostgreSQL
+  const fetchAllLiveData = useCallback(async () => {
+    try {
+      const results = await Promise.allSettled([
+        fetch("/api/students", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/branches", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/admins", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/classes", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/journals", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/grades", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/behaviors", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/curriculums", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/invoices", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/mutations", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/attendances", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/transactions", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/website/hero", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/website/programs", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/website/testimonials", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/website/leads", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/website/partners", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+      ]);
+
+      const [
+        studentsRes,
+        branchesRes,
+        adminsRes,
+        classesRes,
+        journalsRes,
+        gradesRes,
+        behaviorsRes,
+        curriculumsRes,
+        invoicesRes,
+        mutationsRes,
+        attendancesRes,
+        transactionsRes,
+        heroRes,
+        programsRes,
+        testimonialsRes,
+        leadsRes,
+        partnersRes,
+      ] = results.map((res) => (res.status === "fulfilled" ? res.value : null));
+
+      if (Array.isArray(studentsRes) && studentsRes.length > 0) {
+        setStudents(studentsRes);
+        save("mf_students", studentsRes);
+      }
+      if (Array.isArray(branchesRes) && branchesRes.length > 0) {
+        setBranches(branchesRes);
+        save("mf_branches", branchesRes);
+      }
+      if (Array.isArray(adminsRes) && adminsRes.length > 0) {
+        setBranchAdmins(adminsRes);
+        save("mf_branchAdmins", adminsRes);
+      }
+      if (Array.isArray(classesRes) && classesRes.length > 0) {
+        setClasses(classesRes);
+        save("mf_classes", classesRes);
+      }
+      if (Array.isArray(journalsRes) && journalsRes.length > 0) {
+        setJournals(journalsRes);
+        save("mf_journals", journalsRes);
+      }
+      if (Array.isArray(gradesRes) && gradesRes.length > 0) {
+        setGrades(gradesRes);
+        save("mf_grades", gradesRes);
+      }
+      if (Array.isArray(behaviorsRes) && behaviorsRes.length > 0) {
+        setBehaviors(behaviorsRes);
+        save("mf_behaviors", behaviorsRes);
+      }
+      if (Array.isArray(curriculumsRes) && curriculumsRes.length > 0) {
+        setCurriculumModules(curriculumsRes);
+        save("mf_curriculum", curriculumsRes);
+      }
+      if (Array.isArray(invoicesRes) && invoicesRes.length > 0) {
+        setInvoices(invoicesRes);
+        save("mf_invoices", invoicesRes);
+      }
+      if (Array.isArray(mutationsRes) && mutationsRes.length > 0) {
+        setCashMutations(mutationsRes);
+        save("mf_mutations", mutationsRes);
+      }
+      if (Array.isArray(attendancesRes) && attendancesRes.length > 0) {
+        const map: Record<string, AttendanceItem> = {};
+        attendancesRes.forEach((att: any) => {
+          const dateStr = att.attendanceDate ? att.attendanceDate.split("T")[0] : "";
+          const key = `${att.studentId}_${dateStr}`;
+          map[key] = {
+            id: att.id,
+            studentId: att.studentId,
+            studentName: att.student?.studentName || "Siswa",
+            studentCode: att.student?.studentCode || "",
+            className: att.student?.className || "",
+            branch: att.branch?.branchName || "Singkut",
+            date: dateStr,
+            time: "14:00 WIB",
+            status: att.status || "HADIR",
+            method: att.method || "MANUAL",
+            note: att.notes || "",
+          };
+        });
+        setAttendances((prev) => ({ ...prev, ...map }));
+        save("mf_attendances", map);
+      }
+      if (Array.isArray(transactionsRes) && transactionsRes.length > 0) {
+        setTransactions(transactionsRes);
+        save("mf_transactions", transactionsRes);
+      }
+      if (heroRes && heroRes.headline) {
+        setLandingHero(heroRes);
+        save("mf_landing_hero", heroRes);
+      }
+      if (Array.isArray(programsRes) && programsRes.length > 0) {
+        setLandingPrograms(programsRes);
+        save("mf_landing_programs", programsRes);
+      }
+      if (Array.isArray(testimonialsRes) && testimonialsRes.length > 0) {
+        setLandingTestimonials(testimonialsRes);
+        save("mf_landing_testi", testimonialsRes);
+      }
+      if (Array.isArray(leadsRes) && leadsRes.length > 0) {
+        setLandingLeads(leadsRes);
+        save("mf_landing_leads", leadsRes);
+      }
+      if (Array.isArray(partnersRes) && partnersRes.length > 0) {
+        setLandingPartners(partnersRes);
+        save("mf_landing_partners", partnersRes);
+      }
+    } catch (err) {
+      console.warn("Error synchronizing live PostgreSQL data:", err);
+    }
+  }, [save]);
+
+  // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
       const savedStudents = localStorage.getItem("mf_students");
@@ -1407,31 +1551,19 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       const savedAttendances = localStorage.getItem("mf_attendances");
       if (savedAttendances) {
         const parsed = JSON.parse(savedAttendances);
-        if (Object.keys(parsed).length > 0) {
-          setAttendances(parsed);
-        } else {
-          setAttendances(INITIAL_ATTENDANCES);
-        }
-      } else {
-        setAttendances(INITIAL_ATTENDANCES);
+        if (Object.keys(parsed).length > 0) setAttendances(parsed);
       }
 
       const savedGrades = localStorage.getItem("mf_grades");
       if (savedGrades) {
         const parsed = JSON.parse(savedGrades);
         if (Array.isArray(parsed) && parsed.length > 0) setGrades(parsed);
-        else setGrades(INITIAL_GRADES);
-      } else {
-        setGrades(INITIAL_GRADES);
       }
 
       const savedBehaviors = localStorage.getItem("mf_behaviors");
       if (savedBehaviors) {
         const parsed = JSON.parse(savedBehaviors);
         if (Array.isArray(parsed) && parsed.length > 0) setBehaviors(parsed);
-        else setBehaviors(INITIAL_BEHAVIORS);
-      } else {
-        setBehaviors(INITIAL_BEHAVIORS);
       }
 
       const savedCurriculum = localStorage.getItem("mf_curriculum");
@@ -1464,220 +1596,29 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
 
-    // Fetch live students from PostgreSQL
-    fetch("/api/students")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setStudents(data);
-          save("mf_students", data);
-        }
-      })
-      .catch((err) => console.warn("Live students fetch failed:", err));
+    // 1. Fetch live data immediately from PostgreSQL
+    fetchAllLiveData();
 
-    // Fetch live branches from PostgreSQL
-    fetch("/api/branches")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBranches(data);
-          save("mf_branches", data);
-        }
-      })
-      .catch((err) => console.warn("Live branches fetch failed:", err));
+    // 2. Re-fetch live data whenever window / tab gains focus
+    const handleRevalidate = () => {
+      fetchAllLiveData();
+    };
+    window.addEventListener("focus", handleRevalidate);
+    document.addEventListener("visibilitychange", handleRevalidate);
 
-    // Fetch live admins from PostgreSQL
-    fetch("/api/admins")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBranchAdmins(data);
-          save("mf_branchAdmins", data);
-        }
-      })
-      .catch((err) => console.warn("Live admins fetch failed:", err));
+    // 3. Real-time background sync every 12 seconds
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchAllLiveData();
+      }
+    }, 12000);
 
-    // Fetch live classes from PostgreSQL
-    fetch("/api/classes")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setClasses(data);
-          save("mf_classes", data);
-        }
-      })
-      .catch((err) => console.warn("Live classes fetch failed:", err));
-
-    // Fetch live journals from PostgreSQL
-    fetch("/api/journals")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setJournals(data);
-          save("mf_journals", data);
-        }
-      })
-      .catch((err) => console.warn("Live journals fetch failed:", err));
-
-    // Fetch live grades from PostgreSQL
-    fetch("/api/grades")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setGrades(data);
-          save("mf_grades", data);
-        }
-      })
-      .catch((err) => console.warn("Live grades fetch failed:", err));
-
-    // Fetch live behaviors/keaktifan from PostgreSQL
-    fetch("/api/behaviors")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBehaviors(data);
-          save("mf_behaviors", data);
-        }
-      })
-      .catch((err) => console.warn("Live behaviors fetch failed:", err));
-
-    // Fetch live curriculums from PostgreSQL
-    fetch("/api/curriculums")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setCurriculumModules(data);
-          save("mf_curriculum", data);
-        }
-      })
-      .catch((err) => console.warn("Live curriculums fetch failed:", err));
-
-    // Fetch live invoices from PostgreSQL
-    fetch("/api/invoices")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setInvoices(data);
-          save("mf_invoices", data);
-        }
-      })
-      .catch((err) => console.warn("Live invoices fetch failed:", err));
-
-    // Fetch live cash mutations from PostgreSQL
-    fetch("/api/mutations")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setCashMutations(data);
-          save("mf_mutations", data);
-        }
-      })
-      .catch((err) => console.warn("Live cash mutations fetch failed:", err));
-
-    // Fetch live attendances from PostgreSQL
-    fetch("/api/attendances")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const map: Record<string, AttendanceItem> = {};
-          data.forEach((att: any) => {
-            const dateStr = att.attendanceDate ? att.attendanceDate.split("T")[0] : "";
-            const key = `${att.studentId}_${dateStr}`;
-            map[key] = {
-              id: att.id,
-              studentId: att.studentId,
-              studentName: att.student?.studentName || "Siswa",
-              studentCode: att.student?.studentCode || "",
-              className: att.student?.className || "",
-              branch: att.branch?.branchName || "Singkut",
-              date: dateStr,
-              time: "14:00 WIB",
-              status: att.status || "HADIR",
-              method: att.method || "MANUAL",
-              note: att.notes || "",
-            };
-          });
-          setAttendances((prev) => ({ ...prev, ...map }));
-          save("mf_attendances", map);
-        }
-      })
-      .catch((err) => console.warn("Live attendances fetch failed:", err));
-
-    // Fetch live transactions from PostgreSQL
-    fetch("/api/transactions")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setTransactions(data);
-          save("mf_transactions", data);
-        }
-      })
-      .catch((err) => console.warn("Live transactions fetch failed:", err));
-
-    // Fetch live website hero from PostgreSQL
-    fetch("/api/website/hero")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data && data.headline) {
-          setLandingHero(data);
-          save("mf_landing_hero", data);
-        }
-      })
-      .catch((err) => console.warn("Live website hero fetch failed:", err));
-
-    // Fetch live website programs from PostgreSQL
-    fetch("/api/website/programs")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setLandingPrograms(data);
-          save("mf_landing_programs", data);
-        }
-      })
-      .catch((err) => console.warn("Live website programs fetch failed:", err));
-
-    // Fetch live website testimonials from PostgreSQL
-    fetch("/api/website/testimonials")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setLandingTestimonials(data);
-          save("mf_landing_testi", data);
-        }
-      })
-      .catch((err) => console.warn("Live website testimonials fetch failed:", err));
-
-    // Fetch live website partners from PostgreSQL
-    fetch("/api/website/partners")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setLandingPartners(data);
-          save("mf_landing_partners", data);
-        }
-      })
-      .catch((err) => console.warn("Live website partners fetch failed:", err));
-
-    // Fetch live website leads from PostgreSQL
-    fetch("/api/website/leads")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setLandingLeads(data);
-          save("mf_landing_leads", data);
-        }
-      })
-      .catch((err) => console.warn("Live website leads fetch failed:", err));
-  }, []);
-
-  // Save to LocalStorage helper
-  const save = (key: string, value: any) => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {
-      // ignore
-    }
-  };
+    return () => {
+      window.removeEventListener("focus", handleRevalidate);
+      document.removeEventListener("visibilitychange", handleRevalidate);
+      clearInterval(interval);
+    };
+  }, [fetchAllLiveData]);
 
   // Student CRUD
   const addStudent = (st: Omit<StudentItem, "id" | "index">) => {
@@ -1794,26 +1735,77 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Branch CRUD
   const addBranch = (br: Omit<BranchItem, "id" | "activeStudents" | "adminCount" | "monthlyRevenue">) => {
+    const tempId = `br-${Date.now()}`;
+    const newBr: BranchItem = {
+      ...br,
+      id: tempId,
+      activeStudents: 0,
+      adminCount: 0,
+      monthlyRevenue: 0,
+    };
     setBranches((prev) => {
-      const newBr: BranchItem = {
-        ...br,
-        id: `br-${Date.now()}`,
-        activeStudents: 0,
-        adminCount: 1,
-        monthlyRevenue: 0,
-      };
       const updated = [...prev, newBr];
       save("mf_branches", updated);
       return updated;
     });
+
+    fetch("/api/branches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(br),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setBranches((prev) =>
+            prev.map((b) => (b.id === tempId ? { ...b, ...created, id: created.id } : b))
+          );
+        }
+        fetchAllLiveData();
+      })
+      .catch((err) => console.error("Error saving branch to PostgreSQL:", err));
   };
 
   const updateBranch = (id: string, updated: Partial<BranchItem>) => {
+    let oldName = "";
     setBranches((prev) => {
+      const existing = prev.find((b) => b.id === id);
+      if (existing) oldName = existing.name;
       const updatedList = prev.map((b) => (b.id === id ? { ...b, ...updated } : b));
       save("mf_branches", updatedList);
       return updatedList;
     });
+
+    // Automatically cascade branch name change to associated students, classes, and admins
+    if (updated.name && oldName && updated.name !== oldName) {
+      const newName = updated.name;
+      setStudents((prev) =>
+        prev.map((s) => (s.branch === oldName ? { ...s, branch: newName as any } : s))
+      );
+      setClasses((prev) =>
+        prev.map((c) => (c.branch === oldName ? { ...c, branch: newName as any } : c))
+      );
+      setBranchAdmins((prev) =>
+        prev.map((a) => (a.branchName === oldName ? { ...a, branchName: newName as any } : a))
+      );
+      setTransactions((prev) =>
+        prev.map((t) => (t.branch === oldName ? { ...t, branch: newName as any } : t))
+      );
+    }
+
+    fetch("/api/branches", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...updated }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((saved) => {
+        if (saved && saved.id) {
+          setBranches((prev) => prev.map((b) => (b.id === id ? { ...b, ...saved } : b)));
+        }
+        fetchAllLiveData();
+      })
+      .catch((err) => console.error("Error updating branch in PostgreSQL:", err));
   };
 
   const deleteBranch = (id: string) => {
@@ -1822,6 +1814,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_branches", filtered);
       return filtered;
     });
+
+    fetch(`/api/branches?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    })
+      .then(() => fetchAllLiveData())
+      .catch((err) => console.error("Error deleting branch in PostgreSQL:", err));
   };
 
   // Branch Admin CRUD
@@ -2736,6 +2734,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         addBranch,
         updateBranch,
         deleteBranch,
+        refreshData: fetchAllLiveData,
         branchAdmins,
         addBranchAdmin,
         updateBranchAdmin,
