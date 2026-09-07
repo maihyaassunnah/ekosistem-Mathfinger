@@ -210,7 +210,7 @@ export default function CabangDanAdminPage() {
             onClick={() => setActiveTab("CABANG")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === "CABANG"
-                ? "bg-blue-600 text-white shadow-xs"
+                ? "bg-emerald-600 text-white shadow-xs"
                 : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -222,7 +222,7 @@ export default function CabangDanAdminPage() {
             onClick={() => setActiveTab("ADMIN")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === "ADMIN"
-                ? "bg-blue-600 text-white shadow-xs"
+                ? "bg-emerald-600 text-white shadow-xs"
                 : "hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -248,14 +248,14 @@ export default function CabangDanAdminPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
                 title="Tarik data terbaru dari database PostgreSQL"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-blue-600" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
                 {isSyncing ? "Menyinkronkan..." : "Sinkron DB"}
               </button>
 
               <button
                 type="button"
                 onClick={handleOpenAddBranch}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 + Buka Cabang Baru
@@ -271,7 +271,7 @@ export default function CabangDanAdminPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white dark:bg-[#0f1a36] rounded-3xl p-6 border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-4 hover:border-blue-300 dark:hover:border-blue-800 transition-all flex flex-col justify-between"
+                  className="bg-white dark:bg-[#0f1a36] rounded-3xl p-6 border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-4 hover:border-emerald-300 dark:hover:border-emerald-800 transition-all flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
@@ -302,7 +302,7 @@ export default function CabangDanAdminPage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteBranch(b)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] cursor-pointer"
                           title="Hapus Cabang"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -320,7 +320,7 @@ export default function CabangDanAdminPage() {
                         <span>Kontak: {b.phone}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                         <span>
                           Admin Penanggung Jawab: <strong>{adminCount} Akun Terhubung</strong>
                         </span>
@@ -339,7 +339,7 @@ export default function CabangDanAdminPage() {
                     </div>
 
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-[#1d2d5a]/60 text-center">
-                      <div className="text-2xl font-extrabold text-blue-600 dark:text-sky-400">
+                      <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                         {adminCount}
                       </div>
                       <div className="text-[11px] text-slate-400 font-medium">
@@ -363,7 +363,7 @@ export default function CabangDanAdminPage() {
             <button
               type="button"
               onClick={handleOpenAddAdmin}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               + Tambah Akun Admin Cabang
@@ -401,7 +401,7 @@ export default function CabangDanAdminPage() {
                         👑 Super Admin
                       </span>
                     ) : (
-                      <div className="text-[11px] text-blue-600 dark:text-sky-400 font-semibold">{adm.role}</div>
+                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">{adm.role}</div>
                     )}
                   </div>
                 </div>
@@ -477,7 +477,7 @@ export default function CabangDanAdminPage() {
                         deleteBranchAdmin(adm.id);
                       }
                     }}
-                    className="p-1.5 rounded-lg hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] cursor-pointer"
+                    className="p-1.5 rounded-lg hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] cursor-pointer"
                     title="Hapus Akun"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -519,7 +519,7 @@ export default function CabangDanAdminPage() {
                     value={branchForm.name}
                     onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })}
                     placeholder="Contoh: Sarolangun"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
@@ -533,7 +533,7 @@ export default function CabangDanAdminPage() {
                       setBranchForm({ ...branchForm, code: e.target.value.toUpperCase() })
                     }
                     placeholder="Contoh: SRL"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold uppercase focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold uppercase focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -546,7 +546,7 @@ export default function CabangDanAdminPage() {
                   value={branchForm.address}
                   onChange={(e) => setBranchForm({ ...branchForm, address: e.target.value })}
                   placeholder="Alamat jalan, kelurahan, kecamatan..."
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -559,7 +559,7 @@ export default function CabangDanAdminPage() {
                     value={branchForm.phone}
                     onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value })}
                     placeholder="0812-..."
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
@@ -572,7 +572,7 @@ export default function CabangDanAdminPage() {
                         status: e.target.value as "ACTIVE" | "INACTIVE",
                       })
                     }
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="ACTIVE">Aktif (Beroperasi)</option>
                     <option value="INACTIVE">Nonaktif (Tutup/Non-Aktif)</option>
@@ -594,7 +594,7 @@ export default function CabangDanAdminPage() {
                 <button
                   type="submit"
                   disabled={isSubmittingBranch}
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 cursor-pointer transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold hover:bg-emerald-700 cursor-pointer transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 >
                   {isSubmittingBranch && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   {editingBranch ? "Simpan Perubahan" : "Buat Cabang"}
@@ -710,7 +710,7 @@ export default function CabangDanAdminPage() {
                   value={adminForm.fullName}
                   onChange={(e) => setAdminForm({ ...adminForm, fullName: e.target.value })}
                   placeholder="Contoh: Siti Aisyah, S.Pd"
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -723,7 +723,7 @@ export default function CabangDanAdminPage() {
                     value={adminForm.email}
                     onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                     placeholder="nama@gmail.com"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
                     Gunakan Gmail agar bisa login Google
@@ -737,7 +737,7 @@ export default function CabangDanAdminPage() {
                     value={adminForm.password}
                     onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
                     placeholder="password123"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
                     Untuk opsi login manual
@@ -753,7 +753,7 @@ export default function CabangDanAdminPage() {
                     onChange={(e) =>
                       setAdminForm({ ...adminForm, branchName: e.target.value as any })
                     }
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="Semua Cabang (Pusat)">Semua Cabang (Pusat)</option>
                     {branches.map((b) => (
@@ -769,7 +769,7 @@ export default function CabangDanAdminPage() {
                   <select
                     value={adminForm.role}
                     onChange={(e) => setAdminForm({ ...adminForm, role: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="Super Admin">Super Admin</option>
                     <option value="Admin Cabang">Admin Cabang</option>
@@ -786,7 +786,7 @@ export default function CabangDanAdminPage() {
                   value={adminForm.phone}
                   onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
                   placeholder="0812-..."
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -803,7 +803,7 @@ export default function CabangDanAdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-extrabold cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-extrabold cursor-pointer transition-colors"
                 >
                   {editingAdmin ? "Simpan Akun" : "Terbitkan Akun"}
                 </button>

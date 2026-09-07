@@ -254,7 +254,7 @@ function WebsiteManagementContent() {
     <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Toast Notification */}
       {saveAlert && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl shadow-lg animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-emerald-600 text-white font-semibold text-sm rounded-xl shadow-lg animate-in slide-in-from-bottom-5">
           <CheckCircle2 className="w-5 h-5 text-emerald-200" />
           <span>{saveAlert}</span>
         </div>
@@ -264,7 +264,7 @@ function WebsiteManagementContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1d2d5a]">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-slate-800 text-emerald-600 flex items-center justify-center font-bold">
               <Sparkles className="w-4 h-4" />
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -282,7 +282,7 @@ function WebsiteManagementContent() {
             target="_blank"
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all"
           >
-            <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" />
+            <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Lihat Website Publik</span>
             <ExternalLink className="w-3 h-3 text-slate-400" />
           </Link>
@@ -296,7 +296,7 @@ function WebsiteManagementContent() {
           onClick={() => setActiveTab("hero")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === "hero"
-              ? "border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-950/30"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
           }`}
         >
@@ -309,7 +309,7 @@ function WebsiteManagementContent() {
           onClick={() => setActiveTab("programs")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === "programs"
-              ? "border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-950/30"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
           }`}
         >
@@ -325,7 +325,7 @@ function WebsiteManagementContent() {
           onClick={() => setActiveTab("testimonials")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === "testimonials"
-              ? "border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-950/30"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
           }`}
         >
@@ -341,7 +341,7 @@ function WebsiteManagementContent() {
           onClick={() => setActiveTab("leads")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === "leads"
-              ? "border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-950/30"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
           }`}
         >
@@ -359,7 +359,7 @@ function WebsiteManagementContent() {
           onClick={() => setActiveTab("partners")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === "partners"
-              ? "border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-950/30"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
           }`}
         >
@@ -393,7 +393,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setHeroForm({ ...heroForm, promoActive: e.target.checked })
                       }
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
                     />
                     <span>Tampilkan Banner</span>
                   </label>
@@ -411,7 +411,7 @@ function WebsiteManagementContent() {
                         setHeroForm({ ...heroForm, promoBanner: e.target.value })
                       }
                       placeholder="Contoh: 🎉 PROMO SPESIAL: GRATIS Kelas Percobaan & Diskon 50%!"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -425,7 +425,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setHeroForm({ ...heroForm, targetDiscount: e.target.value })
                       }
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                 </div>
@@ -434,7 +434,7 @@ function WebsiteManagementContent() {
               {/* Headline & Subtitle Card */}
               <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-600" />
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
                   <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                     Headline & Deskripsi Utama Beranda
                   </h3>
@@ -451,7 +451,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setHeroForm({ ...heroForm, tagline: e.target.value })
                       }
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -465,7 +465,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setHeroForm({ ...heroForm, headline: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -479,7 +479,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setHeroForm({ ...heroForm, subheadline: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-relaxed"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 leading-relaxed"
                     />
                   </div>
                 </div>
@@ -488,7 +488,7 @@ function WebsiteManagementContent() {
               {/* WhatsApp Contact Configuration */}
               <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-blue-600" />
+                  <Phone className="w-4 h-4 text-emerald-600" />
                   <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                     Kontak WhatsApp Konsultasi Cepat
                   </h3>
@@ -506,7 +506,7 @@ function WebsiteManagementContent() {
                         setHeroForm({ ...heroForm, whatsappNumber: e.target.value })
                       }
                       placeholder="6281279498907"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -520,7 +520,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setHeroForm({ ...heroForm, whatsappGreeting: e.target.value })
                       }
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                 </div>
@@ -530,7 +530,7 @@ function WebsiteManagementContent() {
               <div className="flex items-center gap-3">
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   <span>Simpan Perubahan Beranda</span>
@@ -545,19 +545,19 @@ function WebsiteManagementContent() {
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Live Preview Beranda
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                     Real-time
                   </span>
                 </div>
 
                 {heroForm.promoActive && (
-                  <div className="p-2.5 rounded-lg bg-blue-600 text-white text-[11px] font-bold text-center leading-tight">
+                  <div className="p-2.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold text-center leading-tight">
                     {heroForm.promoBanner}
                   </div>
                 )}
 
                 <div className="space-y-3 pt-2 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-sky-300 border border-slate-200 dark:border-[#1d2d5a]">
+                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a]">
                     {heroForm.tagline}
                   </span>
 
@@ -570,7 +570,7 @@ function WebsiteManagementContent() {
                   </p>
 
                   <div className="pt-2 flex flex-col gap-2">
-                    <div className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs">
+                    <div className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">
                       Daftar Coba Gratis (Trial)
                     </div>
                     <div className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -599,7 +599,7 @@ function WebsiteManagementContent() {
             <button
               type="button"
               onClick={openAddProgram}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Level Baru</span>
@@ -612,18 +612,18 @@ function WebsiteManagementContent() {
                 key={prog.id}
                 className={`p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border transition-all relative flex flex-col justify-between ${
                   prog.popular
-                    ? "border-blue-600 shadow-md ring-1 ring-blue-600"
+                    ? "border-emerald-600 shadow-md ring-1 ring-emerald-600"
                     : "border-slate-200 dark:border-[#1d2d5a] shadow-xs"
                 }`}
               >
                 {prog.popular && (
-                  <span className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                  <span className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider">
                     Paling Diminati
                   </span>
                 )}
 
                 <div className="space-y-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-sky-300 flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
                     <BookOpen className="w-4 h-4" />
                   </div>
 
@@ -631,7 +631,7 @@ function WebsiteManagementContent() {
                     <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
                       {prog.levelTitle}
                     </h3>
-                    <span className="text-[11px] font-semibold text-blue-600 dark:text-sky-400">
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                       {prog.targetAge}
                     </span>
                   </div>
@@ -659,7 +659,7 @@ function WebsiteManagementContent() {
                         key={bIdx}
                         className="flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400"
                       >
-                        <Check className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{b}</span>
                       </div>
                     ))}
@@ -681,7 +681,7 @@ function WebsiteManagementContent() {
                         deleteLandingProgram(prog.id);
                       }
                     }}
-                    className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-[#132042] transition-colors"
+                    className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] transition-colors"
                     title="Hapus Program"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -721,7 +721,7 @@ function WebsiteManagementContent() {
                         setProgramForm({ ...programForm, levelTitle: e.target.value })
                       }
                       placeholder="Contoh: Level 1: Dasar"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -737,7 +737,7 @@ function WebsiteManagementContent() {
                         setProgramForm({ ...programForm, targetAge: e.target.value })
                       }
                       placeholder="Contoh: Usia 6 - 8 Tahun (SD Kelas 1 - 2)"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -753,7 +753,7 @@ function WebsiteManagementContent() {
                         setProgramForm({ ...programForm, description: e.target.value })
                       }
                       placeholder="Penjelasan ringkas materi dan hasil capaian murid..."
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -772,7 +772,7 @@ function WebsiteManagementContent() {
                             monthlyFee: Number(e.target.value),
                           })
                         }
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       />
                     </div>
                     <div>
@@ -789,7 +789,7 @@ function WebsiteManagementContent() {
                             registrationFee: Number(e.target.value),
                           })
                         }
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       />
                     </div>
                   </div>
@@ -808,7 +808,7 @@ function WebsiteManagementContent() {
                         })
                       }
                       placeholder="Buku Modul Latihan Jari&#10;Kartu QR Presensi&#10;Laporan Rapor Digital"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -819,7 +819,7 @@ function WebsiteManagementContent() {
                       onChange={(e) =>
                         setProgramForm({ ...programForm, popular: e.target.checked })
                       }
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
                     />
                     <span>Tandai sebagai &quot;Paling Diminati&quot;</span>
                   </label>
@@ -834,7 +834,7 @@ function WebsiteManagementContent() {
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-xs hover:bg-blue-700"
+                      className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-xs hover:bg-emerald-700"
                     >
                       Simpan Program
                     </button>
@@ -861,7 +861,7 @@ function WebsiteManagementContent() {
             <button
               type="button"
               onClick={() => setShowTestiModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Testimoni</span>
@@ -907,7 +907,7 @@ function WebsiteManagementContent() {
                         deleteLandingTestimonial(testi.id);
                       }
                     }}
-                    className="p-1 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-[#132042]"
+                    className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042]"
                     title="Hapus"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -947,7 +947,7 @@ function WebsiteManagementContent() {
                         setTestiForm({ ...testiForm, parentName: e.target.value })
                       }
                       placeholder="Contoh: Bunda Rini Astuti"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -963,7 +963,7 @@ function WebsiteManagementContent() {
                         setTestiForm({ ...testiForm, studentName: e.target.value })
                       }
                       placeholder="Contoh: Aishwa (7 thn)"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -1013,7 +1013,7 @@ function WebsiteManagementContent() {
                         setTestiForm({ ...testiForm, comment: e.target.value })
                       }
                       placeholder="Ceritakan pengalaman dan peningkatan nilai berhitung anak..."
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
 
@@ -1027,7 +1027,7 @@ function WebsiteManagementContent() {
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-xs hover:bg-blue-700"
+                      className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-xs hover:bg-emerald-700"
                     >
                       Simpan Testimoni
                     </button>
@@ -1125,7 +1125,7 @@ function WebsiteManagementContent() {
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                               lead.branch === "Singkut"
-                                ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                                 : "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
                             }`}
                           >
@@ -1148,10 +1148,10 @@ function WebsiteManagementContent() {
                               lead.status === "Baru"
                                 ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
                                 : lead.status === "Dihubungi"
-                                ? "bg-blue-100 text-blue-900 dark:bg-blue-950/80 dark:text-blue-300"
+                                ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-950/80 dark:text-emerald-300"
                                 : lead.status === "Trial Terjadwal"
                                 ? "bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300"
-                                : "bg-blue-100 text-blue-950 dark:text-sky-300 dark:bg-slate-800 dark:text-sky-400"
+                                : "bg-emerald-100 text-emerald-950 dark:text-emerald-300 dark:bg-slate-800 dark:text-emerald-400"
                             }`}
                           >
                             <option value="Baru">🟡 Baru</option>
@@ -1165,7 +1165,7 @@ function WebsiteManagementContent() {
                             <button
                               type="button"
                               onClick={() => openWhatsAppLead(lead)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold text-xs transition-all shadow-2xs"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold text-xs transition-all shadow-2xs"
                               title="Chat WhatsApp Calon Siswa"
                             >
                               <MessageCircle className="w-3.5 h-3.5" />
@@ -1178,7 +1178,7 @@ function WebsiteManagementContent() {
                                   deleteLandingLead(lead.id);
                                 }
                               }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-[#132042]"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042]"
                               title="Hapus"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1202,7 +1202,7 @@ function WebsiteManagementContent() {
           <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-blue-600" />
+                <Building2 className="w-5 h-5 text-emerald-600" />
                 <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100">
                   Logo Kerja Sama & Mitra Binaan
                 </h2>
@@ -1215,7 +1215,7 @@ function WebsiteManagementContent() {
             <button
               type="button"
               onClick={openAddPartner}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Mitra Baru</span>
@@ -1225,7 +1225,7 @@ function WebsiteManagementContent() {
           {/* Partner Preview & Live Marquee Demonstration */}
           <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-slate-50 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-950 dark:text-sky-300 dark:text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-bold text-emerald-950 dark:text-emerald-300 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 Pratinjau Logo Bergulir di Website:
               </span>
@@ -1241,7 +1241,7 @@ function WebsiteManagementContent() {
                   key={p.id}
                   className="px-4 py-2 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-2xs flex items-center gap-2.5 shrink-0"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-sky-300 font-black text-xs flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center">
                     {p.logoText.slice(0, 3)}
                   </div>
                   <div>
@@ -1294,7 +1294,7 @@ function WebsiteManagementContent() {
                             href={partner.website}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-blue-600 dark:text-sky-400 hover:underline font-semibold"
+                            className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
                           >
                             <LinkIcon className="w-3 h-3" />
                             <span className="truncate max-w-[140px]">{partner.website}</span>
@@ -1311,7 +1311,7 @@ function WebsiteManagementContent() {
                           }
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
                             partner.active
-                              ? "bg-blue-100 text-blue-800 dark:bg-slate-800 dark:text-sky-400"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-slate-800 dark:text-emerald-400"
                               : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                           }`}
                         >
@@ -1333,7 +1333,7 @@ function WebsiteManagementContent() {
                           <button
                             type="button"
                             onClick={() => openEditPartner(partner)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-colors"
                             title="Edit"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -1345,7 +1345,7 @@ function WebsiteManagementContent() {
                                 deleteLandingPartner(partner.id);
                               }
                             }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-[#132042] transition-colors"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] transition-colors"
                             title="Hapus"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1448,7 +1448,7 @@ function WebsiteManagementContent() {
                   id="partnerActive"
                   checked={partnerForm.active}
                   onChange={(e) => setPartnerForm({ ...partnerForm, active: e.target.checked })}
-                  className="rounded text-blue-600"
+                  className="rounded text-emerald-600"
                 />
                 <label
                   htmlFor="partnerActive"
@@ -1468,7 +1468,7 @@ function WebsiteManagementContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold transition-all shadow-xs cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold transition-all shadow-xs cursor-pointer"
                 >
                   Simpan Mitra
                 </button>

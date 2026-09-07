@@ -42,19 +42,19 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         {/* Mobile & Tablet Header Bar (Visible on < lg, hidden on /dashboard home as it has native app header) */}
         {!isDashboardHome && (
-          <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-md border-b border-blue-100/80 dark:border-[#162244] shrink-0 z-30 shadow-2xs">
+          <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-md border-b border-emerald-100/80 dark:border-[#162244] shrink-0 z-30 shadow-2xs">
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="p-2 -ml-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
+                className="p-2 -ml-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
                 title="Buka Navigasi"
               >
                 <Menu className="w-5 h-5" />
               </button>
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-blue-100 dark:border-[#1d2d5a] flex items-center justify-center font-bold shadow-2xs">
+                <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-emerald-100 dark:border-[#1d2d5a] flex items-center justify-center font-bold shadow-2xs">
                   <img
                     src="/logo.png"
                     alt="Easy Learning House"
@@ -65,7 +65,7 @@ export default function DashboardLayout({
                   <span className="font-black text-sm text-slate-900 dark:text-slate-100 tracking-tight">
                     Easy Learning
                   </span>
-                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-sky-300 text-[9px] font-bold">
+                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[9px] font-bold">
                     v3.3
                   </span>
                 </div>
@@ -76,17 +76,17 @@ export default function DashboardLayout({
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
                 title={theme === "dark" ? "Mode Terang" : "Mode Gelap"}
               >
                 {theme === "dark" ? (
                   <Sun className="w-4 h-4 text-amber-400" />
                 ) : (
-                  <Moon className="w-4 h-4 text-blue-600" />
+                  <Moon className="w-4 h-4 text-emerald-600" />
                 )}
               </button>
 
-              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
                 MF
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function DashboardLayout({
               </h2>
               <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
                 Akun Anda dengan peran{" "}
-                <strong className="text-blue-600 dark:text-sky-400 font-bold">
+                <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
                   {currentUser.role} (
                   {currentUser.allowedBranch ? `Cabang ${currentUser.allowedBranch}` : "Pusat"}
                   )
@@ -116,7 +116,7 @@ export default function DashboardLayout({
               </p>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-500/25 transition-all cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Kembali ke Dashboard</span>
@@ -126,7 +126,7 @@ export default function DashboardLayout({
         </main>
 
         {/* Mobile & Tablet Bottom Navigation Dock (Persistent App Bar) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-xl border-t border-blue-100/80 dark:border-[#162244] px-3 pt-1.5 pb-2.5 shadow-2xl">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-xl border-t border-emerald-100/80 dark:border-[#162244] px-3 pt-1.5 pb-2.5 shadow-2xl">
           <div className="max-w-md md:max-w-xl mx-auto flex items-end justify-around relative">
             {/* 1. Home (Elevated circle when on /dashboard or clicked) */}
             <Link
@@ -136,7 +136,7 @@ export default function DashboardLayout({
               <div
                 className={`w-11 h-11 -mt-4 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border-4 border-white dark:border-[#0a1128] ${
                   pathname === "/dashboard"
-                    ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white ring-2 ring-blue-500/30"
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white ring-2 ring-emerald-500/30"
                     : "bg-slate-100 dark:bg-[#132042] text-slate-600 dark:text-slate-300"
                 }`}
               >
@@ -145,7 +145,7 @@ export default function DashboardLayout({
               <span
                 className={`text-[10px] font-extrabold mt-0.5 ${
                   pathname === "/dashboard"
-                    ? "text-blue-600 dark:text-sky-400"
+                    ? "text-emerald-600 dark:text-emerald-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -161,14 +161,14 @@ export default function DashboardLayout({
               <Users
                 className={`w-5 h-5 ${
                   pathname.startsWith("/dashboard/siswa")
-                    ? "text-blue-600 dark:text-sky-400"
+                    ? "text-emerald-600 dark:text-emerald-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
                   pathname.startsWith("/dashboard/siswa")
-                    ? "text-blue-600 dark:text-sky-400 font-bold"
+                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -184,14 +184,14 @@ export default function DashboardLayout({
               <CheckSquare
                 className={`w-5 h-5 ${
                   pathname.startsWith("/dashboard/absensi")
-                    ? "text-blue-600 dark:text-sky-400"
+                    ? "text-emerald-600 dark:text-emerald-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
                   pathname.startsWith("/dashboard/absensi")
-                    ? "text-blue-600 dark:text-sky-400 font-bold"
+                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -207,14 +207,14 @@ export default function DashboardLayout({
               <Award
                 className={`w-5 h-5 ${
                   pathname.startsWith("/dashboard/input-nilai") || pathname.startsWith("/dashboard/rapor")
-                    ? "text-blue-600 dark:text-sky-400"
+                    ? "text-emerald-600 dark:text-emerald-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
                   pathname.startsWith("/dashboard/input-nilai") || pathname.startsWith("/dashboard/rapor")
-                    ? "text-blue-600 dark:text-sky-400 font-bold"
+                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -230,7 +230,7 @@ export default function DashboardLayout({
             >
               <div className="relative">
                 <Menu className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[15px] h-3.5 rounded-full bg-blue-600 text-white text-[8px] font-black flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[15px] h-3.5 rounded-full bg-emerald-600 text-white text-[8px] font-black flex items-center justify-center shadow-xs">
                   14
                 </span>
               </div>

@@ -599,13 +599,13 @@ function AbsensiContent() {
     <div className="p-3 sm:p-6 lg:p-8 pb-32 lg:pb-12 space-y-5 sm:space-y-6 max-w-[1400px] mx-auto relative">
       {/* Save Success Toast Banner */}
       {saveToast && (
-        <div className="fixed top-5 right-5 z-50 max-w-md w-full bg-white dark:bg-[#0f1a36] border-2 border-blue-500 text-slate-900 dark:text-slate-100 p-4 rounded-2xl shadow-2xl flex items-start gap-3.5 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 flex items-center justify-center shrink-0">
+        <div className="fixed top-5 right-5 z-50 max-w-md w-full bg-white dark:bg-[#0f1a36] border-2 border-emerald-500 text-slate-900 dark:text-slate-100 p-4 rounded-2xl shadow-2xl flex items-start gap-3.5 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCheck className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-xs font-black text-blue-800 dark:text-blue-300 uppercase tracking-wide">
+              <h4 className="text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">
                 Presensi Berhasil Disimpan
               </h4>
               <span className="text-[10px] text-slate-400">Tersimpan</span>
@@ -632,7 +632,7 @@ function AbsensiContent() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
               Absensi Siswa
             </h1>
-            <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold">
               v3.3 Terpadu
             </span>
           </div>
@@ -661,7 +661,7 @@ function AbsensiContent() {
             onClick={() => setActiveTab("HARI_INI")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "HARI_INI"
-                ? "bg-blue-600 text-white shadow-xs"
+                ? "bg-emerald-600 text-white shadow-xs"
                 : "bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
@@ -674,7 +674,7 @@ function AbsensiContent() {
             onClick={() => setActiveTab("REKAP")}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "REKAP"
-                ? "bg-blue-600 text-white shadow-xs"
+                ? "bg-emerald-600 text-white shadow-xs"
                 : "bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
@@ -697,7 +697,7 @@ function AbsensiContent() {
             <div>
               <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>Pilih Tanggal Sesi Bimbingan</span>
-                <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px]">
                   Hari: {getDayNameIndonesian(selectedDate)}
                 </span>
                 {lastSavedTime && (
@@ -724,10 +724,10 @@ function AbsensiContent() {
               <button
                 type="button"
                 onClick={handleMarkAllHadir}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-blue-800 dark:text-blue-300 border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold transition-all shadow-2xs cursor-pointer"
                 title="Tandai seluruh siswa hadir untuk sesi hari ini"
               >
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Hadir Semua</span>
               </button>
 
@@ -735,7 +735,7 @@ function AbsensiContent() {
                 type="button"
                 onClick={handleSaveTodayAttendance}
                 disabled={isSaving}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 active:scale-95 text-white text-xs font-extrabold transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-95 text-white text-xs font-extrabold transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50"
                 title="Simpan seluruh status presensi siswa tanggal ini ke database"
               >
                 {isSaving ? (
@@ -752,7 +752,7 @@ function AbsensiContent() {
           <div className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="w-2 h-2 rounded-full bg-emerald-600" />
                 PILIH KELAS BIMBINGAN UNTUK MENGABSEN:
               </span>
               <select
@@ -881,7 +881,7 @@ function AbsensiContent() {
                     <button
                       type="button"
                       onClick={() => handleBatchSetSelectedStatus("IZIN")}
-                      className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] cursor-pointer"
                     >
                       + Ijin
                     </button>
@@ -1087,7 +1087,7 @@ function AbsensiContent() {
                           <button
                             type="button"
                             onClick={() => handleSaveSingleNote(st.id)}
-                            className="p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer transition-colors shrink-0"
+                            className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-colors shrink-0"
                             title="Simpan Catatan"
                           >
                             <Send className="w-3.5 h-3.5" />
@@ -1172,7 +1172,7 @@ function AbsensiContent() {
                             }}
                             className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
                               currentNote
-                                ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-[#1d2d5a] shadow-xs"
+                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-[#1d2d5a] shadow-xs"
                                 : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/90 dark:border-[#1d2d5a] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800"
                             }`}
                             title={currentNote ? `Catatan: ${currentNote}` : "Tulis Catatan Presensi"}
@@ -1187,7 +1187,7 @@ function AbsensiContent() {
                               currentStatus === "HADIR"
                                 ? "bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white ring-2 ring-emerald-500/20"
                                 : currentStatus === "IZIN"
-                                ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-500/20"
+                                ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-500/20"
                                 : currentStatus === "SAKIT"
                                 ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/20"
                                 : "bg-slate-700 hover:bg-slate-800 text-white ring-2 ring-slate-500/20"
@@ -1251,11 +1251,11 @@ function AbsensiContent() {
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(st.id, "IZIN")}
-                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
+                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
                               >
                                 <span>ℹ Ijin</span>
                                 {currentStatus === "IZIN" && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                                 )}
                               </button>
                               <button
@@ -1296,7 +1296,7 @@ function AbsensiContent() {
                 <span className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
                   Ringkasan Presensi ({selectedDate}):
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
                   ✓ Hadir: {todayHadirCount}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-xs font-bold">
@@ -1307,7 +1307,7 @@ function AbsensiContent() {
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <Info className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>
                   {lastSavedTime
                     ? `Terakhir disimpan pada ${lastSavedTime}. Seluruh data tersimpan aman di sistem.`
@@ -1321,7 +1321,7 @@ function AbsensiContent() {
                 type="button"
                 onClick={handleSaveTodayAttendance}
                 disabled={isSaving}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 active:scale-98 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-98 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1336,7 +1336,7 @@ function AbsensiContent() {
           {/* Mobile Floating Bottom Bar for Quick Thumb Save */}
           <div className="lg:hidden fixed bottom-16 left-3 right-3 z-30 p-2.5 sm:p-3 rounded-2xl bg-white/95 dark:bg-[#0f1a36]/95 backdrop-blur-md border border-slate-200 dark:border-[#1d2d5a] shadow-xl flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3">
             <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-800 dark:text-slate-200">
-              <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
                 ✓ {todayHadirCount}
               </span>
               <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
@@ -1351,7 +1351,7 @@ function AbsensiContent() {
               type="button"
               onClick={handleSaveTodayAttendance}
               disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 active:scale-95 text-white text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-95 text-white text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
             >
               {isSaving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1382,10 +1382,10 @@ function AbsensiContent() {
             </div>
 
             <div className="p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-1">
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
                 Tingkat Kehadiran
               </span>
-              <div className="text-2xl font-black text-blue-600">
+              <div className="text-2xl font-black text-emerald-600">
                 {hadirPercent}%
               </div>
               <div className="text-[11px] text-slate-500">{hadirCount} kali Hadir</div>
@@ -1432,7 +1432,7 @@ function AbsensiContent() {
                 <button
                   type="button"
                   onClick={openAddRecord}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>+ Presensi Susulan / Manual</span>
@@ -1480,8 +1480,8 @@ function AbsensiContent() {
                   <option value="Bangko">Cabang Bangko</option>
                 </select>
               ) : (
-                <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1 shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Cabang {allowedBranch}</span>
                 </div>
               )}
@@ -1556,7 +1556,7 @@ function AbsensiContent() {
                             <div className="font-bold text-slate-900 dark:text-slate-100">
                               {record.studentName || "Siswa"}
                             </div>
-                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-mono">
+                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
                               #{record.studentCode || "-"}
                             </div>
                           </td>
@@ -1568,7 +1568,7 @@ function AbsensiContent() {
                             <span
                               className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${
                                 record.branch === "Singkut"
-                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                                   : "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
                               }`}
                             >
@@ -1578,7 +1578,7 @@ function AbsensiContent() {
 
                           <td className="py-3 px-4">
                             {record.method === "QR_SCAN" ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60 font-extrabold text-[10px]">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60 font-extrabold text-[10px]">
                                 <QrCode className="w-3 h-3" />
                                 <span>QR Scan</span>
                               </span>
@@ -1593,7 +1593,7 @@ function AbsensiContent() {
                             <span
                               className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${
                                 record.status === "HADIR"
-                                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60"
+                                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60"
                                   : record.status === "IZIN"
                                   ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
                                   : record.status === "SAKIT"
@@ -1678,7 +1678,7 @@ function AbsensiContent() {
                             <div className="font-bold text-slate-900 dark:text-slate-100">
                               {st.name}
                             </div>
-                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-mono">
+                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
                               #{st.studentCode}
                             </div>
                           </td>
@@ -1691,7 +1691,7 @@ function AbsensiContent() {
                           </td>
 
                           <td className="py-3.5 px-4 text-center font-bold">{totalS}</td>
-                          <td className="py-3.5 px-4 text-center font-extrabold text-blue-600">
+                          <td className="py-3.5 px-4 text-center font-extrabold text-emerald-600">
                             {hCount}
                           </td>
                           <td className="py-3.5 px-4 text-center font-semibold text-amber-600">
@@ -1708,7 +1708,7 @@ function AbsensiContent() {
                             <div className="flex items-center justify-end gap-2">
                               <div className="w-16 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                                 <div
-                                  className="bg-blue-600 h-full rounded-full"
+                                  className="bg-emerald-600 h-full rounded-full"
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
@@ -1745,7 +1745,7 @@ function AbsensiContent() {
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 flex items-center justify-center font-bold">
                   <Camera className="w-4 h-4" />
                 </div>
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
@@ -1771,8 +1771,8 @@ function AbsensiContent() {
                     <canvas ref={canvasRef} className="hidden" />
                     {/* Scanner Targeting Reticle */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-48 h-48 border-2 border-blue-500 rounded-2xl animate-pulse flex items-center justify-center">
-                        <div className="w-full h-0.5 bg-blue-500/80 shadow-lg shadow-red-500 animate-bounce" />
+                      <div className="w-48 h-48 border-2 border-emerald-500 rounded-2xl animate-pulse flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-emerald-600/80 shadow-lg shadow-red-500 animate-bounce" />
                       </div>
                     </div>
                   </>
@@ -1786,7 +1786,7 @@ function AbsensiContent() {
                         setCameraError(null);
                         setIsCameraActive(true);
                       }}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold text-xs shadow-xs"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold text-xs shadow-xs"
                     >
                       <Camera className="w-3.5 h-3.5" />
                       <span>Aktifkan Kamera Scanner</span>
@@ -1821,11 +1821,11 @@ function AbsensiContent() {
                   value={scannerInputCode}
                   onChange={(e) => setScannerInputCode(e.target.value)}
                   placeholder="Scan kartu atau ketik ID kode (contoh: 79000)..."
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500 font-mono"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500 font-mono"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold shadow-xs cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
                   Proses
                 </button>
@@ -1843,7 +1843,7 @@ function AbsensiContent() {
                     key={st.id}
                     type="button"
                     onClick={() => handleProcessQrCode(st.studentCode)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-700 dark:text-slate-200 hover:text-blue-700 text-[11px] font-semibold transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 text-slate-700 dark:text-slate-200 hover:text-emerald-700 text-[11px] font-semibold transition-colors"
                   >
                     #{st.studentCode} {st.name.split(" ")[0]}
                   </button>
@@ -1856,21 +1856,21 @@ function AbsensiContent() {
               <div
                 className={`p-4 rounded-2xl border text-xs space-y-2 animate-in fade-in ${
                   scanResult.type === "SUCCESS"
-                    ? "bg-blue-50 dark:bg-blue-950/40 border-slate-200 dark:border-[#1d2d5a] text-blue-900 dark:text-blue-200"
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-slate-200 dark:border-[#1d2d5a] text-emerald-950 dark:text-emerald-200"
                     : scanResult.type === "WARNING_SCHEDULE"
                     ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
                     : scanResult.type === "ALREADY_PRESENT"
-                    ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200"
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200"
                     : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
                 }`}
               >
                 <div className="flex items-start gap-2.5">
                   {scanResult.type === "SUCCESS" ? (
-                    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   ) : scanResult.type === "WARNING_SCHEDULE" ? (
                     <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   ) : scanResult.type === "ALREADY_PRESENT" ? (
-                    <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                    <Info className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   ) : (
                     <X className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   )}
@@ -2050,7 +2050,7 @@ function AbsensiContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-xs hover:bg-blue-700"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-xs hover:bg-emerald-700"
                 >
                   Simpan Presensi
                 </button>
@@ -2150,7 +2150,7 @@ function AbsensiContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-xs hover:bg-blue-700"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-xs hover:bg-emerald-700"
                 >
                   Simpan Perubahan
                 </button>
@@ -2168,7 +2168,7 @@ function AbsensiContent() {
           <div className="bg-white dark:bg-[#0f1a36] w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-[#1d2d5a] p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
@@ -2209,7 +2209,7 @@ function AbsensiContent() {
                       onClick={() => {
                         setNoteInputText((prev) => (prev ? `${prev}, ${tag}` : tag));
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-300 text-[11px] font-semibold border border-slate-200/80 dark:border-[#1d2d5a] cursor-pointer transition-colors"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 text-[11px] font-semibold border border-slate-200/80 dark:border-[#1d2d5a] cursor-pointer transition-colors"
                     >
                       + {tag}
                     </button>
@@ -2226,7 +2226,7 @@ function AbsensiContent() {
                   value={noteInputText}
                   onChange={(e) => setNoteInputText(e.target.value)}
                   placeholder="Tuliskan keterangan detail presensi di sini..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -2277,7 +2277,7 @@ function AbsensiContent() {
                       count: 1,
                     });
                   }}
-                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-extrabold shadow-sm cursor-pointer"
+                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-extrabold shadow-sm cursor-pointer"
                 >
                   Simpan Catatan
                 </button>

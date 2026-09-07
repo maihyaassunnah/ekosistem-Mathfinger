@@ -106,14 +106,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/dashboard/siswa",
           icon: Users,
           badge: `${realStudentCount}`,
-          badgeColor: "bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 font-extrabold",
+          badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-extrabold",
         },
         {
           name: "Kelas",
           href: "/dashboard/kelas",
           icon: LayoutGrid,
           badge: realClassCount > 0 ? `${realClassCount}` : null,
-          badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 font-bold",
+          badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-emerald-300 font-bold",
         },
         {
           name: "Kartu QR Siswa",
@@ -216,7 +216,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                 href: "/dashboard/database",
                 icon: Database,
                 badge: "17",
-                badgeColor: "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-sky-300 font-bold",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold",
               },
               {
                 name: "Pengaturan",
@@ -239,14 +239,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/dashboard/website",
           icon: Sparkles,
           badge: "Hero & WA",
-          badgeColor: "bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 font-bold",
+          badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold",
         },
         {
           name: "Program & Biaya Les",
           href: "/dashboard/website?tab=programs",
           icon: BookOpen,
           badge: `${landingPrograms.length}`,
-          badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 font-bold",
+          badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-emerald-300 font-bold",
         },
         {
           name: "Testimoni Wali Murid",
@@ -260,7 +260,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/dashboard/website?tab=partners",
           icon: Building2,
           badge: `${landingPartners?.filter((p) => p.active).length || 0}`,
-          badgeColor: "bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 font-bold",
+          badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold",
         },
       ],
     },
@@ -272,7 +272,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/dashboard/website?tab=leads",
           icon: UserPlus,
           badge: newLeadsCount > 0 ? `${newLeadsCount} Baru` : null,
-          badgeColor: "bg-blue-600 text-white font-extrabold shadow-xs shadow-blue-500/20",
+          badgeColor: "bg-emerald-600 text-white font-extrabold shadow-xs shadow-emerald-500/20",
         },
       ],
     },
@@ -302,14 +302,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 lg:static h-screen bg-white/95 dark:bg-[#0a1128] border-r border-blue-100/80 dark:border-[#162244] flex flex-col justify-between transition-all duration-300 shrink-0 backdrop-blur-xs ${
+      className={`fixed inset-y-0 left-0 z-50 lg:static h-screen bg-white/95 dark:bg-[#0a1128] border-r border-emerald-100/80 dark:border-[#162244] flex flex-col justify-between transition-all duration-300 shrink-0 backdrop-blur-xs ${
         collapsed ? "w-20" : "w-64"
       } ${
         mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       }`}
     >
       {/* Top Header */}
-      <div className="p-4 border-b border-blue-100/80 dark:border-[#162244] space-y-4">
+      <div className="p-4 border-b border-emerald-100/80 dark:border-[#162244] space-y-4">
         {/* Mac-style Window Controls + Dark Mode & Collapse Button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -322,19 +322,19 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
             <button
               type="button"
               onClick={toggleTheme}
-              className="w-7 h-7 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-amber-300 hover:bg-blue-50 dark:hover:bg-[#132042] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-amber-300 hover:bg-emerald-50 dark:hover:bg-[#132042] flex items-center justify-center transition-colors cursor-pointer"
               title={theme === "dark" ? "Ganti ke Mode Terang" : "Ganti ke Mode Gelap"}
             >
               {theme === "dark" ? (
                 <Sun className="w-3.5 h-3.5 text-amber-400" />
               ) : (
-                <Moon className="w-3.5 h-3.5 text-blue-600" />
+                <Moon className="w-3.5 h-3.5 text-emerald-600" />
               )}
             </button>
             <button
               type="button"
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex w-7 h-7 rounded-full bg-blue-600 text-white items-center justify-center hover:bg-blue-700 transition-all shadow-xs shadow-blue-500/30"
+              className="hidden lg:flex w-7 h-7 rounded-full bg-emerald-600 text-white items-center justify-center hover:bg-emerald-700 transition-all shadow-xs shadow-emerald-500/30"
               title={collapsed ? "Perluas Sidebar" : "Ciutkan Sidebar"}
             >
               {collapsed ? (
@@ -358,7 +358,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
         {/* Brand Header with Easy Learning House Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 dark:border-[#1d2d5a] p-0.5 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 dark:border-[#1d2d5a] p-0.5 flex items-center justify-center shrink-0 shadow-xs">
             <img
               src="/logo.png"
               alt="Easy Learning House"
@@ -371,7 +371,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                 <span className="font-black text-slate-900 dark:text-white text-sm tracking-tight truncate">
                   Easy Learning
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-sky-300">
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                   v3.3
                 </span>
               </div>
@@ -384,14 +384,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
         {/* UTAMA vs WEBSITE Tab Switcher - Hanya untuk Super Admin */}
         {!collapsed && isSuperAdmin && (
-          <div className="bg-blue-50/70 dark:bg-[#0f1a36] p-1 rounded-xl grid grid-cols-2 text-xs font-bold text-slate-600 dark:text-slate-400 border border-blue-100/80 dark:border-[#1d2d5a]">
+          <div className="bg-emerald-50/70 dark:bg-[#0f1a36] p-1 rounded-xl grid grid-cols-2 text-xs font-bold text-slate-600 dark:text-slate-400 border border-emerald-100/80 dark:border-[#1d2d5a]">
             <button
               type="button"
               onClick={() => setActiveTab("UTAMA")}
               className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold ${
                 activeTab === "UTAMA"
-                  ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-xs shadow-blue-500/25"
-                  : "hover:text-blue-600 dark:hover:text-white"
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
+                  : "hover:text-emerald-600 dark:hover:text-white"
               }`}
             >
               UTAMA
@@ -401,8 +401,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
               onClick={() => setActiveTab("WEBSITE")}
               className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold ${
                 activeTab === "WEBSITE"
-                  ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-xs shadow-blue-500/25"
-                  : "hover:text-blue-600 dark:hover:text-white"
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
+                  : "hover:text-emerald-600 dark:hover:text-white"
               }`}
             >
               WEBSITE
@@ -432,8 +432,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                   title={item.name}
                   className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-md shadow-blue-500/25"
-                      : "text-slate-700 dark:text-slate-200 hover:bg-blue-50/70 dark:hover:bg-[#132042] hover:text-blue-700 dark:hover:text-white"
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/25"
+                      : "text-slate-700 dark:text-slate-200 hover:bg-emerald-50/70 dark:hover:bg-[#132042] hover:text-emerald-700 dark:hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-3 truncate">
@@ -448,7 +448,9 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                   {!collapsed && item.badge && (
                     <span
                       className={`px-2 py-0.5 text-[10px] rounded-full shrink-0 shadow-2xs ${
-                        item.badgeColor || "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                        isActive
+                          ? "bg-white/25 text-white font-extrabold"
+                          : item.badgeColor || "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
                       }`}
                     >
                       {item.badge}
@@ -462,9 +464,9 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
       </div>
 
       {/* User Profile Footer (Fixed at Bottom Left with Photo Profile) */}
-      <div className="p-3 border-t border-blue-100/80 dark:border-[#162244] bg-blue-50/40 dark:bg-[#070d1e] relative">
+      <div className="p-3 border-t border-emerald-100/80 dark:border-[#162244] bg-emerald-50/40 dark:bg-[#070d1e] relative">
         <div
-          className={`flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-[#0f1a36] border border-blue-100 dark:border-[#1d2d5a] shadow-xs ${
+          className={`flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-[#0f1a36] border border-emerald-100 dark:border-[#1d2d5a] shadow-xs ${
             collapsed ? "flex-col gap-2" : ""
           }`}
         >
@@ -473,9 +475,9 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
               <img
                 src={userPhoto}
                 alt={userName}
-                className="w-9 h-9 rounded-xl object-cover ring-2 ring-blue-500/30 shadow-xs"
+                className="w-9 h-9 rounded-xl object-cover ring-2 ring-emerald-500/30 shadow-xs"
               />
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white dark:ring-[#0f1a36]" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-600 ring-2 ring-white dark:ring-[#0f1a36]" />
             </div>
 
             {!collapsed && (
@@ -483,7 +485,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                 <div className="text-xs font-black text-slate-900 dark:text-white truncate">
                   {userName}
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-sky-400 font-bold truncate">
+                <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate">
                   <span>{isSuperAdmin ? "👑" : "🏢"}</span>
                   <span className="truncate">
                     {userRole} {allowedBranch ? `(${allowedBranch})` : "(Pusat)"}
@@ -497,14 +499,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
             <button
               type="button"
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="text-slate-400 hover:text-blue-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#132042] transition cursor-pointer"
+              className="text-slate-400 hover:text-emerald-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-[#132042] transition cursor-pointer"
               title="Menu Profil"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
 
             {showProfileMenu && (
-              <div className="absolute bottom-full right-0 mb-2 w-52 bg-white dark:bg-[#0f1a36] border border-blue-100 dark:border-[#1d2d5a] rounded-2xl shadow-xl py-1.5 z-50 text-xs font-medium animate-in fade-in">
+              <div className="absolute bottom-full right-0 mb-2 w-52 bg-white dark:bg-[#0f1a36] border border-emerald-100 dark:border-[#1d2d5a] rounded-2xl shadow-xl py-1.5 z-50 text-xs font-medium animate-in fade-in">
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-[#1d2d5a]">
                   <div className="font-bold text-slate-900 dark:text-white truncate">
                     {userName}
@@ -516,9 +518,9 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                 <Link
                   href="/dashboard/pengaturan"
                   onClick={() => setShowProfileMenu(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-[#132042] font-semibold transition"
+                  className="flex items-center gap-2 px-3 py-2 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-[#132042] font-semibold transition"
                 >
-                  <Settings className="w-3.5 h-3.5 text-blue-500" />
+                  <Settings className="w-3.5 h-3.5 text-emerald-600" />
                   Pengaturan Akun
                 </Link>
                 <button

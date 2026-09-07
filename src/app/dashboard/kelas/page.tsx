@@ -156,7 +156,7 @@ export default function KelasPage() {
 
         {/* Card 2: Siswa Terdaftar */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-sky-400 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <Users className="w-6 h-6" />
           </div>
           <div>
@@ -207,8 +207,8 @@ export default function KelasPage() {
             <option value="Bangko">Cabang Bangko</option>
           </select>
         ) : (
-          <div className="w-full sm:w-auto px-4 py-2 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 rounded-xl text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1.5 shrink-0">
-            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+          <div className="w-full sm:w-auto px-4 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
+            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
             <span>Cabang {allowedBranch}</span>
           </div>
         )}
@@ -227,7 +227,7 @@ export default function KelasPage() {
               {/* Card Header: Branch Badge & Actions */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                     CABANG {c.branch.toUpperCase()}
                   </span>
                   <div className="flex items-center gap-1">
@@ -246,7 +246,7 @@ export default function KelasPage() {
                           deleteClass(c.id);
                         }
                       }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                       title="Hapus Kelas"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -270,7 +270,7 @@ export default function KelasPage() {
                     <span>{c.time}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <User className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400 shrink-0" />
+                    <User className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>
                       Pengajar: <strong className="text-slate-800">{c.teacher}</strong>
                     </span>
@@ -293,13 +293,13 @@ export default function KelasPage() {
                 <div>
                   <div className="flex items-center justify-between text-[11px] font-bold mb-1">
                     <span className="text-slate-500">Terisi:</span>
-                    <span className="text-blue-700 dark:text-sky-300">
+                    <span className="text-emerald-700 dark:text-emerald-300">
                       {c.enrolledCount} / {c.maxCapacity} Siswa ({percent}%)
                     </span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                      className="h-full rounded-full bg-emerald-600 transition-all duration-500"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -349,7 +349,7 @@ export default function KelasPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Contoh: Kelas A1"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
 
@@ -359,7 +359,7 @@ export default function KelasPage() {
                     value={formData.branch}
                     disabled={!isSuperAdmin}
                     onChange={(e) => setFormData({ ...formData, branch: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                   >
                     <option value="Singkut">Singkut</option>
                     <option value="Bangko">Bangko</option>
@@ -376,7 +376,7 @@ export default function KelasPage() {
                     value={formData.days}
                     onChange={(e) => setFormData({ ...formData, days: e.target.value })}
                     placeholder="Contoh: Sabtu & Ahad"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
 
@@ -388,7 +388,7 @@ export default function KelasPage() {
                     value={formData.time}
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                     placeholder="Contoh: 14:00 - 15:30"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
               </div>
@@ -402,7 +402,7 @@ export default function KelasPage() {
                     value={formData.teacher}
                     onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
                     placeholder="Contoh: Febrianti Dewi, S.Pd"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
 
@@ -414,7 +414,7 @@ export default function KelasPage() {
                     value={formData.room}
                     onChange={(e) => setFormData({ ...formData, room: e.target.value })}
                     placeholder="Contoh: Ruang A1"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
               </div>
@@ -425,7 +425,7 @@ export default function KelasPage() {
                   <select
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   >
                     <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
                     <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan</option>
@@ -444,7 +444,7 @@ export default function KelasPage() {
                     required
                     value={formData.maxCapacity}
                     onChange={(e) => setFormData({ ...formData, maxCapacity: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -462,7 +462,7 @@ export default function KelasPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-extrabold cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-extrabold cursor-pointer transition-colors"
                 >
                   {editingClass ? "Simpan Perubahan" : "Buat Kelas"}
                 </button>

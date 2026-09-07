@@ -179,7 +179,7 @@ export default function KartuQrPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Kartu QR Presensi Siswa
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-sky-300 border border-blue-200 dark:border-blue-900/60 text-[10px] font-extrabold">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60 text-[10px] font-extrabold">
               Scannable QR ISO
             </span>
           </div>
@@ -191,7 +191,7 @@ export default function KartuQrPage() {
         <div className="flex items-center gap-2.5">
           <Link
             href="/dashboard/absensi?scan=true"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Camera className="w-4 h-4" />
             <span>Buka Scanner Presensi</span>
@@ -219,7 +219,7 @@ export default function KartuQrPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nama siswa atau ID kode kartu..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
@@ -235,8 +235,8 @@ export default function KartuQrPage() {
               <option value="Bangko">Cabang Bangko</option>
             </select>
           ) : (
-            <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 rounded-xl text-xs font-extrabold text-blue-700 dark:text-sky-300 flex items-center gap-1.5 shrink-0">
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
               <span>Cabang {allowedBranch}</span>
             </div>
           )}
@@ -271,13 +271,13 @@ export default function KartuQrPage() {
               {/* Header: ID code & Branch badge */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-extrabold text-blue-600 dark:text-sky-400 tracking-wider">
+                  <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 tracking-wider">
                     #{st.studentCode}
                   </span>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                       st.branch === "Singkut"
-                        ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                         : "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
                     }`}
                   >
@@ -287,7 +287,7 @@ export default function KartuQrPage() {
 
                 {/* Student Identification */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 font-extrabold text-sm flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-extrabold text-sm flex items-center justify-center shrink-0">
                     {st.name.charAt(0)}
                   </div>
                   <div className="overflow-hidden">
@@ -307,7 +307,7 @@ export default function KartuQrPage() {
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
                   Level: {st.levelCurriculum.split(":")[0]}
                 </div>
-                <div className="text-[10px] font-semibold text-blue-600 dark:text-sky-400 flex items-center gap-1 mt-0.5">
+                <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
                   <Clock className="w-3 h-3 shrink-0" />
                   <span className="truncate">{schedule}</span>
                 </div>
@@ -340,7 +340,7 @@ export default function KartuQrPage() {
                     setPreviewStudent(st);
                     setTimeout(() => window.print(), 200);
                   }}
-                  className="py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Cetak</span>
@@ -371,18 +371,18 @@ export default function KartuQrPage() {
             {/* Printable ID Card Mockup */}
             <div
               id="printable-card"
-              className="p-6 rounded-2xl bg-white text-slate-900 border-2 border-blue-600 shadow-md space-y-3"
+              className="p-6 rounded-2xl bg-white text-slate-900 border-2 border-emerald-600 shadow-md space-y-3"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <div className="flex items-center gap-2 text-xs font-black text-slate-900">
                   <img src="/logo.png" alt="Easy Learning House" className="w-8 h-8 object-contain" />
                   <div>
-                    <div className="leading-tight font-black text-blue-600">EASY LEARNING HOUSE</div>
+                    <div className="leading-tight font-black text-emerald-600">EASY LEARNING HOUSE</div>
                     <div className="text-[9px] font-bold text-slate-500">Math Fingers Jaritmatika</div>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Cabang {previewStudent.branch}
                 </span>
               </div>
@@ -394,7 +394,7 @@ export default function KartuQrPage() {
                 <div className="text-xs text-slate-500 font-mono">
                   ID: #{previewStudent.studentCode}
                 </div>
-                <div className="text-xs font-bold text-blue-600 mt-1">
+                <div className="text-xs font-bold text-emerald-600 mt-1">
                   {previewStudent.className}
                 </div>
                 <div className="text-[10px] text-slate-500 font-medium">
@@ -437,7 +437,7 @@ export default function KartuQrPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Cetak Kartu</span>

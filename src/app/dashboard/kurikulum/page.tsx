@@ -132,7 +132,7 @@ export default function KurikulumPage() {
           <button
             type="button"
             onClick={() => setIsResetConfirmOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#0f1a36] hover:bg-blue-50 dark:hover:bg-[#132042] text-xs font-bold text-blue-600 dark:text-sky-400 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-[#132042] text-xs font-bold text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer shadow-2xs"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Kosongkan Kurikulum
@@ -141,7 +141,7 @@ export default function KurikulumPage() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Tambah Materi Baru
@@ -173,12 +173,12 @@ export default function KurikulumPage() {
                     onClick={() => setSelectedModuleId(mod.id)}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
                       isSelected
-                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-500 dark:border-blue-500 shadow-xs"
+                        ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 dark:border-emerald-500 shadow-xs"
                         : "bg-white dark:bg-[#0f1a36] border-slate-200 dark:border-[#1d2d5a] hover:border-slate-300 dark:hover:border-slate-700"
                     }`}
                   >
                     {/* Red Square Number Badge */}
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                       {idx + 1}
                     </div>
 
@@ -204,7 +204,7 @@ export default function KurikulumPage() {
               {/* Header inside detail */}
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#1d2d5a] pb-4">
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900/60 text-[11px] font-bold text-blue-700 dark:text-sky-300">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/60 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
                     <BookOpen className="w-3.5 h-3.5" />
                     {activeModule.levelTitle}
                   </div>
@@ -226,7 +226,7 @@ export default function KurikulumPage() {
                   <button
                     type="button"
                     onClick={() => deleteCurriculumModule(activeModule.id)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
+                    className="p-2 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
                     title="Hapus Modul"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -237,7 +237,7 @@ export default function KurikulumPage() {
               {/* Section 1: CAPAIAN PEMBELAJARAN */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
                   CAPAIAN PEMBELAJARAN
                 </div>
                 <div className="p-4 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0b1329] text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
@@ -248,7 +248,7 @@ export default function KurikulumPage() {
               {/* Section 2: KOMPETENSI DASAR */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
                   KOMPETENSI DASAR
                 </div>
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line font-medium">
@@ -259,7 +259,7 @@ export default function KurikulumPage() {
               {/* Section 3: MATERI PEMBELAJARAN */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
                   MATERI PEMBELAJARAN
                 </div>
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line font-medium">
@@ -270,7 +270,7 @@ export default function KurikulumPage() {
               {/* Section 4: INDIKATOR PENCAPAIAN KOMPETENSI */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
                   INDIKATOR PENCAPAIAN KOMPETENSI
                 </div>
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] space-y-2.5">
@@ -279,7 +279,7 @@ export default function KurikulumPage() {
                       key={iIdx}
                       className="flex items-start gap-2.5 text-xs text-slate-800 dark:text-slate-200 font-medium"
                     >
-                      <Check className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                       <span>{ind}</span>
                     </div>
                   ))}
@@ -324,7 +324,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, levelTitle: e.target.value })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -340,7 +340,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, learningGoals: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -356,7 +356,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, competencies: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -372,7 +372,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, learningMaterials: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -387,7 +387,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, indicatorsText: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -401,7 +401,7 @@ export default function KurikulumPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold cursor-pointer transition-all shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold cursor-pointer transition-all shadow-xs"
                 >
                   Simpan Materi
                 </button>
@@ -440,7 +440,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, levelTitle: e.target.value })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -455,7 +455,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, learningGoals: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -470,7 +470,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, competencies: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -485,7 +485,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, learningMaterials: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -499,7 +499,7 @@ export default function KurikulumPage() {
                   onChange={(e) =>
                     setForm({ ...form, indicatorsText: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -513,7 +513,7 @@ export default function KurikulumPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold cursor-pointer transition-all shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold cursor-pointer transition-all shadow-xs"
                 >
                   Simpan Perubahan
                 </button>
@@ -527,7 +527,7 @@ export default function KurikulumPage() {
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-600 mx-auto flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 mx-auto flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -552,7 +552,7 @@ export default function KurikulumPage() {
                   resetCurriculumModules();
                   setIsResetConfirmOpen(false);
                 }}
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold"
               >
                 Ya, Kosongkan
               </button>

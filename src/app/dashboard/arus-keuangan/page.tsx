@@ -256,7 +256,7 @@ export default function ArusKeuanganPage() {
       {/* Main Header & Filter Dropdowns (Matching User Screenshot) */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-2xs">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
@@ -341,7 +341,7 @@ export default function ArusKeuanganPage() {
               onClick={() => setActiveSubTab(tab.id as any)}
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? "bg-blue-600 text-white shadow-xs"
+                  ? "bg-emerald-600 text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
               }`}
             >
@@ -354,8 +354,8 @@ export default function ArusKeuanganPage() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-blue-600" />
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           {toastMessage}
         </div>
       )}
@@ -375,7 +375,7 @@ export default function ArusKeuanganPage() {
                   Rp {saldoKasSaatIni.toLocaleString("id-ID")}
                 </div>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <Wallet className="w-5 h-5" />
               </div>
             </div>
@@ -386,11 +386,11 @@ export default function ArusKeuanganPage() {
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   PEMASUKAN BULAN INI
                 </div>
-                <div className="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400">
+                <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                   Rp {pemasukanBulanIni.toLocaleString("id-ID")}
                 </div>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <ArrowUpRight className="w-5 h-5" />
               </div>
             </div>
@@ -420,7 +420,7 @@ export default function ArusKeuanganPage() {
                   Rp {profitBersihBulanIni.toLocaleString("id-ID")}
                 </div>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2563eb] flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#2563eb] flex items-center justify-center shrink-0">
                 <TrendingUp className="w-5 h-5" />
               </div>
             </div>
@@ -467,7 +467,7 @@ export default function ArusKeuanganPage() {
                           {/* Blue Bar (Pemasukan) */}
                           <div
                             style={{ height: `${Math.max(incomeHeightPct, 6)}%` }}
-                            className="w-4 sm:w-6 bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 rounded-t-lg transition-all relative group cursor-pointer"
+                            className="w-4 sm:w-6 bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 rounded-t-lg transition-all relative group cursor-pointer"
                           >
                             <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-20 pointer-events-none transition-opacity">
                               Pemasukan: Rp {item.income.toLocaleString("id-ID")}
@@ -497,7 +497,7 @@ export default function ArusKeuanganPage() {
                 {/* Legend matching screenshot */}
                 <div className="flex items-center justify-center gap-6 pt-6">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    <span className="w-3 h-3 rounded-full bg-blue-600" />
+                    <span className="w-3 h-3 rounded-full bg-emerald-600" />
                     <span>Pemasukan</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
@@ -524,7 +524,7 @@ export default function ArusKeuanganPage() {
               <div className="space-y-3 pt-1">
                 {/* Insight 1: Sumber pemasukan terbesar */}
                 <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/50 dark:bg-[#0b1329] flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
                     <Info className="w-3.5 h-3.5" />
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -536,7 +536,7 @@ export default function ArusKeuanganPage() {
 
                 {/* Insight 2: Kategori pengeluaran terbesar */}
                 <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/50 dark:bg-[#0b1329] flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
                     <Info className="w-3.5 h-3.5" />
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -548,7 +548,7 @@ export default function ArusKeuanganPage() {
 
                 {/* Insight 3: Kondisi keuangan & rasio */}
                 <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/50 dark:bg-[#0b1329] flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
                     <Info className="w-3.5 h-3.5" />
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -577,7 +577,7 @@ export default function ArusKeuanganPage() {
             <button
               type="button"
               onClick={handleOpenAddIncome}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold cursor-pointer shadow-sm"
             >
               <Plus className="w-4 h-4" />
               Catat Pemasukan Baru
@@ -607,7 +607,7 @@ export default function ArusKeuanganPage() {
                           {t.date}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 text-[10px] font-bold">
                             {t.category}
                           </span>
                         </td>
@@ -616,14 +616,14 @@ export default function ArusKeuanganPage() {
                         </td>
                         <td className="py-3 px-4 text-slate-500">{t.branch}</td>
                         <td className="py-3 px-4 text-slate-500 italic">{t.title}</td>
-                        <td className="py-3 px-4 text-right font-extrabold text-blue-600">
+                        <td className="py-3 px-4 text-right font-extrabold text-emerald-600">
                           + Rp {t.amount.toLocaleString("id-ID")}
                         </td>
                         <td className="py-3 px-4 text-center">
                           <button
                             type="button"
                             onClick={() => deleteTransaction(t.id)}
-                            className="p-1 rounded text-slate-400 hover:text-blue-600"
+                            className="p-1 rounded text-slate-400 hover:text-emerald-600"
                             title="Hapus Transaksi"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -699,7 +699,7 @@ export default function ArusKeuanganPage() {
                           <button
                             type="button"
                             onClick={() => deleteTransaction(t.id)}
-                            className="p-1 rounded text-slate-400 hover:text-blue-600"
+                            className="p-1 rounded text-slate-400 hover:text-emerald-600"
                             title="Hapus Transaksi"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -764,7 +764,7 @@ export default function ArusKeuanganPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-slate-500">{row.branch}</td>
-                      <td className="py-3 px-4 text-right font-bold text-blue-600">
+                      <td className="py-3 px-4 text-right font-bold text-emerald-600">
                         {row.type === "INCOME"
                           ? `+ Rp ${row.amount.toLocaleString("id-ID")}`
                           : "-"}
@@ -819,7 +819,7 @@ export default function ArusKeuanganPage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white text-xs font-bold flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold flex items-center gap-1.5"
               >
                 <Printer className="w-3.5 h-3.5" />
                 Cetak Laporan PDF
@@ -836,19 +836,19 @@ export default function ArusKeuanganPage() {
               <div className="space-y-2">
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Penerimaan SPP Bulanan:</span>
-                  <span className="font-bold text-blue-600">Rp 600.000</span>
+                  <span className="font-bold text-emerald-600">Rp 600.000</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Iuran Pendaftaran Baru:</span>
-                  <span className="font-bold text-blue-600">Rp 200.000</span>
+                  <span className="font-bold text-emerald-600">Rp 200.000</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60 dark:border-[#1d2d5a]">
                   <span className="text-slate-600 dark:text-slate-400">Penjualan Buku & Modul:</span>
-                  <span className="font-bold text-blue-600">Rp 300.000</span>
+                  <span className="font-bold text-emerald-600">Rp 300.000</span>
                 </div>
                 <div className="flex justify-between pt-2 text-sm font-extrabold text-slate-900 dark:text-slate-100">
                   <span>Total Pemasukan:</span>
-                  <span className="text-blue-600">Rp {pemasukanBulanIni.toLocaleString("id-ID")}</span>
+                  <span className="text-emerald-600">Rp {pemasukanBulanIni.toLocaleString("id-ID")}</span>
                 </div>
               </div>
             </div>
@@ -914,7 +914,7 @@ export default function ArusKeuanganPage() {
                   required
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold"
                 />
               </div>
 
@@ -925,7 +925,7 @@ export default function ArusKeuanganPage() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold"
                 >
                   <option value="SPP">SPP Bulanan Siswa</option>
                   <option value="Pendaftaran">Uang Pendaftaran Siswa Baru</option>
@@ -946,7 +946,7 @@ export default function ArusKeuanganPage() {
                   onChange={(e) =>
                     setForm({ ...form, sourceOrRecipient: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -961,7 +961,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, branch: e.target.value as any })
                     }
-                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold ${
+                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold ${
                       allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
                     }`}
                   >
@@ -981,7 +981,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, amount: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-bold"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-bold"
                   />
                 </div>
               </div>
@@ -996,7 +996,7 @@ export default function ArusKeuanganPage() {
                   placeholder="Misal: Pelunasan SPP September 2026"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -1010,7 +1010,7 @@ export default function ArusKeuanganPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-500/20 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold"
                 >
                   Simpan Pemasukan
                 </button>
@@ -1053,7 +1053,7 @@ export default function ArusKeuanganPage() {
                   required
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold"
                 />
               </div>
 
@@ -1064,7 +1064,7 @@ export default function ArusKeuanganPage() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold"
                 >
                   <option value="Cetak buku">Cetak Buku & Modul</option>
                   <option value="Gaji Tutor">Honor / Gaji Tutor Pengajar</option>
@@ -1086,7 +1086,7 @@ export default function ArusKeuanganPage() {
                   onChange={(e) =>
                     setForm({ ...form, sourceOrRecipient: e.target.value })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -1101,7 +1101,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, branch: e.target.value as any })
                     }
-                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-semibold ${
+                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold ${
                       allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
                     }`}
                   >
@@ -1121,7 +1121,7 @@ export default function ArusKeuanganPage() {
                     onChange={(e) =>
                       setForm({ ...form, amount: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-bold text-emerald-600"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-bold text-emerald-600"
                   />
                 </div>
               </div>
@@ -1136,7 +1136,7 @@ export default function ArusKeuanganPage() {
                   placeholder="Misal: Biaya fotokopi lembar kerja kuis"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
