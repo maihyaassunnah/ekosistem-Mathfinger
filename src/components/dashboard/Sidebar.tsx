@@ -33,6 +33,7 @@ import {
   Globe,
   HeartHandshake,
   UserPlus,
+  BookText,
 } from "lucide-react";
 import { CURRENT_USER } from "@/lib/mock-data";
 import { useTheme } from "@/lib/theme";
@@ -161,6 +162,13 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           href: "/dashboard/rapor",
           icon: FileText,
           badge: null,
+        },
+        {
+          name: "Rapor Membaca",
+          href: "/dashboard/rapor-membaca",
+          icon: BookText,
+          badge: "Baru",
+          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
         },
       ],
     },

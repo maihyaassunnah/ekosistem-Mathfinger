@@ -26,6 +26,7 @@ export async function GET() {
         adminCount: b.users.length,
         monthlyRevenue: liveRevenue > 0 ? liveRevenue : defaultRevenue,
         status: b.status,
+        programs: (b.programs || "MATEMATIKA").split(",").map((p: string) => p.trim()),
       };
     });
 
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
         address: address || "-",
         phone: phone || "-",
         status: status === "INACTIVE" ? "INACTIVE" : "ACTIVE",
+        programs: Array.isArray(body.programs) ? body.programs.join(",") : (body.programs || "MATEMATIKA"),
       },
     });
 
@@ -76,6 +78,7 @@ export async function POST(req: Request) {
         adminCount: 0,
         monthlyRevenue: 0,
         status: created.status,
+        programs: (created.programs || "MATEMATIKA").split(",").map((p: string) => p.trim()),
       },
       { status: 201 }
     );
@@ -119,6 +122,9 @@ export async function PUT(req: Request) {
         ...(address !== undefined ? { address } : {}),
         ...(phone !== undefined ? { phone } : {}),
         ...(status ? { status: status === "INACTIVE" ? "INACTIVE" : "ACTIVE" } : {}),
+        ...(body.programs !== undefined
+          ? { programs: Array.isArray(body.programs) ? body.programs.join(",") : body.programs }
+          : {}),
       },
       include: {
         students: true,
@@ -155,6 +161,7 @@ export async function PUT(req: Request) {
       adminCount: updated.users.length,
       monthlyRevenue: liveRevenue,
       status: updated.status,
+      programs: (updated.programs || "MATEMATIKA").split(",").map((p: string) => p.trim()),
     });
   } catch (error: any) {
     console.error("Error updating branch:", error);

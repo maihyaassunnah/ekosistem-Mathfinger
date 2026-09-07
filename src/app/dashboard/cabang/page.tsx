@@ -62,6 +62,7 @@ export default function CabangDanAdminPage() {
     address: "",
     phone: "",
     status: "ACTIVE" as "ACTIVE" | "INACTIVE",
+    programs: ["MATEMATIKA"] as string[],
   });
 
   // Admin Form Modal State
@@ -86,6 +87,7 @@ export default function CabangDanAdminPage() {
       address: "",
       phone: "0812-",
       status: "ACTIVE",
+      programs: ["MATEMATIKA"],
     });
     setIsAddBranchOpen(true);
   };
@@ -98,6 +100,7 @@ export default function CabangDanAdminPage() {
       address: b.address,
       phone: b.phone,
       status: b.status,
+      programs: Array.isArray((b as any).programs) ? (b as any).programs : ["MATEMATIKA"],
     });
   };
 
@@ -577,6 +580,44 @@ export default function CabangDanAdminPage() {
                     <option value="ACTIVE">Aktif (Beroperasi)</option>
                     <option value="INACTIVE">Nonaktif (Tutup/Non-Aktif)</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Program Toggle */}
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-2">Program Les yang Tersedia</label>
+                <div className="flex gap-3">
+                  {[
+                    { key: "MATEMATIKA", label: "Les Matematika", emoji: "🔢" },
+                    { key: "MEMBACA", label: "Les Membaca", emoji: "📖" },
+                  ].map((prog) => {
+                    const isChecked = branchForm.programs.includes(prog.key);
+                    return (
+                      <button
+                        key={prog.key}
+                        type="button"
+                        onClick={() => {
+                          const current = branchForm.programs;
+                          if (isChecked && current.length === 1) return;
+                          setBranchForm({
+                            ...branchForm,
+                            programs: isChecked
+                              ? current.filter((p) => p !== prog.key)
+                              : [...current, prog.key],
+                          });
+                        }}
+                        className={`flex-1 flex items-center gap-2 p-3 rounded-xl border-2 font-bold text-sm transition-all cursor-pointer ${
+                          isChecked
+                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
+                            : "border-slate-200 dark:border-[#1d2d5a] text-slate-500 dark:text-slate-400 hover:border-emerald-300"
+                        }`}
+                      >
+                        <span className="text-lg">{prog.emoji}</span>
+                        <span>{prog.label}</span>
+                        {isChecked && <span className="ml-auto text-emerald-500">✓</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

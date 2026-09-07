@@ -27,6 +27,11 @@ enum CommonStatus {
   INACTIVE
 }
 
+enum ProgramType {
+  MATEMATIKA
+  MEMBACA
+}
+
 enum StudentStatus {
   ACTIVE
   INACTIVE
@@ -69,14 +74,16 @@ enum AttendanceStatus {
 // ----------------------------------------------------
 
 model Branch {
-  id          String       @id @default(uuid())
-  branchCode  String       @unique @map("branch_code")
-  branchName  String       @map("branch_name")
-  address     String       @db.Text
-  phone       String?
-  status      CommonStatus @default(ACTIVE)
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  id           String       @id @default(uuid())
+  branchCode   String       @unique @map("branch_code")
+  branchName   String       @map("branch_name")
+  address      String       @db.Text
+  phone        String?
+  status       CommonStatus @default(ACTIVE)
+  // Comma-separated program types e.g. "MATEMATIKA" or "MATEMATIKA,MEMBACA"
+  programs     String       @default("MATEMATIKA") @map("programs")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
 
   // Relations
   users           User[]
@@ -88,6 +95,7 @@ model Branch {
   grades          StudentGrade[]
   behaviors       StudentBehavior[]
   transactions    CashTransaction[]
+  readingGrades   ReadingGrade[]
 
   @@map("branches")
 }
@@ -151,6 +159,7 @@ model Student {
   parentName     String        @map("parent_name")
   parentWhatsapp String        @map("parent_whatsapp")
   currentLevelId String        @map("current_level_id")
+  programType    ProgramType   @default(MATEMATIKA) @map("program_type")
   status         StudentStatus @default(ACTIVE)
   registeredDate DateTime?     @default(now()) @map("registered_date")
   graduatedDate  DateTime?     @map("graduated_date")
@@ -165,6 +174,7 @@ model Student {
   grades          StudentGrade[]
   behaviors       StudentBehavior[]
   teacherJournals TeacherJournal[]
+  readingGrades   ReadingGrade[]
 
   @@map("students")
 }
@@ -337,6 +347,52 @@ model CashTransaction {
   branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
   @@map("cash_transactions")
+}
+
+// ----------------------------------------------------
+// C. READING PROGRAM MODELS (Les Membaca)
+// ----------------------------------------------------
+
+// ReadingLevel: Level progression for Les Membaca
+// e.g. Pra-Membaca → Mengenal Huruf → Suku Kata → Kata → Kalimat → Paragraf → Lancar
+model ReadingLevel {
+  id          String   @id @default(uuid())
+  levelName   String   @map("level_name")   // e.g. "Pra-Membaca"
+  description String?  @db.Text             // Deskripsi level
+  orderIndex  Int      @default(1) @map("order_index") // Urutan level
+  colorCode   String?  @map("color_code")   // HEX color for UI badge
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  readingGrades ReadingGrade[]
+
+  @@map("reading_levels")
+}
+
+// ReadingGrade: Progress rapor membaca per siswa
+model ReadingGrade {
+  id             String   @id @default(uuid())
+  studentId      String   @map("student_id")
+  branchId       String   @map("branch_id")
+  readingLevelId String   @map("reading_level_id")
+  assessmentDate DateTime @map("assessment_date")
+  teacherNotes   String?  @map("teacher_notes") @db.Text
+  // Sub-skills assessment (Sangat Baik / Baik / Cukup / Perlu Latihan)
+  kelancaran     String   @default("Baik")  // Kelancaran membaca
+  pemahaman      String   @default("Baik")  // Pemahaman bacaan
+  pelafalan      String   @default("Baik")  // Pelafalan / Intonasi
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  branch       Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  readingLevel ReadingLevel @relation(fields: [readingLevelId], references: [id])
+
+  @@index([studentId, assessmentDate])
+  @@index([branchId])
+  @@map("reading_grades")
 }
 
 // ----------------------------------------------------

@@ -80,6 +80,7 @@ export default function SiswaPage() {
     parentWhatsapp: "",
     levelCurriculum: "Level Dasar: Pengenalan Simbol Jari",
     registeredDate: new Date().toISOString().split("T")[0],
+    programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
   });
 
   // Filter & Sort Logic
@@ -118,6 +119,7 @@ export default function SiswaPage() {
       parentWhatsapp: "0812-",
       levelCurriculum: "Level Dasar: Pengenalan Simbol Jari",
       registeredDate: new Date().toISOString().split("T")[0],
+      programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
     });
     setIsAddOpen(true);
   };
@@ -139,6 +141,7 @@ export default function SiswaPage() {
       parentWhatsapp: st.parentWhatsapp,
       levelCurriculum: st.levelCurriculum,
       registeredDate: st.registeredDate,
+      programType: ((st as any).programType || "MATEMATIKA") as "MATEMATIKA" | "MEMBACA",
     });
   };
 
@@ -628,6 +631,30 @@ export default function SiswaPage() {
                   <option value="Level 3: Kombinasi Rumus Teman Besar">Level 3: Kombinasi Rumus Teman Besar</option>
                   <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
                 </select>
+              </div>
+
+              {/* Program Type */}
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Program Les</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: "MATEMATIKA", label: "Les Matematika" },
+                    { key: "MEMBACA", label: "Les Membaca" },
+                  ].map((prog) => (
+                    <button
+                      key={prog.key}
+                      type="button"
+                      onClick={() => setForm({ ...form, programType: prog.key as "MATEMATIKA" | "MEMBACA" })}
+                      className={`py-2.5 px-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
+                        form.programType === prog.key
+                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
+                          : "border-slate-200 dark:border-[#1d2d5a] text-slate-500 dark:text-slate-400 hover:border-emerald-300"
+                      }`}
+                    >
+                      {prog.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="pt-3 flex gap-3">

@@ -28,6 +28,7 @@ export interface BranchItem {
   adminCount: number;
   monthlyRevenue: number;
   status: "ACTIVE" | "INACTIVE";
+  programs?: string[]; // e.g. ["MATEMATIKA"] or ["MATEMATIKA", "MEMBACA"]
 }
 
 export const CURRENT_USER = {

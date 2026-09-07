@@ -17,9 +17,11 @@ export async function GET() {
       index: idx + 1,
       studentCode: s.studentCode,
       name: s.studentName,
+      studentName: s.studentName,
       gender: (s.gender as "P" | "L") || (s.qrIdentifier?.includes("P") ? "P" : "L"),
       codeLabel: s.gender === "L" ? "6L" : "8P",
       branch: (s.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+      branchId: s.branchId,
       className: s.className || "Kelas A",
       birthPlace: s.birthPlace || "Singkut",
       birthDate: s.birthDate || "2018-01-01",
@@ -30,6 +32,7 @@ export async function GET() {
       levelCurriculum: s.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari",
       registeredDate: s.registeredDate ? s.registeredDate.toISOString().split("T")[0] : s.createdAt.toISOString().split("T")[0],
       status: s.status,
+      programType: s.programType || "MATEMATIKA",
     }));
 
     return NextResponse.json(formatted);
@@ -94,6 +97,7 @@ export async function POST(req: Request) {
         branchId: branch!.id,
         currentLevelId: level!.id,
         registeredDate: body.registeredDate ? new Date(body.registeredDate) : new Date(),
+        programType: (body.programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA") as any,
       },
       include: {
         branch: true,
@@ -106,9 +110,11 @@ export async function POST(req: Request) {
       index: 1,
       studentCode: created.studentCode,
       name: created.studentName,
+      studentName: created.studentName,
       gender: (created.gender as "P" | "L") || "P",
       codeLabel: created.gender === "L" ? "6L" : "8P",
       branch: created.branch?.branchName || "Singkut",
+      branchId: created.branchId,
       className: created.className || "Kelas A",
       birthPlace: created.birthPlace || "-",
       birthDate: created.birthDate || "-",
@@ -119,6 +125,7 @@ export async function POST(req: Request) {
       levelCurriculum: created.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari",
       registeredDate: created.registeredDate ? created.registeredDate.toISOString().split("T")[0] : created.createdAt.toISOString().split("T")[0],
       status: created.status,
+      programType: created.programType || "MATEMATIKA",
     };
 
     return NextResponse.json(formatted, { status: 201 });
