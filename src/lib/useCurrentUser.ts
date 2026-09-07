@@ -14,7 +14,7 @@ export interface CurrentUserInfo {
   isBranchAdmin: boolean;
   isBranchAssistant: boolean;
   isTutor: boolean;
-  allowedBranch: "Singkut" | "Bangko" | null;
+  allowedBranch: string | null;
   canAccess: (pathname: string) => boolean;
 }
 
@@ -56,9 +56,11 @@ export function useCurrentUser(): CurrentUserInfo {
     !isBranchAssistant &&
     (rawRole === "TUTOR" || rawRole === "Tutor" || rawRole === "Pengajar");
 
-  let allowedBranch: "Singkut" | "Bangko" | null = null;
+  let allowedBranch: string | null = null;
   if (!isSuperAdmin) {
-    if (rawBranch.toLowerCase().includes("bangko") || rawEmail.toLowerCase().includes("bangko")) {
+    if (rawBranch && !rawBranch.toLowerCase().includes("pusat") && !rawBranch.toLowerCase().includes("semua")) {
+      allowedBranch = rawBranch.replace(/^Cabang\s+/i, "").trim();
+    } else if (rawEmail.toLowerCase().includes("bangko")) {
       allowedBranch = "Bangko";
     } else {
       allowedBranch = "Singkut";

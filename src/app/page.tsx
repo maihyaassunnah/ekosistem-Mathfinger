@@ -83,6 +83,7 @@ export default function Home() {
     addLandingLead,
     landingPartners,
     students,
+    branches,
   } = useAppStore();
 
   // Dropdown Submenus & Mobile Accordion States
@@ -1734,13 +1735,23 @@ export default function Home() {
                         onChange={(e) =>
                           setTrialForm({
                             ...trialForm,
-                            branch: e.target.value as "Singkut" | "Bangko",
+                            branch: e.target.value as any,
                           })
                         }
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                       >
-                        <option value="Singkut">Cabang Singkut (Sarolangun)</option>
-                        <option value="Bangko">Cabang Bangko (Merangin)</option>
+                        {branches && branches.length > 0 ? (
+                          branches.map((b) => (
+                            <option key={b.id} value={b.name}>
+                              Cabang {b.name}
+                            </option>
+                          ))
+                        ) : (
+                          <>
+                            <option value="Singkut">Cabang Singkut</option>
+                            <option value="Bangko">Cabang Bangko</option>
+                          </>
+                        )}
                       </select>
                     </div>
                   </div>

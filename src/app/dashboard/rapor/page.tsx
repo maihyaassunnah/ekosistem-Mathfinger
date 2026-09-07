@@ -89,7 +89,7 @@ export default function RaporPage() {
         id: "j-fallback-1",
         studentName: activeStudent.name,
         className: activeStudent.className,
-        branch: "Singkut" as const,
+        branch: (activeStudent.branch || "Singkut") as any,
         topic: "Pengurangan (jari turun)",
         content:
           "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
@@ -101,7 +101,7 @@ export default function RaporPage() {
         id: "j-fallback-2",
         studentName: activeStudent.name,
         className: activeStudent.className,
-        branch: "Singkut" as const,
+        branch: (activeStudent.branch || "Singkut") as any,
         topic: "Welcome to level 1",
         content:
           "Ananda menunjukkan perkembangan yang sangat baik. Meskipun baru pertama kali mengikuti pembelajaran, Ananda sudah sangat menguasai simbol jari dan mampu mengerjakan beberapa soal Level 1 dengan cepat. InsyaAllah, pada pertemuan berikutnya Ananda sudah siap mengikuti pembelajaran Level 1 bersama teman-teman.",

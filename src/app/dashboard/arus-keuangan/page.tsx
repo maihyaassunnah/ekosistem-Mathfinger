@@ -37,8 +37,8 @@ export default function ArusKeuanganPage() {
 
   // Filter Bar
   const [selectedMonth, setSelectedMonth] = useState("ALL");
-  const [selectedBranch, setSelectedBranch] = useState<"ALL" | "Singkut" | "Bangko">(
-    (allowedBranch || "ALL") as "ALL" | "Singkut" | "Bangko"
+  const [selectedBranch, setSelectedBranch] = useState<string>(
+    allowedBranch || "ALL"
   );
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -177,7 +177,7 @@ export default function ArusKeuanganPage() {
       category: "SPP",
       title: "Pembayaran SPP Siswa",
       amount: 150000,
-      branch: (allowedBranch || (selectedBranch === "ALL" ? "Singkut" : selectedBranch)) as "Singkut" | "Bangko",
+      branch: (allowedBranch || (selectedBranch === "ALL" ? (branches[0]?.name || "Singkut") : selectedBranch)) as any,
       sourceOrRecipient: "",
       notes: "Iuran SPP bulanan",
     });
@@ -190,7 +190,7 @@ export default function ArusKeuanganPage() {
       category: "Operasional & ATK",
       title: "Pengadaan Operasional Cabang",
       amount: 75000,
-      branch: (allowedBranch || (selectedBranch === "ALL" ? "Singkut" : selectedBranch)) as "Singkut" | "Bangko",
+      branch: (allowedBranch || (selectedBranch === "ALL" ? (branches[0]?.name || "Singkut") : selectedBranch)) as any,
       sourceOrRecipient: "Vendor Toko ATK",
       notes: "Kebutuhan kertas & spidol",
     });
@@ -965,8 +965,11 @@ export default function ArusKeuanganPage() {
                       allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
                     }`}
                   >
-                    <option value="Singkut">Singkut</option>
-                    <option value="Bangko">Bangko</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -1105,8 +1108,11 @@ export default function ArusKeuanganPage() {
                       allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
                     }`}
                   >
-                    <option value="Singkut">Singkut</option>
-                    <option value="Bangko">Bangko</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

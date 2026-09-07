@@ -20,8 +20,8 @@ import { useAppStore, CashMutationItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function RiwayatSppPage() {
-  const { students, invoices, cashMutations } = useAppStore();
-  const { allowedBranch } = useCurrentUser();
+  const { students, invoices, cashMutations, branches } = useAppStore();
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [activeSubTab, setActiveSubTab] = useState<"buku_besar" | "leger">(
     "buku_besar"
@@ -29,24 +29,36 @@ export default function RiwayatSppPage() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
+  const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
   const [selectedStudent, setSelectedStudent] = useState("ALL");
   const [selectedMethod, setSelectedMethod] = useState("ALL");
 
   // Scoped Data by Branch
   const scopedStudents = useMemo(() => {
-    if (!allowedBranch) return students;
-    return students.filter((s) => s.branch === allowedBranch);
-  }, [students, allowedBranch]);
+    if (allowedBranch) return students.filter((s) => s.branch === allowedBranch);
+    if (branchFilter !== "ALL") return students.filter((s) => s.branch === branchFilter);
+    return students;
+  }, [students, allowedBranch, branchFilter]);
 
   const scopedInvoices = useMemo(() => {
-    if (!allowedBranch) return invoices;
-    return invoices.filter((i) => {
-      const st = students.find(
-        (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
-      );
-      return st?.branch === allowedBranch;
-    });
-  }, [invoices, students, allowedBranch]);
+    let list = invoices;
+    if (allowedBranch) {
+      list = list.filter((i) => {
+        const st = students.find(
+          (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
+        );
+        return st?.branch === allowedBranch || i.branch === allowedBranch;
+      });
+    } else if (branchFilter !== "ALL") {
+      list = list.filter((i) => {
+        const st = students.find(
+          (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
+        );
+        return st?.branch === branchFilter || i.branch === branchFilter;
+      });
+    }
+    return list;
+  }, [invoices, students, allowedBranch, branchFilter]);
 
   const scopedMutations = useMemo(() => {
     if (!allowedBranch) return cashMutations;
@@ -266,6 +278,21 @@ export default function RiwayatSppPage() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              {isSuperAdmin && (
+                <select
+                  value={branchFilter}
+                  onChange={(e) => setBranchFilter(e.target.value)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="ALL">Semua Cabang</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.name}>
+                      Cabang {b.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               <select
                 value={selectedStudent}
                 onChange={(e) => setSelectedStudent(e.target.value)}

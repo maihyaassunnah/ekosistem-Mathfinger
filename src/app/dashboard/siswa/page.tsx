@@ -24,7 +24,7 @@ import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function SiswaPage() {
-  const { students, addStudent, updateStudent, deleteStudent, classes, refreshData } = useAppStore();
+  const { students, addStudent, updateStudent, deleteStudent, classes, branches, refreshData } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [isSyncing, setIsSyncing] = useState(false);
@@ -242,8 +242,11 @@ export default function SiswaPage() {
             className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
           >
             <option value="ALL">Semua Cabang</option>
-            <option value="Singkut">Singkut</option>
-            <option value="Bangko">Bangko</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.name}>
+                Cabang {b.name}
+              </option>
+            ))}
           </select>
         ) : (
           <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
@@ -528,8 +531,11 @@ export default function SiswaPage() {
                     onChange={(e) => setForm({ ...form, branch: e.target.value as any })}
                     className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                   >
-                    <option value="Singkut">Singkut</option>
-                    <option value="Bangko">Bangko</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        Cabang {b.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>

@@ -22,7 +22,7 @@ import { useAppStore, ClassItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function KelasPage() {
-  const { classes, addClass, updateClass, deleteClass, students } = useAppStore();
+  const { classes, addClass, updateClass, deleteClass, students, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [search, setSearch] = useState("");
@@ -203,8 +203,11 @@ export default function KelasPage() {
             className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
           >
             <option value="ALL">Semua Cabang</option>
-            <option value="Singkut">Cabang Singkut</option>
-            <option value="Bangko">Cabang Bangko</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.name}>
+                Cabang {b.name}
+              </option>
+            ))}
           </select>
         ) : (
           <div className="w-full sm:w-auto px-4 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
@@ -361,8 +364,11 @@ export default function KelasPage() {
                     onChange={(e) => setFormData({ ...formData, branch: e.target.value as any })}
                     className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                   >
-                    <option value="Singkut">Singkut</option>
-                    <option value="Bangko">Bangko</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

@@ -93,16 +93,30 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    const { id, name, days, time, teacher, room, level, maxCapacity } = body;
+    const { id, name, branch, days, time, teacher, room, level, maxCapacity } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID kelas diperlukan" }, { status: 400 });
+    }
+
+    let branchId: string | undefined = undefined;
+    if (branch) {
+      const cleanBranch = branch.replace(/^Cabang\s+/i, "").trim();
+      const b =
+        (await prisma.branch.findFirst({
+          where: { branchName: { equals: cleanBranch, mode: "insensitive" } },
+        })) ||
+        (await prisma.branch.findFirst({
+          where: { branchName: { contains: cleanBranch, mode: "insensitive" } },
+        }));
+      if (b) branchId = b.id;
     }
 
     const updated = await prisma.class.update({
       where: { id },
       data: {
         ...(name ? { className: name } : {}),
+        ...(branchId ? { branchId } : {}),
         ...(days ? { days } : {}),
         ...(time ? { time } : {}),
         ...(teacher ? { teacherName: teacher } : {}),

@@ -80,7 +80,7 @@ function StudentQrImage({
 }
 
 export default function KartuQrPage() {
-  const { students, classes } = useAppStore();
+  const { students, classes, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const [search, setSearch] = useState("");
@@ -231,8 +231,11 @@ export default function KartuQrPage() {
               className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
             >
               <option value="ALL">Semua Cabang</option>
-              <option value="Singkut">Cabang Singkut</option>
-              <option value="Bangko">Cabang Bangko</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.name}>
+                  Cabang {b.name}
+                </option>
+              ))}
             </select>
           ) : (
             <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">

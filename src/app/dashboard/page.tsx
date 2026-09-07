@@ -54,13 +54,13 @@ export default function DashboardPage() {
   const currentUser = useCurrentUser();
   const { isSuperAdmin, allowedBranch } = currentUser;
 
-  const [selectedBranch, setSelectedBranch] = useState<"ALL" | "Singkut" | "Bangko">(
+  const [selectedBranch, setSelectedBranch] = useState<string>(
     allowedBranch || "ALL"
   );
 
   // Mobile/Tablet specific state
-  const [mobileBranch, setMobileBranch] = useState<"Singkut" | "Bangko">(
-    allowedBranch || "Singkut"
+  const [mobileBranch, setMobileBranch] = useState<string>(
+    allowedBranch || (branches[0]?.name || "Singkut")
   );
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -371,38 +371,25 @@ export default function DashboardPage() {
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
                   Pilih Cabang Aktif
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileBranch("Singkut");
-                    setSelectedBranch("Singkut");
-                    setShowBranchPicker(false);
-                  }}
-                  className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
-                    mobileBranch === "Singkut"
-                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                  }`}
-                >
-                  <span>Cabang Singkut</span>
-                  {mobileBranch === "Singkut" && <Check className="w-3.5 h-3.5 text-emerald-600" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileBranch("Bangko");
-                    setSelectedBranch("Bangko");
-                    setShowBranchPicker(false);
-                  }}
-                  className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
-                    mobileBranch === "Bangko"
-                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                  }`}
-                >
-                  <span>Cabang Bangko</span>
-                  {mobileBranch === "Bangko" && <Check className="w-3.5 h-3.5 text-emerald-600" />}
-                </button>
+                {branches.map((b) => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => {
+                      setMobileBranch(b.name);
+                      setSelectedBranch(b.name);
+                      setShowBranchPicker(false);
+                    }}
+                    className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
+                      mobileBranch === b.name
+                        ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    <span>Cabang {b.name}</span>
+                    {mobileBranch === b.name && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -711,31 +698,21 @@ export default function DashboardPage() {
                       Semua Cabang (Pusat)
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setSelectedBranch("Singkut")}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        selectedBranch === "Singkut"
-                          ? "bg-emerald-600 text-white shadow-md scale-105"
-                          : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
-                      }`}
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      Singkut
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedBranch("Bangko")}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        selectedBranch === "Bangko"
-                          ? "bg-emerald-600 text-white shadow-md scale-105"
-                          : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
-                      }`}
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      Bangko
-                    </button>
+                    {branches.map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => setSelectedBranch(b.name)}
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          selectedBranch === b.name
+                            ? "bg-emerald-600 text-white shadow-md scale-105"
+                            : "bg-slate-800/90 border border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        {b.name}
+                      </button>
+                    ))}
 
                     <Link
                       href="/dashboard/cabang"

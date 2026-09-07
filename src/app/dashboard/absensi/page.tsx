@@ -48,6 +48,7 @@ function AbsensiContent() {
     addAttendanceRecord,
     updateAttendanceRecord,
     deleteAttendanceRecord,
+    branches,
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<"HARI_INI" | "REKAP">("HARI_INI");
@@ -1476,8 +1477,11 @@ function AbsensiContent() {
                   className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
                 >
                   <option value="ALL">Semua Cabang</option>
-                  <option value="Singkut">Cabang Singkut</option>
-                  <option value="Bangko">Cabang Bangko</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.name}>
+                      Cabang {b.name}
+                    </option>
+                  ))}
                 </select>
               ) : (
                 <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">

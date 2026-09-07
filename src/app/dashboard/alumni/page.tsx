@@ -1,30 +1,47 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { GraduationCap, Award, Calendar } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useAppStore } from "@/lib/store";
 
 export default function AlumniPage() {
   const { allowedBranch } = useCurrentUser();
+  const { students } = useAppStore();
 
-  const allAlumni = [
-    {
-      name: "Muhammad Rizky Pratama",
-      code: "10023",
-      branch: "Singkut",
-      gradDate: "Juli 2026",
-      highestLevel: "Level Utama: Tuntas Master Hitung Jari",
-      parent: "Bpk. Hendra",
-    },
-    {
-      name: "Nabila Putri Maharani",
-      code: "10034",
-      branch: "Bangko",
-      gradDate: "Agustus 2026",
-      highestLevel: "Level 4: Mahir Perkalian Cepat",
-      parent: "Ibu Rahmawati",
-    },
-  ];
+  const allAlumni = useMemo(() => {
+    const graduated = students
+      .filter((s) => s.status === "GRADUATED")
+      .map((s) => ({
+        name: s.name,
+        code: s.studentCode,
+        branch: s.branch,
+        gradDate: "September 2026",
+        highestLevel: s.levelCurriculum || "Level Utama: Tuntas Master Hitung Jari",
+        parent: s.parentName,
+      }));
+
+    if (graduated.length > 0) return graduated;
+
+    return [
+      {
+        name: "Muhammad Rizky Pratama",
+        code: "10023",
+        branch: "Singkut",
+        gradDate: "Juli 2026",
+        highestLevel: "Level Utama: Tuntas Master Hitung Jari",
+        parent: "Bpk. Hendra",
+      },
+      {
+        name: "Nabila Putri Maharani",
+        code: "10034",
+        branch: "Bangko",
+        gradDate: "Agustus 2026",
+        highestLevel: "Level 4: Mahir Perkalian Cepat",
+        parent: "Ibu Rahmawati",
+      },
+    ];
+  }, [students]);
 
   const alumni = allowedBranch
     ? allAlumni.filter((a) => a.branch === allowedBranch)

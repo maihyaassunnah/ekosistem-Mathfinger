@@ -108,6 +108,9 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Cabang tidak ditemukan" }, { status: 404 });
     }
 
+    const oldName = branch.branchName;
+    const isNameChanged = name && name !== oldName;
+
     const updated = await prisma.branch.update({
       where: { id: branch.id },
       data: {
@@ -123,6 +126,22 @@ export async function PUT(req: Request) {
         invoices: { where: { status: "PAID" } },
       },
     });
+
+    if (isNameChanged) {
+      // Synchronize string-referenced branch names in website testimonials and leads
+      try {
+        await prisma.websiteTestimonial.updateMany({
+          where: { branch: { in: [oldName, `Cabang ${oldName}`] } },
+          data: { branch: `Cabang ${name}` },
+        });
+        await prisma.websiteLead.updateMany({
+          where: { branch: { in: [oldName, `Cabang ${oldName}`] } },
+          data: { branch: name },
+        });
+      } catch (cascadeError) {
+        console.warn("Notice: optional website records branch cascade skipped:", cascadeError);
+      }
+    }
 
     const liveRevenue = updated.invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
 

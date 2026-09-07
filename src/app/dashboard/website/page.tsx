@@ -63,6 +63,7 @@ function WebsiteManagementContent() {
     addLandingPartner,
     updateLandingPartner,
     deleteLandingPartner,
+    branches,
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<string>(initialTab);
@@ -979,8 +980,11 @@ function WebsiteManagementContent() {
                         }
                         className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                       >
-                        <option value="Cabang Singkut">Cabang Singkut</option>
-                        <option value="Cabang Bangko">Cabang Bangko</option>
+                        {branches.map((b) => (
+                          <option key={b.id} value={`Cabang ${b.name}`}>
+                            Cabang {b.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -1060,8 +1064,11 @@ function WebsiteManagementContent() {
                 className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
               >
                 <option value="Semua">Semua Cabang</option>
-                <option value="Singkut">Cabang Singkut</option>
-                <option value="Bangko">Cabang Bangko</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.name}>
+                    Cabang {b.name}
+                  </option>
+                ))}
               </select>
 
               <select

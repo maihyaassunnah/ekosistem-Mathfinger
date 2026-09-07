@@ -20,28 +20,40 @@ import {
   X,
   CheckCircle2,
   AlertTriangle,
+  MapPin,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, InvoiceItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function SppPage() {
-  const { students, invoices, addInvoice, updateInvoiceStatus, deleteInvoice } =
+  const { students, invoices, addInvoice, updateInvoiceStatus, deleteInvoice, branches } =
     useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
+  const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
+
   const scopedStudents = useMemo(() => {
-    return allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
-  }, [students, allowedBranch]);
+    if (allowedBranch) return students.filter((s) => s.branch === allowedBranch);
+    if (branchFilter !== "ALL") return students.filter((s) => s.branch === branchFilter);
+    return students;
+  }, [students, allowedBranch, branchFilter]);
 
   const scopedInvoices = useMemo(() => {
-    return allowedBranch
-      ? invoices.filter((inv) => {
-          const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
-          return st?.branch === allowedBranch;
-        })
-      : invoices;
-  }, [invoices, students, allowedBranch]);
+    let list = invoices;
+    if (allowedBranch) {
+      list = list.filter((inv) => {
+        const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+        return st?.branch === allowedBranch || inv.branch === allowedBranch;
+      });
+    } else if (branchFilter !== "ALL") {
+      list = list.filter((inv) => {
+        const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+        return st?.branch === branchFilter || inv.branch === branchFilter;
+      });
+    }
+    return list;
+  }, [invoices, students, allowedBranch, branchFilter]);
 
   const [activeSubTab, setActiveSubTab] = useState<
     "pendaftaran" | "spp" | "buku" | "pengingat"
@@ -326,6 +338,26 @@ export default function SppPage() {
           />
         </div>
 
+        {isSuperAdmin ? (
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="ALL">Semua Cabang</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.name}>
+                Cabang {b.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Cabang {allowedBranch}</span>
+          </div>
+        )}
+
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -375,7 +407,12 @@ export default function SppPage() {
                       </td>
 
                       <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
-                        {inv.studentName}
+                        <div className="flex items-center gap-2">
+                          <span>{inv.studentName}</span>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                            Cabang {inv.branch || students.find((s) => s.id === inv.studentId)?.branch || "Singkut"}
+                          </span>
+                        </div>
                       </td>
 
                       <td className="py-3.5 px-4">

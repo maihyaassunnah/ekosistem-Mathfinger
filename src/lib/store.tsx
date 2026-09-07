@@ -95,6 +95,7 @@ export interface InvoiceItem {
   invoiceNo: string;
   studentId: string;
   studentName: string;
+  branch?: string;
   period: string;
   dueDate: string;
   amount: number;
@@ -1786,21 +1787,62 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       return updatedList;
     });
 
-    // Automatically cascade branch name change to associated students, classes, and admins
+    // Automatically cascade branch name change to associated students, classes, invoices, admins, finances, journals, etc.
     if (updated.name && oldName && updated.name !== oldName) {
       const newName = updated.name;
-      setStudents((prev) =>
-        prev.map((s) => (s.branch === oldName ? { ...s, branch: newName as any } : s))
-      );
-      setClasses((prev) =>
-        prev.map((c) => (c.branch === oldName ? { ...c, branch: newName as any } : c))
-      );
-      setBranchAdmins((prev) =>
-        prev.map((a) => (a.branchName === oldName ? { ...a, branchName: newName as any } : a))
-      );
-      setTransactions((prev) =>
-        prev.map((t) => (t.branch === oldName ? { ...t, branch: newName as any } : t))
-      );
+      setStudents((prev) => {
+        const list = prev.map((s) => (s.branch === oldName ? { ...s, branch: newName as any } : s));
+        save("mf_students", list);
+        return list;
+      });
+      setClasses((prev) => {
+        const list = prev.map((c) => (c.branch === oldName ? { ...c, branch: newName as any } : c));
+        save("mf_classes", list);
+        return list;
+      });
+      setInvoices((prev) => {
+        const list = prev.map((inv) => (inv.branch === oldName ? { ...inv, branch: newName as any } : inv));
+        save("mf_invoices", list);
+        return list;
+      });
+      setBranchAdmins((prev) => {
+        const list = prev.map((a) => {
+          if (a.branchName === oldName || a.branchName === `Cabang ${oldName}`) {
+            return { ...a, branchName: newName as any };
+          }
+          return a;
+        });
+        save("mf_branchAdmins", list);
+        return list;
+      });
+      setTransactions((prev) => {
+        const list = prev.map((t) => (t.branch === oldName ? { ...t, branch: newName as any } : t));
+        save("mf_transactions", list);
+        return list;
+      });
+      setJournals((prev) => {
+        const list = prev.map((j) => (j.branch === oldName ? { ...j, branch: newName as any } : j));
+        save("mf_journals", list);
+        return list;
+      });
+      setAttendances((prev) => {
+        const updatedAtt: Record<string, AttendanceItem> = {};
+        Object.entries(prev).forEach(([key, val]) => {
+          updatedAtt[key] = val.branch === oldName ? { ...val, branch: newName as any } : val;
+        });
+        save("mf_attendances", updatedAtt);
+        return updatedAtt;
+      });
+      setLandingLeads((prev) => {
+        const list = prev.map((l) => (l.branch === oldName ? { ...l, branch: newName as any } : l));
+        save("mf_landing_leads", list);
+        return list;
+      });
+      setLandingTestimonials((prev) => {
+        const list = prev.map((t) => (t.branch.includes(oldName) ? { ...t, branch: `Cabang ${newName}` } : t));
+        save("mf_landing_testi", list);
+        return list;
+      });
     }
 
     fetch("/api/branches", {
