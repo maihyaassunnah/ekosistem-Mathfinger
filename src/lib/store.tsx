@@ -1529,8 +1529,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       ] = results.map((res) => (res.status === "fulfilled" ? res.value : null));
 
       if (Array.isArray(studentsRes) && studentsRes.length > 0) {
-        setStudents(studentsRes);
-        save("mf_students", studentsRes);
+        setStudents((prev) => {
+          const pendingTemps = prev.filter((s) => s.id.startsWith("s-"));
+          const serverIds = new Set(studentsRes.map((s) => s.id));
+          const uniquePending = pendingTemps.filter((s) => !serverIds.has(s.id));
+          const merged = [...uniquePending, ...studentsRes];
+          save("mf_students", merged);
+          return merged;
+        });
       }
       if (Array.isArray(branchesRes) && branchesRes.length > 0) {
         setBranches(branchesRes);
@@ -1761,10 +1767,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         const err = await res.json().catch(() => ({}));
-        console.error("Failed to add student to PostgreSQL:", err);
+        console.warn("Sinkronisasi student ke database server tertunda:", err);
       }
     } catch (err) {
-      console.error("Error saving student to PostgreSQL:", err);
+      console.warn("Sinkronisasi student ke database tersimpan di penyimpanan lokal:", err);
     }
     return newSt;
   };

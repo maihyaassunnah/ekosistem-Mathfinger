@@ -13,7 +13,13 @@ async function main() {
     where: { branchName: { contains: "Singkut", mode: "insensitive" } },
   });
   const bangko = await prisma.branch.findFirst({
-    where: { branchName: { contains: "Bangko", mode: "insensitive" } },
+    where: {
+      OR: [
+        { branchName: { contains: "Bangko", mode: "insensitive" } },
+        { branchName: { contains: "Tabir", mode: "insensitive" } },
+        { branchCode: "BGK" },
+      ],
+    },
   });
 
   if (!singkut || !bangko) {

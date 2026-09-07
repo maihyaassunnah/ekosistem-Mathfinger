@@ -108,28 +108,23 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
     }
   }, [pathname, currentProgram]);
 
+  const getTabHref = (tab: "UTAMA" | "MEMBACA" | "WEBSITE") => {
+    if (tab === "WEBSITE") return "/dashboard/website";
+    if (tab === "MEMBACA") {
+      if (pathname === "/dashboard/rapor") return "/dashboard/rapor-membaca";
+      if (pathname.startsWith("/dashboard/website")) return "/dashboard?program=MEMBACA";
+      return `${pathname}?program=MEMBACA`;
+    }
+    // UTAMA (Matematika)
+    if (pathname === "/dashboard/rapor-membaca") return "/dashboard/rapor";
+    if (pathname.startsWith("/dashboard/website")) return "/dashboard";
+    return pathname;
+  };
+
   const handleTabClick = (tab: "UTAMA" | "MEMBACA" | "WEBSITE") => {
     setActiveTab(tab);
-    if (tab === "WEBSITE") {
-      router.push("/dashboard/website");
-    } else if (tab === "MEMBACA") {
-      if (pathname === "/dashboard/rapor") {
-        router.push("/dashboard/rapor-membaca");
-      } else if (pathname.startsWith("/dashboard/website")) {
-        router.push("/dashboard?program=MEMBACA");
-      } else {
-        router.push(`${pathname}?program=MEMBACA`);
-      }
-    } else {
-      // "UTAMA" (Matematika)
-      if (pathname === "/dashboard/rapor-membaca") {
-        router.push("/dashboard/rapor");
-      } else if (pathname.startsWith("/dashboard/website")) {
-        router.push("/dashboard");
-      } else {
-        router.push(pathname);
-      }
-    }
+    if (onCloseMobile) onCloseMobile();
+    router.push(getTabHref(tab));
   };
 
   // Branch-scoped Collections
@@ -631,20 +626,26 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               availableTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
             } gap-1 text-slate-600 dark:text-slate-400 border border-emerald-100/80 dark:border-[#1d2d5a]`}
           >
-            {availableTabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => handleTabClick(tab)}
-                className={`py-2 px-1 rounded-lg transition-all cursor-pointer font-black text-center whitespace-nowrap text-[10.5px] sm:text-xs uppercase tracking-tight leading-none ${
-                  activeTab === tab
-                    ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
-                    : "hover:text-emerald-600 dark:hover:text-white"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {availableTabs.map((tab) => {
+              const href = getTabHref(tab);
+              return (
+                <Link
+                  key={tab}
+                  href={href}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
+                  className={`py-2 px-1 rounded-lg transition-all cursor-pointer font-black text-center whitespace-nowrap text-[10.5px] sm:text-xs uppercase tracking-tight leading-none block ${
+                    activeTab === tab
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
+                      : "hover:text-emerald-600 dark:hover:text-white"
+                  }`}
+                >
+                  {tab}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
@@ -668,6 +669,9 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                   href={item.href}
                   onClick={onCloseMobile}
                   title={item.name}
+                  {...((item as any).external
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
                   className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                     isActive
                       ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/25"
@@ -764,7 +768,12 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.removeItem("mf_logged_user");
+                    }
+                    signOut({ callbackUrl: "/login" });
+                  }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 font-bold transition text-left cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5 text-emerald-500" />

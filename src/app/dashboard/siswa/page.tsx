@@ -206,9 +206,35 @@ function SiswaContent() {
         gradeLevel: finalProgram === "MEMBACA" ? form.levelCurriculum : form.gradeLevel,
       };
       await addStudent(payload);
-      await refreshData();
       setIsAddOpen(false);
       setSyncToast(`Siswa "${form.name}" berhasil ditambahkan ke Les ${finalProgram === "MEMBACA" ? "Membaca" : "Matematika"}!`);
+      const finalBranch = (allowedBranch as any) || form.branch || "Singkut";
+      setForm({
+        name: "",
+        studentCode:
+          finalProgram === "MEMBACA"
+            ? `MB-${Math.floor(100 + Math.random() * 900)}`
+            : `${Math.floor(10000 + Math.random() * 90000)}`,
+        gender: "P",
+        codeLabel: "8P",
+        branch: finalBranch,
+        className: finalProgram === "MEMBACA" ? "Kelas Membaca 1" : "Kelas A",
+        birthPlace: finalBranch,
+        birthDate: "2019-01-01",
+        address: "Jl. Poros Singkut",
+        gradeLevel:
+          finalProgram === "MEMBACA"
+            ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+            : "Ket: Kelas 3",
+        parentName: "",
+        parentWhatsapp: "0812-",
+        levelCurriculum:
+          finalProgram === "MEMBACA"
+            ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+            : "Level Dasar: Pengenalan Simbol Jari",
+        registeredDate: new Date().toISOString().split("T")[0],
+        programType: finalProgram,
+      });
     } catch (err) {
       console.error("Error adding student:", err);
       alert("Gagal menambahkan siswa. Silakan coba lagi.");

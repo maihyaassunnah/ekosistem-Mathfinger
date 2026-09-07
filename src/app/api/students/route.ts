@@ -68,6 +68,17 @@ export async function POST(req: Request) {
     if (!branch) {
       branch = await prisma.branch.findFirst();
     }
+    if (!branch) {
+      branch = await prisma.branch.create({
+        data: {
+          branchCode: "SKT",
+          branchName: "Singkut",
+          address: "Sungai Gedang, Kec. Singkut, Kab. Sarolangun, Jambi",
+          phone: "0812-7949-8907",
+          programs: "MATEMATIKA,MEMBACA",
+        },
+      });
+    }
 
     // Find level by name or default to first level
     let level = await prisma.level.findFirst({
@@ -77,6 +88,14 @@ export async function POST(req: Request) {
     });
     if (!level) {
       level = await prisma.level.findFirst();
+    }
+    if (!level) {
+      level = await prisma.level.create({
+        data: {
+          levelName: "Level Dasar: Pengenalan Simbol Jari",
+          orderIndex: 1,
+        },
+      });
     }
 
     let code = (body.studentCode || "").trim();

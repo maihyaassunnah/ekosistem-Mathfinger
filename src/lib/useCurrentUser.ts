@@ -22,17 +22,34 @@ export function useCurrentUser(): CurrentUserInfo {
   const sessionResult = useSession();
   const session = sessionResult?.data;
 
-  const rawName = session?.user?.name || CURRENT_USER.name;
-  const rawEmail = session?.user?.email || CURRENT_USER.email;
-  const rawRole = ((session?.user as any)?.role || CURRENT_USER.role) as string;
-  const rawBranch = ((session?.user as any)?.branchName || (CURRENT_USER as any).branch || "Semua Cabang (Pusat)") as string;
-  const avatarUrl = session?.user?.image || CURRENT_USER.avatar;
+  // Check localStorage for active user override (useful during offline, local testing, or initial session hydration)
+  let localUser: any = null;
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("mf_logged_user");
+      if (saved) localUser = JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+  }
+
+  let rawName = session?.user?.name || localUser?.name || CURRENT_USER.name;
+  const rawEmail = session?.user?.email || localUser?.email || CURRENT_USER.email;
+  const rawRole = ((session?.user as any)?.role || localUser?.role || CURRENT_USER.role) as string;
+  const rawBranch = ((session?.user as any)?.branchName || localUser?.branchName || (CURRENT_USER as any).branch || "Semua Cabang (Pusat)") as string;
+  const avatarUrl = session?.user?.image || localUser?.avatarUrl || CURRENT_USER.avatar;
+
+  // Exact user requirement: if account is febri, display as Ustadzah Febri
+  if (rawEmail.toLowerCase().includes("febri") || rawName.toLowerCase().includes("febri")) {
+    rawName = "Ustadzah Febri";
+  }
 
   const isSuperAdmin =
     rawRole === "SUPER_ADMIN" ||
     rawRole === "Super Admin" ||
     rawEmail.toLowerCase() === "wahyudinhafiz123@gmail.com" ||
-    rawEmail.toLowerCase() === "ma.ihyaassunnah@gmail.com";
+    rawEmail.toLowerCase() === "ma.ihyaassunnah@gmail.com" ||
+    rawEmail.toLowerCase().includes("superadmin");
 
   const isBranchAssistant =
     !isSuperAdmin &&
@@ -60,8 +77,8 @@ export function useCurrentUser(): CurrentUserInfo {
   if (!isSuperAdmin) {
     if (rawBranch && !rawBranch.toLowerCase().includes("pusat") && !rawBranch.toLowerCase().includes("semua")) {
       allowedBranch = rawBranch.replace(/^Cabang\s+/i, "").trim();
-    } else if (rawEmail.toLowerCase().includes("bangko")) {
-      allowedBranch = "Bangko";
+    } else if (rawEmail.toLowerCase().includes("bangko") || rawEmail.toLowerCase().includes("dwsafitri")) {
+      allowedBranch = "Tabir Timur";
     } else {
       allowedBranch = "Singkut";
     }

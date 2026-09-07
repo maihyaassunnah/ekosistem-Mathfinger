@@ -95,6 +95,34 @@ function LoginForm() {
         setErrorMessage("Email atau kata sandi tidak cocok, atau akun Anda belum diaktifkan.");
         setIsLoading(false);
       } else {
+        try {
+          const matched = demoAccounts.find((d) => d.email.toLowerCase() === email.toLowerCase().trim());
+          const userName = email.toLowerCase().includes("febri")
+            ? "Ustadzah Febri"
+            : matched
+            ? matched.name
+            : email.split("@")[0];
+          const userRole = matched?.role.includes("Super Admin")
+            ? "SUPER_ADMIN"
+            : matched?.role.includes("Asisten")
+            ? "BRANCH_ASSISTANT"
+            : "BRANCH_ADMIN";
+          const userBranch = matched?.role.includes("Singkut")
+            ? "Singkut"
+            : matched?.role.includes("Bangko")
+            ? "Tabir Timur"
+            : "Semua Cabang (Pusat)";
+
+          localStorage.setItem(
+            "mf_logged_user",
+            JSON.stringify({
+              name: userName,
+              email: email.trim(),
+              role: userRole,
+              branchName: userBranch,
+            })
+          );
+        } catch {}
         router.push("/dashboard");
       }
     } catch {

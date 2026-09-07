@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import {
+  Globe,
   Building2,
   Users,
   CreditCard,
@@ -57,6 +58,30 @@ function DashboardContent() {
   const { isSuperAdmin, allowedBranch } = currentUser;
 
   const displayName = currentUser.name || (isSuperAdmin ? "Wahyudin Hafiz, S.Pd" : "Ustadzah Febri");
+  const pathname = usePathname();
+
+  // Branch and program permission calculation
+  const currentBranch = branches?.find(
+    (b) =>
+      b.name?.toLowerCase() === allowedBranch?.toLowerCase() ||
+      b.name?.toLowerCase() === allowedBranch?.replace(/^Cabang\s+/i, "").toLowerCase()
+  );
+
+  const branchPrograms: string[] = currentBranch
+    ? Array.isArray(currentBranch.programs)
+      ? currentBranch.programs
+      : typeof currentBranch.programs === "string"
+      ? (currentBranch.programs as string).split(",").map((p) => p.trim())
+      : ["MATEMATIKA"]
+    : allowedBranch === "Singkut"
+    ? ["MATEMATIKA", "MEMBACA"]
+    : ["MATEMATIKA"];
+
+  const hasMembacaProgram = isSuperAdmin || branchPrograms.includes("MEMBACA");
+  const availableTabs: ("UTAMA" | "MEMBACA" | "WEBSITE")[] = ["UTAMA"];
+  if (hasMembacaProgram) availableTabs.push("MEMBACA");
+  if (isSuperAdmin) availableTabs.push("WEBSITE");
+
   const userInitials = (displayName || "WH")
     .split(" ")
     .map((w) => w[0])
@@ -500,6 +525,53 @@ function DashboardContent() {
           </div>
         </div>
 
+        {/* Dynamic Program Tab Switcher on Mobile & Tablet: UTAMA, MEMBACA, WEBSITE */}
+        {availableTabs.length > 1 && (
+          <div
+            className={`bg-emerald-50/90 dark:bg-[#0f1a36] p-1 rounded-2xl border border-emerald-200 dark:border-[#1d2d5a] grid ${
+              availableTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
+            } gap-1 shadow-2xs`}
+          >
+            <Link
+              href="/dashboard"
+              className={`py-2 px-2 rounded-xl text-center font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                !isMembaca && !pathname.startsWith("/dashboard/website")
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
+              }`}
+            >
+              <span>🔢</span>
+              <span>Utama</span>
+            </Link>
+            {hasMembacaProgram && (
+              <Link
+                href="/dashboard?program=MEMBACA"
+                className={`py-2 px-2 rounded-xl text-center font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  isMembaca
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
+                }`}
+              >
+                <span>📖</span>
+                <span>Membaca</span>
+              </Link>
+            )}
+            {isSuperAdmin && (
+              <Link
+                href="/dashboard/website"
+                className={`py-2 px-2 rounded-xl text-center font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  pathname.startsWith("/dashboard/website")
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
+                }`}
+              >
+                <span>🌐</span>
+                <span>Website</span>
+              </Link>
+            )}
+          </div>
+        )}
+
         {/* 3. HERO CAROUSEL BANNER (EXACT DARK CARD WITH 2 CTAS & INDICATORS) */}
         <div className="relative">
           <div className="rounded-3xl p-5 text-white shadow-xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-950 border border-emerald-800/40 min-h-[170px] flex flex-col justify-between space-y-3">
@@ -663,7 +735,7 @@ function DashboardContent() {
       {/* DESKTOP WORKSPACE VIEW (VISIBLE ON LARGE SCREENS >= lg)   */}
       {/* ========================================================= */}
       <div className="hidden lg:block p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto">
-        {/* Top Header Bar with Easy Learning House Logo */}
+        {/* Top Header Bar with Easy Learning House Logo & Desktop Program Tabs */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] p-1 shadow-xs flex items-center justify-center shrink-0">
@@ -675,13 +747,56 @@ function DashboardContent() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Dashboard
+                Dashboard {isMembaca ? "Les Membaca" : "Les Matematika"}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Ringkasan konsolidasi operasional bimbel Easy Learning House - Math Fingers
               </p>
             </div>
           </div>
+
+          {/* Desktop Program Tab Switcher (Utama, Membaca, Website) */}
+          {availableTabs.length > 1 && (
+            <div className="bg-emerald-50/80 dark:bg-[#0f1a36] p-1.5 rounded-2xl border border-emerald-200 dark:border-[#1d2d5a] flex items-center gap-1 shadow-xs">
+              <Link
+                href="/dashboard"
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+                  !isMembaca && !pathname.startsWith("/dashboard/website")
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/25"
+                    : "text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:bg-emerald-100/50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span>🔢</span>
+                <span>UTAMA</span>
+              </Link>
+              {hasMembacaProgram && (
+                <Link
+                  href="/dashboard?program=MEMBACA"
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+                    isMembaca
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/25"
+                      : "text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:bg-emerald-100/50 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <span>📖</span>
+                  <span>MEMBACA</span>
+                </Link>
+              )}
+              {isSuperAdmin && (
+                <Link
+                  href="/dashboard/website"
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+                    pathname.startsWith("/dashboard/website")
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/25"
+                      : "text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:bg-emerald-100/50 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <span>🌐</span>
+                  <span>WEBSITE</span>
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
       {/* Hero Banner Super Admin */}
@@ -817,7 +932,7 @@ function DashboardContent() {
           <span className="text-[11px] text-slate-400">Akses langsung fitur esensial</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {/* Card 1 */}
           <Link
             href="/dashboard/cabang"
@@ -866,7 +981,7 @@ function DashboardContent() {
             </div>
           </Link>
 
-          {/* Card 4 */}
+          {/* Card 4 - Database */}
           <Link
             href="/dashboard/database"
             className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
@@ -879,6 +994,22 @@ function DashboardContent() {
                 Database Cloud
               </div>
               <div className="text-[10px] text-slate-400 truncate">Editor cloud database</div>
+            </div>
+          </Link>
+
+          {/* Card 5 - Website CMS */}
+          <Link
+            href="/dashboard/website"
+            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
+          >
+            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                Kelola Website
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">Landing page & promo</div>
             </div>
           </Link>
 
