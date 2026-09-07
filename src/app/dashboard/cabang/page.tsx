@@ -328,6 +328,21 @@ export default function CabangDanAdminPage() {
                           Admin Penanggung Jawab: <strong>{adminCount} Akun Terhubung</strong>
                         </span>
                       </div>
+                      <div className="pt-2 border-t border-slate-200/60 dark:border-[#1d2d5a]/60 flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-500">Program:</span>
+                        {(Array.isArray((b as any).programs) ? (b as any).programs : ["MATEMATIKA"]).map((prog: string) => (
+                          <span
+                            key={prog}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              prog === "MEMBACA"
+                                ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300"
+                                : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                            }`}
+                          >
+                            {prog === "MEMBACA" ? "📖 Les Membaca" : "🔢 Les Matematika"}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

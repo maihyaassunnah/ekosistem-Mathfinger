@@ -25,6 +25,7 @@ export async function GET() {
           level: c.levelName || "Tingkat Dasar",
           enrolledCount: studentCount > 0 ? studentCount : c.enrolledCount,
           maxCapacity: c.maxCapacity,
+          programType: (c as any).programType || "MATEMATIKA",
         };
       })
     );
@@ -64,7 +65,8 @@ export async function POST(req: Request) {
         levelName: level || "Tingkat Dasar",
         maxCapacity: maxCapacity ? Number(maxCapacity) : 15,
         enrolledCount: 0,
-      },
+        programType: body.programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA",
+      } as any,
       include: { branch: true },
     });
 
@@ -72,7 +74,7 @@ export async function POST(req: Request) {
       {
         id: created.id,
         name: created.className,
-        branch: created.branch?.branchName || "Singkut",
+        branch: (created as any).branch?.branchName || "Singkut",
         days: created.days,
         time: created.time,
         teacher: created.teacherName,
@@ -80,6 +82,7 @@ export async function POST(req: Request) {
         level: created.levelName,
         enrolledCount: created.enrolledCount,
         maxCapacity: created.maxCapacity,
+        programType: (created as any).programType || "MATEMATIKA",
       },
       { status: 201 }
     );
@@ -123,6 +126,7 @@ export async function PUT(req: Request) {
         ...(room ? { room } : {}),
         ...(level ? { levelName: level } : {}),
         ...(maxCapacity !== undefined ? { maxCapacity: Number(maxCapacity) } : {}),
+        ...(body.programType ? { programType: body.programType as any } : {}),
       },
       include: { branch: true },
     });
@@ -138,6 +142,7 @@ export async function PUT(req: Request) {
       level: updated.levelName,
       enrolledCount: updated.enrolledCount,
       maxCapacity: updated.maxCapacity,
+      programType: (updated as any).programType || "MATEMATIKA",
     });
   } catch (error: any) {
     console.error("Error updating class:", error);

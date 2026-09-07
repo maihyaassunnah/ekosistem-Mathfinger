@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   QrCode,
   Printer,
@@ -18,6 +19,7 @@ import {
   Share2,
   CheckCircle2,
   MapPin,
+  BookText,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { useAppStore } from "@/lib/store";
@@ -79,9 +81,12 @@ function StudentQrImage({
   );
 }
 
-export default function KartuQrPage() {
+function KartuQrContent() {
   const { students, classes, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+  const isMembaca = paramProgram === "MEMBACA";
 
   const [search, setSearch] = useState("");
   const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
@@ -101,7 +106,10 @@ export default function KartuQrPage() {
       s.studentCode.includes(search);
     const matchBranch = branchFilter === "ALL" ? true : s.branch === branchFilter;
     const matchClass = classFilter === "ALL" ? true : s.className === classFilter;
-    return matchSearch && matchBranch && matchClass;
+    const matchProgram = isMembaca
+      ? (s as any).programType === "MEMBACA"
+      : (s as any).programType !== "MEMBACA";
+    return matchSearch && matchBranch && matchClass && matchProgram;
   });
 
   // Get class schedule helper
@@ -458,5 +466,19 @@ export default function KartuQrPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function KartuQrPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 font-bold">
+          Memuat kartu QR...
+        </div>
+      }
+    >
+      <KartuQrContent />
+    </Suspense>
   );
 }

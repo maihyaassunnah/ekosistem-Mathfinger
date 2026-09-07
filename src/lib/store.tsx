@@ -14,6 +14,7 @@ export interface ClassItem {
   level: string;
   enrolledCount: number;
   maxCapacity: number;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
 
 export interface BranchAdminItem {
@@ -125,6 +126,7 @@ export interface CashTransactionItem {
   branch: "Singkut" | "Bangko";
   sourceOrRecipient: string;
   notes?: string;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
 
 export interface LandingHeroConfig {
@@ -376,6 +378,33 @@ const INITIAL_CLASSES: ClassItem[] = [
     level: "Level 1: Penjumlahan & Pengurangan Angka Satuan",
     enrolledCount: 8,
     maxCapacity: 15,
+    programType: "MATEMATIKA",
+  },
+  {
+    id: "cls-m1",
+    name: "Kelas Membaca 1",
+    branch: "Singkut",
+    days: "Senin & Rabu",
+    time: "15:30 - 16:30",
+    teacher: "Ustadzah Aisyah",
+    room: "Ruang Baca 1",
+    level: "Level 1: Pengenalan Huruf & Bunyi Vokal/Konsonan",
+    enrolledCount: 2,
+    maxCapacity: 8,
+    programType: "MEMBACA",
+  },
+  {
+    id: "cls-m2",
+    name: "Kelas Membaca 2",
+    branch: "Singkut",
+    days: "Selasa & Kamis",
+    time: "15:30 - 16:30",
+    teacher: "Febrianti Dewi, S.Pd",
+    room: "Ruang Baca 2",
+    level: "Level 3: Membaca Kata Sederhana 2 Suku Kata",
+    enrolledCount: 1,
+    maxCapacity: 8,
+    programType: "MEMBACA",
   },
 ];
 
@@ -715,6 +744,28 @@ const INITIAL_INVOICES: InvoiceItem[] = [
     paidDate: "2026-09-04",
     paidMethod: "Tunai",
   },
+  {
+    id: "inv-m1",
+    invoiceNo: "INV/MB/2609/001",
+    studentId: "read-st-1",
+    studentName: "Fathan Al Ghifari",
+    period: "September 2026",
+    dueDate: "2026-09-10",
+    amount: 150000,
+    status: "BELUM BAYAR",
+  },
+  {
+    id: "inv-m2",
+    invoiceNo: "INV/MB/2609/002",
+    studentId: "read-st-2",
+    studentName: "Aisyah Zahira",
+    period: "September 2026",
+    dueDate: "2026-09-10",
+    amount: 150000,
+    status: "LUNAS",
+    paidDate: "2026-09-02",
+    paidMethod: "Transfer Bank",
+  },
 ];
 
 const INITIAL_MUTATIONS: CashMutationItem[] = [
@@ -892,6 +943,43 @@ const INITIAL_TRANSACTIONS: CashTransactionItem[] = [
     branch: "Singkut",
     sourceOrRecipient: "Aira Anatasya",
     notes: "Modul Penjumlahan Kombinasi",
+    programType: "MATEMATIKA",
+  },
+  {
+    id: "tx-m1",
+    date: "2026-08-26",
+    type: "INCOME",
+    category: "SPP",
+    title: "SPP Bulanan Les Membaca",
+    amount: 150000,
+    branch: "Singkut",
+    sourceOrRecipient: "Fathan Al Ghifari",
+    notes: "Iuran SPP Les Membaca Periode Berjalan",
+    programType: "MEMBACA",
+  },
+  {
+    id: "tx-m2",
+    date: "2026-08-28",
+    type: "INCOME",
+    category: "Modul/Buku",
+    title: "Buku Paket Membaca Level 1",
+    amount: 125000,
+    branch: "Singkut",
+    sourceOrRecipient: "Aisyah Zahira",
+    notes: "Modul Membaca Fonik & Suku Kata",
+    programType: "MEMBACA",
+  },
+  {
+    id: "tx-m3",
+    date: "2026-08-29",
+    type: "EXPENSE",
+    category: "Operasional & ATK",
+    title: "Flashcard Huruf & Kata",
+    amount: 60000,
+    branch: "Singkut",
+    sourceOrRecipient: "Toko Media Edukasi",
+    notes: "Alat peraga kartu baca",
+    programType: "MEMBACA",
   },
 ];
 

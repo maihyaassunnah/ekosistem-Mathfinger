@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Layers,
   Users,
@@ -17,13 +18,28 @@ import {
   X,
   Check,
   MapPin,
+  BookText,
 } from "lucide-react";
 import { useAppStore, ClassItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function KelasPage() {
+function KelasContent() {
   const { classes, addClass, updateClass, deleteClass, students, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+
+  const [activeProgram, setActiveProgram] = useState<"MATEMATIKA" | "MEMBACA">(
+    paramProgram === "MEMBACA" ? "MEMBACA" : "MATEMATIKA"
+  );
+
+  useEffect(() => {
+    if (paramProgram === "MEMBACA") {
+      setActiveProgram("MEMBACA");
+    } else if (paramProgram === "MATEMATIKA") {
+      setActiveProgram("MATEMATIKA");
+    }
+  }, [paramProgram]);
 
   const [search, setSearch] = useState("");
   const [selectedBranch, setSelectedBranch] = useState(allowedBranch || "ALL");
@@ -47,13 +63,23 @@ export default function KelasPage() {
     room: "Ruang A1",
     level: "Level Dasar: Pengenalan Simbol Jari",
     maxCapacity: 12,
+    programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
   });
 
-  // Calculate top stats based on active branch
-  const scopedClassesForStats =
+  // Calculate top stats based on active branch and program
+  const scopedClassesForBranch =
     selectedBranch === "ALL"
       ? classes
       : classes.filter((c) => c.branch === selectedBranch);
+
+  const mathClassesCount = scopedClassesForBranch.filter((c) => (c as any).programType !== "MEMBACA").length;
+  const readingClassesCount = scopedClassesForBranch.filter((c) => (c as any).programType === "MEMBACA").length;
+
+  const scopedClassesForStats = scopedClassesForBranch.filter((c) =>
+    activeProgram === "MEMBACA"
+      ? (c as any).programType === "MEMBACA"
+      : (c as any).programType !== "MEMBACA"
+  );
 
   const totalClasses = scopedClassesForStats.length;
   const totalEnrolled = scopedClassesForStats.reduce((sum, c) => sum + c.enrolledCount, 0);
@@ -66,7 +92,12 @@ export default function KelasPage() {
       c.teacher.toLowerCase().includes(search.toLowerCase()) ||
       c.days.toLowerCase().includes(search.toLowerCase());
     const matchesBranch = selectedBranch === "ALL" ? true : c.branch === selectedBranch;
-    return matchesSearch && matchesBranch;
+    const matchesProgram =
+      activeProgram === "MEMBACA"
+        ? (c as any).programType === "MEMBACA"
+        : (c as any).programType !== "MEMBACA";
+
+    return matchesSearch && matchesBranch && matchesProgram;
   });
 
   const handleOpenAdd = () => {
@@ -77,8 +108,12 @@ export default function KelasPage() {
       time: "14:00 - 15:30",
       teacher: "Febrianti Dewi, S.Pd",
       room: "Ruang A1",
-      level: "Level Dasar: Pengenalan Simbol Jari",
+      level:
+        activeProgram === "MEMBACA"
+          ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+          : "Level Dasar: Pengenalan Simbol Jari",
       maxCapacity: 12,
+      programType: activeProgram,
     });
     setIsAddOpen(true);
   };
@@ -94,12 +129,13 @@ export default function KelasPage() {
       room: c.room,
       level: c.level,
       maxCapacity: c.maxCapacity,
+      programType: (c as any).programType || "MATEMATIKA",
     });
   };
 
   const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    addClass(formData);
+    addClass(formData as any);
     setIsAddOpen(false);
   };
 
@@ -113,30 +149,72 @@ export default function KelasPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto">
-      {/* Top Banner Card (Matches Image 1) */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Banner Card */}
+      <div className="bg-white dark:bg-[#0f1a36] rounded-3xl p-6 border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-xs">
             <Layers className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              Manajemen Kelas Bimbingan
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {activeProgram === "MEMBACA" ? "Kelas Les Membaca" : "Kelas Les Matematika"}
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Atur kelompok belajar, pengajar, jadwal les, ruangan, dan kuota siswa tiap cabang.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {activeProgram === "MEMBACA"
+                ? "Atur jadwal kelompok membaca, level baca, tutor, dan kuota ruang kelas."
+                : "Atur kelompok belajar jari tangan, pengajar, jadwal les, dan kuota siswa."}
             </p>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#4338CA] hover:bg-[#3730A3] text-white text-xs font-bold transition-all shadow-md shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          + TAMBAH KELAS BARU
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Program Switcher */}
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-[#0b1329] rounded-2xl border border-slate-200 dark:border-[#1d2d5a]">
+            <button
+              type="button"
+              onClick={() => setActiveProgram("MATEMATIKA")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeProgram === "MATEMATIKA"
+                  ? "bg-white dark:bg-[#1a294f] text-emerald-700 dark:text-emerald-300 shadow-xs font-extrabold"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium"
+              }`}
+            >
+              <span>🔢 Matematika</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                {mathClassesCount}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveProgram("MEMBACA")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeProgram === "MEMBACA"
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25 font-extrabold"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium"
+              }`}
+            >
+              <span>📖 Membaca</span>
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                  activeProgram === "MEMBACA"
+                    ? "bg-white/25 text-white"
+                    : "bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300"
+                }`}
+              >
+                {readingClassesCount}
+              </span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#4338CA] hover:bg-[#3730A3] text-white text-xs font-extrabold transition-all shadow-md shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ TAMBAH KELAS</span>
+          </button>
+        </div>
       </div>
 
       {/* 3 Metric Cards (Matches Image 1) */}
@@ -425,19 +503,71 @@ export default function KelasPage() {
                 </div>
               </div>
 
+              {/* Program Selector in Form */}
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                  Program Bimbingan
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: "MATEMATIKA", label: "🔢 Les Matematika" },
+                    { key: "MEMBACA", label: "📖 Les Membaca" },
+                  ].map((prog) => (
+                    <button
+                      key={prog.key}
+                      type="button"
+                      onClick={() => {
+                        const nextProg = prog.key as "MATEMATIKA" | "MEMBACA";
+                        setFormData({
+                          ...formData,
+                          programType: nextProg,
+                          level:
+                            nextProg === "MEMBACA"
+                              ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+                              : "Level Dasar: Pengenalan Simbol Jari",
+                        });
+                      }}
+                      className={`py-2.5 px-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
+                        formData.programType === prog.key
+                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
+                          : "border-slate-200 dark:border-[#1d2d5a] text-slate-500 dark:text-slate-400 hover:border-emerald-300"
+                      }`}
+                    >
+                      {prog.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Tingkat Level Kurikulum</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                    Level Kurikulum ({formData.programType === "MEMBACA" ? "Membaca" : "Matematika"})
+                  </label>
                   <select
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                     className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
                   >
-                    <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
-                    <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan</option>
-                    <option value="Level 2: Kombinasi Teman Kecil">Level 2: Kombinasi Teman Kecil</option>
-                    <option value="Level 3: Kombinasi Teman Besar">Level 3: Kombinasi Teman Besar</option>
-                    <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
+                    {formData.programType === "MEMBACA" ? (
+                      <>
+                        <option value="Level 1: Pra-Membaca & Pengenalan Huruf">Level 1: Pra-Membaca & Pengenalan Huruf</option>
+                        <option value="Level 2: Merangkai Suku Kata Sederhana">Level 2: Merangkai Suku Kata Sederhana</option>
+                        <option value="Level 3: Merangkai Kata 2 Suku Kata">Level 3: Merangkai Kata 2 Suku Kata</option>
+                        <option value="Level 4: Kata Bervokal & Konsonan Ganda">Level 4: Kata Bervokal & Konsonan Ganda</option>
+                        <option value="Level 5: Membaca Kalimat Sederhana">Level 5: Membaca Kalimat Sederhana</option>
+                        <option value="Level 6: Membaca Paragraf Pendek">Level 6: Membaca Paragraf Pendek & Cerita</option>
+                        <option value="Level 7: Lancar Membaca & Pemahaman Teks">Level 7: Lancar Membaca & Pemahaman Teks</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
+                        <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan</option>
+                        <option value="Level 2: Kombinasi Teman Kecil">Level 2: Kombinasi Teman Kecil</option>
+                        <option value="Level 3: Kombinasi Teman Besar">Level 3: Kombinasi Teman Besar</option>
+                        <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -531,5 +661,19 @@ export default function KelasPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function KelasPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 font-bold">
+          Memuat data kelas...
+        </div>
+      }
+    >
+      <KelasContent />
+    </Suspense>
   );
 }

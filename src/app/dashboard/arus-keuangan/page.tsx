@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Wallet,
   ArrowUpRight,
@@ -26,10 +27,13 @@ import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, CashTransactionItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function ArusKeuanganPage() {
+function ArusKeuanganContent() {
   const { transactions, addTransaction, deleteTransaction, branches } =
     useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+  const isMembaca = paramProgram === "MEMBACA";
 
   const [activeSubTab, setActiveSubTab] = useState<
     "ringkasan" | "pemasukan" | "pengeluaran" | "ledger" | "laporan"
@@ -73,13 +77,24 @@ export default function ArusKeuanganPage() {
   // Effective branch filter (locked to allowedBranch for branch users)
   const effectiveBranch = allowedBranch || selectedBranch;
 
+  // Filtered transactions by program
+  const programFilteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const isTxMembaca =
+        t.programType === "MEMBACA" ||
+        t.title.toLowerCase().includes("membaca") ||
+        t.notes?.toLowerCase().includes("membaca");
+      return isMembaca ? isTxMembaca : !isTxMembaca;
+    });
+  }, [transactions, isMembaca]);
+
   // Filtered transactions by branch
   const branchFilteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
+    return programFilteredTransactions.filter((t) => {
       if (effectiveBranch === "ALL") return true;
       return t.branch === effectiveBranch;
     });
-  }, [transactions, effectiveBranch]);
+  }, [programFilteredTransactions, effectiveBranch]);
 
   // Current month active transactions (August/September 2026)
   const currentMonthTransactions = useMemo(() => {
@@ -251,7 +266,7 @@ export default function ArusKeuanganPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
       {/* Top Breadcrumb */}
-      <TopStatusBar title="Keuangan" />
+      <TopStatusBar title={isMembaca ? "Keuangan (Les Membaca)" : "Keuangan"} />
 
       {/* Main Header & Filter Dropdowns (Matching User Screenshot) */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -260,11 +275,22 @@ export default function ArusKeuanganPage() {
             <Wallet className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              Manajemen Keuangan
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                {isMembaca ? "Manajemen Keuangan (Les Membaca)" : "Manajemen Keuangan (Les Matematika)"}
+              </h1>
+              <span
+                className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                  isMembaca
+                    ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                }`}
+              >
+                {isMembaca ? "📖 Les Membaca" : "🔢 Les Matematika"}
+              </span>
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Pantau arus kas masuk, keluar, buku ledger harian, serta analisis laba rugi bimbingan belajar.
+              Pantau arus kas masuk, keluar, buku ledger harian, serta analisis laba rugi {isMembaca ? "les membaca" : "les matematika"}.
             </p>
           </div>
         </div>
@@ -1166,5 +1192,13 @@ export default function ArusKeuanganPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ArusKeuanganPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Memuat arus keuangan...</div>}>
+      <ArusKeuanganContent />
+    </Suspense>
   );
 }

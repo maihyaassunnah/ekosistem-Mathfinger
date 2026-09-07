@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   CreditCard,
   BookOpen,
@@ -21,23 +22,29 @@ import {
   CheckCircle2,
   AlertTriangle,
   MapPin,
+  BookText,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, InvoiceItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function SppPage() {
+function SppContent() {
   const { students, invoices, addInvoice, updateInvoiceStatus, deleteInvoice, branches } =
     useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+  const isMembaca = paramProgram === "MEMBACA";
 
   const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
 
   const scopedStudents = useMemo(() => {
-    if (allowedBranch) return students.filter((s) => s.branch === allowedBranch);
-    if (branchFilter !== "ALL") return students.filter((s) => s.branch === branchFilter);
-    return students;
-  }, [students, allowedBranch, branchFilter]);
+    let list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+    if (branchFilter !== "ALL") list = list.filter((s) => s.branch === branchFilter);
+    return list.filter((s) =>
+      isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
+    );
+  }, [students, allowedBranch, branchFilter, isMembaca]);
 
   const scopedInvoices = useMemo(() => {
     let list = invoices;
@@ -52,8 +59,13 @@ export default function SppPage() {
         return st?.branch === branchFilter || inv.branch === branchFilter;
       });
     }
-    return list;
-  }, [invoices, students, allowedBranch, branchFilter]);
+    return list.filter((inv) => {
+      const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+      return isMembaca
+        ? (st as any)?.programType === "MEMBACA"
+        : (st as any)?.programType !== "MEMBACA";
+    });
+  }, [invoices, students, allowedBranch, branchFilter, isMembaca]);
 
   const [activeSubTab, setActiveSubTab] = useState<
     "pendaftaran" | "spp" | "buku" | "pengingat"
@@ -167,7 +179,7 @@ export default function SppPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
       {/* Top Status Bar */}
-      <TopStatusBar title="Pembayaran SPP" />
+      <TopStatusBar title={isMembaca ? "Pembayaran SPP Les Membaca" : "Pembayaran SPP Les Matematika"} />
 
       {/* Subtabs (Pembayaran Pendaftaran, SPP, Buku, Pengingat SPP & Buku WA) */}
       <div className="flex items-center gap-6 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold overflow-x-auto">
@@ -729,5 +741,19 @@ export default function SppPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SppPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 font-bold">
+          Memuat data SPP...
+        </div>
+      }
+    >
+      <SppContent />
+    </Suspense>
   );
 }

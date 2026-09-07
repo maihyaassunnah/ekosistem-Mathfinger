@@ -338,13 +338,26 @@ function AbsensiContent() {
     };
   }, [showScannerModal, isCameraActive]);
 
+  const currentProgram = searchParams?.get("program");
+  const isMembacaProgram = currentProgram === "MEMBACA";
+
   // Filter students for today list
-  const branchScopedStudents = allowedBranch
+  const branchScopedStudents = (allowedBranch
     ? students.filter((s) => s.branch === allowedBranch)
-    : students;
-  const branchScopedClasses = allowedBranch
+    : students
+  ).filter((s) =>
+    isMembacaProgram
+      ? (s as any).programType === "MEMBACA"
+      : (s as any).programType !== "MEMBACA"
+  );
+  const branchScopedClasses = (allowedBranch
     ? classes.filter((c) => c.branch === allowedBranch)
-    : classes;
+    : classes
+  ).filter((c) =>
+    isMembacaProgram
+      ? (c as any).programType === "MEMBACA"
+      : (c as any).programType !== "MEMBACA"
+  );
 
   const classList = [
     { name: "Semua Kelas", count: branchScopedStudents.length, value: "ALL" },
@@ -509,11 +522,18 @@ function AbsensiContent() {
     });
   };
 
-  // Convert Attendances Record into array for Rekap & Riwayat Table
-  const allAttendanceArray = Object.entries(attendances).map(([key, item]) => ({
-    key,
-    ...item,
-  }));
+  // Convert Attendances Record into array for Rekap & Riwayat Table (scoped by program)
+  const allAttendanceArray = Object.entries(attendances)
+    .map(([key, item]) => ({
+      key,
+      ...item,
+    }))
+    .filter((item) => {
+      const st = students.find((s) => s.id === item.studentId || s.name === item.studentName);
+      return isMembacaProgram
+        ? (st as any)?.programType === "MEMBACA"
+        : (st as any)?.programType !== "MEMBACA";
+    });
 
   // Filtered Rekap Array
   const filteredRekapArray = allAttendanceArray
@@ -631,7 +651,7 @@ function AbsensiContent() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              Absensi Siswa
+              {isMembacaProgram ? "Absensi Siswa Les Membaca" : "Absensi Siswa Les Matematika"}
             </h1>
             <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold">
               v3.3 Terpadu

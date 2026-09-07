@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Building2,
   Users,
@@ -38,6 +39,7 @@ import {
   Check,
   Clock,
   Menu,
+  BookText,
 } from "lucide-react";
 import {
   CURRENT_USER,
@@ -48,11 +50,15 @@ import { useAppStore } from "@/lib/store";
 import { useTheme } from "@/lib/theme";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { students, branches, invoices, branchAdmins, classes } = useAppStore();
   const { theme, toggleTheme } = useTheme();
   const currentUser = useCurrentUser();
   const { isSuperAdmin, allowedBranch } = currentUser;
+
+  const searchParams = useSearchParams();
+  const currentProgram = searchParams?.get("program");
+  const isMembaca = currentProgram === "MEMBACA";
 
   const [selectedBranch, setSelectedBranch] = useState<string>(
     allowedBranch || "ALL"
@@ -86,23 +92,38 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const scopedStudents =
+  const rawScopedStudents =
     selectedBranch === "ALL"
       ? students
       : students.filter((s) => s.branch === selectedBranch);
 
-  const scopedClasses =
+  const scopedStudents = rawScopedStudents.filter((s) =>
+    isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
+  );
+
+  const rawScopedClasses =
     selectedBranch === "ALL"
       ? classes
       : classes.filter((c) => c.branch === selectedBranch);
 
-  const scopedInvoices =
+  const scopedClasses = rawScopedClasses.filter((c) =>
+    isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA"
+  );
+
+  const rawScopedInvoices =
     selectedBranch === "ALL"
       ? invoices
       : invoices.filter((inv) => {
           const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
           return st?.branch === selectedBranch;
         });
+
+  const scopedInvoices = rawScopedInvoices.filter((inv) => {
+    const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+    return isMembaca
+      ? (st as any)?.programType === "MEMBACA"
+      : (st as any)?.programType !== "MEMBACA";
+  });
 
   const totalStudentsCount = scopedStudents.length;
   const activeStudentsCount = scopedStudents.length;
@@ -1049,4 +1070,18 @@ export default function DashboardPage() {
     </div>
   </>
 );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 font-bold">
+          Memuat dashboard...
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
+  );
 }

@@ -175,6 +175,7 @@ export async function PUT(req: Request) {
         ...(gradeLevel ? { gradeLevel } : {}),
         ...(branchId ? { branchId } : {}),
         ...(currentLevelId ? { currentLevelId } : {}),
+        ...(body.programType ? { programType: body.programType as any } : {}),
       },
       include: {
         branch: true,
@@ -198,6 +199,7 @@ export async function PUT(req: Request) {
       parentWhatsapp: updated.parentWhatsapp,
       levelCurriculum: updated.currentLevel?.levelName,
       status: updated.status,
+      programType: updated.programType || "MATEMATIKA",
     });
   } catch (error: any) {
     console.error("Error updating student:", error);

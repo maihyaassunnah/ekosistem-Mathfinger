@@ -16,6 +16,7 @@ export interface StudentItem {
   levelCurriculum: string;
   registeredDate: string;
   status?: string;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
 
 export interface BranchItem {
@@ -49,7 +50,8 @@ export const BRANCHES_DATA: BranchItem[] = [
     "activeStudents": 29,
     "adminCount": 4,
     "monthlyRevenue": 4355000,
-    "status": "ACTIVE"
+    "status": "ACTIVE",
+    "programs": ["MATEMATIKA", "MEMBACA"]
   },
   {
     "id": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
@@ -60,7 +62,8 @@ export const BRANCHES_DATA: BranchItem[] = [
     "activeStudents": 22,
     "adminCount": 3,
     "monthlyRevenue": 3250000,
-    "status": "ACTIVE"
+    "status": "ACTIVE",
+    "programs": ["MATEMATIKA", "MEMBACA"]
   }
 ];
 
@@ -1051,7 +1054,68 @@ export const STUDENTS_DATA: StudentItem[] = [
     "parentWhatsapp": "081277665544",
     "levelCurriculum": "Level 3: Mahir & Olimpiade",
     "registeredDate": "2023-01-15",
-    "status": "GRADUATED"
+    "status": "GRADUATED",
+    "programType": "MATEMATIKA"
+  },
+  {
+    "id": "read-st-1",
+    "index": 901,
+    "studentCode": "MB-101",
+    "name": "Fathan Al Ghifari",
+    "gender": "L",
+    "codeLabel": "1L",
+    "branch": "Singkut",
+    "className": "Kelas Membaca 1",
+    "birthPlace": "Singkut",
+    "birthDate": "2020-05-14",
+    "address": "Jl. Mawar No. 12, Singkut",
+    "gradeLevel": "TK B / SD 1",
+    "parentName": "Bpk. Rahmat Hidayat",
+    "parentWhatsapp": "081279498907",
+    "levelCurriculum": "Level 2: Membaca Suku Kata Terbuka (BA-BI-BU)",
+    "registeredDate": "2026-08-01",
+    "status": "ACTIVE",
+    "programType": "MEMBACA"
+  },
+  {
+    "id": "read-st-2",
+    "index": 902,
+    "studentCode": "MB-102",
+    "name": "Aisyah Zahira",
+    "gender": "P",
+    "codeLabel": "2P",
+    "branch": "Singkut",
+    "className": "Kelas Membaca 1",
+    "birthPlace": "Sarolangun",
+    "birthDate": "2020-08-22",
+    "address": "Desa Pasar Singkut",
+    "gradeLevel": "TK B",
+    "parentName": "Ibu Nurul Aini",
+    "parentWhatsapp": "085299881144",
+    "levelCurriculum": "Level 3: Membaca Kata Sederhana 2 Suku Kata",
+    "registeredDate": "2026-08-05",
+    "status": "ACTIVE",
+    "programType": "MEMBACA"
+  },
+  {
+    "id": "read-st-3",
+    "index": 903,
+    "studentCode": "MB-103",
+    "name": "Kenzo Alfarizi",
+    "gender": "L",
+    "codeLabel": "3L",
+    "branch": "Singkut",
+    "className": "Kelas Membaca 2",
+    "birthPlace": "Singkut",
+    "birthDate": "2019-11-10",
+    "address": "Sungai Gedang",
+    "gradeLevel": "Kelas 1 SD",
+    "parentName": "Bpk. Hendra",
+    "parentWhatsapp": "081366224455",
+    "levelCurriculum": "Level 7: Tuntas Membaca Lancar Cerita & Pemahaman",
+    "registeredDate": "2026-07-10",
+    "status": "ACTIVE",
+    "programType": "MEMBACA"
   }
 ];
 

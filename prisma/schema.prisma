@@ -190,6 +190,7 @@ model Class {
   levelName     String?      @map("level_name")
   enrolledCount Int          @default(0) @map("enrolled_count")
   maxCapacity   Int          @default(15) @map("max_capacity")
+  programType   ProgramType  @default(MATEMATIKA) @map("program_type")
   status        CommonStatus @default(ACTIVE)
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
@@ -336,11 +337,12 @@ model CashTransaction {
   type              String   @default("INCOME")
   category          String   @default("SPP")
   title             String
-  amount            Decimal  @db.Decimal(12, 2)
-  sourceOrRecipient String   @map("source_or_recipient")
-  transactionDate   DateTime @map("transaction_date")
-  notes             String?  @db.Text
-  createdAt         DateTime @default(now()) @map("created_at")
+  amount            Decimal     @db.Decimal(12, 2)
+  sourceOrRecipient String      @map("source_or_recipient")
+  transactionDate   DateTime    @map("transaction_date")
+  programType       ProgramType @default(MATEMATIKA) @map("program_type")
+  notes             String?     @db.Text
+  createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   // Relations

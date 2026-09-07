@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Users,
   Search,
@@ -18,14 +19,29 @@ import {
   Share2,
   MapPin,
   RefreshCw,
+  BookText,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function SiswaPage() {
+function SiswaContent() {
   const { students, addStudent, updateStudent, deleteStudent, classes, branches, refreshData } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+
+  const [activeProgram, setActiveProgram] = useState<"MATEMATIKA" | "MEMBACA">(
+    paramProgram === "MEMBACA" ? "MEMBACA" : "MATEMATIKA"
+  );
+
+  useEffect(() => {
+    if (paramProgram === "MEMBACA") {
+      setActiveProgram("MEMBACA");
+    } else if (paramProgram === "MATEMATIKA") {
+      setActiveProgram("MATEMATIKA");
+    }
+  }, [paramProgram]);
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncToast, setSyncToast] = useState<string | null>(null);
@@ -83,6 +99,12 @@ export default function SiswaPage() {
     programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
   });
 
+  // Program counts scoped by branch
+  const branchScopedForCounts =
+    branchFilter === "ALL" ? students : students.filter((s) => s.branch === branchFilter);
+  const mathCount = branchScopedForCounts.filter((s) => (s as any).programType !== "MEMBACA").length;
+  const readingCount = branchScopedForCounts.filter((s) => (s as any).programType === "MEMBACA").length;
+
   // Filter & Sort Logic
   const filteredStudents = students
     .filter((s) => {
@@ -95,8 +117,12 @@ export default function SiswaPage() {
       const matchBranch = branchFilter === "ALL" ? true : s.branch === branchFilter;
       const matchClass = classFilter === "ALL" ? true : s.className === classFilter;
       const matchGender = genderFilter === "ALL" ? true : s.gender === genderFilter;
+      const matchProgram =
+        activeProgram === "MEMBACA"
+          ? (s as any).programType === "MEMBACA"
+          : (s as any).programType !== "MEMBACA";
 
-      return matchSearch && matchBranch && matchClass && matchGender;
+      return matchSearch && matchBranch && matchClass && matchGender && matchProgram;
     })
     .sort((a, b) => {
       if (sortOrder === "A-Z") return a.name.localeCompare(b.name);
@@ -114,12 +140,15 @@ export default function SiswaPage() {
       birthPlace: allowedBranch || "Singkut",
       birthDate: "2018-01-01",
       address: "Jl. Poros",
-      gradeLevel: "Ket: Kelas 3",
+      gradeLevel: activeProgram === "MEMBACA" ? "Ket: TK / Pra-Membaca" : "Ket: Kelas 3",
       parentName: "",
       parentWhatsapp: "0812-",
-      levelCurriculum: "Level Dasar: Pengenalan Simbol Jari",
+      levelCurriculum:
+        activeProgram === "MEMBACA"
+          ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+          : "Level Dasar: Pengenalan Simbol Jari",
       registeredDate: new Date().toISOString().split("T")[0],
-      programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
+      programType: activeProgram,
     });
     setIsAddOpen(true);
   };
@@ -178,13 +207,13 @@ export default function SiswaPage() {
       {/* Top Header (Matches Image 2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Database Siswa Math Fingers
+              {activeProgram === "MEMBACA" ? "Data Siswa Les Membaca" : "Data Siswa Les Matematika"}
             </h1>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-2xs">
               <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              {students.length} Siswa
+              {filteredStudents.length} Siswa
             </span>
             <button
               type="button"
@@ -200,14 +229,54 @@ export default function SiswaPage() {
               type="button"
               onClick={handleOpenAdd}
               className="w-8 h-8 rounded-full bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white flex items-center justify-center transition-all shadow-sm cursor-pointer"
-              title="Tambah Siswa Baru"
+              title={`Tambah Siswa Baru (${activeProgram === "MEMBACA" ? "Les Membaca" : "Les Matematika"})`}
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Kelola pendaftaran, level bimbingan, dan data kontak wali siswa.
+            {activeProgram === "MEMBACA"
+              ? "Manajemen data siswa, level baca (Pra-Membaca s/d Lancar), dan kontak wali murid program membaca."
+              : "Kelola pendaftaran, level bimbingan jari tangan, dan data kontak wali siswa."}
           </p>
+        </div>
+
+        {/* Program Toggle Pill */}
+        <div className="flex items-center p-1 bg-slate-100 dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] self-start sm:self-auto shrink-0 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setActiveProgram("MATEMATIKA")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeProgram === "MATEMATIKA"
+                ? "bg-white dark:bg-[#1a294f] text-emerald-700 dark:text-emerald-300 shadow-xs"
+                : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <span>🔢 Matematika</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+              {mathCount}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveProgram("MEMBACA")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeProgram === "MEMBACA"
+                ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
+                : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <span>📖 Membaca</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                activeProgram === "MEMBACA"
+                  ? "bg-white/25 text-white"
+                  : "bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300"
+              }`}
+            >
+              {readingCount}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -619,17 +688,33 @@ export default function SiswaPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Tingkat Level Kurikulum</label>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                  Tingkat Level Kurikulum ({form.programType === "MEMBACA" ? "Membaca" : "Matematika"})
+                </label>
                 <select
                   value={form.levelCurriculum}
                   onChange={(e) => setForm({ ...form, levelCurriculum: e.target.value })}
                   className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
-                  <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
-                  <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan Angka Satuan</option>
-                  <option value="Level 2: Kombinasi Rumus Teman Kecil">Level 2: Kombinasi Rumus Teman Kecil</option>
-                  <option value="Level 3: Kombinasi Rumus Teman Besar">Level 3: Kombinasi Rumus Teman Besar</option>
-                  <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
+                  {form.programType === "MEMBACA" ? (
+                    <>
+                      <option value="Level 1: Pra-Membaca & Pengenalan Huruf">Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)</option>
+                      <option value="Level 2: Merangkai Suku Kata Sederhana">Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)</option>
+                      <option value="Level 3: Merangkai Kata 2 Suku Kata">Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)</option>
+                      <option value="Level 4: Merangkai Kata Bervokal & Konsonan Ganda">Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)</option>
+                      <option value="Level 5: Membaca Kalimat Sederhana">Level 5: Membaca Kalimat Sederhana</option>
+                      <option value="Level 6: Membaca Paragraf Pendek">Level 6: Membaca Paragraf Pendek & Cerita</option>
+                      <option value="Level 7: Lancar Membaca & Pemahaman Teks">Level 7: Lancar Membaca & Pemahaman Teks</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
+                      <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan Angka Satuan</option>
+                      <option value="Level 2: Kombinasi Rumus Teman Kecil">Level 2: Kombinasi Rumus Teman Kecil</option>
+                      <option value="Level 3: Kombinasi Rumus Teman Besar">Level 3: Kombinasi Rumus Teman Besar</option>
+                      <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -638,13 +723,23 @@ export default function SiswaPage() {
                 <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Program Les</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { key: "MATEMATIKA", label: "Les Matematika" },
-                    { key: "MEMBACA", label: "Les Membaca" },
+                    { key: "MATEMATIKA", label: "🔢 Les Matematika" },
+                    { key: "MEMBACA", label: "📖 Les Membaca" },
                   ].map((prog) => (
                     <button
                       key={prog.key}
                       type="button"
-                      onClick={() => setForm({ ...form, programType: prog.key as "MATEMATIKA" | "MEMBACA" })}
+                      onClick={() => {
+                        const nextProg = prog.key as "MATEMATIKA" | "MEMBACA";
+                        setForm({
+                          ...form,
+                          programType: nextProg,
+                          levelCurriculum:
+                            nextProg === "MEMBACA"
+                              ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+                              : "Level Dasar: Pengenalan Simbol Jari",
+                        });
+                      }}
                       className={`py-2.5 px-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
                         form.programType === prog.key
                           ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
@@ -782,5 +877,19 @@ export default function SiswaPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SiswaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 font-bold">
+          Memuat data siswa...
+        </div>
+      }
+    >
+      <SiswaContent />
+    </Suspense>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   Home,
   Users,
@@ -35,7 +35,6 @@ import {
   UserPlus,
   BookText,
 } from "lucide-react";
-import { CURRENT_USER } from "@/lib/mock-data";
 import { useTheme } from "@/lib/theme";
 import { useAppStore } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -45,35 +44,58 @@ interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
-export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps = {}) {
+function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentProgram = searchParams?.get("program");
+
   const currentUser = useCurrentUser();
-  const { isSuperAdmin, isBranchAdmin, isBranchAssistant, allowedBranch } = currentUser;
+  const { isSuperAdmin, isBranchAssistant, allowedBranch } = currentUser;
   const { theme, toggleTheme } = useTheme();
   const {
     students,
     classes,
     invoices,
+    branches,
     landingPrograms,
     landingTestimonials,
     landingLeads,
     landingPartners,
   } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState<"UTAMA" | "WEBSITE">("UTAMA");
+  const [activeTab, setActiveTab] = useState<"UTAMA" | "MEMBACA" | "WEBSITE">("UTAMA");
   const [collapsed, setCollapsed] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // Automatically switch tab to WEBSITE if currently navigating /dashboard/website (Super Admin only)
+  // Check if branch has Membaca / Matematika program
+  const currentBranch = branches?.find((b) => b.name === allowedBranch);
+  const hasMembacaProgram =
+    isSuperAdmin ||
+    (currentBranch?.programs ? currentBranch.programs.includes("MEMBACA") : true);
+  const hasMatematikaProgram =
+    isSuperAdmin ||
+    (currentBranch?.programs ? currentBranch.programs.includes("MATEMATIKA") : true);
+
+  // Available tabs calculation
+  const availableTabs: ("UTAMA" | "MEMBACA" | "WEBSITE")[] = [];
+  if (hasMatematikaProgram) availableTabs.push("UTAMA");
+  if (hasMembacaProgram) availableTabs.push("MEMBACA");
+  if (isSuperAdmin) availableTabs.push("WEBSITE");
+
+  // Automatically switch tab based on current pathname & query parameter
   useEffect(() => {
     if (isSuperAdmin && pathname.startsWith("/dashboard/website")) {
       setActiveTab("WEBSITE");
-    } else if (!isSuperAdmin) {
+    } else if (pathname.startsWith("/dashboard/rapor-membaca") || currentProgram === "MEMBACA") {
+      setActiveTab("MEMBACA");
+    } else if (currentProgram === "MATEMATIKA") {
+      setActiveTab("UTAMA");
+    } else if (!currentProgram && activeTab === "WEBSITE" && !pathname.startsWith("/dashboard/website")) {
       setActiveTab("UTAMA");
     }
-  }, [pathname, isSuperAdmin]);
+  }, [pathname, currentProgram, isSuperAdmin, activeTab]);
 
-  // Branch-scoped Counts
+  // Branch-scoped Collections
   const scopedStudents = allowedBranch
     ? students.filter((s) => s.branch === allowedBranch)
     : students;
@@ -87,14 +109,34 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
       })
     : invoices;
 
-  const realStudentCount = scopedStudents.length;
-  const realClassCount = scopedClasses.length;
-  const unpaidInvoicesCount = scopedInvoices.filter((i) => i.status === "BELUM BAYAR").length;
+  // Program-isolated Counts for Matematika
+  const mathStudents = scopedStudents.filter((s) => (s as any).programType !== "MEMBACA");
+  const mathClasses = scopedClasses.filter((c) => (c as any).programType !== "MEMBACA");
+  const mathInvoices = scopedInvoices.filter((inv) => {
+    const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+    return (st as any)?.programType !== "MEMBACA";
+  });
+  const mathStudentCount = mathStudents.length;
+  const mathClassCount = mathClasses.length;
+  const unpaidMathInvoicesCount = mathInvoices.filter((i) => i.status === "BELUM BAYAR").length;
+
+  // Program-isolated Counts for Membaca
+  const readingStudents = scopedStudents.filter((s) => (s as any).programType === "MEMBACA");
+  const readingClasses = scopedClasses.filter((c) => (c as any).programType === "MEMBACA");
+  const readingInvoices = scopedInvoices.filter((inv) => {
+    const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
+    return (st as any)?.programType === "MEMBACA";
+  });
+  const readingStudentCount = readingStudents.length;
+  const readingClassCount = readingClasses.length;
+  const unpaidReadingInvoicesCount = readingInvoices.filter((i) => i.status === "BELUM BAYAR").length;
+
   const newLeadsCount = landingLeads.filter((l) => l.status === "Baru").length;
 
+  // 1. TAB UTAMA (Les Matematika)
   const menuSections = [
     {
-      group: "UTAMA",
+      group: "UTAMA (MATEMATIKA)",
       items: [
         {
           name: "Dashboard",
@@ -106,14 +148,14 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           name: "Siswa",
           href: "/dashboard/siswa",
           icon: Users,
-          badge: `${realStudentCount}`,
+          badge: `${mathStudentCount}`,
           badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-extrabold",
         },
         {
           name: "Kelas",
           href: "/dashboard/kelas",
           icon: LayoutGrid,
-          badge: realClassCount > 0 ? `${realClassCount}` : null,
+          badge: mathClassCount > 0 ? `${mathClassCount}` : null,
           badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-emerald-300 font-bold",
         },
         {
@@ -163,16 +205,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           icon: FileText,
           badge: null,
         },
-        {
-          name: "Rapor Membaca",
-          href: "/dashboard/rapor-membaca",
-          icon: BookText,
-          badge: "Baru",
-          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
-        },
       ],
     },
-    // KEUANGAN: Sembunyikan sepenuhnya untuk Asisten Cabang dan Tutor
     ...(!isBranchAssistant && !currentUser.isTutor
       ? [
           {
@@ -182,7 +216,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                 name: "Pembayaran SPP",
                 href: "/dashboard/spp",
                 icon: CreditCard,
-                badge: unpaidInvoicesCount > 0 ? `${unpaidInvoicesCount}` : null,
+                badge: unpaidMathInvoicesCount > 0 ? `${unpaidMathInvoicesCount}` : null,
                 badgeColor: "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-extrabold",
               },
               {
@@ -210,7 +244,6 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           icon: GraduationCap,
           badge: null,
         },
-        // Cabang, Database, dan Pengaturan: Hanya bisa diakses oleh Super Admin
         ...(isSuperAdmin
           ? [
               {
@@ -238,6 +271,134 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
     },
   ];
 
+  // 2. TAB MEMBACA (Les Membaca)
+  const membacaSections = [
+    {
+      group: "LES MEMBACA",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard?program=MEMBACA",
+          icon: Home,
+          badge: null,
+        },
+        {
+          name: "Siswa",
+          href: "/dashboard/siswa?program=MEMBACA",
+          icon: Users,
+          badge: `${readingStudentCount}`,
+          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-extrabold",
+        },
+        {
+          name: "Kelas",
+          href: "/dashboard/kelas?program=MEMBACA",
+          icon: LayoutGrid,
+          badge: readingClassCount > 0 ? `${readingClassCount}` : null,
+          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
+        },
+        {
+          name: "Kartu QR Siswa",
+          href: "/dashboard/kartu-qr?program=MEMBACA",
+          icon: QrCode,
+          badge: null,
+        },
+      ],
+    },
+    {
+      group: "AKADEMIK & EVALUASI",
+      items: [
+        {
+          name: "Absensi Hari Ini",
+          href: "/dashboard/absensi?program=MEMBACA",
+          icon: CheckSquare,
+          badge: null,
+        },
+        {
+          name: "Jurnal Guru",
+          href: "/dashboard/jurnal?program=MEMBACA",
+          icon: BookOpen,
+          badge: null,
+        },
+        {
+          name: "Riwayat Jurnal",
+          href: "/dashboard/riwayat-jurnal?program=MEMBACA",
+          icon: History,
+          badge: null,
+        },
+        {
+          name: "Rapor Membaca",
+          href: "/dashboard/rapor-membaca",
+          icon: BookText,
+          badge: "Level 1-7",
+          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
+        },
+      ],
+    },
+    ...(!isBranchAssistant && !currentUser.isTutor
+      ? [
+          {
+            group: "KEUANGAN",
+            items: [
+              {
+                name: "Pembayaran SPP",
+                href: "/dashboard/spp?program=MEMBACA",
+                icon: CreditCard,
+                badge: unpaidReadingInvoicesCount > 0 ? `${unpaidReadingInvoicesCount}` : null,
+                badgeColor: "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-extrabold",
+              },
+              {
+                name: "Riwayat SPP",
+                href: "/dashboard/riwayat-spp?program=MEMBACA",
+                icon: Receipt,
+                badge: null,
+              },
+              {
+                name: "Arus Keuangan",
+                href: "/dashboard/arus-keuangan?program=MEMBACA",
+                icon: Wallet,
+                badge: null,
+              },
+            ],
+          },
+        ]
+      : []),
+    {
+      group: "AKUN & SISTEM",
+      items: [
+        {
+          name: "Alumni / Lulus",
+          href: "/dashboard/alumni?program=MEMBACA",
+          icon: GraduationCap,
+          badge: null,
+        },
+        ...(isSuperAdmin
+          ? [
+              {
+                name: "Cabang & Admin",
+                href: "/dashboard/cabang",
+                icon: Building2,
+                badge: null,
+              },
+              {
+                name: "Database Cloud",
+                href: "/dashboard/database",
+                icon: Database,
+                badge: "17",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold",
+              },
+              {
+                name: "Pengaturan",
+                href: "/dashboard/pengaturan",
+                icon: Settings,
+                badge: null,
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
+  // 3. TAB WEBSITE (Landing Page CMS - Super Admin Only)
   const websiteSections = [
     {
       group: "KONTEN LANDING PAGE",
@@ -299,14 +460,46 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
     },
   ];
 
-  // Non Super Admin can NEVER view website CMS sections
-  const currentSections = !isSuperAdmin || activeTab === "UTAMA" ? menuSections : websiteSections;
+  const currentSections =
+    activeTab === "MEMBACA"
+      ? membacaSections
+      : activeTab === "WEBSITE" && isSuperAdmin
+      ? websiteSections
+      : menuSections;
 
   // Active user data from centralized hook
   const userName = currentUser.name;
   const userEmail = currentUser.email;
   const userRole = currentUser.role;
-  const userPhoto = currentUser.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80";
+  const userPhoto =
+    currentUser.avatarUrl ||
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80";
+
+  // Check if nav item is currently active
+  const isItemActive = (href: string) => {
+    if (href.includes("?")) {
+      const [itemPath, itemQuery] = href.split("?");
+      const itemParams = new URLSearchParams(itemQuery);
+      const itemProgram = itemParams.get("program");
+      const itemTab = itemParams.get("tab");
+
+      if (itemProgram) {
+        return pathname === itemPath && currentProgram === itemProgram;
+      }
+      if (itemTab) {
+        return pathname === itemPath && searchParams?.get("tab") === itemTab;
+      }
+      return pathname === itemPath;
+    }
+
+    if (activeTab === "MEMBACA") {
+      return pathname === href && (currentProgram === "MEMBACA" || href === "/dashboard/rapor-membaca");
+    }
+    if (activeTab === "UTAMA") {
+      return pathname === href && (!currentProgram || currentProgram === "MATEMATIKA");
+    }
+    return pathname === href;
+  };
 
   return (
     <aside
@@ -318,7 +511,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
     >
       {/* Top Header */}
       <div className="p-4 border-b border-emerald-100/80 dark:border-[#162244] space-y-4">
-        {/* Mac-style Window Controls + Dark Mode & Collapse Button */}
+        {/* Window Controls + Dark Mode & Collapse Button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
@@ -390,31 +583,31 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
           )}
         </div>
 
-        {/* UTAMA vs WEBSITE Tab Switcher - Hanya untuk Super Admin */}
-        {!collapsed && isSuperAdmin && (
-          <div className="bg-emerald-50/70 dark:bg-[#0f1a36] p-1 rounded-xl grid grid-cols-2 text-xs font-bold text-slate-600 dark:text-slate-400 border border-emerald-100/80 dark:border-[#1d2d5a]">
-            <button
-              type="button"
-              onClick={() => setActiveTab("UTAMA")}
-              className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold ${
-                activeTab === "UTAMA"
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
-                  : "hover:text-emerald-600 dark:hover:text-white"
-              }`}
-            >
-              UTAMA
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("WEBSITE")}
-              className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold ${
-                activeTab === "WEBSITE"
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
-                  : "hover:text-emerald-600 dark:hover:text-white"
-              }`}
-            >
-              WEBSITE
-            </button>
+        {/* Dynamic Tab Switcher:
+            - Super Admin: UTAMA, MEMBACA, WEBSITE (3 tabs)
+            - Admin Cabang (Matematika & Membaca): UTAMA, MEMBACA (2 tabs)
+            - Admin Cabang (1 Program): 1 tab (No switch needed)
+        */}
+        {!collapsed && availableTabs.length > 1 && (
+          <div
+            className={`bg-emerald-50/70 dark:bg-[#0f1a36] p-1 rounded-xl grid ${
+              availableTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
+            } text-xs font-bold text-slate-600 dark:text-slate-400 border border-emerald-100/80 dark:border-[#1d2d5a]`}
+          >
+            {availableTabs.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`py-1.5 rounded-lg transition-all cursor-pointer font-extrabold text-center truncate px-1 text-[11px] sm:text-xs ${
+                  activeTab === tab
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
+                    : "hover:text-emerald-600 dark:hover:text-white"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -430,7 +623,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
             )}
             {section.items.map((item, iIdx) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive = isItemActive(item.href);
 
               return (
                 <Link
@@ -458,7 +651,8 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
                       className={`px-2 py-0.5 text-[10px] rounded-full shrink-0 shadow-2xs ${
                         isActive
                           ? "bg-white/25 text-white font-extrabold"
-                          : item.badgeColor || "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                          : item.badgeColor ||
+                            "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
                       }`}
                     >
                       {item.badge}
@@ -471,7 +665,7 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
         ))}
       </div>
 
-      {/* User Profile Footer (Fixed at Bottom Left with Photo Profile) */}
+      {/* User Profile Footer */}
       <div className="p-3 border-t border-emerald-100/80 dark:border-[#162244] bg-emerald-50/40 dark:bg-[#070d1e] relative">
         <div
           className={`flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-[#0f1a36] border border-emerald-100 dark:border-[#1d2d5a] shadow-xs ${
@@ -545,5 +739,17 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
         </div>
       </div>
     </aside>
+  );
+}
+
+export default function Sidebar(props: SidebarProps) {
+  return (
+    <Suspense
+      fallback={
+        <aside className="w-64 h-screen bg-white dark:bg-[#0a1128] border-r border-emerald-100/80 dark:border-[#162244]" />
+      }
+    >
+      <SidebarInner {...props} />
+    </Suspense>
   );
 }

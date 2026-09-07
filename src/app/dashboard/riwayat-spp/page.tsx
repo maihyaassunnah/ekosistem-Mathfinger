@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   RotateCcw,
   FileSpreadsheet,
@@ -19,9 +20,12 @@ import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, CashMutationItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function RiwayatSppPage() {
+function RiwayatSppContent() {
   const { students, invoices, cashMutations, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+  const isMembaca = paramProgram === "MEMBACA";
 
   const [activeSubTab, setActiveSubTab] = useState<"buku_besar" | "leger">(
     "buku_besar"
@@ -33,12 +37,14 @@ export default function RiwayatSppPage() {
   const [selectedStudent, setSelectedStudent] = useState("ALL");
   const [selectedMethod, setSelectedMethod] = useState("ALL");
 
-  // Scoped Data by Branch
+  // Scoped Data by Branch and Program
   const scopedStudents = useMemo(() => {
-    if (allowedBranch) return students.filter((s) => s.branch === allowedBranch);
-    if (branchFilter !== "ALL") return students.filter((s) => s.branch === branchFilter);
-    return students;
-  }, [students, allowedBranch, branchFilter]);
+    let list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+    if (branchFilter !== "ALL") list = list.filter((s) => s.branch === branchFilter);
+    return list.filter((s) =>
+      isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
+    );
+  }, [students, allowedBranch, branchFilter, isMembaca]);
 
   const scopedInvoices = useMemo(() => {
     let list = invoices;
@@ -57,22 +63,41 @@ export default function RiwayatSppPage() {
         return st?.branch === branchFilter || i.branch === branchFilter;
       });
     }
-    return list;
-  }, [invoices, students, allowedBranch, branchFilter]);
+    return list.filter((i) => {
+      const st = students.find(
+        (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
+      );
+      return isMembaca
+        ? (st as any)?.programType === "MEMBACA"
+        : (st as any)?.programType !== "MEMBACA";
+    });
+  }, [invoices, students, allowedBranch, branchFilter, isMembaca]);
 
   const scopedMutations = useMemo(() => {
-    if (!allowedBranch) return cashMutations;
-    return cashMutations.filter((m) => {
+    let list = cashMutations;
+    if (allowedBranch) {
+      list = list.filter((m) => {
+        const st = students.find((s) => s.name.toLowerCase() === m.studentName.toLowerCase());
+        if (st) return st.branch === allowedBranch;
+        const inv = invoices.find((i) => i.invoiceNo.toLowerCase() === m.invoiceNo.toLowerCase());
+        if (inv) {
+          const invSt = students.find((s) => s.id === inv.studentId || s.name.toLowerCase() === inv.studentName.toLowerCase());
+          return invSt?.branch === allowedBranch;
+        }
+        return false;
+      });
+    }
+    return list.filter((m) => {
       const st = students.find((s) => s.name.toLowerCase() === m.studentName.toLowerCase());
-      if (st) return st.branch === allowedBranch;
+      if (st) return isMembaca ? (st as any).programType === "MEMBACA" : (st as any).programType !== "MEMBACA";
       const inv = invoices.find((i) => i.invoiceNo.toLowerCase() === m.invoiceNo.toLowerCase());
       if (inv) {
         const invSt = students.find((s) => s.id === inv.studentId || s.name.toLowerCase() === inv.studentName.toLowerCase());
-        return invSt?.branch === allowedBranch;
+        return isMembaca ? (invSt as any)?.programType === "MEMBACA" : (invSt as any)?.programType !== "MEMBACA";
       }
-      return false;
+      return !isMembaca;
     });
-  }, [cashMutations, students, invoices, allowedBranch]);
+  }, [cashMutations, students, invoices, allowedBranch, isMembaca]);
 
   // Filtered mutations
   const filteredMutations = useMemo(() => {
@@ -135,7 +160,7 @@ export default function RiwayatSppPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
       {/* Top Status Bar */}
-      <TopStatusBar title="Riwayat Pembayaran" />
+      <TopStatusBar title={isMembaca ? "Riwayat SPP Les Membaca" : "Riwayat Pembayaran"} />
 
       {/* Main Title Banner & Export Button (Matching Screenshot 5) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -143,7 +168,7 @@ export default function RiwayatSppPage() {
           <div className="flex items-center gap-2.5">
             <RotateCcw className="w-6 h-6 text-emerald-600 shrink-0" />
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              Buku Besar & Riwayat Pembayaran
+              {isMembaca ? "Buku Besar & Riwayat SPP Les Membaca" : "Buku Besar & Riwayat Pembayaran"}
             </h1>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -462,5 +487,19 @@ export default function RiwayatSppPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function RiwayatSppPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 font-bold">
+          Memuat riwayat SPP...
+        </div>
+      }
+    >
+      <RiwayatSppContent />
+    </Suspense>
   );
 }

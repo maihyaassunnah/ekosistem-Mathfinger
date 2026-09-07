@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   BookOpen,
   Plus,
@@ -11,31 +12,41 @@ import {
   User,
   Check,
   X,
+  BookText,
 } from "lucide-react";
 import { useAppStore, JournalItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function JurnalGuruPage() {
+function JurnalGuruContent() {
   const { journals, addJournal, deleteJournal, classes, students } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+  const isMembaca = paramProgram === "MEMBACA";
 
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("ALL");
   const [studentFilter, setStudentFilter] = useState("ALL");
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  const scopedStudents = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
-  const scopedClasses = allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+  const scopedStudents = (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students).filter((s) =>
+    isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
+  );
+  const scopedClasses = (allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes).filter((c) =>
+    isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA"
+  );
 
   // Form state
   const [form, setForm] = useState({
     studentName: scopedStudents[0]?.name || "Aishwa Rahma Annida",
     className: scopedClasses[0]?.name || "Kelas A",
     branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
-    topic: "Pengurangan (jari turun)",
-    content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
+    topic: isMembaca ? "Kelancaran Membaca Suku Kata" : "Pengurangan (jari turun)",
+    content: isMembaca
+      ? "Alhamdulillah, hari ini Ananda dapat mengikuti bimbingan membaca dengan lancar. Pelafalan suku kata sudah tepat dan percaya diri. Pertahankan semangat belajarnya ya! 📖✨"
+      : "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
     teacher: "Febrianti Dewi, S.Pd",
-    date: "2026-08-30",
+    date: new Date().toISOString().split("T")[0],
   });
 
   const filteredJournals = journals.filter((j) => {
@@ -48,7 +59,12 @@ export default function JurnalGuruPage() {
     const matchClass = classFilter === "ALL" ? true : j.className === classFilter;
     const matchStudent = studentFilter === "ALL" ? true : j.studentName === studentFilter;
 
-    return matchBranch && matchSearch && matchClass && matchStudent;
+    const st = students.find((s) => s.name.toLowerCase() === j.studentName.toLowerCase());
+    const matchProgram = isMembaca
+      ? (st as any)?.programType === "MEMBACA"
+      : (st as any)?.programType !== "MEMBACA";
+
+    return matchBranch && matchSearch && matchClass && matchStudent && matchProgram;
   });
 
   const handleSubmitAdd = (e: React.FormEvent) => {
@@ -69,9 +85,14 @@ export default function JurnalGuruPage() {
       {/* Top Header (Matches Image 5) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Catatan Jurnal Guru
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {isMembaca ? "Catatan Jurnal Guru (Les Membaca)" : "Catatan Jurnal Guru (Les Matematika)"}
+            </h1>
+            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${isMembaca ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"}`}>
+              {isMembaca ? "📖 Les Membaca" : "🔢 Les Matematika"}
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-1">
             Input satu kali jurnal untuk semua siswa aktif yang hadir secara bersamaan berdasarkan hari atau kelompok kelas.
           </p>
@@ -326,5 +347,13 @@ export default function JurnalGuruPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function JurnalGuruPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Memuat jurnal guru...</div>}>
+      <JurnalGuruContent />
+    </Suspense>
   );
 }

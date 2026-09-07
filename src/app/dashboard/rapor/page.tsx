@@ -23,11 +23,13 @@ export default function RaporPage() {
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
   const scopedStudents = useMemo(() => {
-    return allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+    const list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+    return list.filter((s) => (s as any).programType !== "MEMBACA");
   }, [students, allowedBranch]);
 
   const scopedClasses = useMemo(() => {
-    return allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+    const list = allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+    return list.filter((c) => (c as any).programType !== "MEMBACA");
   }, [classes, allowedBranch]);
 
   const [selectedClass, setSelectedClass] = useState("ALL");
