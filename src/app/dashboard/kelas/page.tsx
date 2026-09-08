@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useAppStore, ClassItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function KelasContent() {
   const { classes, addClass, updateClass, deleteClass, students, updateStudent, branches } = useAppStore();
@@ -356,18 +357,18 @@ function KelasContent() {
         </div>
 
         {isSuperAdmin ? (
-          <select
+          <CustomSelect
             value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
-          >
-            <option value="ALL">Semua Cabang</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.name}>
-                Cabang {b.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedBranch}
+            size="md"
+            options={[
+              { value: "ALL", label: "Semua Cabang" },
+              ...branches.map((b) => ({
+                value: b.name,
+                label: `Cabang: ${b.name}`,
+              })),
+            ]}
+          />
         ) : (
           <div className="w-full sm:w-auto px-4 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
@@ -528,18 +529,17 @@ function KelasContent() {
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Pilihan Cabang</label>
-                  <select
+                  <CustomSelect
                     value={formData.branch}
                     disabled={!isSuperAdmin}
-                    onChange={(e) => setFormData({ ...formData, branch: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
-                  >
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.name}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, branch: val as any })}
+                    className="w-full"
+                    size="md"
+                    options={branches.map((b) => ({
+                      value: b.name,
+                      label: `Cabang: ${b.name}`,
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -636,31 +636,31 @@ function KelasContent() {
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
                     Level Kurikulum ({formData.programType === "MEMBACA" ? "Membaca" : "Matematika"})
                   </label>
-                  <select
+                  <CustomSelect
                     value={formData.level}
-                    onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500 font-medium"
-                  >
-                    {formData.programType === "MEMBACA" ? (
-                      <>
-                        <option value="Level 1: Pra-Membaca & Pengenalan Huruf">Level 1: Pra-Membaca & Pengenalan Huruf</option>
-                        <option value="Level 2: Merangkai Suku Kata Sederhana">Level 2: Merangkai Suku Kata Sederhana</option>
-                        <option value="Level 3: Merangkai Kata 2 Suku Kata">Level 3: Merangkai Kata 2 Suku Kata</option>
-                        <option value="Level 4: Kata Bervokal & Konsonan Ganda">Level 4: Kata Bervokal & Konsonan Ganda</option>
-                        <option value="Level 5: Membaca Kalimat Sederhana">Level 5: Membaca Kalimat Sederhana</option>
-                        <option value="Level 6: Membaca Paragraf Pendek">Level 6: Membaca Paragraf Pendek & Cerita</option>
-                        <option value="Level 7: Lancar Membaca & Pemahaman Teks">Level 7: Lancar Membaca & Pemahaman Teks</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
-                        <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan</option>
-                        <option value="Level 2: Kombinasi Teman Kecil">Level 2: Kombinasi Teman Kecil</option>
-                        <option value="Level 3: Kombinasi Teman Besar">Level 3: Kombinasi Teman Besar</option>
-                        <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
-                      </>
-                    )}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, level: val })}
+                    className="w-full"
+                    size="md"
+                    options={
+                      formData.programType === "MEMBACA"
+                        ? [
+                            { value: "Level 1: Pra-Membaca & Pengenalan Huruf", label: "Level 1: Pra-Membaca & Pengenalan Huruf" },
+                            { value: "Level 2: Merangkai Suku Kata Sederhana", label: "Level 2: Merangkai Suku Kata Sederhana" },
+                            { value: "Level 3: Merangkai Kata 2 Suku Kata", label: "Level 3: Merangkai Kata 2 Suku Kata" },
+                            { value: "Level 4: Kata Bervokal & Konsonan Ganda", label: "Level 4: Kata Bervokal & Konsonan Ganda" },
+                            { value: "Level 5: Membaca Kalimat Sederhana", label: "Level 5: Membaca Kalimat Sederhana" },
+                            { value: "Level 6: Membaca Paragraf Pendek", label: "Level 6: Membaca Paragraf Pendek & Cerita" },
+                            { value: "Level 7: Lancar Membaca & Pemahaman Teks", label: "Level 7: Lancar Membaca & Pemahaman Teks" },
+                          ]
+                        : [
+                            { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
+                            { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan" },
+                            { value: "Level 2: Kombinasi Teman Kecil", label: "Level 2: Kombinasi Teman Kecil" },
+                            { value: "Level 3: Kombinasi Teman Besar", label: "Level 3: Kombinasi Teman Besar" },
+                            { value: "Level Utama: Perkalian & Pembagian", label: "Level Utama: Perkalian & Pembagian" },
+                          ]
+                    }
+                  />
                 </div>
 
                 <div>
@@ -812,18 +812,20 @@ function KelasContent() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <select
+                  <CustomSelect
                     value={selectedStudentToAdd}
-                    onChange={(e) => setSelectedStudentToAdd(e.target.value)}
-                    className="flex-1 px-3 py-2.5 bg-white dark:bg-[#0f1a36] border border-emerald-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs"
-                  >
-                    <option value="">-- Pilih Siswa Cabang {viewingStudentsClass.branch} ({classProgType === "MEMBACA" ? "Les Membaca" : "Les Matematika"}) --</option>
-                    {candidates.map((st) => (
-                      <option key={st.id} value={st.id}>
-                        {st.name} (#{st.studentCode}) {st.className && st.className !== "-" ? `• [Pindah dari: ${st.className}]` : `• [Belum ada kelas]`}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedStudentToAdd}
+                    className="flex-1"
+                    size="md"
+                    placeholder={`-- Pilih Siswa Cabang ${viewingStudentsClass.branch} --`}
+                    options={[
+                      { value: "", label: `-- Pilih Siswa Cabang ${viewingStudentsClass.branch} (${classProgType === "MEMBACA" ? "Les Membaca" : "Les Matematika"}) --` },
+                      ...candidates.map((st) => ({
+                        value: st.id,
+                        label: `${st.name} (#${st.studentCode}) ${st.className && st.className !== "-" ? `• [Pindah dari: ${st.className}]` : `• [Belum ada kelas]`}`,
+                      })),
+                    ]}
+                  />
 
                   <button
                     type="button"

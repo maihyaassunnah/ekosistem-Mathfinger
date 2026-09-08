@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useAppStore, LandingProgramItem } from "@/lib/store";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 const TEACHERS = [
   {
@@ -1730,29 +1731,28 @@ export default function Home() {
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         Pilihan Cabang *
                       </label>
-                      <select
+                      <CustomSelect
                         value={trialForm.branch}
-                        onChange={(e) =>
+                        onChange={(val) =>
                           setTrialForm({
                             ...trialForm,
-                            branch: e.target.value as any,
+                            branch: val as any,
                           })
                         }
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
-                      >
-                        {branches && branches.length > 0 ? (
-                          branches.map((b) => (
-                            <option key={b.id} value={b.name}>
-                              Cabang {b.name}
-                            </option>
-                          ))
-                        ) : (
-                          <>
-                            <option value="Singkut">Cabang Singkut</option>
-                            <option value="Bangko">Cabang Bangko</option>
-                          </>
-                        )}
-                      </select>
+                        className="w-full"
+                        size="md"
+                        options={
+                          branches && branches.length > 0
+                            ? branches.map((b) => ({
+                                value: b.name,
+                                label: `Cabang: ${b.name}`,
+                              }))
+                            : [
+                                { value: "Singkut", label: "Cabang: Singkut" },
+                                { value: "Bangko", label: "Cabang: Bangko" },
+                              ]
+                        }
+                      />
                     </div>
                   </div>
 

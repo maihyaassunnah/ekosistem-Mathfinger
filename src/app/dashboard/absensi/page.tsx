@@ -38,6 +38,7 @@ import jsQR from "jsqr";
 import { useAppStore, AttendanceItem } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function AbsensiContent() {
   const searchParams = useSearchParams();
@@ -935,14 +936,16 @@ function AbsensiContent() {
               />
             </div>
 
-            <select
+            <CustomSelect
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as any)}
-              className="px-2.5 sm:px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0"
-            >
-              <option value="A-Z">A - Z</option>
-              <option value="Z-A">Z - A</option>
-            </select>
+              onChange={(val) => setSortOrder(val as any)}
+              size="sm"
+              className="shrink-0 w-24"
+              options={[
+                { value: "A-Z", label: "A - Z" },
+                { value: "Z-A", label: "Z - A" },
+              ]}
+            />
           </div>
 
           {/* Unified Attendance Card Container (Desktop matches Screenshot 1, Mobile/Tablet touch cards) */}
@@ -1684,18 +1687,19 @@ function AbsensiContent() {
                 </h3>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <select
+                  <CustomSelect
                     value={rekapClassFilter}
-                    onChange={(e) => setRekapClassFilter(e.target.value)}
-                    className="text-xs font-bold border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2.5 py-1.5 bg-white dark:bg-[#0f1a36] text-slate-700 dark:text-slate-200 cursor-pointer shadow-xs"
-                  >
-                    <option value="ALL">Semua Kelas</option>
-                    {branchScopedClasses.map((c) => (
-                      <option key={c.id} value={c.name}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setRekapClassFilter}
+                    size="sm"
+                    className="min-w-[150px]"
+                    options={[
+                      { value: "ALL", label: "Semua Kelas" },
+                      ...branchScopedClasses.map((c) => ({
+                        value: c.name,
+                        label: c.name,
+                      })),
+                    ]}
+                  />
 
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
@@ -2207,27 +2211,27 @@ function AbsensiContent() {
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Pilih Siswa
                 </label>
-                <select
+                <CustomSelect
                   value={crudForm.studentId}
-                  onChange={(e) => {
-                    const st = students.find((s) => s.id === e.target.value);
+                  onChange={(val) => {
+                    const st = students.find((s) => s.id === val);
                     setCrudForm({
                       ...crudForm,
-                      studentId: e.target.value,
+                      studentId: val,
                       studentName: st?.name || "",
                       studentCode: st?.studentCode || "",
                       className: st?.className || "",
                       branch: st?.branch || "Singkut",
                     });
                   }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100"
-                >
-                  {branchScopedStudents.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      #{s.studentCode} - {s.name} ({s.className})
-                    </option>
-                  ))}
-                </select>
+                  className="w-full"
+                  size="md"
+                  placeholder="Pilih Siswa..."
+                  options={branchScopedStudents.map((s) => ({
+                    value: s.id,
+                    label: `#${s.studentCode} - ${s.name} (${s.className})`,
+                  }))}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -2263,40 +2267,44 @@ function AbsensiContent() {
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Status Kehadiran
                   </label>
-                  <select
+                  <CustomSelect
                     value={crudForm.status}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setCrudForm({
                         ...crudForm,
-                        status: e.target.value as AttendanceItem["status"],
+                        status: val as AttendanceItem["status"],
                       })
                     }
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100"
-                  >
-                    <option value="HADIR">Hadir</option>
-                    <option value="IZIN">Izin</option>
-                    <option value="SAKIT">Sakit</option>
-                    <option value="ABSEN">Absen</option>
-                  </select>
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "HADIR", label: "Hadir" },
+                      { value: "IZIN", label: "Izin" },
+                      { value: "SAKIT", label: "Sakit" },
+                      { value: "ABSEN", label: "Absen" },
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Metode Catat
                   </label>
-                  <select
-                    value={crudForm.method}
-                    onChange={(e) =>
+                  <CustomSelect
+                    value={crudForm.method || "MANUAL"}
+                    onChange={(val) =>
                       setCrudForm({
                         ...crudForm,
-                        method: e.target.value as "QR_SCAN" | "MANUAL",
+                        method: val as "QR_SCAN" | "MANUAL",
                       })
                     }
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100"
-                  >
-                    <option value="MANUAL">Manual</option>
-                    <option value="QR_SCAN">Scan QR</option>
-                  </select>
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "MANUAL", label: "Manual" },
+                      { value: "QR_SCAN", label: "Scan QR" },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -2384,21 +2392,23 @@ function AbsensiContent() {
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Status Kehadiran
                 </label>
-                <select
+                <CustomSelect
                   value={crudForm.status}
-                  onChange={(e) =>
+                  onChange={(val) =>
                     setCrudForm({
                       ...crudForm,
-                      status: e.target.value as AttendanceItem["status"],
+                      status: val as AttendanceItem["status"],
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100"
-                >
-                  <option value="HADIR">Hadir</option>
-                  <option value="IZIN">Izin</option>
-                  <option value="SAKIT">Sakit</option>
-                  <option value="ABSEN">Absen</option>
-                </select>
+                  className="w-full"
+                  size="md"
+                  options={[
+                    { value: "HADIR", label: "Hadir" },
+                    { value: "IZIN", label: "Izin" },
+                    { value: "SAKIT", label: "Sakit" },
+                    { value: "ABSEN", label: "Absen" },
+                  ]}
+                />
               </div>
 
               <div>

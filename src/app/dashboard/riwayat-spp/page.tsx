@@ -17,6 +17,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { useAppStore, CashMutationItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -304,43 +305,45 @@ function RiwayatSppContent() {
 
             <div className="flex items-center gap-2 flex-wrap">
               {isSuperAdmin && (
-                <select
+                <CustomSelect
                   value={branchFilter}
-                  onChange={(e) => setBranchFilter(e.target.value)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="ALL">Semua Cabang</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.name}>
-                      Cabang {b.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setBranchFilter}
+                  size="md"
+                  options={[
+                    { value: "ALL", label: "Semua Cabang" },
+                    ...branches.map((b) => ({
+                      value: b.name,
+                      label: `Cabang: ${b.name}`,
+                    })),
+                  ]}
+                />
               )}
 
-              <select
+              <CustomSelect
                 value={selectedStudent}
-                onChange={(e) => setSelectedStudent(e.target.value)}
-                className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="ALL">Semua Siswa</option>
-                {scopedStudents.map((s) => (
-                  <option key={s.id} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedStudent}
+                size="md"
+                className="min-w-[160px]"
+                options={[
+                  { value: "ALL", label: "Semua Siswa" },
+                  ...scopedStudents.map((s) => ({
+                    value: s.name,
+                    label: s.name,
+                  })),
+                ]}
+              />
 
-              <select
+              <CustomSelect
                 value={selectedMethod}
-                onChange={(e) => setSelectedMethod(e.target.value)}
-                className="px-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="ALL">Semua Metode Pembayaran</option>
-                <option value="CICILAN">Cicilan</option>
-                <option value="TUNAI">Tunai</option>
-                <option value="TRANSFER">Transfer</option>
-              </select>
+                onChange={setSelectedMethod}
+                size="md"
+                options={[
+                  { value: "ALL", label: "Semua Metode Pembayaran" },
+                  { value: "CICILAN", label: "Cicilan" },
+                  { value: "TUNAI", label: "Tunai" },
+                  { value: "TRANSFER", label: "Transfer" },
+                ]}
+              />
             </div>
           </div>
 

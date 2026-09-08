@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAppStore, JournalItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function JurnalGuruContent() {
   const { journals, addJournal, deleteJournal, classes, students } = useAppStore();
@@ -133,31 +134,32 @@ function JurnalGuruContent() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select
+          <CustomSelect
             value={classFilter}
-            onChange={(e) => setClassFilter(e.target.value)}
-            className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
-          >
-            <option value="ALL">Semua Kelas</option>
-            {scopedClasses.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={setClassFilter}
+            size="md"
+            options={[
+              { value: "ALL", label: "Semua Kelas" },
+              ...scopedClasses.map((c) => ({
+                value: c.name,
+                label: c.name,
+              })),
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={studentFilter}
-            onChange={(e) => setStudentFilter(e.target.value)}
-            className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white max-w-[180px]"
-          >
-            <option value="ALL">Semua Siswa</option>
-            {scopedStudents.map((s) => (
-              <option key={s.id} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            onChange={setStudentFilter}
+            size="md"
+            className="min-w-[170px]"
+            options={[
+              { value: "ALL", label: "Semua Siswa" },
+              ...scopedStudents.map((s) => ({
+                value: s.name,
+                label: s.name,
+              })),
+            ]}
+          />
         </div>
       </div>
 
@@ -259,32 +261,32 @@ function JurnalGuruContent() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Nama Siswa</label>
-                  <select
+                  <CustomSelect
                     value={form.studentName}
-                    onChange={(e) => setForm({ ...form, studentName: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
-                  >
-                    {scopedStudents.map((s) => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} ({s.branch})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setForm({ ...form, studentName: val })}
+                    className="w-full"
+                    size="md"
+                    placeholder="Pilih Siswa..."
+                    options={scopedStudents.map((s) => ({
+                      value: s.name,
+                      label: `${s.name} (${s.branch})`,
+                    }))}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Pilihan Kelas</label>
-                  <select
+                  <CustomSelect
                     value={form.className}
-                    onChange={(e) => setForm({ ...form, className: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
-                  >
-                    {scopedClasses.map((c) => (
-                      <option key={c.id} value={c.name}>
-                        {c.name} ({c.branch})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setForm({ ...form, className: val })}
+                    className="w-full"
+                    size="md"
+                    placeholder="Pilih Kelas..."
+                    options={scopedClasses.map((c) => ({
+                      value: c.name,
+                      label: `${c.name} (${c.branch})`,
+                    }))}
+                  />
                 </div>
               </div>
 

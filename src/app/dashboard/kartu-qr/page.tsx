@@ -25,6 +25,7 @@ import QRCode from "qrcode";
 import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function StudentQrImage({
   student,
@@ -233,18 +234,18 @@ function KartuQrContent() {
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {isSuperAdmin ? (
-            <select
+            <CustomSelect
               value={branchFilter}
-              onChange={(e) => setBranchFilter(e.target.value)}
-              className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
-            >
-              <option value="ALL">Semua Cabang</option>
-              {branches.map((b) => (
-                <option key={b.id} value={b.name}>
-                  Cabang {b.name}
-                </option>
-              ))}
-            </select>
+              onChange={setBranchFilter}
+              size="md"
+              options={[
+                { value: "ALL", label: "Semua Cabang" },
+                ...branches.map((b) => ({
+                  value: b.name,
+                  label: `Cabang: ${b.name}`,
+                })),
+              ]}
+            />
           ) : (
             <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
               <MapPin className="w-3.5 h-3.5 text-emerald-600" />
@@ -252,20 +253,20 @@ function KartuQrContent() {
             </div>
           )}
 
-          <select
+          <CustomSelect
             value={classFilter}
-            onChange={(e) => setClassFilter(e.target.value)}
-            className="px-4 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-900 dark:text-white"
-          >
-            <option value="ALL">Semua Kelas</option>
-            {classes
-              .filter((c) => (branchFilter === "ALL" ? true : c.branch === branchFilter))
-              .map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-          </select>
+            onChange={setClassFilter}
+            size="md"
+            options={[
+              { value: "ALL", label: "Semua Kelas" },
+              ...classes
+                .filter((c) => (branchFilter === "ALL" ? true : c.branch === branchFilter))
+                .map((c) => ({
+                  value: c.name,
+                  label: c.name,
+                })),
+            ]}
+          />
         </div>
       </div>
 

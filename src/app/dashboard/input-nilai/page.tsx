@@ -29,6 +29,7 @@ import {
   Zap,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { useAppStore, GradeItem } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -72,8 +73,6 @@ export default function InputNilaiPage() {
   // Filters (Tab 1)
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState("ALL");
-  const [sortOrder, setSortOrder] = useState<"A-Z" | "Z-A">("A-Z");
-  const [selectedLetter, setSelectedLetter] = useState<string>("Semua");
 
   // Row entries state: studentId -> { isJoined, score, note }
   const [entries, setEntries] = useState<
@@ -96,25 +95,6 @@ export default function InputNilaiPage() {
   });
 
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Alphabet list matching image
-  const alphabetList = [
-    "Semua",
-    "A",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "K",
-    "M",
-    "N",
-    "Q",
-    "R",
-    "S",
-    "Y",
-    "Z",
-  ];
 
   // -------------------------------------------------------------
   // TAB 2: KEAKTIFAN SISWA STATE & MODAL
@@ -449,16 +429,10 @@ export default function InputNilaiPage() {
           s.studentCode.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesClass =
           selectedClass === "ALL" || s.className === selectedClass;
-        const matchesLetter =
-          selectedLetter === "Semua" ||
-          s.name.toUpperCase().startsWith(selectedLetter);
-        return matchesSearch && matchesClass && matchesLetter;
+        return matchesSearch && matchesClass;
       })
-      .sort((a, b) => {
-        if (sortOrder === "A-Z") return a.name.localeCompare(b.name);
-        return b.name.localeCompare(a.name);
-      });
-  }, [scopedStudents, searchQuery, selectedClass, selectedLetter, sortOrder]);
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [scopedStudents, searchQuery, selectedClass]);
 
   const handleToggleJoined = (studentId: string) => {
     setEntries((prev) => ({
@@ -527,14 +501,14 @@ export default function InputNilaiPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
+    <div className="p-3.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1400px] mx-auto min-h-screen">
       {/* Top Status Bar with Supabase Live */}
       <TopStatusBar title="Input Nilai & Evaluasi" />
 
       {/* Main Title Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
             Input Nilai & Uji Kecepatan
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -544,26 +518,26 @@ export default function InputNilaiPage() {
 
         {/* Global Action feedback toast */}
         {(keaktifanToast || legerToast) && (
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in shadow-xs">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in shadow-xs self-start sm:self-auto">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{keaktifanToast || legerToast}</span>
           </div>
         )}
       </div>
 
-      {/* 3 Sub-tabs */}
-      <div className="flex items-center gap-6 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold">
+      {/* 3 Sub-tabs with smooth horizontal scrolling on mobile */}
+      <div className="flex items-center gap-2 sm:gap-6 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold overflow-x-auto no-scrollbar scrollbar-none pb-0">
         <button
           type="button"
           onClick={() => setActiveSubTab("input")}
-          className={`flex items-center gap-2 pb-3.5 transition-all relative cursor-pointer ${
+          className={`flex items-center gap-2 pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 sm:px-0 ${
             activeSubTab === "input"
               ? "text-emerald-600 dark:text-emerald-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <Edit3 className="w-4 h-4" />
-          Input & Riwayat Nilai
+          <span>Input & Riwayat Nilai</span>
           {activeSubTab === "input" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-500 rounded-full" />
           )}
@@ -572,14 +546,14 @@ export default function InputNilaiPage() {
         <button
           type="button"
           onClick={() => setActiveSubTab("keaktifan")}
-          className={`flex items-center gap-2 pb-3.5 transition-all relative cursor-pointer ${
+          className={`flex items-center gap-2 pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 sm:px-0 ${
             activeSubTab === "keaktifan"
               ? "text-emerald-600 dark:text-emerald-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          Penilaian & Keaktifan Siswa
+          <span>Penilaian & Keaktifan Siswa</span>
           {activeSubTab === "keaktifan" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-500 rounded-full" />
           )}
@@ -588,14 +562,14 @@ export default function InputNilaiPage() {
         <button
           type="button"
           onClick={() => setActiveSubTab("leger")}
-          className={`flex items-center gap-2 pb-3.5 transition-all relative cursor-pointer ${
+          className={`flex items-center gap-2 pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 sm:px-0 ${
             activeSubTab === "leger"
               ? "text-emerald-600 dark:text-emerald-400"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          Leger Nilai (Matriks CRUD)
+          <span>Leger Nilai (Matriks CRUD)</span>
           {activeSubTab === "leger" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-500 rounded-full" />
           )}
@@ -606,27 +580,27 @@ export default function InputNilaiPage() {
       {/* SUBTAB 1: INPUT NILAI KELAS (LANGSUNG)                        */}
       {/* ------------------------------------------------------------- */}
       {activeSubTab === "input" && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
             {/* Card Header */}
-            <div className="p-5 border-b border-slate-100 dark:border-[#1d2d5a] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#1d2d5a] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                     Panel Input Nilai Kelas (Langsung)
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
                     Isi materi/bab, tanggal, dan nilai siswa aktif di bawah, lalu klik Simpan Nilai.
                   </p>
                 </div>
               </div>
 
               {saveSuccess && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in self-start sm:self-auto">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Nilai Masuk ke Leger Berurutan!</span>
                   <button
                     type="button"
@@ -639,107 +613,179 @@ export default function InputNilaiPage() {
               )}
             </div>
 
-            {/* Form Input Fields */}
-            <div className="p-5 bg-slate-50/50 dark:bg-[#09130f] border-b border-slate-100 dark:border-[#1d2d5a] grid grid-cols-1 md:grid-cols-12 gap-4">
-              <div className="md:col-span-8 space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                  Materi / Bab Uji Kompetensi *
+            {/* Form Input Fields: Materi & Tanggal (1 Baris) */}
+            <div className="p-3 sm:p-5 bg-slate-50/50 dark:bg-[#09130f] border-b border-slate-100 dark:border-[#1d2d5a] grid grid-cols-12 gap-2 sm:gap-4">
+              <div className="col-span-7 sm:col-span-8 space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase truncate block">
+                  Materi / Bab *
                 </label>
                 <input
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Misal: Penjumlahan Kombinasi 5 (+4, +3)"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Misal: Penjumlahan Kombinasi 5"
+                  className="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
-              <div className="md:col-span-4 space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+              <div className="col-span-5 sm:col-span-4 space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase truncate block">
                   Tanggal Ujian *
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={examDate}
-                    onChange={(e) => setExamDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
+                <input
+                  type="date"
+                  value={examDate}
+                  onChange={(e) => setExamDate(e.target.value)}
+                  className="w-full px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
               </div>
             </div>
 
-            {/* Saring Berdasarkan Nama / Kelas / Abjad */}
-            <div className="p-5 space-y-4 border-b border-slate-100 dark:border-[#1d2d5a]">
+            {/* Saring Berdasarkan Nama & Kelas (1 Baris) */}
+            <div className="p-3 sm:p-5 space-y-2 border-b border-slate-100 dark:border-[#1d2d5a]">
               <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                Saring Berdasarkan Nama / Kelas / Abjad
+                Saring Berdasarkan Nama & Kelas
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="grid grid-cols-12 gap-2">
                 {/* Search Bar */}
-                <div className="relative flex-1 w-full">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <div className="relative col-span-7 sm:col-span-8">
+                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari nama siswa..."
-                    className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-8 sm:pl-9 pr-2.5 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 {/* Class Select */}
-                <select
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                  className="w-full sm:w-48 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="ALL">Semua Kelas</option>
-                  {scopedClasses.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name} ({c.branch})
-                    </option>
-                  ))}
-                </select>
-
-                {/* Sort Order */}
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value as "A-Z" | "Z-A")}
-                  className="w-full sm:w-36 px-3 py-2 rounded-xl bg-slate-50/70 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="A-Z">Nama: A - Z</option>
-                  <option value="Z-A">Nama: Z - A</option>
-                </select>
-              </div>
-
-              {/* Inisial Abjad Pills */}
-              <div className="flex items-center gap-2 flex-wrap pt-1">
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 mr-1">
-                  Inisial Abjad:
-                </span>
-                {alphabetList.map((letter) => {
-                  const isActive = selectedLetter === letter;
-                  return (
-                    <button
-                      key={letter}
-                      type="button"
-                      onClick={() => setSelectedLetter(letter)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-emerald-600 text-white shadow-xs"
-                          : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                    >
-                      {letter}
-                    </button>
-                  );
-                })}
+                <div className="col-span-5 sm:col-span-4">
+                  <CustomSelect
+                    value={selectedClass}
+                    onChange={setSelectedClass}
+                    className="w-full"
+                    size="sm"
+                    options={[
+                      { value: "ALL", label: "Semua Kelas" },
+                      ...scopedClasses.map((c) => ({
+                        value: c.name,
+                        label: `${c.name} (${c.branch})`,
+                      })),
+                    ]}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Student Table */}
-            <div className="overflow-x-auto">
+            {/* Mobile View: Clean Touch-Friendly Cards */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {/* Mobile Select All Header */}
+              <div className="p-3 bg-slate-50/90 dark:bg-[#09130f] flex items-center justify-between border-b border-slate-200/80 dark:border-[#1d2d5a]">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={
+                      filteredStudents.length > 0 &&
+                      filteredStudents.every((s) => entries[s.id]?.isJoined)
+                    }
+                    onChange={handleToggleSelectAll}
+                    className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                  />
+                  <span>Pilih Semua Siswa</span>
+                </label>
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                  {filteredStudents.filter((s) => entries[s.id]?.isJoined).length} / {filteredStudents.length} Ikut
+                </span>
+              </div>
+
+              {filteredStudents.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-xs">
+                  Tidak ada siswa yang sesuai filter
+                </div>
+              ) : (
+                filteredStudents.map((s) => {
+                  const isJoined = entries[s.id]?.isJoined ?? true;
+                  const score = entries[s.id]?.score ?? 0;
+                  const note = entries[s.id]?.note ?? "";
+
+                  return (
+                    <div
+                      key={`mobile-${s.id}`}
+                      className={`p-3 space-y-2 transition-colors ${
+                        !isJoined
+                          ? "opacity-50 bg-slate-50/50 dark:bg-slate-900/30"
+                          : "hover:bg-slate-50/70 dark:hover:bg-slate-800/40"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <input
+                            type="checkbox"
+                            checked={isJoined}
+                            onChange={() => handleToggleJoined(s.id)}
+                            className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0 cursor-pointer"
+                          />
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 dark:text-slate-100 text-xs truncate">
+                              {s.name}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md border border-purple-200 dark:border-purple-800 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/30">
+                                🏫 {s.className}
+                              </span>
+                              <span
+                                className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold ${
+                                  isJoined
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                                    : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                                }`}
+                              >
+                                {isJoined ? "IKUT" : "TIDAK IKUT"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Skor Input */}
+                        <div className="flex items-center gap-1.5 shrink-0 bg-slate-50 dark:bg-[#0b1329] p-1.5 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                          <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 pl-1">
+                            SKOR:
+                          </span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            disabled={!isJoined}
+                            value={score}
+                            onChange={(e) =>
+                              handleScoreChange(s.id, parseInt(e.target.value))
+                            }
+                            className="w-14 px-1.5 py-1 rounded-lg border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] text-xs font-black text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Catatan Field */}
+                      <div>
+                        <input
+                          type="text"
+                          disabled={!isJoined}
+                          value={note}
+                          onChange={(e) => handleNoteChange(s.id, e.target.value)}
+                          placeholder="Catatan performa siswa..."
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Desktop View: Full Table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200/80 dark:border-[#1d2d5a] text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   <tr>
@@ -845,8 +891,8 @@ export default function InputNilaiPage() {
             </div>
 
             {/* Bottom Save Action Bar */}
-            <div className="p-4 bg-slate-50/60 dark:bg-[#09130f] border-t border-slate-200/80 dark:border-[#1d2d5a] flex items-center justify-between">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="p-3.5 sm:p-4 bg-slate-50/60 dark:bg-[#09130f] border-t border-slate-200/80 dark:border-[#1d2d5a] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium text-center sm:text-left">
                 Menampilkan{" "}
                 <span className="font-bold text-slate-800 dark:text-slate-200">
                   {filteredStudents.length}
@@ -854,7 +900,7 @@ export default function InputNilaiPage() {
                 siswa aktif terdaftar
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -870,7 +916,7 @@ export default function InputNilaiPage() {
                       return reset;
                     });
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] hover:bg-slate-50 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] hover:bg-slate-50 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
                   Reset Form
@@ -879,10 +925,10 @@ export default function InputNilaiPage() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all cursor-pointer"
+                  className="flex-2 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  Simpan Nilai Uji Kompetensi
+                  <span>Simpan Nilai</span>
                 </button>
               </div>
             </div>
@@ -894,11 +940,11 @@ export default function InputNilaiPage() {
       {/* SUBTAB 2: OBSERVASI KEAKTIFAN SISWA (INPUT PER ANAK)           */}
       {/* ------------------------------------------------------------- */}
       {activeSubTab === "keaktifan" && (
-        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-6 space-y-6">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
@@ -919,7 +965,7 @@ export default function InputNilaiPage() {
           </div>
 
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 dark:bg-[#0b1329] p-3 rounded-2xl border border-slate-200 dark:border-[#1d2d5a]">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-slate-50 dark:bg-[#0b1329] p-3 rounded-2xl border border-slate-200 dark:border-[#1d2d5a]">
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -931,18 +977,19 @@ export default function InputNilaiPage() {
               />
             </div>
 
-            <select
+            <CustomSelect
               value={keaktifanClassFilter}
-              onChange={(e) => setKeaktifanClassFilter(e.target.value)}
-              className="w-full sm:w-48 px-3 py-1.5 bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
-            >
-              <option value="ALL">Semua Kelas ({scopedStudents.length} Siswa)</option>
-              {scopedClasses.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name} ({c.branch})
-                </option>
-              ))}
-            </select>
+              onChange={setKeaktifanClassFilter}
+              className="w-full sm:w-64"
+              size="sm"
+              options={[
+                { value: "ALL", label: `Semua Kelas (${scopedStudents.length} Siswa)` },
+                ...scopedClasses.map((c) => ({
+                  value: c.name,
+                  label: `${c.name} (${c.branch})`,
+                })),
+              ]}
+            />
           </div>
 
           {/* Cards Grid for ALL Students */}
@@ -1220,9 +1267,9 @@ export default function InputNilaiPage() {
       {/* SUBTAB 3: LEGER NILAI MATRIKS (FULL CRUD)                      */}
       {/* ------------------------------------------------------------- */}
       {activeSubTab === "leger" && (
-        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-6 space-y-5">
+        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Header & Controls */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
@@ -1239,18 +1286,19 @@ export default function InputNilaiPage() {
 
             <div className="flex items-center gap-2.5 flex-wrap">
               {/* Class Filter */}
-              <select
+              <CustomSelect
                 value={legerClassFilter}
-                onChange={(e) => setLegerClassFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-emerald-500"
-              >
-                <option value="ALL">Semua Kelas ({scopedStudents.length})</option>
-                {scopedClasses.map((c) => (
-                  <option key={c.id} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setLegerClassFilter}
+                className="min-w-[170px]"
+                size="sm"
+                options={[
+                  { value: "ALL", label: `Semua Kelas (${scopedStudents.length})` },
+                  ...scopedClasses.map((c) => ({
+                    value: c.name,
+                    label: c.name,
+                  })),
+                ]}
+              />
 
               {/* Search */}
               <div className="relative">
@@ -1541,20 +1589,21 @@ export default function InputNilaiPage() {
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                       Target Siswa Kelas:
                     </label>
-                    <select
+                    <CustomSelect
                       value={newSessionForm.targetClass}
-                      onChange={(e) =>
-                        setNewSessionForm({ ...newSessionForm, targetClass: e.target.value })
+                      onChange={(val) =>
+                        setNewSessionForm({ ...newSessionForm, targetClass: val })
                       }
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0b1329] text-xs font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      <option value="ALL">Semua Siswa Terdaftar ({students.length})</option>
-                      {classes.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.branch})
-                        </option>
-                      ))}
-                    </select>
+                      className="w-full"
+                      size="sm"
+                      options={[
+                        { value: "ALL", label: `Semua Siswa Terdaftar (${students.length})` },
+                        ...classes.map((c) => ({
+                          value: c.name,
+                          label: `${c.name} (${c.branch})`,
+                        })),
+                      ]}
+                    />
                   </div>
                 </div>
 

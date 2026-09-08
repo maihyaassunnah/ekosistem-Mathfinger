@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { useAppStore } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -223,37 +224,36 @@ export default function RaporPage() {
         {/* Filters & Actions */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Kelas Selector */}
-          <select
+          <CustomSelect
             value={selectedClass}
-            onChange={(e) => {
-              setSelectedClass(e.target.value);
+            onChange={(val) => {
+              setSelectedClass(val);
               const firstInClass = scopedStudents.find(
-                (s) => e.target.value === "ALL" || s.className === e.target.value
+                (s) => val === "ALL" || s.className === val
               );
               if (firstInClass) setSelectedStudentId(firstInClass.id);
             }}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="ALL">Semua Kelas</option>
-            {scopedClasses.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.name} ({c.branch})
-              </option>
-            ))}
-          </select>
+            size="md"
+            options={[
+              { value: "ALL", label: "Semua Kelas" },
+              ...scopedClasses.map((c) => ({
+                value: c.name,
+                label: `${c.name} (${c.branch})`,
+              })),
+            ]}
+          />
 
           {/* Student Selector */}
-          <select
+          <CustomSelect
             value={selectedStudentId}
-            onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[200px]"
-          >
-            {classFilteredStudents.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.className})
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedStudentId}
+            size="md"
+            className="min-w-[180px]"
+            options={classFilteredStudents.map((s) => ({
+              value: s.id,
+              label: `${s.name} (${s.className})`,
+            }))}
+          />
 
           {/* Actions */}
           <button

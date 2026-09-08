@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAppStore, BranchAdminItem } from "@/lib/store";
 import { BranchItem } from "@/lib/mock-data";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 export default function CabangDanAdminPage() {
   const {
@@ -590,19 +591,21 @@ export default function CabangDanAdminPage() {
                 </div>
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Status Operasional</label>
-                  <select
+                  <CustomSelect
                     value={branchForm.status}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setBranchForm({
                         ...branchForm,
-                        status: e.target.value as "ACTIVE" | "INACTIVE",
+                        status: val as "ACTIVE" | "INACTIVE",
                       })
                     }
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="ACTIVE">Aktif (Beroperasi)</option>
-                    <option value="INACTIVE">Nonaktif (Tutup/Non-Aktif)</option>
-                  </select>
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "ACTIVE", label: "Aktif (Beroperasi)" },
+                      { value: "INACTIVE", label: "Nonaktif (Tutup/Non-Aktif)" },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -812,33 +815,36 @@ export default function CabangDanAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Penugasan Cabang</label>
-                  <select
+                  <CustomSelect
                     value={adminForm.branchName}
-                    onChange={(e) =>
-                      setAdminForm({ ...adminForm, branchName: e.target.value as any })
+                    onChange={(val) =>
+                      setAdminForm({ ...adminForm, branchName: val as any })
                     }
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="Semua Cabang (Pusat)">Semua Cabang (Pusat)</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.name}>
-                        Cabang {b.name}
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "Semua Cabang (Pusat)", label: "Semua Cabang (Pusat)" },
+                      ...branches.map((b) => ({
+                        value: b.name,
+                        label: `Cabang: ${b.name}`,
+                      })),
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Peran / Jabatan</label>
-                  <select
+                  <CustomSelect
                     value={adminForm.role}
-                    onChange={(e) => setAdminForm({ ...adminForm, role: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="Super Admin">Super Admin</option>
-                    <option value="Admin Cabang">Admin Cabang</option>
-                    <option value="Asisten Cabang">Asisten Cabang</option>
-                  </select>
+                    onChange={(val) => setAdminForm({ ...adminForm, role: val as any })}
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "Super Admin", label: "Super Admin" },
+                      { value: "Admin Cabang", label: "Admin Cabang" },
+                      { value: "Asisten Cabang", label: "Asisten Cabang" },
+                    ]}
+                  />
                 </div>
               </div>
 

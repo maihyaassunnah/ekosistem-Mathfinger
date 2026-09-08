@@ -24,6 +24,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { useAppStore, CashTransactionItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -298,26 +299,23 @@ function ArusKeuanganContent() {
         {/* Top Right Dropdowns: Bulan & Cabang */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Dropdown Bulan */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-2xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-xs text-slate-500 font-medium">Bulan:</span>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none cursor-pointer"
-            >
-              <option value="ALL">Semua Bulan</option>
-              <option value="2026-08">Agustus 2026</option>
-              <option value="2026-07">Juli 2026</option>
-              <option value="2026-06">Juni 2026</option>
-              <option value="2026-05">Mei 2026</option>
-              <option value="2026-04">April 2026</option>
-            </select>
-          </div>
+          <CustomSelect
+            value={selectedMonth}
+            onChange={setSelectedMonth}
+            size="md"
+            options={[
+              { value: "ALL", label: "Bulan: Semua Bulan" },
+              { value: "2026-08", label: "Bulan: Agustus 2026" },
+              { value: "2026-07", label: "Bulan: Juli 2026" },
+              { value: "2026-06", label: "Bulan: Juni 2026" },
+              { value: "2026-05", label: "Bulan: Mei 2026" },
+              { value: "2026-04", label: "Bulan: April 2026" },
+            ]}
+          />
 
           {/* Dropdown Cabang / Locked Badge */}
           {!isSuperAdmin && allowedBranch ? (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 shadow-2xs">
               <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="text-xs text-slate-500 font-medium">Cabang:</span>
               <span className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
@@ -328,22 +326,18 @@ function ArusKeuanganContent() {
               </span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-2xs">
-              <Building2 className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-xs text-slate-500 font-medium">Cabang:</span>
-              <select
-                value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value as any)}
-                className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none cursor-pointer"
-              >
-                <option value="ALL">Semua Cabang</option>
-                {branches.map((b) => (
-                  <option key={b.id} value={b.name}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CustomSelect
+              value={selectedBranch}
+              onChange={(val) => setSelectedBranch(val as any)}
+              size="md"
+              options={[
+                { value: "ALL", label: "Semua Cabang" },
+                ...branches.map((b) => ({
+                  value: b.name,
+                  label: `Cabang: ${b.name}`,
+                })),
+              ]}
+            />
           )}
         </div>
       </div>
@@ -948,16 +942,18 @@ function ArusKeuanganContent() {
                 <label className="font-bold text-slate-700 dark:text-slate-300">
                   Kategori Pemasukan *
                 </label>
-                <select
+                <CustomSelect
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold"
-                >
-                  <option value="SPP">SPP Bulanan Siswa</option>
-                  <option value="Pendaftaran">Uang Pendaftaran Siswa Baru</option>
-                  <option value="Modul/Buku">Penjualan Buku Modul Jaritmatika</option>
-                  <option value="Lainnya">Pemasukan Lain-lain</option>
-                </select>
+                  onChange={(val) => setForm({ ...form, category: val })}
+                  className="w-full"
+                  size="md"
+                  options={[
+                    { value: "SPP", label: "SPP Bulanan Siswa" },
+                    { value: "Pendaftaran", label: "Uang Pendaftaran Siswa Baru" },
+                    { value: "Modul/Buku", label: "Penjualan Buku Modul Jaritmatika" },
+                    { value: "Lainnya", label: "Pemasukan Lain-lain" },
+                  ]}
+                />
               </div>
 
               <div className="space-y-1">
@@ -981,22 +977,19 @@ function ArusKeuanganContent() {
                   <label className="font-bold text-slate-700 dark:text-slate-300">
                     Cabang *
                   </label>
-                  <select
+                  <CustomSelect
                     value={allowedBranch || form.branch}
                     disabled={Boolean(allowedBranch)}
-                    onChange={(e) =>
-                      setForm({ ...form, branch: e.target.value as any })
+                    onChange={(val) =>
+                      setForm({ ...form, branch: val as any })
                     }
-                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold ${
-                      allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
-                    }`}
-                  >
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.name}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full"
+                    size="md"
+                    options={branches.map((b) => ({
+                      value: b.name,
+                      label: `Cabang: ${b.name}`,
+                    }))}
+                  />
                 </div>
 
                 <div className="space-y-1">
@@ -1090,17 +1083,19 @@ function ArusKeuanganContent() {
                 <label className="font-bold text-slate-700 dark:text-slate-300">
                   Kategori Pengeluaran *
                 </label>
-                <select
+                <CustomSelect
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold"
-                >
-                  <option value="Cetak buku">Cetak Buku & Modul</option>
-                  <option value="Gaji Tutor">Honor / Gaji Tutor Pengajar</option>
-                  <option value="Operasional & ATK">Operasional, ATK & Spidol</option>
-                  <option value="Sewa & Listrik">Sewa Tempat & Listrik / WiFi</option>
-                  <option value="Lainnya">Pengeluaran Lainnya</option>
-                </select>
+                  onChange={(val) => setForm({ ...form, category: val })}
+                  className="w-full"
+                  size="md"
+                  options={[
+                    { value: "Cetak buku", label: "Cetak Buku & Modul" },
+                    { value: "Gaji Tutor", label: "Honor / Gaji Tutor Pengajar" },
+                    { value: "Operasional & ATK", label: "Operasional, ATK & Spidol" },
+                    { value: "Sewa & Listrik", label: "Sewa Tempat & Listrik / WiFi" },
+                    { value: "Lainnya", label: "Pengeluaran Lainnya" },
+                  ]}
+                />
               </div>
 
               <div className="space-y-1">
@@ -1124,22 +1119,19 @@ function ArusKeuanganContent() {
                   <label className="font-bold text-slate-700 dark:text-slate-300">
                     Cabang *
                   </label>
-                  <select
+                  <CustomSelect
                     value={allowedBranch || form.branch}
                     disabled={Boolean(allowedBranch)}
-                    onChange={(e) =>
-                      setForm({ ...form, branch: e.target.value as any })
+                    onChange={(val) =>
+                      setForm({ ...form, branch: val as any })
                     }
-                    className={`w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 font-semibold ${
-                      allowedBranch ? "opacity-80 cursor-not-allowed bg-slate-100 dark:bg-slate-900" : ""
-                    }`}
-                  >
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.name}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full"
+                    size="md"
+                    options={branches.map((b) => ({
+                      value: b.name,
+                      label: `Cabang: ${b.name}`,
+                    }))}
+                  />
                 </div>
 
                 <div className="space-y-1">

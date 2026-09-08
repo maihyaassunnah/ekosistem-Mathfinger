@@ -41,6 +41,7 @@ import {
   LandingLeadItem,
   LandingPartnerItem,
 } from "@/lib/store";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function WebsiteManagementContent() {
   const searchParams = useSearchParams();
@@ -973,35 +974,37 @@ function WebsiteManagementContent() {
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         Cabang
                       </label>
-                      <select
+                      <CustomSelect
                         value={testiForm.branch}
-                        onChange={(e) =>
-                          setTestiForm({ ...testiForm, branch: e.target.value })
+                        onChange={(val) =>
+                          setTestiForm({ ...testiForm, branch: val })
                         }
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
-                      >
-                        {branches.map((b) => (
-                          <option key={b.id} value={`Cabang ${b.name}`}>
-                            Cabang {b.name}
-                          </option>
-                        ))}
-                      </select>
+                        className="w-full"
+                        size="md"
+                        options={branches.map((b) => ({
+                          value: `Cabang ${b.name}`,
+                          label: `Cabang: ${b.name}`,
+                        }))}
+                      />
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         Rating Bintang
                       </label>
-                      <select
-                        value={testiForm.rating}
-                        onChange={(e) =>
-                          setTestiForm({ ...testiForm, rating: Number(e.target.value) })
+                      <CustomSelect
+                        value={String(testiForm.rating)}
+                        onChange={(val) =>
+                          setTestiForm({ ...testiForm, rating: Number(val) })
                         }
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
-                      >
-                        <option value={5}>⭐⭐⭐⭐⭐ (5 Bintang)</option>
-                        <option value={4}>⭐⭐⭐⭐ (4 Bintang)</option>
-                      </select>
+                        className="w-full"
+                        size="md"
+                        options={[
+                          { value: "5", label: "⭐⭐⭐⭐⭐ (5 Bintang)" },
+                          { value: "4", label: "⭐⭐⭐⭐ (4 Bintang)" },
+                          { value: "3", label: "⭐⭐⭐ (3 Bintang)" },
+                        ]}
+                      />
                     </div>
                   </div>
 
@@ -1058,30 +1061,31 @@ function WebsiteManagementContent() {
 
             {/* Filter Pills */}
             <div className="flex items-center gap-2">
-              <select
+              <CustomSelect
                 value={leadBranchFilter}
-                onChange={(e) => setLeadBranchFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
-              >
-                <option value="Semua">Semua Cabang</option>
-                {branches.map((b) => (
-                  <option key={b.id} value={b.name}>
-                    Cabang {b.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setLeadBranchFilter}
+                size="sm"
+                options={[
+                  { value: "Semua", label: "Semua Cabang" },
+                  ...branches.map((b) => ({
+                    value: b.name,
+                    label: `Cabang: ${b.name}`,
+                  })),
+                ]}
+              />
 
-              <select
+              <CustomSelect
                 value={leadStatusFilter}
-                onChange={(e) => setLeadStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
-              >
-                <option value="Semua">Semua Status</option>
-                <option value="Baru">Baru</option>
-                <option value="Dihubungi">Dihubungi</option>
-                <option value="Trial Terjadwal">Trial Terjadwal</option>
-                <option value="Terdaftar">Terdaftar</option>
-              </select>
+                onChange={setLeadStatusFilter}
+                size="sm"
+                options={[
+                  { value: "Semua", label: "Semua Status" },
+                  { value: "Baru", label: "Baru" },
+                  { value: "Dihubungi", label: "Dihubungi" },
+                  { value: "Trial Terjadwal", label: "Trial Terjadwal" },
+                  { value: "Terdaftar", label: "Terdaftar" },
+                ]}
+              />
             </div>
           </div>
 
@@ -1143,29 +1147,22 @@ function WebsiteManagementContent() {
                           {lead.createdAt}
                         </td>
                         <td className="py-3.5 px-4">
-                          <select
+                          <CustomSelect
                             value={lead.status}
-                            onChange={(e) =>
+                            onChange={(val) =>
                               updateLandingLeadStatus(
                                 lead.id,
-                                e.target.value as LandingLeadItem["status"]
+                                val as LandingLeadItem["status"]
                               )
                             }
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border-0 cursor-pointer ${
-                              lead.status === "Baru"
-                                ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
-                                : lead.status === "Dihubungi"
-                                ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-950/80 dark:text-emerald-300"
-                                : lead.status === "Trial Terjadwal"
-                                ? "bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300"
-                                : "bg-emerald-100 text-emerald-950 dark:text-emerald-300 dark:bg-slate-800 dark:text-emerald-400"
-                            }`}
-                          >
-                            <option value="Baru">🟡 Baru</option>
-                            <option value="Dihubungi">🔵 Dihubungi</option>
-                            <option value="Trial Terjadwal">🟣 Trial Terjadwal</option>
-                            <option value="Terdaftar">🟢 Terdaftar Siswa</option>
-                          </select>
+                            size="sm"
+                            options={[
+                              { value: "Baru", label: "🟡 Baru" },
+                              { value: "Dihubungi", label: "🔵 Dihubungi" },
+                              { value: "Trial Terjadwal", label: "🟣 Trial Terjadwal" },
+                              { value: "Terdaftar", label: "🟢 Terdaftar Siswa" },
+                            ]}
+                          />
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -1404,19 +1401,21 @@ function WebsiteManagementContent() {
                 <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Kategori Kerja Sama *
                 </label>
-                <select
+                <CustomSelect
                   value={partnerForm.category}
-                  onChange={(e) => setPartnerForm({ ...partnerForm, category: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white font-medium"
-                >
-                  <option value="Sekolah Dasar Mitra">Sekolah Dasar Mitra</option>
-                  <option value="PAUD & TK Binaan">PAUD & TK Binaan</option>
-                  <option value="Yayasan Pendidikan">Yayasan Pendidikan</option>
-                  <option value="Lembaga Pendidikan Anak">Lembaga Pendidikan Anak</option>
-                  <option value="Asosiasi Edukasi">Asosiasi Edukasi</option>
-                  <option value="Komunitas Belajar">Komunitas Belajar</option>
-                  <option value="Dinas / Instansi Terkait">Dinas / Instansi Terkait</option>
-                </select>
+                  onChange={(val) => setPartnerForm({ ...partnerForm, category: val })}
+                  className="w-full"
+                  size="md"
+                  options={[
+                    { value: "Sekolah Dasar Mitra", label: "Sekolah Dasar Mitra" },
+                    { value: "PAUD & TK Binaan", label: "PAUD & TK Binaan" },
+                    { value: "Yayasan Pendidikan", label: "Yayasan Pendidikan" },
+                    { value: "Lembaga Pendidikan Anak", label: "Lembaga Pendidikan Anak" },
+                    { value: "Asosiasi Edukasi", label: "Asosiasi Edukasi" },
+                    { value: "Komunitas Belajar", label: "Komunitas Belajar" },
+                    { value: "Dinas / Instansi Terkait", label: "Dinas / Instansi Terkait" },
+                  ]}
+                />
               </div>
 
               <div>

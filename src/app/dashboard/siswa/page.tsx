@@ -24,6 +24,7 @@ import {
 import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function SiswaContent() {
   const { students, addStudent, updateStudent, deleteStudent, classes, branches, refreshData } = useAppStore();
@@ -364,72 +365,84 @@ function SiswaContent() {
               className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
-          <select
+          <CustomSelect
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as any)}
-            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 shrink-0"
-          >
-            <option value="A-Z">A–Z</option>
-            <option value="Z-A">Z–A</option>
-          </select>
+            onChange={(val) => setSortOrder(val as any)}
+            size="sm"
+            className="shrink-0 w-24"
+            options={[
+              { value: "A-Z", label: "A–Z" },
+              { value: "Z-A", label: "Z–A" },
+            ]}
+          />
         </div>
 
         {/* Row 2: Cabang + Kelas */}
         <div className="grid grid-cols-2 gap-2">
           {isSuperAdmin ? (
-            <select
+            <CustomSelect
               value={branchFilter}
-              onChange={(e) => setBranchFilter(e.target.value)}
-              className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
-            >
-              <option value="ALL">Semua Cabang</option>
-              {branches.map((b) => (
-                <option key={b.id} value={b.name}>{b.name}</option>
-              ))}
-            </select>
+              onChange={setBranchFilter}
+              size="sm"
+              className="w-full"
+              options={[
+                { value: "ALL", label: "Semua Cabang" },
+                ...branches.map((b) => ({
+                  value: b.name,
+                  label: `Cabang: ${b.name}`,
+                })),
+              ]}
+            />
           ) : (
             <div className="px-2.5 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
               <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
               <span className="truncate">{allowedBranch}</span>
             </div>
           )}
-          <select
+          <CustomSelect
             value={classFilter}
-            onChange={(e) => setClassFilter(e.target.value)}
-            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
-          >
-            <option value="ALL">Semua Kelas</option>
-            {classes
-              .filter((c) =>
-                activeProgram === "MEMBACA"
-                  ? (c as any).programType === "MEMBACA"
-                  : (c as any).programType !== "MEMBACA"
-              )
-              .map((c) => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-          </select>
+            onChange={setClassFilter}
+            size="sm"
+            className="w-full"
+            options={[
+              { value: "ALL", label: "Semua Kelas" },
+              ...classes
+                .filter((c) =>
+                  activeProgram === "MEMBACA"
+                    ? (c as any).programType === "MEMBACA"
+                    : (c as any).programType !== "MEMBACA"
+                )
+                .map((c) => ({
+                  value: c.name,
+                  label: c.name,
+                })),
+            ]}
+          />
         </div>
 
         {/* Row 3: Gender + Status */}
         <div className="grid grid-cols-2 gap-2">
-          <select
+          <CustomSelect
             value={genderFilter}
-            onChange={(e) => setGenderFilter(e.target.value)}
-            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
-          >
-            <option value="ALL">Semua Gender</option>
-            <option value="P">Perempuan</option>
-            <option value="L">Laki-laki</option>
-          </select>
-          <select
+            onChange={setGenderFilter}
+            size="sm"
+            className="w-full"
+            options={[
+              { value: "ALL", label: "Semua Gender" },
+              { value: "P", label: "Perempuan" },
+              { value: "L", label: "Laki-laki" },
+            ]}
+          />
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
-          >
-            <option value="ALL">Aktif</option>
-            <option value="Lulus">Alumni</option>
-          </select>
+            onChange={setStatusFilter}
+            size="sm"
+            className="w-full"
+            options={[
+              { value: "ALL", label: "Aktif" },
+              { value: "Lulus", label: "Alumni" },
+            ]}
+          />
         </div>
       </div>
 
@@ -673,52 +686,54 @@ function SiswaContent() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Gender</label>
-                  <select
+                  <CustomSelect
                     value={form.gender}
-                    onChange={(e) => setForm({ ...form, gender: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="P">Perempuan (P)</option>
-                    <option value="L">Laki-laki (L)</option>
-                  </select>
+                    onChange={(val) => setForm({ ...form, gender: val as any })}
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "P", label: "Perempuan (P)" },
+                      { value: "L", label: "Laki-laki (L)" },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Cabang</label>
-                  <select
+                  <CustomSelect
                     value={form.branch}
                     disabled={!isSuperAdmin}
-                    onChange={(e) => setForm({ ...form, branch: e.target.value as any })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-100 dark:disabled:bg-slate-800"
-                  >
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.name}>
-                        Cabang {b.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setForm({ ...form, branch: val as any })}
+                    className="w-full"
+                    size="md"
+                    options={branches.map((b) => ({
+                      value: b.name,
+                      label: `Cabang: ${b.name}`,
+                    }))}
+                  />
                 </div>
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Kelas Bimbingan</label>
-                  <select
+                  <CustomSelect
                     value={form.className}
-                    onChange={(e) => setForm({ ...form, className: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                  >
-                    {classes
-                      .filter((c) =>
-                        form.programType === "MEMBACA"
-                          ? (c as any).programType === "MEMBACA"
-                          : (c as any).programType !== "MEMBACA"
-                      )
-                      .map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.branch})
-                        </option>
-                      ))}
-                    <option value="Kelas A">Kelas A</option>
-                    <option value="Kelas Membaca 1">Kelas Membaca 1</option>
-                    <option value="Kelas Membaca 2">Kelas Membaca 2</option>
-                  </select>
+                    onChange={(val) => setForm({ ...form, className: val })}
+                    className="w-full"
+                    size="md"
+                    options={[
+                      ...classes
+                        .filter((c) =>
+                          form.programType === "MEMBACA"
+                            ? (c as any).programType === "MEMBACA"
+                            : (c as any).programType !== "MEMBACA"
+                        )
+                        .map((c) => ({
+                          value: c.name,
+                          label: `${c.name} (${c.branch})`,
+                        })),
+                      { value: "Kelas A", label: "Kelas A" },
+                      { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
+                      { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -792,31 +807,31 @@ function SiswaContent() {
                 <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
                   Tingkat Level Kurikulum ({form.programType === "MEMBACA" ? "Membaca" : "Matematika"})
                 </label>
-                <select
+                <CustomSelect
                   value={form.levelCurriculum}
-                  onChange={(e) => setForm({ ...form, levelCurriculum: e.target.value })}
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  {form.programType === "MEMBACA" ? (
-                    <>
-                      <option value="Level 1: Pra-Membaca & Pengenalan Huruf">Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)</option>
-                      <option value="Level 2: Merangkai Suku Kata Sederhana">Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)</option>
-                      <option value="Level 3: Merangkai Kata 2 Suku Kata">Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)</option>
-                      <option value="Level 4: Merangkai Kata Bervokal & Konsonan Ganda">Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)</option>
-                      <option value="Level 5: Membaca Kalimat Sederhana">Level 5: Membaca Kalimat Sederhana</option>
-                      <option value="Level 6: Membaca Paragraf Pendek">Level 6: Membaca Paragraf Pendek & Cerita</option>
-                      <option value="Level 7: Lancar Membaca & Pemahaman Teks">Level 7: Lancar Membaca & Pemahaman Teks</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="Level Dasar: Pengenalan Simbol Jari">Level Dasar: Pengenalan Simbol Jari</option>
-                      <option value="Level 1: Penjumlahan & Pengurangan Angka Satuan">Level 1: Penjumlahan & Pengurangan Angka Satuan</option>
-                      <option value="Level 2: Kombinasi Rumus Teman Kecil">Level 2: Kombinasi Rumus Teman Kecil</option>
-                      <option value="Level 3: Kombinasi Rumus Teman Besar">Level 3: Kombinasi Rumus Teman Besar</option>
-                      <option value="Level Utama: Perkalian & Pembagian">Level Utama: Perkalian & Pembagian</option>
-                    </>
-                  )}
-                </select>
+                  onChange={(val) => setForm({ ...form, levelCurriculum: val })}
+                  className="w-full"
+                  size="md"
+                  options={
+                    form.programType === "MEMBACA"
+                      ? [
+                          { value: "Level 1: Pra-Membaca & Pengenalan Huruf", label: "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)" },
+                          { value: "Level 2: Merangkai Suku Kata Sederhana", label: "Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)" },
+                          { value: "Level 3: Merangkai Kata 2 Suku Kata", label: "Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)" },
+                          { value: "Level 4: Merangkai Kata Bervokal & Konsonan Ganda", label: "Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)" },
+                          { value: "Level 5: Membaca Kalimat Sederhana", label: "Level 5: Membaca Kalimat Sederhana" },
+                          { value: "Level 6: Membaca Paragraf Pendek", label: "Level 6: Membaca Paragraf Pendek & Cerita" },
+                          { value: "Level 7: Lancar Membaca & Pemahaman Teks", label: "Level 7: Lancar Membaca & Pemahaman Teks" },
+                        ]
+                      : [
+                          { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
+                          { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan Angka Satuan" },
+                          { value: "Level 2: Kombinasi Rumus Teman Kecil", label: "Level 2: Kombinasi Rumus Teman Kecil" },
+                          { value: "Level 3: Kombinasi Rumus Teman Besar", label: "Level 3: Kombinasi Rumus Teman Besar" },
+                          { value: "Level Utama: Perkalian & Pembagian", label: "Level Utama: Perkalian & Pembagian" },
+                        ]
+                  }
+                />
               </div>
 
               {/* Program Type */}

@@ -25,6 +25,7 @@ import {
   BookText,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { useAppStore, InvoiceItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -442,18 +443,18 @@ Salam Hangat,
         </div>
 
         {isSuperAdmin ? (
-          <select
+          <CustomSelect
             value={branchFilter}
-            onChange={(e) => setBranchFilter(e.target.value)}
-            className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="ALL">Semua Cabang</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.name}>
-                Cabang {b.name}
-              </option>
-            ))}
-          </select>
+            onChange={setBranchFilter}
+            size="md"
+            options={[
+              { value: "ALL", label: "Semua Cabang" },
+              ...branches.map((b) => ({
+                value: b.name,
+                label: `Cabang: ${b.name}`,
+              })),
+            ]}
+          />
         ) : (
           <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
@@ -461,15 +462,16 @@ Salam Hangat,
           </div>
         )}
 
-        <select
+        <CustomSelect
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="ALL">Semua Pembayaran</option>
-          <option value="BELUM_BAYAR">Belum Bayar</option>
-          <option value="LUNAS">Lunas</option>
-        </select>
+          onChange={(val) => setStatusFilter(val as any)}
+          size="md"
+          options={[
+            { value: "ALL", label: "Semua Pembayaran" },
+            { value: "BELUM_BAYAR", label: "Belum Bayar" },
+            { value: "LUNAS", label: "Lunas" },
+          ]}
+        />
       </div>
 
       {/* Invoice Table */}
@@ -629,20 +631,17 @@ Salam Hangat,
                 <label className="font-extrabold text-slate-700 dark:text-slate-200">
                   Pilih Siswa *
                 </label>
-                <select
-                  required
+                <CustomSelect
                   value={form.studentId}
-                  onChange={(e) =>
-                    setForm({ ...form, studentId: e.target.value })
-                  }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
-                >
-                  {scopedStudents.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.className} - {s.branch})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setForm({ ...form, studentId: val })}
+                  className="w-full"
+                  size="md"
+                  placeholder="Pilih Siswa..."
+                  options={scopedStudents.map((s) => ({
+                    value: s.id,
+                    label: `${s.name} (${s.className} - ${s.branch})`,
+                  }))}
+                />
               </div>
 
               <div className="space-y-1">
