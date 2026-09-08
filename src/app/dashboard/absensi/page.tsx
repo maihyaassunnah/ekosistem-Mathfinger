@@ -30,6 +30,9 @@ import {
   Loader2,
   MessageSquare,
   MapPin,
+  TrendingUp,
+  Layers,
+  BookOpen,
 } from "lucide-react";
 import jsQR from "jsqr";
 import { useAppStore, AttendanceItem } from "@/lib/store";
@@ -98,6 +101,8 @@ function AbsensiContent() {
   const [rekapStatusFilter, setRekapStatusFilter] = useState("ALL");
   const [rekapSearch, setRekapSearch] = useState("");
   const [rekapViewMode, setRekapViewMode] = useState<"LOG" | "PER_SISWA">("LOG");
+  const [selectedSessionDate, setSelectedSessionDate] = useState<string | null>(null);
+  const [showSessionDetailModal, setShowSessionDetailModal] = useState(false);
 
   useEffect(() => {
     if (allowedBranch) {
@@ -143,6 +148,26 @@ function AbsensiContent() {
     const days = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
     const d = new Date(dateStr);
     return days[d.getDay()];
+  };
+
+  // Helper: Format full Indonesian date (e.g. "Minggu, 6 September 2026")
+  const formatIndonesianFullDate = (dateStr: string) => {
+    try {
+      const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const months = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const dayName = days[d.getDay()];
+      const dateNum = d.getDate();
+      const monthName = months[d.getMonth()];
+      const year = d.getFullYear();
+      return `${dayName}, ${dateNum} ${monthName} ${year}`;
+    } catch {
+      return dateStr;
+    }
   };
 
   // Helper: Find class schedule for a student
@@ -413,12 +438,17 @@ function AbsensiContent() {
     setAttendance(studentId, selectedDate, getStatus(studentId), updated);
   };
 
+  const visibleStudentIds = filteredStudents.map((s) => s.id);
+  const selectedVisibleIds = selectedIds.filter((id) => visibleStudentIds.includes(id));
+  const isAllVisibleSelected =
+    visibleStudentIds.length > 0 && selectedVisibleIds.length === visibleStudentIds.length;
+
   const handleSelectAll = () => {
-    setSelectedIds(filteredStudents.map((s) => s.id));
+    setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleStudentIds])));
   };
 
   const handleClearSelection = () => {
-    setSelectedIds([]);
+    setSelectedIds((prev) => prev.filter((id) => !visibleStudentIds.includes(id)));
   };
 
   const handleMarkAllHadir = () => {
@@ -477,10 +507,10 @@ function AbsensiContent() {
   };
 
   const handleBatchSetSelectedStatus = (status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => {
-    if (selectedIds.length === 0) return;
+    if (selectedVisibleIds.length === 0) return;
     const currentTime =
       new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
-    selectedIds.forEach((id) => {
+    selectedVisibleIds.forEach((id) => {
       const existingRec = attendances[`${id}_${selectedDate}`];
       setAttendance(
         id,
@@ -496,8 +526,8 @@ function AbsensiContent() {
       " WIB";
     setLastSavedTime(formattedTime);
     setSaveToast({
-      message: `${selectedIds.length} siswa terpilih berhasil ditandai sebagai "${status}" dan disimpan.`,
-      count: selectedIds.length,
+      message: `${selectedVisibleIds.length} siswa terpilih berhasil ditandai sebagai "${status}" dan disimpan.`,
+      count: selectedVisibleIds.length,
     });
   };
 
@@ -522,7 +552,7 @@ function AbsensiContent() {
     });
   };
 
-  // Convert Attendances Record into array for Rekap & Riwayat Table (scoped by program)
+  // Convert Attendances Record into array for Rekap & Riwayat Table (scoped by program & branch)
   const allAttendanceArray = Object.entries(attendances)
     .map(([key, item]) => ({
       key,
@@ -533,34 +563,31 @@ function AbsensiContent() {
       return isMembacaProgram
         ? (st as any)?.programType === "MEMBACA"
         : (st as any)?.programType !== "MEMBACA";
+    })
+    .filter((item) => {
+      if (allowedBranch && item.branch !== allowedBranch) return false;
+      return true;
     });
 
-  // Filtered Rekap Array
-  const filteredRekapArray = allAttendanceArray
-    .filter((item) => {
-      if (rekapBranchFilter !== "ALL" && item.branch !== rekapBranchFilter) return false;
-      if (rekapClassFilter !== "ALL" && item.className !== rekapClassFilter) return false;
-      if (rekapStatusFilter !== "ALL" && item.status !== rekapStatusFilter) return false;
-      if (rekapSearch) {
-        const q = rekapSearch.toLowerCase();
-        const matchName = (item.studentName || "").toLowerCase().includes(q);
-        const matchCode = (item.studentCode || "").toLowerCase().includes(q);
-        const matchNote = (item.note || "").toLowerCase().includes(q);
-        if (!matchName && !matchCode && !matchNote) return false;
-      }
-      return true;
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
+  // Scoped Rekap Records by Class Filter
+  const scopedRekapRecords = allAttendanceArray.filter((item) => {
+    if (rekapClassFilter !== "ALL" && item.className !== rekapClassFilter) return false;
+    return true;
+  });
 
   // Rekap Stats
   const totalRekapCount = allAttendanceArray.length;
-  const hadirCount = allAttendanceArray.filter((a) => a.status === "HADIR").length;
-  const izinSakitCount = allAttendanceArray.filter(
-    (a) => a.status === "IZIN" || a.status === "SAKIT"
-  ).length;
-  const absenCount = allAttendanceArray.filter((a) => a.status === "ABSEN").length;
-  const hadirPercent =
-    totalRekapCount > 0 ? Math.round((hadirCount / totalRekapCount) * 100) : 0;
+  const uniqueDatesCount = Array.from(new Set(scopedRekapRecords.map((a) => a.date))).length;
+  const hadirCountInScope = scopedRekapRecords.filter((a) => a.status === "HADIR").length;
+  const avgAttendancePercent =
+    scopedRekapRecords.length > 0
+      ? Math.round((hadirCountInScope / scopedRekapRecords.length) * 100)
+      : 100;
+
+  // Unique session dates in descending order
+  const sortedSessionDates = Array.from(new Set(scopedRekapRecords.map((a) => a.date))).sort(
+    (a, b) => b.localeCompare(a)
+  );
 
   // CRUD Handlers for Rekap
   const openAddRecord = () => {
@@ -616,6 +643,28 @@ function AbsensiContent() {
     }
   };
 
+  const handleDeleteSessionDate = (date: string) => {
+    const sessionRecords = allAttendanceArray.filter((a) => a.date === date);
+    if (sessionRecords.length === 0) return;
+    if (
+      confirm(
+        `Hapus seluruh catatan presensi untuk sesi ${formatIndonesianFullDate(date)}? (${sessionRecords.length} data kehadiran siswa akan dihapus)`
+      )
+    ) {
+      sessionRecords.forEach((r) => {
+        deleteAttendanceRecord(r.key);
+      });
+      if (selectedSessionDate === date) {
+        setSelectedSessionDate(null);
+        setShowSessionDetailModal(false);
+      }
+      setSaveToast({
+        message: `Presensi sesi ${date} berhasil dihapus.`,
+        count: sessionRecords.length,
+      });
+    }
+  };
+
   return (
     <div className="p-3 sm:p-6 lg:p-8 pb-32 lg:pb-12 space-y-5 sm:space-y-6 max-w-[1400px] mx-auto relative">
       {/* Save Success Toast Banner */}
@@ -664,17 +713,18 @@ function AbsensiContent() {
 
         {/* Action & Tab Switcher */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick Scanner Launch Button */}
+          {/* Quick Scanner Launch Button - Icon Only Logo */}
           <button
             type="button"
             onClick={() => {
               setScanResult(null);
               setShowScannerModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+            title="Scan QR Presensi"
+            aria-label="Scan QR Presensi"
+            className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center shrink-0"
           >
-            <Camera className="w-4 h-4 text-slate-950" />
-            <span>Scan QR Presensi</span>
+            <QrCode className="w-5 h-5 text-slate-950" />
           </button>
 
           <button
@@ -779,15 +829,13 @@ function AbsensiContent() {
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="text-slate-600 dark:text-slate-300 font-semibold text-xs border border-slate-200 dark:border-[#1d2d5a] rounded-lg px-2 py-1 bg-slate-50 dark:bg-[#0b1329]"
+                className="text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2.5 py-1 bg-slate-50 dark:bg-[#0b1329] cursor-pointer shadow-2xs"
               >
-                <option value="ALL">Semua Kelas ({students.length} Siswa)</option>
-                <option value="Kelas B">Kelas B</option>
-                <option value="CLASS C">CLASS C</option>
-                <option value="Kelas A">Kelas A</option>
-                <option value="CLASS B">CLASS B</option>
-                <option value="Kelas A2">Kelas A2</option>
-                <option value="CLASS A1">CLASS A1</option>
+                {classList.map((cl, idx) => (
+                  <option key={idx} value={cl.value}>
+                    {cl.name} ({cl.count} Siswa)
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -851,25 +899,23 @@ function AbsensiContent() {
                 <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={
-                      selectedIds.length === filteredStudents.length && filteredStudents.length > 0
-                    }
+                    checked={isAllVisibleSelected}
                     onChange={() => {
-                      if (selectedIds.length === filteredStudents.length) {
-                        setSelectedIds([]);
+                      if (isAllVisibleSelected) {
+                        handleClearSelection();
                       } else {
-                        setSelectedIds(filteredStudents.map((s) => s.id));
+                        handleSelectAll();
                       }
                     }}
                     className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
                   <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                    Batalkan Semua
+                    {isAllVisibleSelected ? "Batalkan Semua" : "Pilih Semua"}
                   </span>
                 </label>
 
                 <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 text-right">
-                  {selectedIds.length} dari {filteredStudents.length} Siswa Dicentang
+                  {selectedVisibleIds.length} dari {filteredStudents.length} Siswa Dicentang
                 </div>
               </div>
 
@@ -889,7 +935,7 @@ function AbsensiContent() {
                   Hapus Centang
                 </button>
 
-                {selectedIds.length > 0 && (
+                {selectedVisibleIds.length > 0 && (
                   <div className="flex items-center gap-1.5 ml-auto flex-wrap">
                     <span className="text-[10px] text-slate-400 font-medium">Ubah Terpilih:</span>
                     <button
@@ -1386,367 +1432,516 @@ function AbsensiContent() {
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 2: RIWAYAT & REKAP ABSENSI (FULL CRUD & STATS) */}
+      {/* TAB 2: RIWAYAT & REKAP ABSENSI (SESUAI GAMBAR 2) */}
       {/* ========================================================================= */}
       {activeTab === "REKAP" && (
-        <div className="space-y-6">
-          {/* 4 Rekap Stat Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Total Sesi Tercatat
-              </span>
-              <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                {totalRekapCount} Sesi
-              </div>
-              <div className="text-[11px] text-slate-500">Periode Agustus - September</div>
+        <div className="space-y-5 sm:space-y-6">
+          {/* 1. Top Horizontal Class Selection Filter Bar */}
+          <div className="bg-white dark:bg-[#0f1a36] p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>PILIH RIWAYAT & REKAP PER KELAS:</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-1">
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
-                Tingkat Kehadiran
-              </span>
-              <div className="text-2xl font-black text-emerald-600">
-                {hadirPercent}%
-              </div>
-              <div className="text-[11px] text-slate-500">{hadirCount} kali Hadir</div>
-            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+              {/* All Classes Pill */}
+              <button
+                type="button"
+                onClick={() => setRekapClassFilter("ALL")}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs ${
+                  rekapClassFilter === "ALL"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-white dark:bg-[#0f1a36] border border-emerald-300/80 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Semua Kelas ({allAttendanceArray.length} Total Absensi)</span>
+              </button>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-1">
-              <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
-                Total Izin & Sakit
-              </span>
-              <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
-                {izinSakitCount}
-              </div>
-              <div className="text-[11px] text-slate-500">Dengan konfirmasi wali</div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-1">
-              <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">
-                Absen / Alpa
-              </span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                {absenCount}
-              </div>
-              <div className="text-[11px] text-slate-500">Tanpa keterangan</div>
+              {/* Dynamic Class Pills */}
+              {branchScopedClasses.map((c) => {
+                const count = allAttendanceArray.filter((a) => a.className === c.name).length;
+                const isSelected = rekapClassFilter === c.name;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setRekapClassFilter(c.name)}
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                      isSelected
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "bg-white dark:bg-[#0f1a36] border border-emerald-300/70 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>{c.name}</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
+                        isSelected
+                          ? "bg-white/20 text-white"
+                          : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                      }`}
+                    >
+                      {count} Data
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Filter & Action Bar */}
-          <div className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              {/* Search Bar */}
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  value={rekapSearch}
-                  onChange={(e) => setRekapSearch(e.target.value)}
-                  placeholder="Cari siswa, kode, atau catatan riwayat..."
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
-                />
+          {/* 2. Three Summary Metric Cards (Exact match with Screenshot 2) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Card 1: TOTAL HARI LES */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <Calendar className="w-6 h-6" />
               </div>
-
-              {/* Action Buttons: Add Retroactive & View Mode */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={openAddRecord}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Presensi Susulan / Manual</span>
-                </button>
-
-                <div className="flex rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 text-xs font-bold text-slate-600 dark:text-slate-300">
-                  <button
-                    type="button"
-                    onClick={() => setRekapViewMode("LOG")}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      rekapViewMode === "LOG"
-                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
-                        : ""
-                    }`}
-                  >
-                    Log Riwayat
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRekapViewMode("PER_SISWA")}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      rekapViewMode === "PER_SISWA"
-                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
-                        : ""
-                    }`}
-                  >
-                    Rekap per Siswa
-                  </button>
+              <div className="space-y-0.5">
+                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+                  TOTAL HARI LES
+                </span>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                  {uniqueDatesCount} Hari
                 </div>
               </div>
             </div>
 
-            {/* Sub Filters */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-[#1d2d5a] text-xs">
-              <span className="text-[11px] font-bold text-slate-400">Filter:</span>
-
-              {isSuperAdmin ? (
-                <select
-                  value={rekapBranchFilter}
-                  onChange={(e) => setRekapBranchFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
-                >
-                  <option value="ALL">Semua Cabang</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.name}>
-                      Cabang {b.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Cabang {allowedBranch}</span>
+            {/* Card 2: RATA-RATA KEHADIRAN */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+                  RATA-RATA KEHADIRAN
+                </span>
+                <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                  {avgAttendancePercent}%
                 </div>
-              )}
+              </div>
+            </div>
 
-              <select
-                value={rekapClassFilter}
-                onChange={(e) => setRekapClassFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
-              >
-                <option value="ALL">Semua Kelas</option>
-                <option value="Kelas A">Kelas A</option>
-                <option value="Kelas B">Kelas B</option>
-                <option value="CLASS A1">CLASS A1</option>
-                <option value="CLASS B">CLASS B</option>
-                <option value="CLASS C">CLASS C</option>
-                <option value="Kelas A2">Kelas A2</option>
-              </select>
-
-              <select
-                value={rekapStatusFilter}
-                onChange={(e) => setRekapStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-700 dark:text-slate-300"
-              >
-                <option value="ALL">Semua Status</option>
-                <option value="HADIR">Hadir</option>
-                <option value="IZIN">Izin</option>
-                <option value="SAKIT">Sakit</option>
-                <option value="ABSEN">Absen</option>
-              </select>
+            {/* Card 3: TOTAL REKOR ABSENSI */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+                  TOTAL REKOR ABSENSI
+                </span>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                  {scopedRekapRecords.length} Entri
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* VIEW MODE 1: LOG RIWAYAT TABEL */}
-          {rekapViewMode === "LOG" && (
-            <div className="bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-2xl overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#1d2d5a] bg-slate-50/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                      <th className="py-3 px-4">Tanggal & Waktu</th>
-                      <th className="py-3 px-4">Siswa (Kode & Nama)</th>
-                      <th className="py-3 px-4">Kelas & Cabang</th>
-                      <th className="py-3 px-4">Metode Absen</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Catatan</th>
-                      <th className="py-3 px-4 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredRekapArray.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="py-8 text-center text-slate-400">
-                          Tidak ada data riwayat presensi yang sesuai filter.
-                        </td>
+          {/* 3. Two-Column Split Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+            {/* Left Column: Riwayat Sesi Belajar (5 Cols) */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                  Riwayat Sesi Belajar
+                </h3>
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-400">
+                  Klik Baris Untuk Detail
+                </span>
+              </div>
+
+              <div className="space-y-2.5 max-h-[680px] overflow-y-auto pr-1">
+                {sortedSessionDates.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs font-semibold bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                    Belum ada sesi presensi yang tercatat untuk kelas ini.
+                  </div>
+                ) : (
+                  sortedSessionDates.map((date) => {
+                    const sessionRecs = scopedRekapRecords.filter((a) => a.date === date);
+                    const hCount = sessionRecs.filter((a) => a.status === "HADIR").length;
+                    const iCount = sessionRecs.filter(
+                      (a) => a.status === "IZIN" || a.status === "SAKIT"
+                    ).length;
+                    const aCount = sessionRecs.filter((a) => a.status === "ABSEN").length;
+
+                    return (
+                      <div
+                        key={date}
+                        onClick={() => {
+                          setSelectedSessionDate(date);
+                          setShowSessionDetailModal(true);
+                        }}
+                        className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs hover:border-emerald-400 dark:hover:border-emerald-600 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                            {formatIndonesianFullDate(date)}
+                          </div>
+                          <div className="text-[11px] text-slate-400 font-medium mt-0.5">
+                            {date}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-black"
+                            title={`${hCount} Hadir`}
+                          >
+                            {hCount}H
+                          </span>
+                          <span
+                            className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-[11px] font-black"
+                            title={`${iCount} Izin/Sakit`}
+                          >
+                            {iCount}I
+                          </span>
+                          <span
+                            className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-[11px] font-black"
+                            title={`${aCount} Absen`}
+                          >
+                            {aCount}A
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSessionDate(date);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            title={`Hapus seluruh sesi presensi ${date}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Rekap Kehadiran Siswa (7 Cols) */}
+            <div className="lg:col-span-7 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-1">
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                  Rekap Kehadiran Siswa
+                </h3>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <select
+                    value={rekapClassFilter}
+                    onChange={(e) => setRekapClassFilter(e.target.value)}
+                    className="text-xs font-bold border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2.5 py-1.5 bg-white dark:bg-[#0f1a36] text-slate-700 dark:text-slate-200 cursor-pointer shadow-xs"
+                  >
+                    <option value="ALL">Semua Kelas</option>
+                    {branchScopedClasses.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={rekapSearch}
+                      onChange={(e) => setRekapSearch(e.target.value)}
+                      placeholder="Cari siswa..."
+                      className="pl-8 pr-3 py-1.5 bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium w-36 sm:w-44 shadow-xs"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openAddRecord}
+                    className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1 shrink-0"
+                    title="Tambah Presensi Susulan"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Susulan</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Rekap Kehadiran Table Container */}
+              <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200/80 dark:border-[#1d2d5a] bg-slate-50/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <th className="py-3 px-4">SISWA</th>
+                        <th className="py-3 px-3 text-center">SESI</th>
+                        <th className="py-3 px-3 text-center">H - I - A</th>
+                        <th className="py-3 px-3">LAJU KEHADIRAN</th>
+                        <th className="py-3 px-4 text-center">5 SESI TERAKHIR</th>
                       </tr>
-                    ) : (
-                      filteredRekapArray.map((record) => (
-                        <tr
-                          key={record.key}
-                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
-                        >
-                          <td className="py-3 px-4">
-                            <div className="font-bold text-slate-900 dark:text-slate-100">
-                              {record.date}
-                            </div>
-                            <div className="text-[11px] text-slate-400">
-                              {record.time || "-"}
-                            </div>
-                          </td>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                      {(() => {
+                        const studentsForRekap = branchScopedStudents
+                          .filter((st) => {
+                            if (rekapClassFilter !== "ALL" && st.className !== rekapClassFilter) return false;
+                            if (rekapSearch) {
+                              const q = rekapSearch.toLowerCase();
+                              const matchName = st.name.toLowerCase().includes(q);
+                              const matchCode = st.studentCode.includes(q);
+                              const matchParent = (st.parentName || "").toLowerCase().includes(q);
+                              if (!matchName && !matchCode && !matchParent) return false;
+                            }
+                            return true;
+                          })
+                          .sort((a, b) => a.name.localeCompare(b.name));
 
-                          <td className="py-3 px-4">
-                            <div className="font-bold text-slate-900 dark:text-slate-100">
-                              {record.studentName || "Siswa"}
-                            </div>
-                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
-                              #{record.studentCode || "-"}
-                            </div>
-                          </td>
+                        if (studentsForRekap.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan={5} className="py-8 text-center text-slate-400">
+                                Tidak ada siswa yang sesuai filter atau pencarian.
+                              </td>
+                            </tr>
+                          );
+                        }
 
-                          <td className="py-3 px-4">
-                            <div className="font-semibold text-slate-800 dark:text-slate-200">
-                              {record.className}
-                            </div>
-                            <span
-                              className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${
-                                record.branch === "Singkut"
-                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                                  : "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
-                              }`}
+                        return studentsForRekap.map((st) => {
+                          const stRecords = allAttendanceArray.filter(
+                            (a) =>
+                              a.studentId === st.id ||
+                              a.studentCode === st.studentCode ||
+                              (a.studentName && a.studentName.toLowerCase() === st.name.toLowerCase())
+                          );
+                          const stHadir = stRecords.filter((a) => a.status === "HADIR").length;
+                          const stIzin = stRecords.filter(
+                            (a) => a.status === "IZIN" || a.status === "SAKIT"
+                          ).length;
+                          const stAbsen = stRecords.filter((a) => a.status === "ABSEN").length;
+                          const stTotal = stRecords.length;
+                          const rate =
+                            stTotal > 0 ? Math.round((stHadir / stTotal) * 100) : 100;
+
+                          // 5 recent session status dots
+                          const dots = sortedSessionDates.slice(0, 5).map((date) => {
+                            const rec = stRecords.find((r) => r.date === date);
+                            return rec ? { date, status: rec.status } : null;
+                          }).filter(Boolean);
+
+                          return (
+                            <tr
+                              key={st.id}
+                              className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                             >
-                              {record.branch}
-                            </span>
-                          </td>
+                              {/* SISWA */}
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-extrabold text-slate-900 dark:text-slate-100 text-xs">
+                                    {st.name}
+                                  </span>
+                                  <span className="px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                    #{st.studentCode}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                  Wali: {st.parentName || "-"}
+                                </div>
+                              </td>
 
-                          <td className="py-3 px-4">
-                            {record.method === "QR_SCAN" ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60 font-extrabold text-[10px]">
-                                <QrCode className="w-3 h-3" />
-                                <span>QR Scan</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold text-[10px]">
-                                <span>Manual</span>
-                              </span>
-                            )}
-                          </td>
+                              {/* SESI */}
+                              <td className="py-3 px-3 text-center font-bold text-slate-700 dark:text-slate-300">
+                                {stHadir}x
+                              </td>
 
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${
-                                record.status === "HADIR"
-                                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60"
-                                  : record.status === "IZIN"
-                                  ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300"
-                                  : record.status === "SAKIT"
-                                  ? "bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300"
-                                  : "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300"
-                              }`}
-                            >
-                              {record.status}
-                            </span>
-                          </td>
+                              {/* H - I - A */}
+                              <td className="py-3 px-3 text-center font-bold text-slate-700 dark:text-slate-300">
+                                {stHadir} / {stIzin} / {stAbsen}
+                              </td>
 
-                          <td className="py-3 px-4 max-w-xs truncate text-slate-600 dark:text-slate-400">
-                            {record.note || "-"}
-                          </td>
+                              {/* LAJU KEHADIRAN */}
+                              <td className="py-3 px-3">
+                                <div className="space-y-1">
+                                  <div className="font-extrabold text-xs text-slate-800 dark:text-slate-100">
+                                    {rate}%
+                                  </div>
+                                  <div className="w-20 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                    <div
+                                      className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                                      style={{ width: `${rate}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </td>
 
-                          <td className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => openEditRecord(record.key, record)}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                title="Edit Record Kehadiran"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDeleteRecord(record.key, record.studentName)
-                                }
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-                                title="Hapus Record"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                              {/* 5 SESI TERAKHIR */}
+                              <td className="py-3 px-4 text-center">
+                                {dots.length === 0 ? (
+                                  <span className="text-slate-400 font-bold text-xs">-</span>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    {dots.map((d, dIdx) => (
+                                      <span
+                                        key={dIdx}
+                                        title={`${d!.date}: ${d!.status}`}
+                                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                          d!.status === "HADIR"
+                                            ? "bg-emerald-500"
+                                            : d!.status === "IZIN" || d!.status === "SAKIT"
+                                            ? "bg-amber-500"
+                                            : "bg-rose-500"
+                                        }`}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* VIEW MODE 2: REKAP PER SISWA */}
-          {rekapViewMode === "PER_SISWA" && (
-            <div className="bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-2xl overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#1d2d5a] bg-slate-50/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                      <th className="py-3 px-4">Nama Siswa</th>
-                      <th className="py-3 px-4">Kelas & Cabang</th>
-                      <th className="py-3 px-4 text-center">Total Sesi</th>
-                      <th className="py-3 px-4 text-center">Hadir</th>
-                      <th className="py-3 px-4 text-center">Izin</th>
-                      <th className="py-3 px-4 text-center">Sakit</th>
-                      <th className="py-3 px-4 text-center">Absen</th>
-                      <th className="py-3 px-4 text-right">Persentase</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {students.map((st) => {
-                      const studentRecords = allAttendanceArray.filter(
-                        (a) => a.studentId === st.id
-                      );
-                      const totalS = studentRecords.length;
-                      const hCount = studentRecords.filter((a) => a.status === "HADIR").length;
-                      const iCount = studentRecords.filter((a) => a.status === "IZIN").length;
-                      const sCount = studentRecords.filter((a) => a.status === "SAKIT").length;
-                      const aCount = studentRecords.filter((a) => a.status === "ABSEN").length;
-                      const pct = totalS > 0 ? Math.round((hCount / totalS) * 100) : 0;
-
-                      return (
-                        <tr
-                          key={st.id}
-                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
-                        >
-                          <td className="py-3.5 px-4">
-                            <div className="font-bold text-slate-900 dark:text-slate-100">
-                              {st.name}
-                            </div>
-                            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
-                              #{st.studentCode}
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            <div className="font-semibold text-slate-800 dark:text-slate-200">
-                              {st.className}
-                            </div>
-                            <span className="text-[10px] text-slate-400">{st.branch}</span>
-                          </td>
-
-                          <td className="py-3.5 px-4 text-center font-bold">{totalS}</td>
-                          <td className="py-3.5 px-4 text-center font-extrabold text-emerald-600">
-                            {hCount}
-                          </td>
-                          <td className="py-3.5 px-4 text-center font-semibold text-amber-600">
-                            {iCount}
-                          </td>
-                          <td className="py-3.5 px-4 text-center font-semibold text-purple-600">
-                            {sCount}
-                          </td>
-                          <td className="py-3.5 px-4 text-center font-semibold text-emerald-600">
-                            {aCount}
-                          </td>
-
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <div className="w-16 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div
-                                  className="bg-emerald-600 h-full rounded-full"
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                              <span className="font-extrabold text-xs">{pct}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+      {/* ========================================================================= */}
+      {/* MODAL 0: DETAIL PRESENSI SESI BELAJAR (KLIK BARIS SESI) */}
+      {/* ========================================================================= */}
+      {showSessionDetailModal && selectedSessionDate && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
+              <div>
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base sm:text-lg">
+                  Detail Presensi Sesi Belajar
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {formatIndonesianFullDate(selectedSessionDate)} • {selectedSessionDate}
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setShowSessionDetailModal(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          )}
+
+            {/* Session Stats Chips */}
+            {(() => {
+              const recs = allAttendanceArray.filter((a) => a.date === selectedSessionDate);
+              const h = recs.filter((a) => a.status === "HADIR").length;
+              const i = recs.filter((a) => a.status === "IZIN" || a.status === "SAKIT").length;
+              const a = recs.filter((a) => a.status === "ABSEN").length;
+              return (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800">
+                    ✓ {h} Hadir
+                  </span>
+                  <span className="px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800">
+                    ⚠ {i} Izin/Sakit
+                  </span>
+                  <span className="px-3 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-800">
+                    ✕ {a} Absen
+                  </span>
+                  <span className="text-xs text-slate-400 ml-auto font-medium">
+                    Total: {recs.length} Siswa
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Student Records List */}
+            <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200/80 dark:border-[#1d2d5a] rounded-2xl overflow-hidden">
+              {(() => {
+                const recs = allAttendanceArray.filter((a) => a.date === selectedSessionDate);
+                if (recs.length === 0) {
+                  return (
+                    <div className="p-6 text-center text-xs text-slate-400">
+                      Tidak ada catatan presensi pada tanggal ini.
+                    </div>
+                  );
+                }
+                return recs.map((rec) => (
+                  <div
+                    key={rec.key}
+                    className="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-extrabold text-xs text-slate-900 dark:text-slate-100">
+                          {rec.studentName}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                          #{rec.studentCode}
+                        </span>
+                        <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                          {rec.className}
+                        </span>
+                        {rec.method === "QR_SCAN" && (
+                          <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 font-bold border border-emerald-200 dark:border-emerald-800">
+                            <QrCode className="w-2.5 h-2.5" />
+                            QR
+                          </span>
+                        )}
+                      </div>
+                      {rec.note && (
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-0.5">
+                          💬 {rec.note}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span
+                        className={`px-2.5 py-1 rounded-xl text-[10px] font-black ${
+                          rec.status === "HADIR"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                            : rec.status === "IZIN"
+                            ? "bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                            : rec.status === "SAKIT"
+                            ? "bg-purple-50 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+                            : "bg-rose-50 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
+                        }`}
+                      >
+                        {rec.status}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {rec.time || "-"}
+                      </span>
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-[#1d2d5a]">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDate(selectedSessionDate);
+                  setActiveTab("HARI_INI");
+                  setShowSessionDetailModal(false);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Buka di Pencatatan Hari Ini</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSessionDetailModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 text-xs font-bold cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
