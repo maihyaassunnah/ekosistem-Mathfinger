@@ -14,7 +14,8 @@ export async function GET() {
       id: u.id,
       fullName: u.fullName,
       email: u.email,
-      phone: "-",
+      phone: u.phone || "-",
+      avatarUrl: u.avatarUrl || "",
       branchName: u.branch ? u.branch.branchName : "Semua Cabang (Pusat)",
       role:
         u.role === "SUPER_ADMIN"
@@ -91,6 +92,8 @@ export async function POST(req: Request) {
         role: dbRole,
         status: status === "Nonaktif" ? "INACTIVE" : "ACTIVE",
         branchId,
+        phone: phone || null,
+        avatarUrl: body.avatarUrl || null,
       },
       include: { branch: true },
     });
@@ -100,6 +103,8 @@ export async function POST(req: Request) {
         id: created.id,
         fullName: created.fullName,
         email: created.email,
+        phone: created.phone || "-",
+        avatarUrl: created.avatarUrl || "",
         branchName: created.branch?.branchName || "Semua Cabang (Pusat)",
         role:
           created.role === "SUPER_ADMIN"
@@ -160,6 +165,8 @@ export async function PUT(req: Request) {
       data: {
         ...(fullName ? { fullName } : {}),
         ...(email ? { email: email.toLowerCase().trim() } : {}),
+        ...(body.phone !== undefined ? { phone: body.phone } : {}),
+        ...(body.avatarUrl !== undefined ? { avatarUrl: body.avatarUrl } : {}),
         ...(passwordHash ? { passwordHash } : {}),
         ...(dbRole ? { role: dbRole } : {}),
         ...(status !== undefined ? { status: status === "Aktif" ? "ACTIVE" : "INACTIVE" } : {}),
@@ -168,7 +175,24 @@ export async function PUT(req: Request) {
       include: { branch: true },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json({
+      id: updated.id,
+      fullName: updated.fullName,
+      email: updated.email,
+      phone: updated.phone || "-",
+      avatarUrl: updated.avatarUrl || "",
+      branchName: updated.branch?.branchName || "Semua Cabang (Pusat)",
+      role:
+        updated.role === "SUPER_ADMIN"
+          ? "Super Admin"
+          : updated.role === "BRANCH_ADMIN"
+          ? "Admin Cabang"
+          : updated.role === "BRANCH_ASSISTANT"
+          ? "Asisten Cabang"
+          : "Tutor",
+      status: updated.status === "ACTIVE" ? "Aktif" : "Nonaktif",
+      createdAt: updated.createdAt.toISOString().split("T")[0],
+    });
   } catch (error: any) {
     console.error("Error updating admin account:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

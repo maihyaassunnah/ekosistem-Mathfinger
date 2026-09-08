@@ -36,7 +36,7 @@ export const CURRENT_USER = {
   name: "Wahyudin Hafiz, S.Pd",
   role: "Super Admin",
   email: "wahyudinhafiz123@gmail.com",
-  avatar: "/avatars/wahyudin.jpg",
+  avatar: "",
   branch: "Pusat",
 };
 

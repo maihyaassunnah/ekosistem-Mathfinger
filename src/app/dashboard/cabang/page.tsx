@@ -405,12 +405,20 @@ export default function CabangDanAdminPage() {
               >
                 {/* Name */}
                 <div className="col-span-4 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#1d2d5a]">
+                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#1d2d5a] relative">
                     {adm.avatarUrl ? (
-                      <img src={adm.avatarUrl} alt={adm.fullName} className="w-full h-full object-cover" />
-                    ) : (
-                      adm.fullName.charAt(0)
-                    )}
+                      <img
+                        src={adm.avatarUrl}
+                        alt={adm.fullName}
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                        className="w-full h-full object-cover absolute inset-0"
+                      />
+                    ) : null}
+                    <span>
+                      {adm.fullName ? adm.fullName.charAt(0).toUpperCase() : "A"}
+                    </span>
                   </div>
                   <div>
                     <div className="font-extrabold text-slate-900 dark:text-white text-sm">{adm.fullName}</div>

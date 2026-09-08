@@ -31,6 +31,7 @@ import {
   Sparkles,
   X,
   Globe,
+  Calculator,
   HeartHandshake,
   UserPlus,
   BookText,
@@ -503,9 +504,16 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const userName = currentUser.name;
   const userEmail = currentUser.email;
   const userRole = currentUser.role;
-  const userPhoto =
-    currentUser.avatarUrl ||
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80";
+  const userPhoto = currentUser.avatarUrl || "";
+  const [imgError, setImgError] = useState(false);
+  const userInitials =
+    userName
+      .split(" ")
+      .map((w) => w[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "WH";
 
   // Check if nav item is currently active
   const isItemActive = (href: string) => {
@@ -628,6 +636,19 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           >
             {availableTabs.map((tab) => {
               const href = getTabHref(tab);
+              const getTabIcon = (t: string) => {
+                if (t === "UTAMA") return <Calculator className="w-4 h-4" />;
+                if (t === "MEMBACA") return <BookOpen className="w-4 h-4" />;
+                if (t === "WEBSITE") return <Globe className="w-4 h-4" />;
+                return null;
+              };
+              const getTabTitle = (t: string) => {
+                if (t === "UTAMA") return "Program Utama (Matematika)";
+                if (t === "MEMBACA") return "Program Les Membaca";
+                if (t === "WEBSITE") return "Kelola Website CMS";
+                return t;
+              };
+
               return (
                 <Link
                   key={tab}
@@ -636,13 +657,15 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                     setActiveTab(tab);
                     if (onCloseMobile) onCloseMobile();
                   }}
-                  className={`py-2 px-1 rounded-lg transition-all cursor-pointer font-black text-center whitespace-nowrap text-[10.5px] sm:text-xs uppercase tracking-tight leading-none block ${
+                  title={getTabTitle(tab)}
+                  aria-label={getTabTitle(tab)}
+                  className={`py-2 px-1 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
                     activeTab === tab
                       ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
                       : "hover:text-emerald-600 dark:hover:text-white"
                   }`}
                 >
-                  {tab}
+                  {getTabIcon(tab)}
                 </Link>
               );
             })}
@@ -715,11 +738,18 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="relative shrink-0">
-              <img
-                src={userPhoto}
-                alt={userName}
-                className="w-9 h-9 rounded-xl object-cover ring-2 ring-emerald-500/30 shadow-xs"
-              />
+              {userPhoto && !imgError ? (
+                <img
+                  src={userPhoto}
+                  alt={userName}
+                  onError={() => setImgError(true)}
+                  className="w-9 h-9 rounded-xl object-cover ring-2 ring-emerald-500/30 shadow-xs"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-black flex items-center justify-center text-xs shadow-xs ring-2 ring-emerald-500/30">
+                  {userInitials}
+                </div>
+              )}
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-600 ring-2 ring-white dark:ring-[#0f1a36]" />
             </div>
 

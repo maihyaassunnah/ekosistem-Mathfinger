@@ -41,6 +41,7 @@ import {
   Clock,
   Menu,
   BookText,
+  Calculator,
 } from "lucide-react";
 import {
   CURRENT_USER,
@@ -115,6 +116,7 @@ function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSyncToast, setShowSyncToast] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   // Sync state if allowedBranch is locked
   useEffect(() => {
@@ -514,10 +516,15 @@ function DashboardContent() {
               href="/dashboard/pengaturan"
               className="w-8 h-8 rounded-full overflow-hidden border-2 border-emerald-500 shadow-2xs shrink-0 cursor-pointer hover:scale-105 transition-transform"
             >
-              {currentUser.avatarUrl ? (
-                <img src={currentUser.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              {currentUser.avatarUrl && !imgError ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={displayName}
+                  onError={() => setImgError(true)}
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <div className="w-full h-full bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-emerald-600 to-teal-700 text-white text-[10px] font-bold flex items-center justify-center">
                   {userInitials}
                 </div>
               )}
@@ -534,39 +541,42 @@ function DashboardContent() {
           >
             <Link
               href="/dashboard"
-              className={`py-2 px-2 rounded-xl text-center font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              title="Program Utama (Matematika)"
+              aria-label="Program Utama (Matematika)"
+              className={`py-2 px-2 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center ${
                 !isMembaca && !pathname.startsWith("/dashboard/website")
                   ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
               }`}
             >
-              <span>🔢</span>
-              <span>Utama</span>
+              <Calculator className="w-4 h-4" />
             </Link>
             {hasMembacaProgram && (
               <Link
                 href="/dashboard?program=MEMBACA"
-                className={`py-2 px-2 rounded-xl text-center font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                title="Program Les Membaca"
+                aria-label="Program Les Membaca"
+                className={`py-2 px-2 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center ${
                   isMembaca
                     ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
                 }`}
               >
-                <span>📖</span>
-                <span>Membaca</span>
+                <BookOpen className="w-4 h-4" />
               </Link>
             )}
             {isSuperAdmin && (
               <Link
                 href="/dashboard/website"
-                className={`py-2 px-2 rounded-xl text-center font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                title="Kelola Website CMS"
+                aria-label="Kelola Website CMS"
+                className={`py-2 px-2 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center ${
                   pathname.startsWith("/dashboard/website")
                     ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
                 }`}
               >
-                <span>🌐</span>
-                <span>Website</span>
+                <Globe className="w-4 h-4" />
               </Link>
             )}
           </div>

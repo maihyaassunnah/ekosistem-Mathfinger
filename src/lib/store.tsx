@@ -408,41 +408,7 @@ const INITIAL_CLASSES: ClassItem[] = [
   },
 ];
 
-const INITIAL_ADMINS: BranchAdminItem[] = [
-  {
-    id: "adm-super",
-    fullName: "Wahyudin Hafiz, S.Pd",
-    email: "wahyudinh20@stitmadani.ac.id",
-    phone: "0853-8478-0910",
-    branchName: "Semua Cabang (Pusat)",
-    role: "Super Admin",
-    status: "Aktif",
-    createdAt: "2024-01-01",
-    password: "password123",
-  },
-  {
-    id: "adm-1",
-    fullName: "Rina Marlina, S.Pd",
-    email: "rina.singkut@mathfingers.com",
-    phone: "0812-7949-8907",
-    branchName: "Singkut",
-    role: "Admin Cabang",
-    status: "Aktif",
-    createdAt: "2024-05-10",
-    password: "password123",
-  },
-  {
-    id: "adm-2",
-    fullName: "Faisal Rahman, S.Kom",
-    email: "faisal.bangko@mathfingers.com",
-    phone: "0813-7972-0841",
-    branchName: "Bangko",
-    role: "Admin Cabang",
-    status: "Aktif",
-    createdAt: "2024-06-15",
-    password: "password123",
-  },
-];
+const INITIAL_ADMINS: BranchAdminItem[] = [];
 
 export const INITIAL_GRADES: GradeItem[] = [
   // Aishwa Rahma Annida (s-1) - from User Screenshot 2
@@ -1628,13 +1594,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
-      const CURRENT_DATA_VERSION = "mf_live_sync_v2";
+      const CURRENT_DATA_VERSION = "mf_live_sync_v3";
       if (localStorage.getItem("mf_data_version") !== CURRENT_DATA_VERSION) {
         localStorage.removeItem("mf_students");
         localStorage.removeItem("mf_classes");
         localStorage.removeItem("mf_branches");
         localStorage.removeItem("mf_invoices");
         localStorage.removeItem("mf_mutations");
+        localStorage.removeItem("mf_branchAdmins");
         localStorage.setItem("mf_data_version", CURRENT_DATA_VERSION);
       }
 
@@ -2697,9 +2664,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {
         if (created && created.id) {
-          setLandingPrograms((prev) =>
-            prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
-          );
+          setLandingPrograms((prev) => {
+            const list = prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p));
+            save("mf_landing_programs", list);
+            return list;
+          });
         }
       })
       .catch((err) => console.error("Error saving website program to PostgreSQL:", err));
@@ -2752,9 +2721,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {
         if (created && created.id) {
-          setLandingTestimonials((prev) =>
-            prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t))
-          );
+          setLandingTestimonials((prev) => {
+            const list = prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t));
+            save("mf_landing_testi", list);
+            return list;
+          });
         }
       })
       .catch((err) => console.error("Error saving website testimonial to PostgreSQL:", err));
@@ -2795,9 +2766,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {
         if (created && created.id) {
-          setLandingLeads((prev) =>
-            prev.map((l) => (l.id === tempId ? { ...l, id: created.id } : l))
-          );
+          setLandingLeads((prev) => {
+            const list = prev.map((l) => (l.id === tempId ? { ...l, id: created.id } : l));
+            save("mf_landing_leads", list);
+            return list;
+          });
         }
       })
       .catch((err) => console.error("Error saving website lead to PostgreSQL:", err));
@@ -2850,9 +2823,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {
         if (created && created.id) {
-          setLandingPartners((prev) =>
-            prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
-          );
+          setLandingPartners((prev) => {
+            const list = prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p));
+            save("mf_landing_partners", list);
+            return list;
+          });
         }
       })
       .catch((err) => console.error("Error saving website partner to PostgreSQL:", err));

@@ -63,6 +63,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: user.role,
           branchName: user.branch?.branchName || "Semua Cabang (Pusat)",
+          image: user.avatarUrl || null,
         };
       },
     }),
@@ -107,6 +108,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role;
         token.branchName = (user as any).branchName;
+        token.picture = (user as any).image || (user as any).avatarUrl || null;
       }
       return token;
     },
@@ -115,8 +117,9 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         (session.user as any).branchName = token.branchName;
+        session.user.image = (token.picture as string) || session.user.image || null;
 
-        if (!token.role && session.user.email) {
+        if ((!token.role || !session.user.image) && session.user.email) {
           const dbUser = await prisma.user.findUnique({
             where: { email: session.user.email.toLowerCase().trim() },
             include: { branch: true },
@@ -126,6 +129,9 @@ export const authOptions: NextAuthOptions = {
             (session.user as any).role = dbUser.role;
             (session.user as any).branchName =
               dbUser.branch?.branchName || "Semua Cabang (Pusat)";
+            if (dbUser.avatarUrl) {
+              session.user.image = dbUser.avatarUrl;
+            }
           }
         }
       }

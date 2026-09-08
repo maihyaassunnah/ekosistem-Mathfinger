@@ -26,58 +26,12 @@ function LoginForm() {
 
   const { theme, toggleTheme } = useTheme();
   const [tab, setTab] = useState<"password" | "google">("password");
-  const [email, setEmail] = useState("wahyudinhafiz123@gmail.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState(0);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const demoAccounts = [
-    {
-      name: "Wahyudin Hafiz, S.Pd",
-      role: "Super Admin (Pusat)",
-      email: "wahyudinhafiz123@gmail.com",
-      avatarBg: "bg-emerald-600 text-white font-bold",
-      initials: "WH",
-    },
-    {
-      name: "Febrianti Dewi, S.Pd",
-      role: "Admin Singkut",
-      email: "febriantidewi043@gmail.com",
-      avatarBg: "bg-emerald-700 text-white font-bold",
-      initials: "SK",
-    },
-    {
-      name: "Dewi Safitri, S.H",
-      role: "Admin Bangko",
-      email: "dwsafitri97@gmail.com",
-      avatarBg: "bg-teal-700 text-white font-bold",
-      initials: "BK",
-    },
-    {
-      name: "Asisten Singkut",
-      role: "Asisten Cabang",
-      email: "asisten.singkut@mathfingers.com",
-      avatarBg: "bg-indigo-600 text-white font-bold",
-      initials: "AS",
-    },
-    {
-      name: "Asisten Bangko",
-      role: "Asisten Cabang",
-      email: "asisten.bangko@mathfingers.com",
-      avatarBg: "bg-purple-600 text-white font-bold",
-      initials: "AB",
-    },
-  ];
-
-  const handleSelectAccount = (index: number) => {
-    setSelectedAvatar(index);
-    setEmail(demoAccounts[index].email);
-    setPassword("password123");
-    setErrorMessage(null);
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,30 +50,17 @@ function LoginForm() {
         setIsLoading(false);
       } else {
         try {
-          const matched = demoAccounts.find((d) => d.email.toLowerCase() === email.toLowerCase().trim());
           const userName = email.toLowerCase().includes("febri")
             ? "Ustadzah Febri"
-            : matched
-            ? matched.name
+            : email.toLowerCase().includes("wahyudin")
+            ? "Wahyudin Hafiz, S.Pd"
             : email.split("@")[0];
-          const userRole = matched?.role.includes("Super Admin")
-            ? "SUPER_ADMIN"
-            : matched?.role.includes("Asisten")
-            ? "BRANCH_ASSISTANT"
-            : "BRANCH_ADMIN";
-          const userBranch = matched?.role.includes("Singkut")
-            ? "Singkut"
-            : matched?.role.includes("Bangko")
-            ? "Tabir Timur"
-            : "Semua Cabang (Pusat)";
 
           localStorage.setItem(
             "mf_logged_user",
             JSON.stringify({
               name: userName,
               email: email.trim(),
-              role: userRole,
-              branchName: userBranch,
             })
           );
         } catch {}
@@ -440,46 +381,6 @@ function LoginForm() {
           </form>
         )}
 
-        {/* Quick Avatar Selector */}
-        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 mb-2.5">
-            <span className="font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-              ✨ Pilih Akun Terdaftar di Sistem:
-            </span>
-            <span className="text-slate-500 dark:text-slate-400 text-[10px]">Klik avatar</span>
-          </div>
-
-          <div className="flex items-center justify-start gap-3 overflow-x-auto pb-1">
-            {demoAccounts.map((acc, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleSelectAccount(idx)}
-                title={`${acc.name} (${acc.role})`}
-                className={`relative group p-0.5 rounded-full transition-all shrink-0 cursor-pointer ${
-                  selectedAvatar === idx
-                    ? "ring-2 ring-emerald-500 ring-offset-2 scale-105"
-                    : "opacity-75 hover:opacity-100"
-                }`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-xs shadow-xs ${acc.avatarBg}`}
-                >
-                  {acc.initials}
-                </div>
-                {selectedAvatar === idx && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center border-2 border-white dark:border-[#0f1a36] shadow-xs">
-                    <Check className="w-2.5 h-2.5" />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-          <div className="text-xs text-slate-700 dark:text-slate-200 mt-2 font-semibold">
-            Akun: <span className="text-emerald-700 dark:text-emerald-400 font-black">{demoAccounts[selectedAvatar].name}</span> ({demoAccounts[selectedAvatar].role})
-          </div>
-        </div>
-
         {/* Remember Session Checkbox */}
         <div className="mt-4 flex items-center gap-2">
           <input
@@ -496,8 +397,8 @@ function LoginForm() {
       </div>
 
       {/* Footer copyright */}
-      <div className="text-xs text-white/90 text-center z-10 font-bold">
-        © {new Date().getFullYear()} Les Mathfingers Management System • V2.0 Cloud VPS
+      <div className="text-[11px] text-white/60 text-center z-10 font-normal tracking-wide">
+        Created by Wahyudin Hafiz
       </div>
     </div>
   );
