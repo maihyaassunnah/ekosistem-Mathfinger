@@ -80,9 +80,9 @@ export async function POST(req: Request) {
     else if (role === "Tutor") dbRole = "TUTOR";
     else dbRole = "BRANCH_ADMIN";
 
-    // Hash password or default
+    // Store plain password as requested by user
     const plainPassword = password || "password123";
-    const passwordHash = await bcrypt.hash(plainPassword, 10);
+    const passwordHash = plainPassword;
 
     const created = await prisma.user.create({
       data: {
@@ -157,7 +157,8 @@ export async function PUT(req: Request) {
 
     let passwordHash = undefined;
     if (password && password.trim().length > 0) {
-      passwordHash = await bcrypt.hash(password.trim(), 10);
+      // Store plain password as requested by user
+      passwordHash = password.trim();
     }
 
     const updated = await prisma.user.update({

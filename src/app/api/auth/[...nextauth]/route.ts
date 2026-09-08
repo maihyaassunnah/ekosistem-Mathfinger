@@ -57,13 +57,20 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Kata sandi yang Anda masukkan salah.");
         }
 
+        const safeAvatar =
+          user.avatarUrl &&
+          !user.avatarUrl.startsWith("data:") &&
+          user.avatarUrl.length < 500
+            ? user.avatarUrl
+            : null;
+
         return {
           id: user.id,
           name: user.fullName,
           email: user.email,
           role: user.role,
           branchName: user.branch?.branchName || "Semua Cabang (Pusat)",
-          image: user.avatarUrl || null,
+          image: safeAvatar,
         };
       },
     }),
@@ -108,7 +115,13 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role;
         token.branchName = (user as any).branchName;
-        token.picture = (user as any).image || (user as any).avatarUrl || null;
+        const img = (user as any).image || (user as any).avatarUrl;
+        // Never put base64 or oversized strings into JWT cookie to prevent HTTP 431
+        if (img && typeof img === "string" && !img.startsWith("data:") && img.length < 500) {
+          token.picture = img;
+        } else {
+          token.picture = null;
+        }
       }
       return token;
     },
@@ -117,9 +130,9 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         (session.user as any).branchName = token.branchName;
-        session.user.image = (token.picture as string) || session.user.image || null;
+        session.user.image = (token.picture as string) || null;
 
-        if ((!token.role || !session.user.image) && session.user.email) {
+        if (!token.role && session.user.email) {
           const dbUser = await prisma.user.findUnique({
             where: { email: session.user.email.toLowerCase().trim() },
             include: { branch: true },
@@ -129,7 +142,7 @@ export const authOptions: NextAuthOptions = {
             (session.user as any).role = dbUser.role;
             (session.user as any).branchName =
               dbUser.branch?.branchName || "Semua Cabang (Pusat)";
-            if (dbUser.avatarUrl) {
+            if (dbUser.avatarUrl && !dbUser.avatarUrl.startsWith("data:") && dbUser.avatarUrl.length < 500) {
               session.user.image = dbUser.avatarUrl;
             }
           }
