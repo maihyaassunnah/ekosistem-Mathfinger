@@ -1,0 +1,25 @@
+name: Deploy to Production VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote SSH commands to pull & rebuild
+        uses: appleboy/ssh-action@v1.0.3
+        if: env.HAS_SSH_KEY == 'true'
+        env:
+          HAS_SSH_KEY: ${{ secrets.SSH_KEY != '' }}
+        with:
+          host: ${{ secrets.SSH_HOST || '43.173.12.46' }}
+          username: ${{ secrets.SSH_USER || 'ubuntu' }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            cd /var/www/ekosistem-Mathfinger
+            git pull origin main
+            docker compose up -d --build
