@@ -42,7 +42,7 @@ services:
     networks:
       - mathfingers-network
 
-  # Web-based Database Manager (PGWeb - Modern, Ultra-Fast & Responsive)
+  # Web-based Database Manager (PGWeb - backup)
   db-web:
     image: sosedoff/pgweb:latest
     container_name: mathfingers-db-web
@@ -50,6 +50,24 @@ services:
     command: ["/usr/bin/pgweb", "--bind=0.0.0.0", "--listen=8081", "--url=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@db:5432/${POSTGRES_DB:-mathfingers_db}?sslmode=disable", "--auth-user=admin", "--auth-pass=MathFingers2026!"]
     ports:
       - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mathfingers-network
+
+  # Prisma Studio - Visual Database Editor (accessible at db.mathfingers.my.id)
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mathfingers-prisma-studio
+    restart: always
+    command: ["npx", "prisma", "studio", "--hostname", "0.0.0.0", "--port", "5555", "--browser", "none"]
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@db:5432/${POSTGRES_DB:-mathfingers_db}?schema=public
+    ports:
+      - "5555:5555"
     depends_on:
       db:
         condition: service_healthy
