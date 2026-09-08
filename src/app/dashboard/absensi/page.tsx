@@ -728,24 +728,27 @@ function AbsensiContent() {
       )}
 
       {/* Top Header with Mode Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              {isMembacaProgram ? "Absensi Siswa Les Membaca" : "Absensi Siswa Les Matematika"}
-            </h1>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold">
-              v3.3 Terpadu
-            </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Mobile: Top Bar with Title + QR Scanner button */}
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                <span className="sm:hidden">Absensi Siswa</span>
+                <span className="hidden sm:inline">
+                  {isMembacaProgram ? "Absensi Siswa Les Membaca" : "Absensi Siswa Les Matematika"}
+                </span>
+              </h1>
+              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold">
+                v3.3 Terpadu
+              </span>
+            </div>
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Pencatatan harian, scanner QR presensi sesuai jadwal kelas, dan rekapitulasi riwayat kehadiran.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Pencatatan harian, scanner QR presensi sesuai jadwal kelas, dan rekapitulasi riwayat kehadiran.
-          </p>
-        </div>
 
-        {/* Action & Tab Switcher */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick Scanner Launch Button - Icon Only Logo */}
+          {/* Mobile-only Quick Scanner button (aligned to right on top bar) */}
           <button
             type="button"
             onClick={() => {
@@ -754,39 +757,56 @@ function AbsensiContent() {
             }}
             title="Scan QR Presensi"
             aria-label="Scan QR Presensi"
-            className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center shrink-0"
+            className="sm:hidden p-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center shrink-0"
+          >
+            <QrCode className="w-5 h-5 text-slate-950" />
+          </button>
+        </div>
+
+        {/* Action & Tab Switcher */}
+        <div className="flex items-center gap-2">
+          {/* Desktop Quick Scanner Launch Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setScanResult(null);
+              setShowScannerModal(true);
+            }}
+            title="Scan QR Presensi"
+            aria-label="Scan QR Presensi"
+            className="hidden sm:flex p-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition-all shadow-xs hover:shadow-md cursor-pointer items-center justify-center shrink-0"
           >
             <QrCode className="w-5 h-5 text-slate-950" />
           </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("HARI_INI")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "HARI_INI"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Pencatatan Hari Ini</span>
-          </button>
+          {/* Mobile: Full-width Segmented 2-tab switch. Desktop: inline buttons */}
+          <div className="grid grid-cols-2 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl w-full sm:w-auto sm:flex sm:bg-transparent sm:dark:bg-transparent sm:p-0 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("HARI_INI")}
+              className={`inline-flex items-center justify-center gap-1.5 py-2 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "HARI_INI"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 sm:bg-white sm:dark:bg-[#0f1a36] sm:border sm:border-slate-200 sm:dark:border-[#1d2d5a] sm:text-slate-700 sm:dark:text-slate-300"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="truncate">Hari Ini</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("REKAP")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "REKAP"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Riwayat & Rekap Absensi</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px]">
-              {totalRekapCount}
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("REKAP")}
+              className={`inline-flex items-center justify-center gap-1.5 py-2 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "REKAP"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 sm:bg-white sm:dark:bg-[#0f1a36] sm:border sm:border-slate-200 sm:dark:border-[#1d2d5a] sm:text-slate-700 sm:dark:text-slate-300"
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span className="truncate">Rekap ({totalRekapCount})</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -794,28 +814,43 @@ function AbsensiContent() {
       {/* TAB 1: PENCATATAN HARI INI */}
       {/* ========================================================================= */}
       {activeTab === "HARI_INI" && (
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-5">
           {/* Date Picker Bar */}
-          <div className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <span>Pilih Tanggal Sesi Bimbingan</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px]">
-                  Hari: {getDayNameIndonesian(selectedDate)}
-                </span>
-                {lastSavedTime && (
-                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-slate-400 font-normal">
-                    • Terakhir disimpan: {lastSavedTime}
+          <div className="bg-white dark:bg-[#0f1a36] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <div>
+                <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <span className="hidden sm:inline">Pilih Tanggal Sesi Bimbingan</span>
+                  <span className="sm:hidden font-bold">Tanggal Sesi</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                    {getDayNameIndonesian(selectedDate)}
                   </span>
-                )}
+                  {lastSavedTime && (
+                    <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-slate-400 font-normal">
+                      • Terakhir: {lastSavedTime}
+                    </span>
+                  )}
+                </div>
+                <div className="hidden sm:block text-[11px] text-slate-400">
+                  Siswa aktif terdaftar bimbingan matematika jaritmatika.
+                </div>
               </div>
-              <div className="text-[11px] text-slate-400">
-                Siswa aktif terdaftar bimbingan matematika jaritmatika.
+
+              {/* Mobile-only Date input on top row right side */}
+              <div className="sm:hidden">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-2.5 py-1 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
+                />
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <div className="relative">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {/* Desktop Date input */}
+              <div className="hidden sm:block relative">
                 <input
                   type="date"
                   value={selectedDate}
@@ -824,57 +859,60 @@ function AbsensiContent() {
                 />
               </div>
 
-              <button
-                type="button"
-                onClick={handleMarkAllHadir}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                title="Tandai seluruh siswa hadir untuk sesi hari ini"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Hadir Semua</span>
-              </button>
+              {/* Action buttons side-by-side (50% each on mobile) */}
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleMarkAllHadir}
+                  className="inline-flex items-center justify-center gap-1.5 py-2 sm:py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
+                  title="Tandai seluruh siswa hadir untuk sesi hari ini"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Hadir Semua</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={handleSaveTodayAttendance}
-                disabled={isSaving}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-95 text-white text-xs font-extrabold transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50"
-                title="Simpan seluruh status presensi siswa tanggal ini ke database"
-              >
-                {isSaving ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Save className="w-3.5 h-3.5" />
-                )}
-                <span>Simpan Presensi</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTodayAttendance}
+                  disabled={isSaving}
+                  className="inline-flex items-center justify-center gap-1.5 py-2 sm:py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-95 text-white text-xs font-extrabold transition-all cursor-pointer disabled:opacity-50"
+                  title="Simpan seluruh status presensi siswa tanggal ini ke database"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+                  <span>Simpan Presensi</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Class Selection - Icon-Only Pills - Single Scrollable Row */}
-          <div className="bg-white dark:bg-[#0f1a36] px-3 py-2.5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
-            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+          {/* Class Selection - Clean Horizontal Scrollable Chips */}
+          <div className="bg-white dark:bg-[#0f1a36] px-3 py-2 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
               {classList.map((cl, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setSelectedClass(cl.value)}
                   title={cl.name}
-                  aria-label={cl.name}
-                  className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl transition-all cursor-pointer ${
+                  className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     selectedClass === cl.value
-                      ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/30"
-                      : "bg-slate-100/90 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      ? "bg-emerald-600 text-white shadow-xs shadow-emerald-500/20"
+                      : "bg-slate-100/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   }`}
                 >
-                  {idx === 0 ? (
-                    <Users className="w-4 h-4" />
-                  ) : (
-                    <Layers className="w-4 h-4" />
-                  )}
-                  <span className={`text-[10px] font-black leading-none ${
-                    selectedClass === cl.value ? "text-white" : "text-slate-600 dark:text-slate-300"
-                  }`}>
+                  {idx === 0 ? <Users className="w-3.5 h-3.5" /> : <Layers className="w-3.5 h-3.5" />}
+                  <span>{cl.name}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                      selectedClass === cl.value
+                        ? "bg-white/20 text-white"
+                        : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
                     {cl.count}
                   </span>
                 </button>
@@ -883,8 +921,8 @@ function AbsensiContent() {
           </div>
 
           {/* Search & Sort Bar */}
-          <div className="bg-white dark:bg-[#0f1a36] p-3 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
+          <div className="bg-white dark:bg-[#0f1a36] p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex items-center gap-2">
+            <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Search className="w-4 h-4" />
               </div>
@@ -893,17 +931,17 @@ function AbsensiContent() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Cari nama siswa..."
-                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
               />
             </div>
 
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as any)}
-              className="px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
+              className="px-2.5 sm:px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0"
             >
-              <option value="A-Z">Nama: A - Z</option>
-              <option value="Z-A">Nama: Z - A</option>
+              <option value="A-Z">A - Z</option>
+              <option value="Z-A">Z - A</option>
             </select>
           </div>
 
