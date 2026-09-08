@@ -510,6 +510,11 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   );
   const userPhoto = matchedAdmin?.avatarUrl || currentUser.avatarUrl || "";
   const [imgError, setImgError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setImgError(false);
@@ -745,8 +750,8 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           }`}
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="relative shrink-0">
-              {userPhoto && !imgError ? (
+            <div className="relative shrink-0" suppressHydrationWarning>
+              {mounted && userPhoto && !imgError ? (
                 <img
                   src={userPhoto}
                   alt={userName}
@@ -762,7 +767,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             </div>
 
             {!collapsed && (
-              <div className="overflow-hidden">
+              <div className="overflow-hidden" suppressHydrationWarning>
                 <div className="text-xs font-black text-slate-900 dark:text-white truncate">
                   {userName}
                 </div>
