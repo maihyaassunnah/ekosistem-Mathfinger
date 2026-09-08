@@ -56,11 +56,26 @@ function LoginForm() {
             ? "Wahyudin Hafiz, S.Pd"
             : email.split("@")[0];
 
+          let avatarUrl = "";
+          try {
+            const adminRes = await fetch("/api/admins").then((r) => r.json());
+            if (Array.isArray(adminRes)) {
+              localStorage.setItem("mf_branchAdmins", JSON.stringify(adminRes));
+              const matched = adminRes.find(
+                (a: any) => a.email && a.email.toLowerCase() === email.trim().toLowerCase()
+              );
+              if (matched?.avatarUrl) {
+                avatarUrl = matched.avatarUrl;
+              }
+            }
+          } catch {}
+
           localStorage.setItem(
             "mf_logged_user",
             JSON.stringify({
               name: userName,
               email: email.trim(),
+              avatarUrl,
             })
           );
         } catch {}

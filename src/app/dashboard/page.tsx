@@ -117,8 +117,14 @@ function DashboardContent() {
   const [showSyncToast, setShowSyncToast] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const matchedAdmin = branchAdmins?.find(
+    (a) => a.email && a.email.toLowerCase() === (currentUser.email || "").toLowerCase()
+  );
+  const userAvatar = matchedAdmin?.avatarUrl || currentUser.avatarUrl || "";
 
-  // Sync state if allowedBranch is locked
+  useEffect(() => {
+    setImgError(false);
+  }, [userAvatar]);
   useEffect(() => {
     if (allowedBranch) {
       setSelectedBranch(allowedBranch);
@@ -516,9 +522,9 @@ function DashboardContent() {
               href="/dashboard/pengaturan"
               className="w-8 h-8 rounded-full overflow-hidden border-2 border-emerald-500 shadow-2xs shrink-0 cursor-pointer hover:scale-105 transition-transform"
             >
-              {currentUser.avatarUrl && !imgError ? (
+              {userAvatar && !imgError ? (
                 <img
-                  src={currentUser.avatarUrl}
+                  src={userAvatar}
                   alt={displayName}
                   onError={() => setImgError(true)}
                   className="w-full h-full object-cover"

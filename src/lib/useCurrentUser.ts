@@ -24,10 +24,26 @@ export function useCurrentUser(): CurrentUserInfo {
 
   // Check localStorage for active user override (useful during offline, local testing, or initial session hydration)
   let localUser: any = null;
+  let adminAvatar = "";
   if (typeof window !== "undefined") {
     try {
       const saved = localStorage.getItem("mf_logged_user");
       if (saved) localUser = JSON.parse(saved);
+      if (localUser?.avatarUrl) adminAvatar = localUser.avatarUrl;
+
+      const currentEmail = session?.user?.email || localUser?.email || CURRENT_USER.email;
+      const savedAdmins = localStorage.getItem("mf_branchAdmins");
+      if (savedAdmins) {
+        const admins = JSON.parse(savedAdmins);
+        if (Array.isArray(admins)) {
+          const matched = admins.find(
+            (a: any) => a.email && a.email.toLowerCase() === (currentEmail || "").toLowerCase()
+          );
+          if (matched?.avatarUrl) {
+            adminAvatar = matched.avatarUrl;
+          }
+        }
+      }
     } catch {
       // ignore
     }
@@ -37,7 +53,7 @@ export function useCurrentUser(): CurrentUserInfo {
   const rawEmail = session?.user?.email || localUser?.email || CURRENT_USER.email;
   const rawRole = ((session?.user as any)?.role || localUser?.role || CURRENT_USER.role) as string;
   const rawBranch = ((session?.user as any)?.branchName || localUser?.branchName || (CURRENT_USER as any).branch || "Semua Cabang (Pusat)") as string;
-  const avatarUrl = session?.user?.image || localUser?.avatarUrl || CURRENT_USER.avatar;
+  const avatarUrl = adminAvatar || session?.user?.image || localUser?.avatarUrl || CURRENT_USER.avatar || "";
 
   // Exact user requirement: if account is febri, display as Ustadzah Febri
   if (rawEmail.toLowerCase().includes("febri") || rawName.toLowerCase().includes("febri")) {

@@ -59,6 +59,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
     classes,
     invoices,
     branches,
+    branchAdmins,
     landingPrograms,
     landingTestimonials,
     landingLeads,
@@ -504,8 +505,15 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const userName = currentUser.name;
   const userEmail = currentUser.email;
   const userRole = currentUser.role;
-  const userPhoto = currentUser.avatarUrl || "";
+  const matchedAdmin = branchAdmins?.find(
+    (a) => a.email && a.email.toLowerCase() === (userEmail || "").toLowerCase()
+  );
+  const userPhoto = matchedAdmin?.avatarUrl || currentUser.avatarUrl || "";
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [userPhoto]);
   const userInitials =
     userName
       .split(" ")
