@@ -2,9 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/journals - Fetch all teacher journals
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const program = searchParams.get("program");
+    const branch = searchParams.get("branch");
+
+    const whereClause: any = {};
+    if (program) {
+      whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+    }
+    if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    }
+
     const journals = await prisma.teacherJournal.findMany({
+      where: whereClause,
       include: { branch: true },
       orderBy: { journalDate: "desc" },
     });
@@ -19,6 +32,7 @@ export async function GET() {
       teacher: j.teacherName,
       date: j.journalDate.toISOString().split("T")[0],
       refCode: j.refCode,
+      programType: j.programType,
     }));
 
     return NextResponse.json(formatted);
@@ -32,7 +46,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { studentName, className, branch: branchName, topic, content, teacher, date } = body;
+    const { studentName, className, branch: branchName, topic, content, teacher, date, programType: rawProgramType } = body;
 
     if (!topic || !content) {
       return NextResponse.json({ error: "Topik dan materi jurnal wajib diisi" }, { status: 400 });
@@ -48,6 +62,8 @@ export async function POST(req: Request) {
     const refCode = `#${Math.random().toString(16).substring(2, 8)}`;
     const journalDate = date ? new Date(date) : new Date();
 
+    const programType = (rawProgramType || (className?.toLowerCase().includes("membaca") ? "MEMBACA" : "MATEMATIKA")).toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+
     const created = await prisma.teacherJournal.create({
       data: {
         branchId: branch!.id,
@@ -58,6 +74,7 @@ export async function POST(req: Request) {
         content,
         journalDate,
         refCode,
+        programType,
       },
       include: { branch: true },
     });
@@ -73,6 +90,7 @@ export async function POST(req: Request) {
         teacher: created.teacherName,
         date: created.journalDate.toISOString().split("T")[0],
         refCode: created.refCode,
+        programType: created.programType,
       },
       { status: 201 }
     );

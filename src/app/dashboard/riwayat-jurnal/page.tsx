@@ -13,12 +13,17 @@ function RiwayatJurnalContent() {
   const paramProgram = searchParams?.get("program");
   const isMembaca = paramProgram === "MEMBACA";
 
+  const currentProgType = isMembaca ? "MEMBACA" : "MATEMATIKA";
   const scopedJournals = journals.filter((j) => {
     const matchBranch = allowedBranch ? j.branch === allowedBranch : true;
-    const st = students.find((s) => s.name.toLowerCase() === j.studentName.toLowerCase());
-    const matchProgram = isMembaca
-      ? (st as any)?.programType === "MEMBACA"
-      : (st as any)?.programType !== "MEMBACA";
+    const matchProgram = j.programType
+      ? j.programType === currentProgType
+      : (() => {
+          const st = students.find((s) => s.name.toLowerCase() === j.studentName.toLowerCase());
+          return isMembaca
+            ? (st as any)?.programType === "MEMBACA"
+            : (st as any)?.programType !== "MEMBACA";
+        })();
     return matchBranch && matchProgram;
   });
 

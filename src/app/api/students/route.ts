@@ -2,9 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/students - Fetch all students with branch and level info
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const program = searchParams.get("program");
+    const branch = searchParams.get("branch");
+
+    const whereClause: any = {};
+    if (program) {
+      whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+    }
+    if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    }
+
     const students = await prisma.student.findMany({
+      where: whereClause,
       include: {
         branch: true,
         currentLevel: true,

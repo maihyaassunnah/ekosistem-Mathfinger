@@ -83,13 +83,15 @@ export default function InputNilaiPage() {
       string,
       { isJoined: boolean; score: number; note: string }
     > = {};
-    (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students).forEach((s) => {
-      initial[s.id] = {
-        isJoined: true,
-        score: 0,
-        note: "Sangat cepat / fokus tinggi",
-      };
-    });
+    (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students)
+      .filter((s) => (s as any).programType !== "MEMBACA")
+      .forEach((s) => {
+        initial[s.id] = {
+          isJoined: true,
+          score: 0,
+          note: "Sangat cepat / fokus tinggi",
+        };
+      });
     return initial;
   });
 

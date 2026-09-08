@@ -2,9 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/classes - List all classes with branch details
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const program = searchParams.get("program");
+    const branch = searchParams.get("branch");
+
+    const whereClause: any = {};
+    if (program) {
+      whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+    }
+    if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    }
+
     const classes = await prisma.class.findMany({
+      where: whereClause,
       include: { branch: true },
       orderBy: { createdAt: "asc" },
     });
@@ -12,7 +25,7 @@ export async function GET() {
     const formatted = await Promise.all(
       classes.map(async (c) => {
         const studentCount = await prisma.student.count({
-          where: { className: c.className, status: "ACTIVE" },
+          where: { className: c.className, status: "ACTIVE", branchId: c.branchId, programType: c.programType },
         });
         return {
           id: c.id,

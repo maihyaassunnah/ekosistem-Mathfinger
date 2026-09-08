@@ -620,36 +620,39 @@ function AbsensiContent() {
 
   // CRUD Handlers for Rekap
   const openAddRecord = () => {
+    const firstStudent = branchScopedStudents[0];
     setCrudForm({
-      studentId: students[0]?.id || "",
-      studentName: students[0]?.name || "",
-      studentCode: students[0]?.studentCode || "",
-      className: students[0]?.className || "",
-      branch: students[0]?.branch || "Singkut",
+      studentId: firstStudent?.id || "",
+      studentName: firstStudent?.name || "",
+      studentCode: firstStudent?.studentCode || "",
+      className: firstStudent?.className || "",
+      branch: firstStudent?.branch || "Singkut",
       date: selectedDate,
       time: "14:00 WIB",
       status: "HADIR",
       method: "MANUAL",
       note: "",
+      programType: isMembacaProgram ? "MEMBACA" : "MATEMATIKA",
     });
     setShowAddModal(true);
   };
 
   const openEditRecord = (key: string, item: AttendanceItem) => {
     setEditingAttendanceKey(key);
-    setCrudForm({ ...item });
+    setCrudForm({ ...item, programType: isMembacaProgram ? "MEMBACA" : "MATEMATIKA" });
     setShowEditModal(true);
   };
 
   const handleSaveAddRecord = (e: React.FormEvent) => {
     e.preventDefault();
-    const st = students.find((s) => s.id === crudForm.studentId);
+    const st = branchScopedStudents.find((s) => s.id === crudForm.studentId) || students.find((s) => s.id === crudForm.studentId);
     addAttendanceRecord({
       ...crudForm,
       studentName: st?.name || crudForm.studentName,
       studentCode: st?.studentCode || crudForm.studentCode,
       className: st?.className || crudForm.className,
       branch: st?.branch || crudForm.branch,
+      programType: isMembacaProgram ? "MEMBACA" : "MATEMATIKA",
     });
     setShowAddModal(false);
   };
@@ -2197,7 +2200,7 @@ function AbsensiContent() {
                   }}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-slate-100"
                 >
-                  {students.map((s) => (
+                  {branchScopedStudents.map((s) => (
                     <option key={s.id} value={s.id}>
                       #{s.studentCode} - {s.name} ({s.className})
                     </option>

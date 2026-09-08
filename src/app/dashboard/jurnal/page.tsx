@@ -59,23 +59,32 @@ function JurnalGuruContent() {
     const matchClass = classFilter === "ALL" ? true : j.className === classFilter;
     const matchStudent = studentFilter === "ALL" ? true : j.studentName === studentFilter;
 
-    const st = students.find((s) => s.name.toLowerCase() === j.studentName.toLowerCase());
-    const matchProgram = isMembaca
-      ? (st as any)?.programType === "MEMBACA"
-      : (st as any)?.programType !== "MEMBACA";
+    const currentProgType = isMembaca ? "MEMBACA" : "MATEMATIKA";
+    const matchProgram = j.programType
+      ? j.programType === currentProgType
+      : (() => {
+          const st = students.find((s) => s.name.toLowerCase() === j.studentName.toLowerCase());
+          return isMembaca
+            ? (st as any)?.programType === "MEMBACA"
+            : (st as any)?.programType !== "MEMBACA";
+        })();
 
     return matchBranch && matchSearch && matchClass && matchStudent && matchProgram;
   });
 
   const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    addJournal(form);
+    addJournal({
+      ...form,
+      programType: isMembaca ? "MEMBACA" : "MATEMATIKA",
+    });
     setIsAddOpen(false);
   };
 
   const handleSendWA = (j: JournalItem) => {
+    const brandName = (j.programType === "MEMBACA" || isMembaca) ? "Rumah Belajar / Les Membaca" : "Mathfingers";
     const text = encodeURIComponent(
-      `Halo Orang Tua dari ${j.studentName},\n\nBerikut catatan jurnal guru les Mathfingers (${j.className}):\nMateri: ${j.topic}\n\n"${j.content}"\n\nPengajar: ${j.teacher}\nLes Mathfingers Cabang ${j.branch}`
+      `Halo Orang Tua dari ${j.studentName},\n\nBerikut catatan jurnal guru les ${brandName} (${j.className}):\nMateri: ${j.topic}\n\n"${j.content}"\n\nPengajar: ${j.teacher}\nLes ${brandName} Cabang ${j.branch}`
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
@@ -255,7 +264,7 @@ function JurnalGuruContent() {
                     onChange={(e) => setForm({ ...form, studentName: e.target.value })}
                     className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
                   >
-                    {students.map((s) => (
+                    {scopedStudents.map((s) => (
                       <option key={s.id} value={s.name}>
                         {s.name} ({s.branch})
                       </option>
@@ -270,7 +279,7 @@ function JurnalGuruContent() {
                     onChange={(e) => setForm({ ...form, className: e.target.value })}
                     className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
                   >
-                    {classes.map((c) => (
+                    {scopedClasses.map((c) => (
                       <option key={c.id} value={c.name}>
                         {c.name} ({c.branch})
                       </option>

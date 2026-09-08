@@ -2,9 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/invoices - Fetch all invoices
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const program = searchParams.get("program");
+    const branch = searchParams.get("branch");
+
+    const whereClause: any = {};
+    if (program) {
+      whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+    }
+    if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    }
+
     const invoices = await prisma.invoice.findMany({
+      where: whereClause,
       include: {
         student: true,
         branch: true,
@@ -24,6 +37,7 @@ export async function GET() {
       status: inv.status === "PAID" ? "LUNAS" : "BELUM BAYAR",
       paidDate: inv.paidAt ? inv.paidAt.toISOString().split("T")[0] : undefined,
       paidMethod: inv.paidMethod || undefined,
+      programType: inv.programType,
     }));
 
     return NextResponse.json(formatted);
@@ -37,7 +51,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { studentId, studentName, period, dueDate, amount, status } = body;
+    const { studentId, studentName, period, dueDate, amount, status, programType: rawProgramType } = body;
 
     let student = null;
     if (studentId) {
@@ -60,6 +74,8 @@ export async function POST(req: Request) {
     const invoiceNo = `INV/MF/2608/${code}`;
     const due = dueDate ? new Date(dueDate) : new Date(Date.now() + 10 * 86400000);
 
+    const programType = (rawProgramType || student.programType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+
     const created = await prisma.invoice.create({
       data: {
         invoiceNumber: invoiceNo,
@@ -69,6 +85,7 @@ export async function POST(req: Request) {
         period: period || "Bulan Berjalan",
         dueDate: due,
         status: status === "LUNAS" ? "PAID" : "UNPAID",
+        programType,
       },
       include: { student: true, branch: true },
     });

@@ -2,16 +2,29 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/attendances - Fetch attendances from database
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const program = searchParams.get("program");
+    const branch = searchParams.get("branch");
+
+    const whereClause: any = {};
+    if (program) {
+      whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+    }
+    if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    }
+
     const attendances = await prisma.attendance.findMany({
+      where: whereClause,
       include: {
         student: true,
         branch: true,
         tutor: true,
       },
       orderBy: { attendanceDate: "desc" },
-      take: 500,
+      take: 1000,
     });
 
     const formatted = attendances.map((att) => {
@@ -38,6 +51,7 @@ export async function GET() {
         time: recordedTime,
         status: att.status === "ALPHA" ? "ABSEN" : att.status,
         method: att.method,
+        programType: att.programType,
         note: cleanNote,
       };
     });
@@ -185,6 +199,8 @@ export async function POST(req: Request) {
         noteText = noteText ? `${noteText} (${item.time})` : `Waktu: ${item.time}`;
       }
 
+      const programType = (item.programType || student.programType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+
       const saved = await prisma.attendance.upsert({
         where: {
           studentId_attendanceDate: {
@@ -197,6 +213,7 @@ export async function POST(req: Request) {
           method: mappedMethod,
           notes: noteText,
           branchId: student.branchId,
+          programType: programType,
         },
         create: {
           studentId: student.id,
@@ -206,6 +223,7 @@ export async function POST(req: Request) {
           method: mappedMethod,
           status: mappedStatus,
           notes: noteText,
+          programType: programType,
         },
         include: {
           student: true,

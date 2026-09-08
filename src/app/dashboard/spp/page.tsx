@@ -59,7 +59,9 @@ function SppContent() {
         return st?.branch === branchFilter || inv.branch === branchFilter;
       });
     }
+    const currentProgType = isMembaca ? "MEMBACA" : "MATEMATIKA";
     return list.filter((inv) => {
+      if (inv.programType) return inv.programType === currentProgType;
       const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
       return isMembaca
         ? (st as any)?.programType === "MEMBACA"
@@ -140,6 +142,8 @@ function SppContent() {
       dueDate: form.dueDate,
       amount: form.amount,
       status: "BELUM BAYAR",
+      branch: st.branch,
+      programType: isMembaca ? "MEMBACA" : "MATEMATIKA",
     });
     setIsAddOpen(false);
     showToast(`Invoice baru berhasil diterbitkan untuk ${st.name}!`);

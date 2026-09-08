@@ -52,6 +52,7 @@ export interface JournalItem {
   teacher: string;
   date: string;
   refCode: string;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
 
 export interface AttendanceItem {
@@ -66,6 +67,7 @@ export interface AttendanceItem {
   status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN";
   method?: "QR_SCAN" | "MANUAL";
   note?: string;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
 
 export interface GradeItem {
@@ -103,6 +105,7 @@ export interface InvoiceItem {
   status: "LUNAS" | "BELUM BAYAR";
   paidDate?: string;
   paidMethod?: string;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
 
 export interface CashMutationItem {
@@ -216,7 +219,8 @@ interface AppStoreContextType {
     status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN",
     note?: string,
     time?: string,
-    method?: "QR_SCAN" | "MANUAL"
+    method?: "QR_SCAN" | "MANUAL",
+    programType?: "MATEMATIKA" | "MEMBACA"
   ) => void;
   batchSetAttendance: (date: string, status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => void;
   addAttendanceRecord: (record: AttendanceItem) => void;
@@ -1556,6 +1560,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             time: att.time || "14:00 WIB",
             status: att.status === "ALPHA" ? "ABSEN" : (att.status || "HADIR"),
             method: att.method || "MANUAL",
+            programType: att.programType || "MATEMATIKA",
             note: att.note || att.notes || "",
           };
         });
@@ -2017,12 +2022,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN",
     note: string = "",
     time?: string,
-    method?: "QR_SCAN" | "MANUAL"
+    method?: "QR_SCAN" | "MANUAL",
+    programType?: "MATEMATIKA" | "MEMBACA"
   ) => {
     const st = students.find((s) => s.id === studentId);
     const currentTime =
       time ||
       new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+    const progType = programType || (st as any)?.programType || "MATEMATIKA";
 
     setAttendances((prev) => {
       const key = `${studentId}_${date}`;
@@ -2039,6 +2046,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           time: prev[key]?.time || currentTime,
           status,
           method: method || prev[key]?.method || "MANUAL",
+          programType: progType,
           note: note !== undefined ? note : (prev[key]?.note || ""),
         },
       };
@@ -2061,6 +2069,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         note: note !== undefined ? note : "",
         time: currentTime,
         method: method || "MANUAL",
+        programType: progType,
       }),
     }).catch((err) => console.error("Error syncing attendance to PostgreSQL:", err));
   };
@@ -2074,6 +2083,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       const next = { ...prev };
       students.forEach((s) => {
         const key = `${s.id}_${date}`;
+        const progType = (s as any)?.programType || "MATEMATIKA";
         next[key] = {
           id: prev[key]?.id || `att-${Date.now()}-${s.id}`,
           studentId: s.id,
@@ -2085,6 +2095,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           time: prev[key]?.time || currentTime,
           status,
           method: prev[key]?.method || "MANUAL",
+          programType: progType,
           note: prev[key]?.note || "",
         };
         payload.push({
@@ -2096,6 +2107,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           date,
           status,
           method: prev[key]?.method || "MANUAL",
+          programType: progType,
           note: prev[key]?.note || "",
           time: prev[key]?.time || currentTime,
         });
@@ -2114,13 +2126,17 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addAttendanceRecord = (record: AttendanceItem) => {
+    const st = students.find((s) => s.id === record.studentId);
+    const progType = record.programType || (st as any)?.programType || "MATEMATIKA";
+    const fullRecord = { ...record, programType: progType };
+
     setAttendances((prev) => {
-      const key = `${record.studentId}_${record.date}`;
+      const key = `${fullRecord.studentId}_${fullRecord.date}`;
       const next = {
         ...prev,
         [key]: {
-          ...record,
-          id: record.id || `att-${Date.now()}`,
+          ...fullRecord,
+          id: fullRecord.id || `att-${Date.now()}`,
         },
       };
       save("mf_attendances", next);
@@ -2130,7 +2146,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/attendances", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(record),
+      body: JSON.stringify(fullRecord),
     }).catch((err) => console.error("Error adding attendance to PostgreSQL:", err));
   };
 
@@ -2521,10 +2537,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const addInvoice = (inv: Omit<InvoiceItem, "id" | "invoiceNo">) => {
     const tempId = `inv-${Date.now()}`;
     const code = Math.floor(1000 + Math.random() * 9000);
+    const st = students.find((s) => s.id === inv.studentId);
+    const progType = inv.programType || (st as any)?.programType || "MATEMATIKA";
     const newInv: InvoiceItem = {
       ...inv,
       id: tempId,
       invoiceNo: `INV/MF/2608/${code}`,
+      programType: progType,
     };
     setInvoices((prev) => {
       const updated = [newInv, ...prev];
@@ -2535,7 +2554,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/invoices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(inv),
+      body: JSON.stringify({ ...inv, programType: progType }),
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {

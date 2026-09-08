@@ -56,22 +56,27 @@ function KelasContent() {
   const [studentSearchInModal, setStudentSearchInModal] = useState<string>("");
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  // Helpers to get live enrolled students and candidates for a class
-  const getEnrolledStudents = (clsName: string, branch: string) => {
-    return students.filter(
-      (s) =>
-        s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim() &&
-        s.className &&
-        s.className.toLowerCase().trim() === clsName.toLowerCase().trim()
-    );
+  // Helpers to get live enrolled students and candidates for a class (strictly filtered by programType)
+  const getEnrolledStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA") => {
+    return students.filter((s) => {
+      const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const classMatch = s.className && s.className.toLowerCase().trim() === clsName.toLowerCase().trim();
+      const progMatch = classProgType
+        ? (classProgType === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA")
+        : true;
+      return branchMatch && classMatch && progMatch;
+    });
   };
 
-  const getCandidateStudents = (clsName: string, branch: string) => {
-    return students.filter(
-      (s) =>
-        s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim() &&
-        (!s.className || s.className.toLowerCase().trim() !== clsName.toLowerCase().trim())
-    );
+  const getCandidateStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA") => {
+    return students.filter((s) => {
+      const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const notInThisClass = !s.className || s.className.toLowerCase().trim() !== clsName.toLowerCase().trim();
+      const progMatch = classProgType
+        ? (classProgType === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA")
+        : true;
+      return branchMatch && notInThisClass && progMatch;
+    });
   };
 
   const handleEnrollStudent = (studentId: string) => {
@@ -79,8 +84,9 @@ function KelasContent() {
     const st = students.find((s) => s.id === studentId);
     if (!st) return;
 
+    const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     updateStudent(studentId, { className: viewingStudentsClass.name });
-    const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch);
+    const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch, classProgType);
     const newCount = currentList.length + 1;
     updateClass(viewingStudentsClass.id, { enrolledCount: newCount });
 
@@ -98,8 +104,9 @@ function KelasContent() {
     if (!viewingStudentsClass) return;
     if (!confirm(`Keluarkan ${studentName} dari kelas ${viewingStudentsClass.name}?`)) return;
 
+    const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     updateStudent(studentId, { className: "-" });
-    const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch);
+    const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch, classProgType);
     const newCount = Math.max(0, currentList.length - 1);
     updateClass(viewingStudentsClass.id, { enrolledCount: newCount });
 
@@ -148,7 +155,13 @@ function KelasContent() {
 
   const totalClasses = scopedClassesForStats.length;
   const totalEnrolled = scopedClassesForStats.reduce(
-    (sum, c) => sum + getEnrolledStudents(c.name, c.branch).length,
+    (sum, c) =>
+      sum +
+      getEnrolledStudents(
+        c.name,
+        c.branch,
+        (c as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA"
+      ).length,
     0
   );
   const totalCapacity = scopedClassesForStats.reduce((sum, c) => sum + c.maxCapacity, 0);
@@ -366,7 +379,11 @@ function KelasContent() {
       {/* Class Cards Grid (Matches Image 1 - 3 Columns) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredClasses.map((c) => {
-          const currentEnrolled = getEnrolledStudents(c.name, c.branch);
+          const currentEnrolled = getEnrolledStudents(
+            c.name,
+            c.branch,
+            (c as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA"
+          );
           const currentCount = currentEnrolled.length;
           const percent = Math.min(100, Math.round((currentCount / c.maxCapacity) * 100));
 
@@ -685,13 +702,16 @@ function KelasContent() {
 
       {/* Modal View & Manage Enrolled Students (CRUD Masukkan & Keluarkan Siswa) */}
       {viewingStudentsClass && (() => {
+        const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
         const currentEnrolled = getEnrolledStudents(
           viewingStudentsClass.name,
-          viewingStudentsClass.branch
+          viewingStudentsClass.branch,
+          classProgType
         );
         const candidates = getCandidateStudents(
           viewingStudentsClass.name,
-          viewingStudentsClass.branch
+          viewingStudentsClass.branch,
+          classProgType
         );
         const filteredEnrolled = currentEnrolled.filter(
           (st) =>
@@ -784,7 +804,7 @@ function KelasContent() {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-black text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
                     <UserPlus className="w-4 h-4 text-emerald-600" />
-                    <span>Masukkan Siswa dari Data Cabang {viewingStudentsClass.branch}</span>
+                    <span>Masukkan Siswa Cabang {viewingStudentsClass.branch} ({classProgType === "MEMBACA" ? "Les Membaca" : "Les Matematika"})</span>
                   </label>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {candidates.length} siswa siap dimasukkan
@@ -797,7 +817,7 @@ function KelasContent() {
                     onChange={(e) => setSelectedStudentToAdd(e.target.value)}
                     className="flex-1 px-3 py-2.5 bg-white dark:bg-[#0f1a36] border border-emerald-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs"
                   >
-                    <option value="">-- Pilih Siswa Cabang {viewingStudentsClass.branch} --</option>
+                    <option value="">-- Pilih Siswa Cabang {viewingStudentsClass.branch} ({classProgType === "MEMBACA" ? "Les Membaca" : "Les Matematika"}) --</option>
                     {candidates.map((st) => (
                       <option key={st.id} value={st.id}>
                         {st.name} (#{st.studentCode}) {st.className && st.className !== "-" ? `• [Pindah dari: ${st.className}]` : `• [Belum ada kelas]`}

@@ -103,7 +103,7 @@ export default function DatabasePage() {
       icon: GraduationCap,
       color: "text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-950/40",
       link: "/dashboard/siswa",
-      data: students.map((s) => ({ id: s.id, Nama: s.name, Kode: s.studentCode, Kelas: s.className || "-", Cabang: s.branch, Wali: s.parentName })),
+      data: students.map((s) => ({ id: s.id, Nama: s.name, Kode: s.studentCode, Program: (s as any).programType === "MEMBACA" ? "📖 MEMBACA" : "🔢 MATEMATIKA", Kelas: s.className || "-", Cabang: s.branch, Wali: s.parentName })),
     },
     {
       name: "classes",
@@ -113,7 +113,7 @@ export default function DatabasePage() {
       icon: Calendar,
       color: "text-indigo-700 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-950/40",
       link: "/dashboard/kelas",
-      data: classes.map((c) => ({ id: c.id, Kelas: c.name, Cabang: c.branch, Hari: c.days, Jam: c.time, Tutor: c.teacher, Ruang: c.room, Terisi: `${c.enrolledCount}/${c.maxCapacity}` })),
+      data: classes.map((c) => ({ id: c.id, Kelas: c.name, Program: (c as any).programType === "MEMBACA" ? "📖 MEMBACA" : "🔢 MATEMATIKA", Cabang: c.branch, Hari: c.days, Jam: c.time, Tutor: c.teacher, Ruang: c.room, Terisi: `${c.enrolledCount}/${c.maxCapacity}` })),
     },
     {
       name: "attendances",
@@ -133,7 +133,7 @@ export default function DatabasePage() {
       icon: Table,
       color: "text-slate-700 bg-slate-100 dark:text-slate-300 dark:bg-slate-800",
       link: "/dashboard/jurnal",
-      data: journals.map((j) => ({ id: j.id, Siswa: j.studentName, Kelas: j.className, Topik: j.topic, Tanggal: j.date, Guru: j.teacher })),
+      data: journals.map((j) => ({ id: j.id, Siswa: j.studentName, Program: (j as any).programType === "MEMBACA" ? "📖 MEMBACA" : "🔢 MATEMATIKA", Kelas: j.className, Topik: j.topic, Tanggal: j.date, Guru: j.teacher })),
     },
     {
       name: "student_grades",
@@ -163,7 +163,7 @@ export default function DatabasePage() {
       icon: CreditCard,
       color: "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40",
       link: "/dashboard/spp",
-      data: invoices.map((inv) => ({ id: inv.id, Invoice: inv.invoiceNo, Siswa: inv.studentName, Periode: inv.period, Jumlah: `Rp ${inv.amount.toLocaleString()}`, Status: inv.status })),
+      data: invoices.map((inv) => ({ id: inv.id, Invoice: inv.invoiceNo, Siswa: inv.studentName, Program: (inv as any).programType === "MEMBACA" ? "📖 MEMBACA" : "🔢 MATEMATIKA", Periode: inv.period, Jumlah: `Rp ${inv.amount.toLocaleString()}`, Status: inv.status })),
     },
     {
       name: "cash_mutations",
@@ -256,6 +256,14 @@ export default function DatabasePage() {
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
             Database PostgreSQL 16 terpusat dengan skema Prisma ORM & Editor Visual Prisma Studio
           </p>
+        </div>
+
+        {/* Program Segregation Status Pill */}
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Isolasi Program: Matematika & Membaca Terpisah</span>
+          </span>
         </div>
 
         {/* View Mode Switcher: Summary vs Prisma Studio GUI */}
