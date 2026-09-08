@@ -18,7 +18,7 @@ import { useAppStore } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function RaporPage() {
-  const { students, classes, attendances, grades, journals, behaviors } =
+  const { students, classes, attendances, grades, journals, behaviors, branches } =
     useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
@@ -851,14 +851,35 @@ export default function RaporPage() {
                     </div>
                   </div>
 
-                  <div className="text-center space-y-12">
-                    <div className="text-xs text-slate-600 font-medium">
+                  <div className="text-center">
+                    <div className="text-xs text-slate-600 font-medium mb-1">
                       Pengajar / Tutor Math Fingers
+                    </div>
+                    <div className="h-16 flex items-center justify-center">
+                      {(() => {
+                        const stBranch = branches.find(
+                          (b) => b.name?.toLowerCase() === activeStudent?.branch?.toLowerCase()
+                        ) || branches[0];
+                        return stBranch?.signatureUrl ? (
+                          <img
+                            src={stBranch.signatureUrl}
+                            alt="TTD Tutor"
+                            className="max-h-14 max-w-[140px] object-contain"
+                          />
+                        ) : (
+                          <div className="h-12"></div>
+                        );
+                      })()}
                     </div>
                     <div>
                       <div className="w-44 mx-auto border-b border-slate-400"></div>
                       <div className="text-xs font-bold text-slate-800 mt-2">
-                        ( Febrianti Dewi, S.Pd )
+                        ({(() => {
+                          const stBranch = branches.find(
+                            (b) => b.name?.toLowerCase() === activeStudent?.branch?.toLowerCase()
+                          ) || branches[0];
+                          return stBranch?.adminName || "Febrianti Dewi, S.Pd";
+                        })()})
                       </div>
                     </div>
                   </div>

@@ -76,6 +76,24 @@ export default function DatabasePage() {
       data: branches.map((b) => ({ id: b.id, Nama: b.name, Kode: b.code, Alamat: b.address, Telepon: b.phone })),
     },
     {
+      name: "branch_settings",
+      model: "BranchSetting",
+      label: "Rekening & TTD Cabang",
+      count: branches.length,
+      icon: CreditCard,
+      color: "text-teal-700 bg-teal-50 dark:text-teal-300 dark:bg-teal-950/40",
+      link: "/dashboard/pengaturan",
+      data: branches.map((b) => ({
+        id: b.id,
+        Cabang: b.name,
+        Bank: b.bankName || "-",
+        NoRekening: b.accountNumber || "-",
+        AtasNama: b.accountHolder || "-",
+        AdminTTD: b.adminName || "-",
+        StatusTTD: b.signatureUrl ? "✅ Ada (Tersimpan)" : "❌ Belum Diatur",
+      })),
+    },
+    {
       name: "users",
       model: "User",
       label: "Admin & Tutor",
@@ -250,7 +268,7 @@ export default function DatabasePage() {
               Pusat Manajemen Database Prisma & PostgreSQL
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-              17 Tabel Terkoneksi
+              18 Tabel Terkoneksi
             </span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">

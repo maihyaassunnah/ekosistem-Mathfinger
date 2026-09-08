@@ -211,6 +211,24 @@ export default function PengaturanPage() {
     setBranchAlert(null);
 
     try {
+      const res = await fetch("/api/branches", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: activeBranch.id,
+          bankName: branchBankName,
+          accountNumber: branchAccountNumber,
+          accountHolder: branchAccountHolder,
+          adminName: branchAdminName,
+          signatureUrl: branchSignatureUrl,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Gagal menyimpan ke database server.");
+      }
+
       updateBranch(activeBranch.id, {
         bankName: branchBankName,
         accountNumber: branchAccountNumber,
@@ -221,7 +239,7 @@ export default function PengaturanPage() {
 
       setBranchAlert({
         type: "success",
-        message: `Pengaturan rekening & TTD untuk Cabang ${activeBranch.name} berhasil disimpan!`,
+        message: `Pengaturan rekening & TTD untuk Cabang ${activeBranch.name} berhasil disimpan permanen di database PostgreSQL!`,
       });
       setTimeout(() => setBranchAlert(null), 4000);
     } catch (err: any) {
