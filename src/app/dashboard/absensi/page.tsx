@@ -52,6 +52,7 @@ function AbsensiContent() {
     updateAttendanceRecord,
     deleteAttendanceRecord,
     branches,
+    refreshData,
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<"HARI_INI" | "REKAP">("HARI_INI");
@@ -470,28 +471,56 @@ function AbsensiContent() {
   ).length;
   const todayAbsenCount = filteredStudents.filter((s) => getStatus(s.id) === "ABSEN").length;
 
-  const handleSaveTodayAttendance = () => {
+  const handleSaveTodayAttendance = async () => {
     setIsSaving(true);
     const count = filteredStudents.length;
     const currentTime =
       new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
 
-    filteredStudents.forEach((st) => {
+    const payload = filteredStudents.map((st) => {
       const status = getStatus(st.id);
       const note =
         notesState[st.id] !== undefined
           ? notesState[st.id]
           : attendances[`${st.id}_${selectedDate}`]?.note || "";
       const existingRec = attendances[`${st.id}_${selectedDate}`];
-      setAttendance(
-        st.id,
-        selectedDate,
+      return {
+        studentId: st.id,
+        studentName: st.name,
+        studentCode: st.studentCode,
+        className: st.className,
+        branch: st.branch,
+        date: selectedDate,
         status,
         note,
-        existingRec?.time || currentTime,
-        (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL"
+        time: existingRec?.time || currentTime,
+        method: (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL",
+      };
+    });
+
+    payload.forEach((item) => {
+      setAttendance(
+        item.studentId,
+        item.date,
+        item.status,
+        item.note,
+        item.time,
+        item.method
       );
     });
+
+    try {
+      await fetch("/api/attendances", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (typeof refreshData === "function") {
+        refreshData();
+      }
+    } catch (err) {
+      console.error("Error saving attendances directly to PostgreSQL:", err);
+    }
 
     const formattedTime =
       new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
@@ -501,7 +530,7 @@ function AbsensiContent() {
     setSaveToast({
       message: `Presensi ${count} siswa untuk sesi tanggal ${selectedDate} (${getDayNameIndonesian(
         selectedDate
-      )}) berhasil disimpan ke sistem!`,
+      )}) berhasil disimpan ke database!`,
       count,
     });
   };

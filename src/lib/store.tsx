@@ -1543,20 +1543,20 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (Array.isArray(attendancesRes) && attendancesRes.length > 0) {
         const map: Record<string, AttendanceItem> = {};
         attendancesRes.forEach((att: any) => {
-          const dateStr = att.attendanceDate ? att.attendanceDate.split("T")[0] : "";
+          const dateStr = att.date || (att.attendanceDate ? att.attendanceDate.split("T")[0] : "");
           const key = `${att.studentId}_${dateStr}`;
           map[key] = {
             id: att.id,
             studentId: att.studentId,
-            studentName: att.student?.studentName || "Siswa",
-            studentCode: att.student?.studentCode || "",
-            className: att.student?.className || "",
-            branch: att.branch?.branchName || "Singkut",
+            studentName: att.studentName || att.student?.studentName || "Siswa",
+            studentCode: att.studentCode || att.student?.studentCode || "-",
+            className: att.className || att.student?.className || "-",
+            branch: att.branch?.branchName || att.branch || "Singkut",
             date: dateStr,
-            time: "14:00 WIB",
-            status: att.status || "HADIR",
+            time: att.time || "14:00 WIB",
+            status: att.status === "ALPHA" ? "ABSEN" : (att.status || "HADIR"),
             method: att.method || "MANUAL",
-            note: att.notes || "",
+            note: att.note || att.notes || "",
           };
         });
         setAttendances((prev) => ({ ...prev, ...map }));
@@ -2019,12 +2019,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     time?: string,
     method?: "QR_SCAN" | "MANUAL"
   ) => {
+    const st = students.find((s) => s.id === studentId);
+    const currentTime =
+      time ||
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+
     setAttendances((prev) => {
       const key = `${studentId}_${date}`;
-      const st = students.find((s) => s.id === studentId);
-      const currentTime =
-        time ||
-        new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
       const next = {
         ...prev,
         [key]: {
@@ -2044,13 +2045,33 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_attendances", next);
       return next;
     });
+
+    // Sync to PostgreSQL DB
+    fetch("/api/attendances", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentId,
+        studentName: st?.name,
+        studentCode: st?.studentCode,
+        className: st?.className,
+        branch: st?.branch,
+        date,
+        status,
+        note: note !== undefined ? note : "",
+        time: currentTime,
+        method: method || "MANUAL",
+      }),
+    }).catch((err) => console.error("Error syncing attendance to PostgreSQL:", err));
   };
 
   const batchSetAttendance = (date: string, status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => {
+    const currentTime =
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+    const payload: any[] = [];
+
     setAttendances((prev) => {
       const next = { ...prev };
-      const currentTime =
-        new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
       students.forEach((s) => {
         const key = `${s.id}_${date}`;
         next[key] = {
@@ -2066,10 +2087,30 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           method: prev[key]?.method || "MANUAL",
           note: prev[key]?.note || "",
         };
+        payload.push({
+          studentId: s.id,
+          studentName: s.name,
+          studentCode: s.studentCode,
+          className: s.className,
+          branch: s.branch,
+          date,
+          status,
+          method: prev[key]?.method || "MANUAL",
+          note: prev[key]?.note || "",
+          time: prev[key]?.time || currentTime,
+        });
       });
       save("mf_attendances", next);
       return next;
     });
+
+    if (payload.length > 0) {
+      fetch("/api/attendances", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch((err) => console.error("Error batch syncing attendances to PostgreSQL:", err));
+    }
   };
 
   const addAttendanceRecord = (record: AttendanceItem) => {
@@ -2085,30 +2126,52 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       save("mf_attendances", next);
       return next;
     });
+
+    fetch("/api/attendances", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(record),
+    }).catch((err) => console.error("Error adding attendance to PostgreSQL:", err));
   };
 
   const updateAttendanceRecord = (key: string, updated: Partial<AttendanceItem>) => {
+    let targetItem: AttendanceItem | null = null;
     setAttendances((prev) => {
       if (!prev[key]) return prev;
+      targetItem = { ...prev[key], ...updated };
       const next = {
         ...prev,
-        [key]: {
-          ...prev[key],
-          ...updated,
-        },
+        [key]: targetItem,
       };
       save("mf_attendances", next);
       return next;
     });
+
+    if (targetItem) {
+      fetch("/api/attendances", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(targetItem),
+      }).catch((err) => console.error("Error updating attendance in PostgreSQL:", err));
+    }
   };
 
   const deleteAttendanceRecord = (key: string) => {
+    const existing = attendances[key];
     setAttendances((prev) => {
       const next = { ...prev };
       delete next[key];
       save("mf_attendances", next);
       return next;
     });
+
+    const url = existing?.id && !existing.id.startsWith("att-")
+      ? `/api/attendances?id=${encodeURIComponent(existing.id)}`
+      : `/api/attendances?key=${encodeURIComponent(key)}`;
+
+    fetch(url, { method: "DELETE" }).catch((err) =>
+      console.error("Error deleting attendance from PostgreSQL:", err)
+    );
   };
 
   // Journals
