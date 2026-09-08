@@ -348,93 +348,89 @@ function SiswaContent() {
         </div>
       </div>
 
-      {/* 6 Filter Controls Bar (Matches Image 2) */}
-      <div className="bg-white dark:bg-[#0f1a36] p-3.5 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex flex-wrap items-center gap-3">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-4 h-4" />
+      {/* Filter Controls - Mobile Compact 3-row layout */}
+      <div className="bg-white dark:bg-[#0f1a36] p-3 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-2">
+        {/* Row 1: Search + Sort */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <Search className="w-3.5 h-3.5" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Cari siswa, wali, HP..."
+              className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
           </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari siswa, wali, HP..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as any)}
+            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 shrink-0"
+          >
+            <option value="A-Z">A–Z</option>
+            <option value="Z-A">Z–A</option>
+          </select>
         </div>
 
-        {/* Sort A-Z */}
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as any)}
-          className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200"
-        >
-          <option value="A-Z">Nama: A - Z</option>
-          <option value="Z-A">Nama: Z - A</option>
-        </select>
-
-        {/* Cabang Filter */}
-        {isSuperAdmin ? (
+        {/* Row 2: Cabang + Kelas */}
+        <div className="grid grid-cols-2 gap-2">
+          {isSuperAdmin ? (
+            <select
+              value={branchFilter}
+              onChange={(e) => setBranchFilter(e.target.value)}
+              className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
+            >
+              <option value="ALL">Semua Cabang</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.name}>{b.name}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="px-2.5 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+              <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span className="truncate">{allowedBranch}</span>
+            </div>
+          )}
           <select
-            value={branchFilter}
-            onChange={(e) => setBranchFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
           >
-            <option value="ALL">Semua Cabang</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.name}>
-                Cabang {b.name}
-              </option>
-            ))}
+            <option value="ALL">Semua Kelas</option>
+            {classes
+              .filter((c) =>
+                activeProgram === "MEMBACA"
+                  ? (c as any).programType === "MEMBACA"
+                  : (c as any).programType !== "MEMBACA"
+              )
+              .map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
           </select>
-        ) : (
-          <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shrink-0">
-            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Cabang {allowedBranch}</span>
-          </div>
-        )}
+        </div>
 
-        {/* Kelas Filter (Dynamic) */}
-        <select
-          value={classFilter}
-          onChange={(e) => setClassFilter(e.target.value)}
-          className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200"
-        >
-          <option value="ALL">Semua Kelas</option>
-          {classes
-            .filter((c) =>
-              activeProgram === "MEMBACA"
-                ? (c as any).programType === "MEMBACA"
-                : (c as any).programType !== "MEMBACA"
-            )
-            .map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.name} ({c.branch})
-              </option>
-            ))}
-        </select>
-
-        {/* Gender */}
-        <select
-          value={genderFilter}
-          onChange={(e) => setGenderFilter(e.target.value)}
-          className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
-        >
-          <option value="ALL">Semua Gender</option>
-          <option value="P">Perempuan (P)</option>
-          <option value="L">Laki-laki (L)</option>
-        </select>
-
-        {/* Status */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
-        >
-          <option value="ALL">Status: Aktif</option>
-          <option value="Lulus">Status: Alumni</option>
-        </select>
+        {/* Row 3: Gender + Status */}
+        <div className="grid grid-cols-2 gap-2">
+          <select
+            value={genderFilter}
+            onChange={(e) => setGenderFilter(e.target.value)}
+            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
+          >
+            <option value="ALL">Semua Gender</option>
+            <option value="P">Perempuan</option>
+            <option value="L">Laki-laki</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 w-full"
+          >
+            <option value="ALL">Aktif</option>
+            <option value="Lulus">Alumni</option>
+          </select>
+        </div>
       </div>
 
       {/* Database Table (Matches Image 2) */}

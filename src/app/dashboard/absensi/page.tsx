@@ -851,46 +851,30 @@ function AbsensiContent() {
             </div>
           </div>
 
-          {/* Class Selection Filter Pills */}
-          <div className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                PILIH KELAS BIMBINGAN UNTUK MENGABSEN:
-              </span>
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2.5 py-1 bg-slate-50 dark:bg-[#0b1329] cursor-pointer shadow-2xs"
-              >
-                {classList.map((cl, idx) => (
-                  <option key={idx} value={cl.value}>
-                    {cl.name} ({cl.count} Siswa)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
+          {/* Class Selection - Icon-Only Pills - Single Scrollable Row */}
+          <div className="bg-white dark:bg-[#0f1a36] px-3 py-2.5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
+            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
               {classList.map((cl, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setSelectedClass(cl.value)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  title={cl.name}
+                  aria-label={cl.name}
+                  className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl transition-all cursor-pointer ${
                     selectedClass === cl.value
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "bg-slate-100/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900"
+                      ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/30"
+                      : "bg-slate-100/90 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                   }`}
                 >
-                  <span>{cl.name}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      selectedClass === cl.value
-                        ? "bg-white/20 text-white"
-                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                    }`}
-                  >
+                  {idx === 0 ? (
+                    <Users className="w-4 h-4" />
+                  ) : (
+                    <Layers className="w-4 h-4" />
+                  )}
+                  <span className={`text-[10px] font-black leading-none ${
+                    selectedClass === cl.value ? "text-white" : "text-slate-600 dark:text-slate-300"
+                  }`}>
                     {cl.count}
                   </span>
                 </button>
