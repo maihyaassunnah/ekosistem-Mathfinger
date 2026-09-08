@@ -86,6 +86,7 @@ model Branch {
   updatedAt    DateTime     @updatedAt @map("updated_at")
 
   // Relations
+  setting         BranchSetting?
   users           User[]
   students        Student[]
   classes         Class[]
@@ -98,6 +99,23 @@ model Branch {
   readingGrades   ReadingGrade[]
 
   @@map("branches")
+}
+
+model BranchSetting {
+  id            String   @id @default(uuid())
+  branchId      String   @unique @map("branch_id")
+  bankName      String?  @map("bank_name")
+  accountNumber String?  @map("account_number")
+  accountHolder String?  @map("account_holder")
+  adminName     String?  @map("admin_name")
+  signatureUrl  String?  @map("signature_url") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@map("branch_settings")
 }
 
 model User {

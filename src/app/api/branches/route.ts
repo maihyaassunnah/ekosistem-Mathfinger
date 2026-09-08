@@ -9,6 +9,7 @@ export async function GET() {
         students: true,
         users: true,
         invoices: { where: { status: "PAID" } },
+        setting: true,
       },
       orderBy: { branchName: "asc" },
     });
@@ -27,6 +28,11 @@ export async function GET() {
         monthlyRevenue: liveRevenue > 0 ? liveRevenue : defaultRevenue,
         status: b.status,
         programs: (b.programs || "MATEMATIKA").split(",").map((p: string) => p.trim()),
+        bankName: b.setting?.bankName || null,
+        accountNumber: b.setting?.accountNumber || null,
+        accountHolder: b.setting?.accountHolder || null,
+        adminName: b.setting?.adminName || null,
+        signatureUrl: b.setting?.signatureUrl || null,
       };
     });
 
@@ -79,6 +85,11 @@ export async function POST(req: Request) {
         monthlyRevenue: 0,
         status: created.status,
         programs: (created.programs || "MATEMATIKA").split(",").map((p: string) => p.trim()),
+        bankName: null,
+        accountNumber: null,
+        accountHolder: null,
+        adminName: null,
+        signatureUrl: null,
       },
       { status: 201 }
     );
@@ -92,7 +103,19 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    const { id, code, name, address, phone, status } = body;
+    const {
+      id,
+      code,
+      name,
+      address,
+      phone,
+      status,
+      bankName,
+      accountNumber,
+      accountHolder,
+      adminName,
+      signatureUrl,
+    } = body;
 
     if (!id && !code) {
       return NextResponse.json({ error: "ID atau Kode Cabang diperlukan" }, { status: 400 });
@@ -133,6 +156,37 @@ export async function PUT(req: Request) {
       },
     });
 
+    // If branch finance & signature settings provided, upsert into branch_settings table
+    let settingRecord = null;
+    if (
+      bankName !== undefined ||
+      accountNumber !== undefined ||
+      accountHolder !== undefined ||
+      adminName !== undefined ||
+      signatureUrl !== undefined
+    ) {
+      settingRecord = await prisma.branchSetting.upsert({
+        where: { branchId: branch.id },
+        create: {
+          branchId: branch.id,
+          bankName: bankName || null,
+          accountNumber: accountNumber || null,
+          accountHolder: accountHolder || null,
+          adminName: adminName || null,
+          signatureUrl: signatureUrl || null,
+        },
+        update: {
+          ...(bankName !== undefined ? { bankName } : {}),
+          ...(accountNumber !== undefined ? { accountNumber } : {}),
+          ...(accountHolder !== undefined ? { accountHolder } : {}),
+          ...(adminName !== undefined ? { adminName } : {}),
+          ...(signatureUrl !== undefined ? { signatureUrl } : {}),
+        },
+      });
+    } else {
+      settingRecord = await prisma.branchSetting.findUnique({ where: { branchId: branch.id } });
+    }
+
     if (isNameChanged) {
       // Synchronize string-referenced branch names in website testimonials and leads
       try {
@@ -162,6 +216,11 @@ export async function PUT(req: Request) {
       monthlyRevenue: liveRevenue,
       status: updated.status,
       programs: (updated.programs || "MATEMATIKA").split(",").map((p: string) => p.trim()),
+      bankName: settingRecord?.bankName || null,
+      accountNumber: settingRecord?.accountNumber || null,
+      accountHolder: settingRecord?.accountHolder || null,
+      adminName: settingRecord?.adminName || null,
+      signatureUrl: settingRecord?.signatureUrl || null,
     });
   } catch (error: any) {
     console.error("Error updating branch:", error);

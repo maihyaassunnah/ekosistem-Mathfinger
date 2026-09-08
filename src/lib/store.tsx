@@ -1430,7 +1430,30 @@ export const INITIAL_ATTENDANCES: Record<string, AttendanceItem> = {
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [students, setStudents] = useState<StudentItem[]>(STUDENTS_DATA);
   const [classes, setClasses] = useState<ClassItem[]>(INITIAL_CLASSES);
-  const [branches, setBranches] = useState<BranchItem[]>(BRANCHES_DATA);
+  const [branches, setBranches] = useState<BranchItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedBranches = localStorage.getItem("mf_branches");
+        const savedFinance = localStorage.getItem("mf_branch_finance_settings");
+        const financeMap = savedFinance ? JSON.parse(savedFinance) : {};
+        const base = savedBranches ? JSON.parse(savedBranches) : BRANCHES_DATA;
+        return base.map((b: BranchItem) => {
+          const custom = financeMap[b.id] || financeMap[b.name] || {};
+          return {
+            ...b,
+            bankName: custom.bankName !== undefined ? custom.bankName : (b.bankName || (b.name === "Singkut" ? "BCA" : "BRI")),
+            accountNumber: custom.accountNumber !== undefined ? custom.accountNumber : (b.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8")),
+            accountHolder: custom.accountHolder !== undefined ? custom.accountHolder : (b.accountHolder || `Math Fingers ${b.name}`),
+            adminName: custom.adminName !== undefined ? custom.adminName : (b.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd")),
+            signatureUrl: custom.signatureUrl !== undefined ? custom.signatureUrl : (b.signatureUrl || ""),
+          };
+        });
+      } catch {
+        return BRANCHES_DATA;
+      }
+    }
+    return BRANCHES_DATA;
+  });
   const [branchAdmins, setBranchAdmins] = useState<BranchAdminItem[]>(INITIAL_ADMINS);
   const [journals, setJournals] = useState<JournalItem[]>(INITIAL_JOURNALS);
   const [attendances, setAttendances] = useState<Record<string, AttendanceItem>>(INITIAL_ATTENDANCES);
@@ -1509,8 +1532,25 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         });
       }
       if (Array.isArray(branchesRes) && branchesRes.length > 0) {
-        setBranches(branchesRes);
-        save("mf_branches", branchesRes);
+        let financeMap: any = {};
+        try {
+          const saved = localStorage.getItem("mf_branch_finance_settings");
+          if (saved) financeMap = JSON.parse(saved);
+        } catch {}
+
+        const enriched = branchesRes.map((b: any) => {
+          const custom = financeMap[b.id] || financeMap[b.name] || {};
+          return {
+            ...b,
+            bankName: custom.bankName !== undefined ? custom.bankName : (b.bankName || (b.name === "Singkut" ? "BCA" : "BRI")),
+            accountNumber: custom.accountNumber !== undefined ? custom.accountNumber : (b.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8")),
+            accountHolder: custom.accountHolder !== undefined ? custom.accountHolder : (b.accountHolder || `Math Fingers ${b.name}`),
+            adminName: custom.adminName !== undefined ? custom.adminName : (b.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd")),
+            signatureUrl: custom.signatureUrl !== undefined ? custom.signatureUrl : (b.signatureUrl || ""),
+          };
+        });
+        setBranches(enriched);
+        save("mf_branches", enriched);
       }
       if (Array.isArray(adminsRes) && adminsRes.length > 0) {
         setBranchAdmins(adminsRes);
@@ -1869,6 +1909,26 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (existing) oldName = existing.name;
       const updatedList = prev.map((b) => (b.id === id ? { ...b, ...updated } : b));
       save("mf_branches", updatedList);
+
+      try {
+        const savedFinance = localStorage.getItem("mf_branch_finance_settings");
+        const financeMap = savedFinance ? JSON.parse(savedFinance) : {};
+        const bName = updated.name || existing?.name || "";
+        const entry = {
+          ...(financeMap[id] || {}),
+          bankName: updated.bankName !== undefined ? updated.bankName : existing?.bankName,
+          accountNumber: updated.accountNumber !== undefined ? updated.accountNumber : existing?.accountNumber,
+          accountHolder: updated.accountHolder !== undefined ? updated.accountHolder : existing?.accountHolder,
+          adminName: updated.adminName !== undefined ? updated.adminName : existing?.adminName,
+          signatureUrl: updated.signatureUrl !== undefined ? updated.signatureUrl : existing?.signatureUrl,
+        };
+        financeMap[id] = entry;
+        if (bName) financeMap[bName] = entry;
+        localStorage.setItem("mf_branch_finance_settings", JSON.stringify(financeMap));
+      } catch (err) {
+        console.error("Error saving branch finance settings to localStorage:", err);
+      }
+
       return updatedList;
     });
 

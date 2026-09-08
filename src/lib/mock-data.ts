@@ -30,6 +30,11 @@ export interface BranchItem {
   monthlyRevenue: number;
   status: "ACTIVE" | "INACTIVE";
   programs?: string[]; // e.g. ["MATEMATIKA"] or ["MATEMATIKA", "MEMBACA"]
+  bankName?: string;
+  accountNumber?: string;
+  accountHolder?: string;
+  adminName?: string;
+  signatureUrl?: string;
 }
 
 export const CURRENT_USER = {
@@ -51,7 +56,12 @@ export const BRANCHES_DATA: BranchItem[] = [
     "adminCount": 4,
     "monthlyRevenue": 4355000,
     "status": "ACTIVE",
-    "programs": ["MATEMATIKA"]
+    "programs": ["MATEMATIKA"],
+    "bankName": "BRI",
+    "accountNumber": "0123-01-002345-50-8",
+    "accountHolder": "Math Fingers Bangko",
+    "adminName": "M. Hafiz, S.Pd",
+    "signatureUrl": ""
   },
   {
     "id": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
@@ -63,7 +73,12 @@ export const BRANCHES_DATA: BranchItem[] = [
     "adminCount": 3,
     "monthlyRevenue": 3250000,
     "status": "ACTIVE",
-    "programs": ["MATEMATIKA", "MEMBACA"]
+    "programs": ["MATEMATIKA", "MEMBACA"],
+    "bankName": "BCA",
+    "accountNumber": "7825-119-021",
+    "accountHolder": "Math Fingers Singkut",
+    "adminName": "Febrianti Dewi, S.Pd",
+    "signatureUrl": ""
   }
 ];
 

@@ -82,7 +82,22 @@ function SppContent() {
   const [payingInvoice, setPayingInvoice] = useState<InvoiceItem | null>(null);
   const [isCustomTemplateOpen, setIsCustomTemplateOpen] = useState(false);
   const [waTemplate, setWaTemplate] = useState(
-    "Assalamu'alaikum Ayah/Bunda {nama_siswa},\n\nMengingatkan kembali tagihan SPP bimbingan Math Fingers periode {periode} sebesar {nominal} dengan jatuh tempo pada {jatuh_tempo}.\n\nPembayaran dapat dilakukan secara tunai di cabang atau transfer. Terima kasih. 🙏"
+    `Assalamu'alaikum warahmatullahi wabarakatuh. Ibu/Bapak *{nama_wali}*,
+
+Mengingatkan kembali pembayaran SPP Les Privat *Math Fingers* ananda *{nama_siswa}* periode *{periode}*.
+
+Berikut rincian tagihan digital:
+
+• No Invoice: {no_invoice}
+• Jumlah Pembayaran: *{nominal}*
+• Tanggal Jatuh Tempo: {jatuh_tempo}
+• Metode Pembayaran: *Tunai / Transfer*
+• Status: *BELUM LUNAS (UNPAID)*
+
+Terima kasih banyak atas dukungannya. Mari terus dukung motivasi belajar matematika ananda!
+
+Salam Hangat,
+*Math Fingers*`
   );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -167,13 +182,85 @@ function SppContent() {
   };
 
   const handleSendSingleWA = (inv: InvoiceItem) => {
-    const text = waTemplate
-      .replace("{nama_siswa}", inv.studentName)
-      .replace("{periode}", inv.period)
-      .replace("{nominal}", `Rp ${inv.amount.toLocaleString("id-ID")}`)
-      .replace("{jatuh_tempo}", inv.dueDate);
+    const isPaid = inv.status === "LUNAS";
+    const st = students.find(
+      (s) =>
+        s.id === inv.studentId ||
+        s.name.toLowerCase().trim() === inv.studentName.toLowerCase().trim()
+    );
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    const branchName = inv.branch || st?.branch || "Singkut";
+    const branchObj = branches.find(
+      (b) =>
+        b.name.toLowerCase() === branchName.toLowerCase() ||
+        b.name.toLowerCase() === branchName.replace(/^Cabang\s+/i, "").toLowerCase()
+    );
+
+    const parentName = st?.parentName || "Wali Murid";
+    const studentName = inv.studentName || st?.name || "Ananda";
+    const amountFormatted = `Rp ${inv.amount.toLocaleString("id-ID")}`;
+    const paidDate = inv.paidDate || inv.dueDate || "2026-09-05";
+    const paidMethod = inv.paidMethod || "Tunai";
+    const progType = inv.programType || (st as any)?.programType || (isMembaca ? "MEMBACA" : "MATEMATIKA");
+    const programName = progType === "MEMBACA" ? "membaca" : "matematika";
+
+    let paymentMethodLine = `• Metode Pembayaran: *${paidMethod}*`;
+    if (!isPaid) {
+      if (branchObj?.bankName && branchObj?.accountNumber) {
+        paymentMethodLine = `• Metode Pembayaran: *Tunai / Transfer (${branchObj.bankName}: ${branchObj.accountNumber} a.n ${branchObj.accountHolder || "Math Fingers"})*`;
+      } else {
+        paymentMethodLine = `• Metode Pembayaran: *Tunai di Cabang / Transfer*`;
+      }
+    }
+
+    let text = "";
+    if (isPaid) {
+      text = `Assalamu'alaikum warahmatullahi wabarakatuh. Ibu/Bapak *${parentName}*,
+
+Terima kasih! Kami telah menerima pembayaran SPP Les Privat *Math Fingers* ananda *${studentName}* periode *${inv.period}*.
+
+Berikut kuitansi tanda terima digital:
+
+• No Invoice: ${inv.invoiceNo}
+• Jumlah Pembayaran: *${amountFormatted}*
+• Tanggal Bayar: ${paidDate}
+• Metode Pembayaran: *${paidMethod}*
+• Status: *LUNAS (PAID)*
+
+Terima kasih banyak atas dukungannya. Mari terus dukung motivasi belajar ${programName} ananda!
+
+Salam Hangat,
+*Math Fingers*`;
+    } else {
+      text = `Assalamu'alaikum warahmatullahi wabarakatuh. Ibu/Bapak *${parentName}*,
+
+Mengingatkan kembali pembayaran SPP Les Privat *Math Fingers* ananda *${studentName}* periode *${inv.period}*.
+
+Berikut rincian tagihan digital:
+
+• No Invoice: ${inv.invoiceNo}
+• Jumlah Pembayaran: *${amountFormatted}*
+• Tanggal Jatuh Tempo: ${inv.dueDate}
+${paymentMethodLine}
+• Status: *BELUM LUNAS (UNPAID)*
+
+Terima kasih banyak atas dukungannya. Mari terus dukung motivasi belajar ${programName} ananda!
+
+Salam Hangat,
+*Math Fingers*`;
+    }
+
+    let cleanPhone = (st?.parentWhatsapp || "").replace(/\D/g, "");
+    if (cleanPhone.startsWith("0")) {
+      cleanPhone = "62" + cleanPhone.slice(1);
+    }
+
+    const waUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`
+      : `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    window.open(waUrl, "_blank");
+    showToast(`Membuka WhatsApp untuk ${isPaid ? "kuitansi" : "pengingat"} ${studentName}`);
   };
 
   const handleBatchSendWA = () => {
@@ -486,7 +573,7 @@ function SppContent() {
                           <button
                             type="button"
                             onClick={() => window.print()}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                             title="Unduh Kwitansi"
                           >
                             <Download className="w-3.5 h-3.5" />
@@ -495,16 +582,16 @@ function SppContent() {
                           <button
                             type="button"
                             onClick={() => handleSendSingleWA(inv)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] cursor-pointer"
-                            title="Kirim Notifikasi WA"
+                            className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 cursor-pointer transition-colors"
+                            title={isPaid ? "Kirim Kuitansi via WA" : "Kirim Pengingat SPP via WA"}
                           >
-                            <Share2 className="w-3.5 h-3.5" />
+                            <Send className="w-3.5 h-3.5" />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => deleteInvoice(inv.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
                             title="Hapus Invoice"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -708,11 +795,19 @@ function SppContent() {
               <p className="text-slate-500 dark:text-slate-400">
                 Gunakan variabel otomatis:{" "}
                 <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-600 dark:text-emerald-400">
+                  {"{nama_wali}"}
+                </code>
+                ,{" "}
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-600 dark:text-emerald-400">
                   {"{nama_siswa}"}
                 </code>
                 ,{" "}
                 <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-600 dark:text-emerald-400">
                   {"{periode}"}
+                </code>
+                ,{" "}
+                <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-600 dark:text-emerald-400">
+                  {"{no_invoice}"}
                 </code>
                 ,{" "}
                 <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-emerald-600 dark:text-emerald-400">
