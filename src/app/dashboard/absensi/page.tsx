@@ -508,10 +508,27 @@ function AbsensiContent() {
     return record?.status || "HADIR";
   };
 
+  // Sinkronisasi otomatis: centang siswa yang sudah tercatat hadir/absen pada tanggal terpilih
+  useEffect(() => {
+    const recordedIds = branchScopedStudents
+      .filter((st) => !!attendances[`${st.id}_${selectedDate}`])
+      .map((st) => st.id);
+    setSelectedIds(recordedIds);
+  }, [selectedDate, branchScopedStudents.length]);
+
+  const handleToggleStudentSelect = (studentId: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
   const handleStatusChange = (
     studentId: string,
     status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN"
   ) => {
+    setSelectedIds((prev) => Array.from(new Set([...prev, studentId])));
     setAttendance(studentId, selectedDate, status, notesState[studentId]);
     setStatusMenuStudentId(null);
   };
@@ -528,6 +545,7 @@ function AbsensiContent() {
   };
 
   const handleAddQuickNote = (studentId: string, text: string) => {
+    setSelectedIds((prev) => Array.from(new Set([...prev, studentId])));
     const current = notesState[studentId] || "";
     const updated = current ? `${current}, ${text}` : text;
     setNotesState((prev) => ({ ...prev, [studentId]: updated }));
@@ -540,22 +558,21 @@ function AbsensiContent() {
     visibleStudentIds.length > 0 && selectedVisibleIds.length === visibleStudentIds.length;
 
   const handleSelectAll = () => {
-    setIsSelectionActive(true);
     setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleStudentIds])));
   };
 
   const handleClearSelection = () => {
     setSelectedIds((prev) => prev.filter((id) => !visibleStudentIds.includes(id)));
-    setIsSelectionActive(false);
   };
 
   const handleMarkAllHadir = () => {
+    setSelectedIds(filteredStudents.map((s) => s.id));
     batchSetAttendance(selectedDate, "HADIR");
     const formattedTime = getFormattedLiveTime();
     setLastSavedTime(formattedTime);
     setSaveToast({
-      message: `Seluruh siswa (${students.length}) berhasil ditandai HADIR untuk tanggal ${selectedDate}!`,
-      count: students.length,
+      message: `Seluruh siswa (${filteredStudents.length}) berhasil dicentang HADIR untuk tanggal ${selectedDate}! Tekan Simpan Presensi untuk menyimpan ke database.`,
+      count: filteredStudents.length,
     });
   };
 
@@ -568,10 +585,15 @@ function AbsensiContent() {
 
   const handleSaveTodayAttendance = async () => {
     setIsSaving(true);
-    const count = filteredStudents.length;
     const currentTime = getFormattedLiveTime();
 
-    const payload = filteredStudents.map((st) => {
+    // Siswa yang DICENTANG absensinya
+    const checkedStudents = filteredStudents.filter((st) => selectedIds.includes(st.id));
+    // Siswa yang TIDAK DICENTANG absensinya
+    const uncheckedStudents = filteredStudents.filter((st) => !selectedIds.includes(st.id));
+
+    // 1. Data absensi hanya untuk siswa yang dicentang
+    const payload = checkedStudents.map((st) => {
       const status = getStatus(st.id);
       const note =
         notesState[st.id] !== undefined
@@ -592,6 +614,7 @@ function AbsensiContent() {
       };
     });
 
+    // Perbarui local store siswa dicentang
     payload.forEach((item) => {
       setAttendance(
         item.studentId,
@@ -603,27 +626,41 @@ function AbsensiContent() {
       );
     });
 
-    try {
-      await fetch("/api/attendances", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (typeof refreshData === "function") {
-        refreshData();
+    // 2. Untuk siswa yang TIDAK DICENTANG: hapus dari local store dan PostgreSQL (riwayat biarkan kosong)
+    for (const un of uncheckedStudents) {
+      const key = `${un.id}_${selectedDate}`;
+      deleteAttendanceRecord(key);
+    }
+
+    // 3. Simpan ke database PostgreSQL jika ada siswa dicentang
+    if (payload.length > 0) {
+      try {
+        await fetch("/api/attendances", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (typeof refreshData === "function") {
+          refreshData();
+        }
+      } catch (err) {
+        console.error("Error saving attendances directly to PostgreSQL:", err);
       }
-    } catch (err) {
-      console.error("Error saving attendances directly to PostgreSQL:", err);
     }
 
     const formattedTime = getFormattedLiveTime();
     setLastSavedTime(formattedTime);
     setIsSaving(false);
     setSaveToast({
-      message: `Presensi ${count} siswa untuk sesi tanggal ${selectedDate} (${getDayNameIndonesian(
-        selectedDate
-      )}) berhasil disimpan ke database!`,
-      count,
+      message:
+        checkedStudents.length > 0
+          ? `Presensi ${checkedStudents.length} siswa dicentang berhasil disimpan! ${
+              uncheckedStudents.length > 0
+                ? `(${uncheckedStudents.length} siswa tidak dicentang dibiarkan kosong di riwayat & database)`
+                : ""
+            }`
+          : `Tidak ada siswa yang dicentang. Presensi sesi ${selectedDate} dikosongkan.`,
+      count: checkedStudents.length,
     });
   };
 
@@ -1050,9 +1087,9 @@ function AbsensiContent() {
                 <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={isSelectionActive && isAllVisibleSelected}
+                    checked={visibleStudentIds.length > 0 && selectedVisibleIds.length === visibleStudentIds.length}
                     onChange={() => {
-                      if (isSelectionActive) {
+                      if (selectedVisibleIds.length === visibleStudentIds.length) {
                         handleClearSelection();
                       } else {
                         handleSelectAll();
@@ -1061,27 +1098,29 @@ function AbsensiContent() {
                     className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
                   <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                    {isSelectionActive && isAllVisibleSelected ? "Batalkan Semua" : "Pilih Semua"}
+                    {visibleStudentIds.length > 0 && selectedVisibleIds.length === visibleStudentIds.length
+                      ? "Batalkan Semua"
+                      : "Pilih Semua"}
                   </span>
                 </label>
 
                 <div className="flex items-center gap-2">
                   <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 text-right">
-                    {isSelectionActive ? selectedVisibleIds.length : 0} dari {filteredStudents.length} Siswa Dicentang
+                    {selectedVisibleIds.length} dari {filteredStudents.length} Siswa Dicentang
                   </div>
-                  {isSelectionActive && (
+                  {selectedVisibleIds.length > 0 && (
                     <button
                       type="button"
-                      onClick={() => handleClearSelection()}
+                      onClick={handleClearSelection}
                       className="text-[10px] text-rose-500 hover:text-rose-700 font-bold bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md cursor-pointer transition-all"
                     >
-                      ✕ Tutup
+                      ✕ Hapus Centang
                     </button>
                   )}
                 </div>
               </div>
 
-              {isSelectionActive && (
+              {selectedVisibleIds.length > 0 && (
                 <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-[#1d2d5a]/80 flex-wrap animate-in fade-in">
                   <button
                     type="button"
@@ -1098,39 +1137,37 @@ function AbsensiContent() {
                     Hapus Centang
                   </button>
 
-                  {selectedVisibleIds.length > 0 && (
-                    <div className="flex items-center gap-1.5 ml-auto flex-wrap">
-                      <span className="text-[10px] text-slate-400 font-medium">Ubah Terpilih:</span>
-                      <button
-                        type="button"
-                        onClick={() => handleBatchSetSelectedStatus("HADIR")}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-black text-[10px] cursor-pointer"
-                      >
-                        + Hadir
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleBatchSetSelectedStatus("IZIN")}
-                        className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] cursor-pointer"
-                      >
-                        + Ijin
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleBatchSetSelectedStatus("SAKIT")}
-                        className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] cursor-pointer"
-                      >
-                        + Sakit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleBatchSetSelectedStatus("ABSEN")}
-                        className="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-black text-[10px] cursor-pointer"
-                      >
-                        + Ghaib
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                    <span className="text-[10px] text-slate-400 font-medium">Ubah Terpilih:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("HADIR")}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Hadir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("IZIN")}
+                      className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Ijin
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("SAKIT")}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Sakit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSetSelectedStatus("ABSEN")}
+                      className="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-black text-[10px] cursor-pointer"
+                    >
+                      + Ghaib
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1174,20 +1211,14 @@ function AbsensiContent() {
                     <div className="hidden lg:flex items-center justify-between gap-4 p-4">
                       {/* Left Column */}
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        {isSelectionActive && (
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {
-                              setSelectedIds((prev) =>
-                                prev.includes(st.id)
-                                  ? prev.filter((id) => id !== st.id)
-                                  : [...prev, st.id]
-                              );
-                            }}
-                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
-                          />
-                        )}
+                        {/* Checkbox Selalu Terlihat */}
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleStudentSelect(st.id)}
+                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                          title="Centang untuk simpan presensi siswa ini"
+                        />
 
                         {/* Green number badge */}
                         <span className="w-6 h-6 rounded-md border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
@@ -1277,20 +1308,14 @@ function AbsensiContent() {
                       <div className="flex items-center justify-between gap-2">
                         {/* Left: Checkbox (conditional) + Number + Name + Time beside name */}
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          {isSelectionActive && (
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {
-                                setSelectedIds((prev) =>
-                                  prev.includes(st.id)
-                                    ? prev.filter((id) => id !== st.id)
-                                    : [...prev, st.id]
-                                );
-                              }}
-                              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
-                            />
-                          )}
+                          {/* Checkbox Selalu Terlihat */}
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleStudentSelect(st.id)}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                            title="Centang untuk simpan presensi siswa ini"
+                          />
 
                           {/* Number Badge */}
                           <span className="w-5 h-5 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-black text-[11px] flex items-center justify-center shrink-0">
@@ -1617,48 +1642,48 @@ function AbsensiContent() {
             </div>
           </div>
 
-          {/* 2. Three Summary Metric Cards (Exact match with Screenshot 2) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* 2. Three Summary Metric Cards (1 Baris Saja di Semua Jenis HP & Layar) */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {/* Card 1: TOTAL HARI LES */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                <Calendar className="w-6 h-6" />
+            <div className="p-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-4">
+              <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-purple-100 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <Calendar className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
               </div>
-              <div className="space-y-0.5">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <span className="text-[8.5px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block truncate">
                   TOTAL HARI LES
                 </span>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                <div className="text-xs sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-slate-100 truncate">
                   {uniqueDatesCount} Hari
                 </div>
               </div>
             </div>
 
             {/* Card 2: RATA-RATA KEHADIRAN */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <TrendingUp className="w-6 h-6" />
+            <div className="p-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-4">
+              <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
               </div>
-              <div className="space-y-0.5">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <span className="text-[8.5px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block truncate">
                   RATA-RATA KEHADIRAN
                 </span>
-                <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                <div className="text-xs sm:text-2xl lg:text-3xl font-black text-emerald-600 dark:text-emerald-400 truncate">
                   {avgAttendancePercent}%
                 </div>
               </div>
             </div>
 
             {/* Card 3: TOTAL REKOR ABSENSI */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <Users className="w-6 h-6" />
+            <div className="p-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/90 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-4">
+              <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Users className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
               </div>
-              <div className="space-y-0.5">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <span className="text-[8.5px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider block truncate">
                   TOTAL REKOR ABSENSI
                 </span>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                <div className="text-xs sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-slate-100 truncate">
                   {scopedRekapRecords.length} Entri
                 </div>
               </div>
@@ -1756,55 +1781,60 @@ function AbsensiContent() {
                   Rekap Kehadiran Siswa
                 </h3>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  <CustomSelect
-                    value={rekapClassFilter}
-                    onChange={setRekapClassFilter}
-                    size="sm"
-                    className="min-w-[150px]"
-                    options={[
-                      { value: "ALL", label: "Semua Kelas" },
-                      ...branchScopedClasses.map((c) => ({
-                        value: c.name,
-                        label: c.name,
-                      })),
-                    ]}
-                  />
-
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={rekapSearch}
-                      onChange={(e) => setRekapSearch(e.target.value)}
-                      placeholder="Cari siswa..."
-                      className="pl-8 pr-3 py-1.5 bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium w-36 sm:w-44 shadow-xs"
+                <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                  <div className="w-32 xs:w-36 sm:w-44 shrink-0">
+                    <CustomSelect
+                      value={rekapClassFilter}
+                      onChange={setRekapClassFilter}
+                      size="sm"
+                      className="w-full"
+                      options={[
+                        { value: "ALL", label: "Semua Kelas" },
+                        ...branchScopedClasses.map((c) => ({
+                          value: c.name,
+                          label: c.name,
+                        })),
+                      ]}
                     />
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={openAddRecord}
-                    className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1 shrink-0"
-                    title="Tambah Presensi Susulan"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Susulan</span>
-                  </button>
+                  {/* Input Cari Siswa berdampingan langsung dengan Ikon Presensi Susulan (+) */}
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <div className="relative flex-1 min-w-0">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={rekapSearch}
+                        onChange={(e) => setRekapSearch(e.target.value)}
+                        placeholder="Cari siswa..."
+                        className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium shadow-xs"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={openAddRecord}
+                      className="h-8 px-2 sm:px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer flex items-center justify-center gap-1 shrink-0 transition-transform active:scale-95"
+                      title="Tambah Presensi Susulan"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span className="hidden md:inline">Susulan</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Rekap Kehadiran Table Container */}
               <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[520px] sm:min-w-full">
                     <thead>
                       <tr className="border-b border-slate-200/80 dark:border-[#1d2d5a] bg-slate-50/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                        <th className="py-3 px-4">SISWA</th>
-                        <th className="py-3 px-3 text-center">SESI</th>
-                        <th className="py-3 px-3 text-center">H - I - A</th>
-                        <th className="py-3 px-3">LAJU KEHADIRAN</th>
-                        <th className="py-3 px-4 text-center">5 SESI TERAKHIR</th>
+                        <th className="py-3 px-3 sm:px-4">SISWA</th>
+                        <th className="py-3 px-2 sm:px-3 text-center whitespace-nowrap">SESI</th>
+                        <th className="py-3 px-2 sm:px-3 text-center whitespace-nowrap">H - I - A</th>
+                        <th className="py-3 px-2 sm:px-3 whitespace-nowrap">LAJU KEHADIRAN</th>
+                        <th className="py-3 px-2 sm:px-4 text-center whitespace-nowrap">5 SESI TERAKHIR</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -1847,7 +1877,7 @@ function AbsensiContent() {
                           const stAbsen = stRecords.filter((a) => a.status === "ABSEN").length;
                           const stTotal = stRecords.length;
                           const rate =
-                            stTotal > 0 ? Math.round((stHadir / stTotal) * 100) : 100;
+                            stTotal > 0 ? Math.round((stHadir / stTotal) * 100) : null;
 
                           // 5 recent session status dots
                           const dots = sortedSessionDates.slice(0, 5).map((date) => {
@@ -1861,7 +1891,7 @@ function AbsensiContent() {
                               className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                             >
                               {/* SISWA */}
-                              <td className="py-3 px-4">
+                              <td className="py-3 px-3 sm:px-4">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-extrabold text-slate-900 dark:text-slate-100 text-xs">
                                     {st.name}
@@ -1876,32 +1906,44 @@ function AbsensiContent() {
                               </td>
 
                               {/* SESI */}
-                              <td className="py-3 px-3 text-center font-bold text-slate-700 dark:text-slate-300">
-                                {stHadir}x
+                              <td className="py-3 px-2 sm:px-3 text-center font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap tabular-nums">
+                                {stTotal === 0 ? (
+                                  <span className="text-slate-400 font-bold text-xs">-</span>
+                                ) : (
+                                  `${stHadir}x`
+                                )}
                               </td>
 
                               {/* H - I - A */}
-                              <td className="py-3 px-3 text-center font-bold text-slate-700 dark:text-slate-300">
-                                {stHadir} / {stIzin} / {stAbsen}
+                              <td className="py-3 px-2 sm:px-3 text-center font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap tabular-nums">
+                                {stTotal === 0 ? (
+                                  <span className="text-slate-400 font-bold text-xs">-</span>
+                                ) : (
+                                  `${stHadir} / ${stIzin} / ${stAbsen}`
+                                )}
                               </td>
 
                               {/* LAJU KEHADIRAN */}
-                              <td className="py-3 px-3">
-                                <div className="space-y-1">
-                                  <div className="font-extrabold text-xs text-slate-800 dark:text-slate-100">
-                                    {rate}%
+                              <td className="py-3 px-2 sm:px-3 whitespace-nowrap">
+                                {stTotal === 0 || rate === null ? (
+                                  <span className="text-slate-400 font-bold text-xs">-</span>
+                                ) : (
+                                  <div className="space-y-1">
+                                    <div className="font-extrabold text-xs text-slate-800 dark:text-slate-100">
+                                      {rate}%
+                                    </div>
+                                    <div className="w-16 sm:w-20 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                      <div
+                                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${rate}%` }}
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="w-20 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                                    <div
-                                      className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                                      style={{ width: `${rate}%` }}
-                                    />
-                                  </div>
-                                </div>
+                                )}
                               </td>
 
                               {/* 5 SESI TERAKHIR */}
-                              <td className="py-3 px-4 text-center">
+                              <td className="py-3 px-2 sm:px-4 text-center whitespace-nowrap">
                                 {dots.length === 0 ? (
                                   <span className="text-slate-400 font-bold text-xs">-</span>
                                 ) : (
