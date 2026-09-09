@@ -273,44 +273,26 @@ function SiswaContent() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto">
       {/* Top Header */}
       <div className="space-y-3">
-        {/* Title */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight text-center sm:text-left">
-          {activeProgram === "MEMBACA" ? "Data Siswa Les Membaca" : "Data Siswa Les Matematika"}
-        </h1>
-
-        {/* Badges: Jumlah Siswa & Sinkron DB (Center) */}
-        <div className="flex items-center justify-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-2xs">
-            <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            {filteredStudents.length} Siswa
-          </span>
-          <button
-            type="button"
-            onClick={handleSyncDB}
-            disabled={isSyncing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-            title="Tarik data siswa terbaru dari database PostgreSQL"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
-            <span>{isSyncing ? "Sinkron..." : "Sinkron DB"}</span>
-          </button>
+        {/* Title & Subtitle */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            {activeProgram === "MEMBACA" ? "Data Siswa Les Membaca" : "Data Siswa Les Matematika"}
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {activeProgram === "MEMBACA"
+              ? "Manajemen data siswa, level baca (Pra-Membaca s/d Lancar), dan kontak wali murid program membaca."
+              : "Kelola pendaftaran, level bimbingan jari tangan, dan data kontak wali siswa."}
+          </p>
         </div>
 
-        {/* Subtitle */}
-        <p className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
-          {activeProgram === "MEMBACA"
-            ? "Manajemen data siswa, level baca (Pra-Membaca s/d Lancar), dan kontak wali murid program membaca."
-            : "Kelola pendaftaran, level bimbingan jari tangan, dan data kontak wali siswa."}
-        </p>
-
-        {/* Program Toggle Pill & Tambah Siswa Baru (side-by-side) */}
-        <div className="flex items-center justify-between sm:justify-start gap-2.5 pt-1">
-          {/* Program Toggle Pill without icons */}
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xs">
+        {/* Action Row: Program Toggle Pills on Left, and [Jumlah Siswa + Sync DB Icon + Plus Button] on Right */}
+        <div className="flex items-center justify-between gap-2 pt-1 flex-wrap sm:flex-nowrap">
+          {/* Program Toggle Pill */}
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xs shrink-0">
             <button
               type="button"
               onClick={() => setActiveProgram("MATEMATIKA")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeProgram === "MATEMATIKA"
                   ? "bg-white dark:bg-[#1a294f] text-emerald-700 dark:text-emerald-300 shadow-xs"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
@@ -324,7 +306,7 @@ function SiswaContent() {
             <button
               type="button"
               onClick={() => setActiveProgram("MEMBACA")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeProgram === "MEMBACA"
                   ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
@@ -343,19 +325,40 @@ function SiswaContent() {
             </button>
           </div>
 
-          {/* Button Tambah Siswa with Green Plus (+) Icon */}
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            title={activeProgram === "MEMBACA" ? "Tambah Siswa Membaca" : "Tambah Siswa Baru"}
-            aria-label={activeProgram === "MEMBACA" ? "Tambah Siswa Membaca" : "Tambah Siswa Baru"}
-            className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 rounded-2xl bg-white dark:bg-[#0f1a36] border-2 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-extrabold shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 gap-1.5"
-          >
-            <Plus className="w-5 h-5 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
-            <span className="hidden sm:inline text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
-              Tambah Siswa
+          {/* Right Controls: Jumlah Siswa, Icon-Only Sync DB, and Tambah Siswa */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Jumlah Siswa Badge */}
+            <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-extrabold shadow-2xs shrink-0 whitespace-nowrap">
+              <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{filteredStudents.length} Siswa</span>
             </span>
-          </button>
+
+            {/* Sync DB: Icon Only */}
+            <button
+              type="button"
+              onClick={handleSyncDB}
+              disabled={isSyncing}
+              className="w-9 h-9 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs disabled:opacity-50 shrink-0"
+              title="Sinkronisasi Database PostgreSQL"
+              aria-label="Sinkron DB"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
+            </button>
+
+            {/* Button Tambah Siswa with Green Plus (+) Icon */}
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              title={activeProgram === "MEMBACA" ? "Tambah Siswa Membaca" : "Tambah Siswa Baru"}
+              aria-label={activeProgram === "MEMBACA" ? "Tambah Siswa Membaca" : "Tambah Siswa Baru"}
+              className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 rounded-xl bg-white dark:bg-[#0f1a36] border-2 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-extrabold shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 gap-1.5"
+            >
+              <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
+              <span className="hidden md:inline text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+                Tambah Siswa
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -576,10 +579,10 @@ function SiswaContent() {
               </tr>
             ) : (
               filteredStudents.map((st) => (
-                <tr key={st.id} className="hover:bg-slate-50/70 transition-colors">
+                <tr key={st.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                   {/* Checkbox (only visible when activated) */}
                   {showCheckboxes && (
-                    <td className="p-3.5 text-center">
+                    <td className="p-3.5 text-center whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(st.id)}
@@ -589,116 +592,114 @@ function SiswaContent() {
                     </td>
                   )}
 
-                  {/* Siswa Info Column */}
-                  <td className="p-3.5">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-extrabold text-slate-900 text-sm">
-                          {st.name}
-                        </span>
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                          #{st.studentCode}
-                        </span>
-                        <span className="px-1 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {st.gender}
-                        </span>
-                        <span className="px-1 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                          {st.codeLabel}
-                        </span>
-                        <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
-                          {st.branch.toLowerCase()}
-                        </span>
-                        <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                          ★ {st.className}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 truncate">
-                        Alamat: {st.address}
-                      </div>
+                  {/* Siswa Info Column: STRICTLY ONE LINE - NIS & Alamat hidden, visible on Eye icon */}
+                  <td className="p-3.5 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setViewingDetail(st)}
+                        className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-left cursor-pointer flex items-center gap-1.5"
+                        title="Lihat detail lengkap (NIS & Alamat)"
+                      >
+                        <span>{st.name}</span>
+                      </button>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
+                        {st.gender}
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                        {st.codeLabel}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+                        {st.branch.toLowerCase()}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
+                        ★ {st.className}
+                      </span>
                     </div>
                   </td>
 
-                  {/* Ortu / HP */}
-                  <td className="p-3.5">
-                    <div className="font-bold text-slate-800">{st.parentName}</div>
-                    <a
-                      href={`https://wa.me/${st.parentWhatsapp.replace(/[^0-9]/g, "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-semibold hover:underline text-[11px]"
-                    >
-                      <Phone className="w-3 h-3" />
-                      {st.parentWhatsapp}
-                    </a>
-                  </td>
-
-                  {/* Level */}
-                  <td className="p-3.5 font-bold text-slate-800">
-                    <div>{st.levelCurriculum.split(":")[0]}:</div>
-                    <div className="text-[10px] font-normal text-slate-500 truncate max-w-[140px]">
-                      {st.levelCurriculum.split(":")[1] || ""}
+                  {/* Ortu / HP: Single Line */}
+                  <td className="p-3.5 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{st.parentName}</span>
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                      <a
+                        href={`https://wa.me/${st.parentWhatsapp.replace(/[^0-9]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold hover:underline text-[11px]"
+                        title="Chat WhatsApp Wali Murid"
+                      >
+                        <Phone className="w-3 h-3" />
+                        {st.parentWhatsapp}
+                      </a>
                     </div>
                   </td>
 
-                  {/* Materi Aktif Button */}
-                  <td className="p-3.5">
+                  {/* Level: Single Line */}
+                  <td className="p-3.5 whitespace-nowrap text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-emerald-700 dark:text-emerald-400">{st.levelCurriculum.split(":")[0]}</span>
+                    {st.levelCurriculum.split(":")[1] ? (
+                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 ml-1">
+                        - {st.levelCurriculum.split(":")[1].trim()}
+                      </span>
+                    ) : null}
+                  </td>
+
+                  {/* Materi Aktif Button: Single Line */}
+                  <td className="p-3.5 whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => setViewingGuide(st)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 dark:hover:bg-[#132042] text-slate-700 hover:text-emerald-600 dark:hover:text-sky-400 text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
-                      Pilih / Lihat Panduan
+                      <span>Panduan</span>
                     </button>
                   </td>
 
                   {/* Gabung Sejak */}
-                  <td className="p-3.5 text-slate-500 font-medium">
+                  <td className="p-3.5 whitespace-nowrap text-slate-500 dark:text-slate-400 font-medium text-xs">
                     {st.registeredDate}
                   </td>
 
                   {/* Status */}
-                  <td className="p-3.5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white shadow-xs">
-                      <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                  <td className="p-3.5 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white shadow-2xs">
+                      <Check className="w-3 h-3 text-white stroke-[3]" />
                       Aktif
                     </span>
                   </td>
 
-                  {/* Action Icons (Matches Image 2) */}
-                  <td className="p-3.5 text-center">
+                  {/* Action Icons: Prominent Eye (Detail) Button */}
+                  <td className="p-3.5 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center gap-1 text-slate-400">
                       <button
                         type="button"
-                        onClick={() => alert(`Ekspor data ${st.name}`)}
-                        className="p-1 hover:text-slate-700"
-                        title="Unduh Data"
+                        onClick={() => setViewingDetail(st)}
+                        className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/70 dark:hover:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 transition-all cursor-pointer shadow-2xs"
+                        title="Lihat Detail Lengkap (NIS & Alamat)"
+                        aria-label="Detail Siswa"
                       >
-                        <Download className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(st)}
-                        className="p-1 hover:text-indigo-600"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-indigo-600 transition-all cursor-pointer"
                         title="Edit Siswa"
+                        aria-label="Edit Siswa"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <Link
                         href="/dashboard/kartu-qr"
-                        className="p-1 hover:text-emerald-600"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-emerald-600 transition-all"
                         title="Kartu QR"
+                        aria-label="Kartu QR"
                       >
                         <QrCode className="w-3.5 h-3.5" />
                       </Link>
-                      <button
-                        type="button"
-                        onClick={() => setViewingDetail(st)}
-                        className="p-1 hover:text-emerald-600"
-                        title="Detail Siswa"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -706,8 +707,9 @@ function SiswaContent() {
                             deleteStudent(st.id);
                           }
                         }}
-                        className="p-1 hover:text-emerald-600"
+                        className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-500 hover:text-rose-600 transition-all cursor-pointer"
                         title="Hapus Siswa"
+                        aria-label="Hapus Siswa"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1018,50 +1020,155 @@ function SiswaContent() {
         </div>
       )}
 
-      {/* Modal Detail Siswa */}
+      {/* Modal Detail Siswa Lengkap (Menampilkan NIS, Alamat, Wali & Kurikulum) */}
       {viewingDetail && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-base">Profil Lengkap Siswa</h3>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a] my-auto animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1d2d5a]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                  <Eye className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Detail Lengkap Siswa</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Informasi identitas, alamat, dan kurikulum</p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setViewingDetail(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white font-bold w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm cursor-pointer"
+                aria-label="Tutup"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl space-y-1">
-                <div className="font-extrabold text-slate-900 dark:text-white text-sm">{viewingDetail.name}</div>
-                <div className="text-emerald-700 dark:text-emerald-300 font-medium">#{viewingDetail.studentCode} • Cabang {viewingDetail.branch}</div>
+            {/* Student Identity Card */}
+            <div className="p-4 bg-slate-50 dark:bg-[#070d1e] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="font-black text-slate-900 dark:text-white text-base sm:text-lg">
+                  {viewingDetail.name}
+                </h4>
+                {/* Prominent NIS Badge */}
+                <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono font-black text-xs border border-emerald-300 dark:border-emerald-800 shadow-2xs">
+                  NIS: #{viewingDetail.studentCode}
+                </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-slate-600 pt-2">
-                <div>Wali: <strong>{viewingDetail.parentName}</strong></div>
-                <div>WhatsApp: <strong>{viewingDetail.parentWhatsapp}</strong></div>
-                <div>Kelas: <strong>{viewingDetail.className}</strong></div>
-                <div>Status: <span className="text-emerald-700 dark:text-emerald-300 font-bold">Aktif</span></div>
-                <div>Lahir: {viewingDetail.birthPlace}, {viewingDetail.birthDate}</div>
-                <div>Tingkat: {viewingDetail.gradeLevel}</div>
-              </div>
-              <div className="text-slate-600 pt-1">
-                Alamat: {viewingDetail.address}
-              </div>
-              <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 mt-2">
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Kurikulum:</div>
-                <div className="font-bold text-slate-800">{viewingDetail.levelCurriculum}</div>
+
+              {/* Status & Attributes Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                  {viewingDetail.gender === "P" ? "Perempuan (P)" : "Laki-laki (L)"}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  Label: {viewingDetail.codeLabel}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                  Cabang: {viewingDetail.branch}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                  ★ {viewingDetail.className}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">
+                  ✓ Aktif
+                </span>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setViewingDetail(null)}
-              className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs"
-            >
-              Tutup
-            </button>
+            {/* Alamat Lengkap Card (Prominently displayed with MapPin) */}
+            <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 flex items-start gap-2.5">
+              <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+                  Alamat Tempat Tinggal:
+                </span>
+                <p className="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5 leading-relaxed">
+                  {viewingDetail.address || "Belum ada data alamat tercatat"}
+                </p>
+              </div>
+            </div>
+
+            {/* Detail Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Nama Orang Tua / Wali</span>
+                <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block">
+                  {viewingDetail.parentName}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">WhatsApp Wali Murid</span>
+                <a
+                  href={`https://wa.me/${viewingDetail.parentWhatsapp.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-extrabold text-emerald-600 dark:text-emerald-400 text-xs mt-0.5 hover:underline"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>{viewingDetail.parentWhatsapp}</span>
+                </a>
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Tempat & Tanggal Lahir</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block">
+                  {viewingDetail.birthPlace}, {viewingDetail.birthDate}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Keterangan Jenjang</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block">
+                  {viewingDetail.gradeLevel || "-"}
+                </span>
+              </div>
+            </div>
+
+            {/* Kurikulum Info Card */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Program & Level Kurikulum:</span>
+              <div className="font-extrabold text-emerald-700 dark:text-emerald-300 text-xs mt-0.5 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                <span>{(viewingDetail as any).programType === "MEMBACA" ? "Les Membaca Fonik" : "Les Matematika Jaritmatika"} &bull; {viewingDetail.levelCurriculum}</span>
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="flex items-center gap-2 pt-2">
+              <a
+                href={`https://wa.me/${viewingDetail.parentWhatsapp.replace(/[^0-9]/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Chat WA</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const st = viewingDetail;
+                  setViewingDetail(null);
+                  handleOpenEdit(st);
+                }}
+                className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Edit</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewingDetail(null)}
+                className="py-2.5 px-4 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-bold text-xs transition cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}
