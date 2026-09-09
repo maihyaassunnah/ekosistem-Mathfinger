@@ -285,14 +285,14 @@ function SiswaContent() {
           </p>
         </div>
 
-        {/* Action Row: Program Toggle Pills on Left, and [Jumlah Siswa + Sync DB Icon + Plus Button] on Right */}
-        <div className="flex items-center justify-between gap-2 pt-1 flex-wrap sm:flex-nowrap">
+        {/* Action Row: Program Toggle Pills on Left, and [Jumlah + Sync DB Icon + Plus Button] on Right (Strictly 1 Row) */}
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2 pt-1 flex-nowrap">
           {/* Program Toggle Pill */}
           <div className="flex items-center p-1 bg-slate-100 dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xs shrink-0">
             <button
               type="button"
               onClick={() => setActiveProgram("MATEMATIKA")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeProgram === "MATEMATIKA"
                   ? "bg-white dark:bg-[#1a294f] text-emerald-700 dark:text-emerald-300 shadow-xs"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
@@ -306,7 +306,7 @@ function SiswaContent() {
             <button
               type="button"
               onClick={() => setActiveProgram("MEMBACA")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeProgram === "MEMBACA"
                   ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs shadow-emerald-500/25"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
@@ -325,12 +325,15 @@ function SiswaContent() {
             </button>
           </div>
 
-          {/* Right Controls: Jumlah Siswa, Icon-Only Sync DB, and Tambah Siswa */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Jumlah Siswa Badge */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-extrabold shadow-2xs shrink-0 whitespace-nowrap">
+          {/* Right Controls: Jumlah Siswa (angka saja), Icon-Only Sync DB, and Tambah Siswa (All in 1 line) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Jumlah Siswa Badge (Angka Saja, Tanpa kata "Siswa") */}
+            <span
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-black shadow-2xs shrink-0 whitespace-nowrap"
+              title={`${filteredStudents.length} Siswa Terdaftar`}
+            >
               <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>{filteredStudents.length} Siswa</span>
+              <span>{filteredStudents.length}</span>
             </span>
 
             {/* Sync DB: Icon Only */}
@@ -338,11 +341,11 @@ function SiswaContent() {
               type="button"
               onClick={handleSyncDB}
               disabled={isSyncing}
-              className="w-9 h-9 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs disabled:opacity-50 shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs disabled:opacity-50 shrink-0"
               title="Sinkronisasi Database PostgreSQL"
               aria-label="Sinkron DB"
             >
-              <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
             </button>
 
             {/* Button Tambah Siswa with Green Plus (+) Icon */}
@@ -351,7 +354,7 @@ function SiswaContent() {
               onClick={handleOpenAdd}
               title={activeProgram === "MEMBACA" ? "Tambah Siswa Membaca" : "Tambah Siswa Baru"}
               aria-label={activeProgram === "MEMBACA" ? "Tambah Siswa Membaca" : "Tambah Siswa Baru"}
-              className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 rounded-xl bg-white dark:bg-[#0f1a36] border-2 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-extrabold shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 gap-1.5"
+              className="inline-flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3 sm:py-2 rounded-xl bg-white dark:bg-[#0f1a36] border-2 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-extrabold shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 gap-1.5"
             >
               <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
               <span className="hidden md:inline text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
@@ -513,7 +516,7 @@ function SiswaContent() {
                   />
                 </th>
               )}
-              <th className="p-3.5">
+              <th className="p-3.5 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   {!showCheckboxes && (
                     <input
@@ -527,7 +530,12 @@ function SiswaContent() {
                       className="rounded text-emerald-600 cursor-pointer w-4 h-4 accent-emerald-600"
                     />
                   )}
-                  <span>SISWA</span>
+                  <span className="w-6 text-right font-bold text-slate-400">NO</span>
+                  <span className="w-40 sm:w-48 text-left font-bold text-slate-400 pl-1">NAMA SISWA</span>
+                  <span className="w-6 text-center font-bold text-slate-400">JK</span>
+                  <span className="w-8 text-center font-bold text-slate-400">LABEL</span>
+                  <span className="w-16 text-center font-bold text-slate-400">CABANG</span>
+                  <span className="w-20 text-center font-bold text-slate-400">KELAS</span>
                   {showCheckboxes && (
                     <button
                       type="button"
@@ -578,7 +586,7 @@ function SiswaContent() {
                 </td>
               </tr>
             ) : (
-              filteredStudents.map((st) => (
+              filteredStudents.map((st, idx) => (
                 <tr key={st.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                   {/* Checkbox (only visible when activated) */}
                   {showCheckboxes && (
@@ -592,27 +600,41 @@ function SiswaContent() {
                     </td>
                   )}
 
-                  {/* Siswa Info Column: STRICTLY ONE LINE - NIS & Alamat hidden, visible on Eye icon */}
+                  {/* Siswa Info Column: STRICTLY ONE LINE with No. Urut & Vertically Aligned Badges */}
                   <td className="p-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
+                      {/* No. Urut di samping nama */}
+                      <span className="w-6 text-right font-mono text-xs font-bold text-slate-400 dark:text-slate-500 shrink-0 select-none">
+                        {idx + 1}.
+                      </span>
+
+                      {/* Nama Siswa: Lebar konsisten agar baris badge sejajar dari atas ke bawah */}
                       <button
                         type="button"
                         onClick={() => setViewingDetail(st)}
-                        className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-left cursor-pointer flex items-center gap-1.5"
-                        title="Lihat detail lengkap (NIS & Alamat)"
+                        className="w-40 sm:w-48 truncate font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-left cursor-pointer shrink-0 pl-1"
+                        title={`${st.name} (Klik untuk detail lengkap)`}
                       >
-                        <span>{st.name}</span>
+                        {st.name}
                       </button>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
+
+                      {/* Jenis Kelamin (Fixed Width Slot) */}
+                      <span className="w-6 h-5 flex items-center justify-center rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
                         {st.gender}
                       </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+
+                      {/* Label Usia/Sesi (Fixed Width Slot) */}
+                      <span className="w-8 h-5 flex items-center justify-center rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
                         {st.codeLabel}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+
+                      {/* Cabang (Fixed Width Slot) */}
+                      <span className="w-16 h-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0 capitalize">
                         {st.branch.toLowerCase()}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
+
+                      {/* Kelas (Fixed Width Slot) */}
+                      <span className="w-20 h-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
                         ★ {st.className}
                       </span>
                     </div>
