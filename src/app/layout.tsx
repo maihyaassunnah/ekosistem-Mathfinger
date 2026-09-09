@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme";
 import { AppStoreProvider } from "@/lib/store";
 import AuthProvider from "@/components/providers/AuthProvider";
+import AppSplashLoader from "@/components/ui/AppSplashLoader";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${plusJakarta.variable} h-full antialiased font-sans`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-[#f0f6ff] text-[#0a192f] dark:bg-[#070d1e] dark:text-[#f8fafc] font-sans transition-colors duration-200">
+        <AppSplashLoader />
         <AuthProvider>
           <ThemeProvider>
             <AppStoreProvider>{children}</AppStoreProvider>
