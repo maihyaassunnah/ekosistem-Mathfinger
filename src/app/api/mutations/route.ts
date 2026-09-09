@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/mutations - Fetch all cash mutations (Buku Besar)
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const mutations = await prisma.cashMutation.findMany({
       include: { invoice: true },
       orderBy: { mutationDate: "desc" },
@@ -30,6 +34,9 @@ export async function GET() {
 // POST /api/mutations - Create new cash mutation
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { date, invoiceNo, studentName, period, method, description, amount } = body;
 
@@ -73,6 +80,9 @@ export async function POST(req: Request) {
 // DELETE /api/mutations - Delete cash mutation
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

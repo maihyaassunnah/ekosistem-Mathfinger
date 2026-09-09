@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 const DEFAULT_READING_LEVELS = [
   { levelName: "Pra-Membaca", description: "Belum mengenal huruf, masih dalam tahap pengenalan", orderIndex: 1, colorCode: "#ef4444" },
@@ -13,6 +14,9 @@ const DEFAULT_READING_LEVELS = [
 
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     let levels = await prisma.readingLevel.findMany({ orderBy: { orderIndex: "asc" } });
     if (levels.length === 0) {
       await prisma.readingLevel.createMany({ data: DEFAULT_READING_LEVELS });
@@ -26,6 +30,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const { levelName, description, orderIndex, colorCode } = await req.json();
     if (!levelName) return NextResponse.json({ error: "Nama level wajib diisi" }, { status: 400 });
     const created = await prisma.readingLevel.create({
@@ -39,6 +46,9 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const { id, levelName, description, orderIndex, colorCode } = await req.json();
     if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
     const updated = await prisma.readingLevel.update({
@@ -58,6 +68,9 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });

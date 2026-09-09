@@ -8,7 +8,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@db:5432/${POSTGRES_DB:-mathfingers_db}?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-31122000Hfz}@db:5432/${POSTGRES_DB:-mathfingers_db}?schema=public
       - NEXTAUTH_URL=${NEXTAUTH_URL:-https://mathfingers.my.id}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-super-secret-mathfingers-key-2026}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://mathfingers.my.id}
@@ -28,7 +28,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-31122000Hfz}
       POSTGRES_DB: ${POSTGRES_DB:-mathfingers_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -47,7 +47,7 @@ services:
     image: sosedoff/pgweb:latest
     container_name: mathfingers-db-web
     restart: always
-    command: ["/usr/bin/pgweb", "--bind=0.0.0.0", "--listen=8081", "--url=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@db:5432/${POSTGRES_DB:-mathfingers_db}?sslmode=disable", "--auth-user=admin", "--auth-pass=MathFingers2026!"]
+    command: ["/usr/bin/pgweb", "--bind=0.0.0.0", "--listen=8081", "--url=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-31122000Hfz}@db:5432/${POSTGRES_DB:-mathfingers_db}?sslmode=disable", "--auth-user=admin", "--auth-pass=31122000Hfz"]
     ports:
       - "8081:8081"
     depends_on:
@@ -64,9 +64,9 @@ services:
     container_name: mathfingers-prisma-studio
     restart: always
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@db:5432/${POSTGRES_DB:-mathfingers_db}?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-31122000Hfz}@db:5432/${POSTGRES_DB:-mathfingers_db}?schema=public
     ports:
-      - "5555:5555"
+      - "127.0.0.1:5555:5555"
     depends_on:
       db:
         condition: service_healthy

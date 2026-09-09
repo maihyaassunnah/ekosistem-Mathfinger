@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/classes - List all classes with branch details
 export async function GET(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
@@ -53,6 +57,9 @@ export async function GET(req: Request) {
 // POST /api/classes - Create new class
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { name, branch: branchName, days, time, teacher, room, level, maxCapacity } = body;
 
@@ -108,6 +115,9 @@ export async function POST(req: Request) {
 // PUT /api/classes - Update class
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, name, branch, days, time, teacher, room, level, maxCapacity } = body;
 
@@ -166,6 +176,9 @@ export async function PUT(req: Request) {
 // DELETE /api/classes - Delete class
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

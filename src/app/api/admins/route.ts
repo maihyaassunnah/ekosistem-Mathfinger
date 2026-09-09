@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { requireAuth } from "@/lib/auth-guard";
 
-// GET /api/admins - Fetch all registered admin and staff accounts
+// GET /api/admins - Fetch all registered admin and staff accounts (Requires Login)
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const users = await prisma.user.findMany({
       include: { branch: true },
       orderBy: { createdAt: "desc" },
@@ -36,9 +40,12 @@ export async function GET() {
   }
 }
 
-// POST /api/admins - Register a new admin / branch staff
+// POST /api/admins - Register a new admin / branch staff (Requires SUPER_ADMIN)
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const body = await req.json();
     const { fullName, email, password, branchName, role, status, phone } = body;
 
@@ -80,9 +87,9 @@ export async function POST(req: Request) {
     else if (role === "Tutor") dbRole = "TUTOR";
     else dbRole = "BRANCH_ADMIN";
 
-    // Store plain password as requested by user
-    const plainPassword = password || "password123";
-    const passwordHash = plainPassword;
+    // Encrypt password securely using Bcrypt (Cost 10)
+    const rawPassword = password && password.trim().length > 0 ? password.trim() : "password123";
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
 
     const created = await prisma.user.create({
       data: {
@@ -125,9 +132,12 @@ export async function POST(req: Request) {
   }
 }
 
-// PUT /api/admins - Update admin account (status, role, branch, password)
+// PUT /api/admins - Update admin account (Requires SUPER_ADMIN or self-edit)
 export async function PUT(req: Request) {
   try {
+    const { error, session } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, fullName, email, password, branchName, role, status } = body;
 
@@ -135,8 +145,23 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "ID admin wajib disertakan" }, { status: 400 });
     }
 
+    const currentUserId = (session?.user as any)?.id;
+    const currentUserRole = (session?.user as any)?.role;
+    const isSuperAdmin =
+      currentUserRole === "SUPER_ADMIN" ||
+      currentUserRole === "Super Admin" ||
+      session?.user?.email === "wahyudinhafiz123@gmail.com";
+
+    // Only SUPER_ADMIN can edit other admins or change role/status
+    if (!isSuperAdmin && currentUserId !== id) {
+      return NextResponse.json(
+        { error: "Forbidden: Hanya Super Admin yang dapat mengubah akun admin lain." },
+        { status: 403 }
+      );
+    }
+
     let branchId: string | null = undefined as any;
-    if (branchName !== undefined) {
+    if (isSuperAdmin && branchName !== undefined) {
       if (branchName === "Semua Cabang (Pusat)") {
         branchId = null;
       } else {
@@ -148,7 +173,7 @@ export async function PUT(req: Request) {
     }
 
     let dbRole: "SUPER_ADMIN" | "BRANCH_ADMIN" | "BRANCH_ASSISTANT" | "TUTOR" | undefined = undefined;
-    if (role) {
+    if (isSuperAdmin && role) {
       if (role === "Super Admin") dbRole = "SUPER_ADMIN";
       else if (role === "Asisten Cabang") dbRole = "BRANCH_ASSISTANT";
       else if (role === "Tutor") dbRole = "TUTOR";
@@ -157,8 +182,8 @@ export async function PUT(req: Request) {
 
     let passwordHash = undefined;
     if (password && password.trim().length > 0) {
-      // Store plain password as requested by user
-      passwordHash = password.trim();
+      // Encrypt password securely using Bcrypt (Cost 10)
+      passwordHash = await bcrypt.hash(password.trim(), 10);
     }
 
     const updated = await prisma.user.update({
@@ -170,7 +195,7 @@ export async function PUT(req: Request) {
         ...(body.avatarUrl !== undefined ? { avatarUrl: body.avatarUrl } : {}),
         ...(passwordHash ? { passwordHash } : {}),
         ...(dbRole ? { role: dbRole } : {}),
-        ...(status !== undefined ? { status: status === "Aktif" ? "ACTIVE" : "INACTIVE" } : {}),
+        ...(isSuperAdmin && status !== undefined ? { status: status === "Aktif" ? "ACTIVE" : "INACTIVE" } : {}),
         ...(branchId !== undefined ? { branchId } : {}),
       },
       include: { branch: true },
@@ -200,9 +225,12 @@ export async function PUT(req: Request) {
   }
 }
 
-// DELETE /api/admins - Delete admin account
+// DELETE /api/admins - Delete admin account (Requires SUPER_ADMIN)
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

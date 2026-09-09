@@ -51,6 +51,18 @@ export const authOptions: NextAuthOptions = {
           );
         } else {
           isPasswordValid = user.passwordHash === credentials.password;
+          // Auto-upgrade legacy plain password to secure bcrypt hash
+          if (isPasswordValid) {
+            try {
+              const upgradedHash = await bcrypt.hash(credentials.password, 10);
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { passwordHash: upgradedHash },
+              });
+            } catch (err) {
+              console.error("Gagal meng-upgrade hash kata sandi:", err);
+            }
+          }
         }
 
         if (!isPasswordValid) {

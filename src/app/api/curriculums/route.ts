@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/curriculums - Fetch all curriculum levels
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const levels = await prisma.level.findMany({
       orderBy: { orderIndex: "asc" },
     });
@@ -29,6 +33,9 @@ export async function GET() {
 // POST /api/curriculums - Add curriculum module
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const body = await req.json();
     const { levelTitle, shortDesc, learningGoals, competencies, learningMaterials, indicators } = body;
 
@@ -68,6 +75,9 @@ export async function POST(req: Request) {
 // PUT /api/curriculums - Update module
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const body = await req.json();
     const { id, levelTitle, shortDesc, learningGoals, competencies, learningMaterials, indicators } = body;
 
@@ -106,6 +116,9 @@ export async function PUT(req: Request) {
 // DELETE /api/curriculums - Delete module
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth("SUPER_ADMIN");
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

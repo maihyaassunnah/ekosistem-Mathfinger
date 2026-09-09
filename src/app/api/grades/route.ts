@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/grades - Fetch all student grades
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const grades = await prisma.studentGrade.findMany({
       include: {
         student: true,
@@ -34,6 +38,9 @@ export async function GET() {
 // POST /api/grades - Batch or single save grades
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const items = Array.isArray(body) ? body : [body];
 
@@ -123,6 +130,9 @@ export async function POST(req: Request) {
 // PUT /api/grades - Update a grade or rename a test column session
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, studentId, topic, examDate, score, note, isJoined, oldTopic, oldExamDate, newTopic, newExamDate } = body;
 
@@ -247,6 +257,9 @@ export async function PUT(req: Request) {
 // DELETE /api/grades - Delete a grade or entire test column session
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const topic = searchParams.get("topic");

@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
-// GET /api/website/leads - Fetch all trial leads
+// GET /api/website/leads - Fetch all trial leads (Admin only)
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const leads = await prisma.websiteLead.findMany({
       orderBy: { createdAt: "desc" },
     });
@@ -69,9 +73,12 @@ export async function POST(req: Request) {
   }
 }
 
-// PUT /api/website/leads - Update lead status / notes
+// PUT /api/website/leads - Update lead status / notes (Admin only)
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, status, notes } = body;
 
@@ -104,9 +111,12 @@ export async function PUT(req: Request) {
   }
 }
 
-// DELETE /api/website/leads - Delete lead
+// DELETE /api/website/leads - Delete lead (Admin only)
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

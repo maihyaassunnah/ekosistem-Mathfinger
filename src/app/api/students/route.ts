@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/students - Fetch all students with branch and level info
 export async function GET(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
@@ -61,6 +65,9 @@ export async function GET(req: Request) {
 // POST /api/students - Create a new student
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const studentName = body.name || body.studentName;
     const parentName = body.parentName || "-";
@@ -209,6 +216,9 @@ export async function POST(req: Request) {
 // PUT /api/students - Update existing student
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, name, parentName, parentWhatsapp, gender, className, birthPlace, birthDate, address, gradeLevel, levelCurriculum, branch } = body;
 
@@ -281,6 +291,9 @@ export async function PUT(req: Request) {
 // DELETE /api/students - Delete student
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

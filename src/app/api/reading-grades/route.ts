@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/reading-grades?studentId=xxx&branchId=xxx
 export async function GET(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const studentId = searchParams.get("studentId");
     const branchId = searchParams.get("branchId");
@@ -27,6 +31,9 @@ export async function GET(req: Request) {
 // POST /api/reading-grades - Create new reading assessment
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { studentId, branchId, readingLevelId, assessmentDate, teacherNotes, kelancaran, pemahaman, pelafalan } = body;
 
@@ -57,6 +64,9 @@ export async function POST(req: Request) {
 // PUT /api/reading-grades - Update reading assessment
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, readingLevelId, assessmentDate, teacherNotes, kelancaran, pemahaman, pelafalan } = body;
 
@@ -84,6 +94,9 @@ export async function PUT(req: Request) {
 // DELETE /api/reading-grades?id=xxx
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });

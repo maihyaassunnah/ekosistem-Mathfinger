@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/journals - Fetch all teacher journals
 export async function GET(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
@@ -45,6 +49,9 @@ export async function GET(req: Request) {
 // POST /api/journals - Create new teacher journal
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { studentName, className, branch: branchName, topic, content, teacher, date, programType: rawProgramType } = body;
 
@@ -103,6 +110,9 @@ export async function POST(req: Request) {
 // DELETE /api/journals - Delete journal
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

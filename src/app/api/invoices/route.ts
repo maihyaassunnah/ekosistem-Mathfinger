@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/invoices - Fetch all invoices
 export async function GET(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
@@ -50,6 +54,9 @@ export async function GET(req: Request) {
 // POST /api/invoices - Create new invoice
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { studentId, studentName, period, dueDate, amount, status, programType: rawProgramType } = body;
 
@@ -110,9 +117,12 @@ export async function POST(req: Request) {
   }
 }
 
-// PUT /api/invoices - Update invoice status / payment
+// PUT /api/invoices - Update invoice status (e.g. mark as PAID)
 export async function PUT(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, status, paidDate, paidMethod } = body;
 
@@ -173,6 +183,9 @@ export async function PUT(req: Request) {
 // DELETE /api/invoices - Delete invoice
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

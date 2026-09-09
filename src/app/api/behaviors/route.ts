@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/behaviors - Get all student behaviors/keaktifan records
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const behaviors = await prisma.studentBehavior.findMany({
       include: {
         student: true,
@@ -33,6 +37,9 @@ export async function GET() {
 // POST /api/behaviors - Create or update behavior/keaktifan record for a student
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { id, studentId, date, sessionTopic, focus, participation, attitude, note } = body;
 
@@ -149,6 +156,9 @@ export async function POST(req: Request) {
 // DELETE /api/behaviors - Delete a behavior record
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

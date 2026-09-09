@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/transactions - Fetch all cash transactions
 export async function GET() {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const transactions = await prisma.cashTransaction.findMany({
       include: { branch: true },
       orderBy: { transactionDate: "desc" },
@@ -31,6 +35,9 @@ export async function GET() {
 // POST /api/transactions - Create new transaction
 export async function POST(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const body = await req.json();
     const { date, type, category, title, amount, branch: branchName, sourceOrRecipient, notes } = body;
 
@@ -84,6 +91,9 @@ export async function POST(req: Request) {
 // DELETE /api/transactions - Delete transaction
 export async function DELETE(req: Request) {
   try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
