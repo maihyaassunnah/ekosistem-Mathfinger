@@ -722,249 +722,293 @@ function SiswaContent() {
 
       {/* Modal Add / Edit Student */}
       {(isAddOpen || editingStudent) && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a] max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1d2d5a]">
-              <h3 className="font-black text-slate-900 dark:text-white text-base">
-                {editingStudent ? `Edit Siswa: ${editingStudent.name}` : "Tambah Siswa Baru"}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 dark:border-[#1d2d5a] flex flex-col max-h-[92vh] sm:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] shrink-0">
+              <div>
+                <h3 className="font-black text-slate-900 dark:text-white text-base">
+                  {editingStudent ? `Edit Siswa: ${editingStudent.name}` : "Tambah Siswa Baru"}
+                </h3>
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  Lengkapi data formulir siswa di bawah ini
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   setIsAddOpen(false);
                   setEditingStudent(null);
                 }}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-bold p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-bold w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm cursor-pointer"
+                aria-label="Tutup modal"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={editingStudent ? handleSubmitEdit : handleSubmitAdd} className="space-y-3.5 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nama Lengkap Siswa</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Nama anak..."
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">ID Kode Siswa</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.studentCode}
-                    onChange={(e) => setForm({ ...form, studentCode: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Gender</label>
-                  <CustomSelect
-                    value={form.gender}
-                    onChange={(val) => setForm({ ...form, gender: val as any })}
-                    className="w-full"
-                    size="md"
-                    options={[
-                      { value: "P", label: "Perempuan (P)" },
-                      { value: "L", label: "Laki-laki (L)" },
-                    ]}
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Cabang</label>
-                  <CustomSelect
-                    value={form.branch}
-                    disabled={!isSuperAdmin}
-                    onChange={(val) => setForm({ ...form, branch: val as any })}
-                    className="w-full"
-                    size="md"
-                    options={branches.map((b) => ({
-                      value: b.name,
-                      label: `Cabang: ${b.name}`,
-                    }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Kelas Bimbingan</label>
-                  <CustomSelect
-                    value={form.className}
-                    onChange={(val) => setForm({ ...form, className: val })}
-                    className="w-full"
-                    size="md"
-                    options={[
-                      ...classes
-                        .filter((c) =>
-                          form.programType === "MEMBACA"
-                            ? (c as any).programType === "MEMBACA"
-                            : (c as any).programType !== "MEMBACA"
-                        )
-                        .map((c) => ({
-                          value: c.name,
-                          label: `${c.name} (${c.branch})`,
-                        })),
-                      { value: "Kelas A", label: "Kelas A" },
-                      { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
-                      { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
-                    ]}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nama Orang Tua / Wali</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.parentName}
-                    onChange={(e) => setForm({ ...form, parentName: e.target.value })}
-                    placeholder="Nama wali..."
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">WhatsApp Orang Tua</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.parentWhatsapp}
-                    onChange={(e) => setForm({ ...form, parentWhatsapp: e.target.value })}
-                    placeholder="0812..."
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Tempat & Tanggal Lahir</label>
-                  <div className="grid grid-cols-2 gap-2">
+            {/* Modal Form */}
+            <form onSubmit={editingStudent ? handleSubmitEdit : handleSubmitAdd} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-4 overscroll-contain flex-1">
+                {/* 1. Nama Lengkap & ID Kode */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Nama Lengkap Siswa <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      value={form.birthPlace}
-                      onChange={(e) => setForm({ ...form, birthPlace: e.target.value })}
-                      placeholder="Kota"
-                      className="p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      required
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      placeholder="Nama lengkap anak..."
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                     />
+                  </div>
+                  <div className="sm:col-span-1">
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      ID Kode Siswa
+                    </label>
                     <input
-                      type="date"
-                      value={form.birthDate}
-                      onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
-                      className="p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      type="text"
+                      required
+                      value={form.studentCode}
+                      onChange={(e) => setForm({ ...form, studentCode: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold font-mono text-slate-900 dark:text-white text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                     />
                   </div>
                 </div>
+
+                {/* 2. Gender, Cabang, Kelas Bimbingan */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="col-span-1">
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Gender
+                    </label>
+                    <CustomSelect
+                      value={form.gender}
+                      onChange={(val) => setForm({ ...form, gender: val as any })}
+                      className="w-full"
+                      size="md"
+                      options={[
+                        { value: "P", label: "Perempuan (P)" },
+                        { value: "L", label: "Laki-laki (L)" },
+                      ]}
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Cabang
+                    </label>
+                    <CustomSelect
+                      value={form.branch}
+                      disabled={!isSuperAdmin}
+                      onChange={(val) => setForm({ ...form, branch: val as any })}
+                      className="w-full"
+                      align="right"
+                      size="md"
+                      options={branches.map((b) => ({
+                        value: b.name,
+                        label: b.name,
+                      }))}
+                    />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Kelas Bimbingan
+                    </label>
+                    <CustomSelect
+                      value={form.className}
+                      onChange={(val) => setForm({ ...form, className: val })}
+                      className="w-full"
+                      size="md"
+                      options={[
+                        ...classes
+                          .filter((c) =>
+                            form.programType === "MEMBACA"
+                              ? (c as any).programType === "MEMBACA"
+                              : (c as any).programType !== "MEMBACA"
+                          )
+                          .map((c) => ({
+                            value: c.name,
+                            label: `${c.name} (${c.branch})`,
+                          })),
+                        { value: "Kelas A", label: "Kelas A" },
+                        { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
+                        { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Nama Wali & WhatsApp Orang Tua */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Nama Orang Tua / Wali <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.parentName}
+                      onChange={(e) => setForm({ ...form, parentName: e.target.value })}
+                      placeholder="Nama wali..."
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      WhatsApp Orang Tua <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={form.parentWhatsapp}
+                      onChange={(e) => setForm({ ...form, parentWhatsapp: e.target.value })}
+                      placeholder="08xxxxxxxxxx"
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-bold font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Tempat & Tanggal Lahir & Keterangan Kelas Sekolah */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Tempat & Tanggal Lahir
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={form.birthPlace}
+                        onChange={(e) => setForm({ ...form, birthPlace: e.target.value })}
+                        placeholder="Kota lahir"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                      />
+                      <input
+                        type="date"
+                        value={form.birthDate}
+                        onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                        className="w-full px-2 sm:px-3 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Keterangan Kelas Sekolah
+                    </label>
+                    <input
+                      type="text"
+                      value={form.gradeLevel}
+                      onChange={(e) => setForm({ ...form, gradeLevel: e.target.value })}
+                      placeholder="Contoh: Kelas 3 SD"
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Alamat Lengkap */}
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Keterangan Kelas Sekolah</label>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                    Alamat Lengkap
+                  </label>
                   <input
                     type="text"
-                    value={form.gradeLevel}
-                    onChange={(e) => setForm({ ...form, gradeLevel: e.target.value })}
-                    placeholder="Ket: Kelas 4"
-                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={form.address}
+                    onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    placeholder="Alamat domisili, jalan, atau desa..."
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Alamat Lengkap</label>
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] rounded-xl font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
+                {/* 6. Tingkat Level Kurikulum */}
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                    Tingkat Level Kurikulum ({form.programType === "MEMBACA" ? "Membaca" : "Matematika"})
+                  </label>
+                  <CustomSelect
+                    value={form.levelCurriculum}
+                    onChange={(val) => setForm({ ...form, levelCurriculum: val })}
+                    className="w-full"
+                    menuClassName="w-full max-w-full"
+                    size="md"
+                    options={
+                      form.programType === "MEMBACA"
+                        ? [
+                            { value: "Level 1: Pra-Membaca & Pengenalan Huruf", label: "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)" },
+                            { value: "Level 2: Merangkai Suku Kata Sederhana", label: "Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)" },
+                            { value: "Level 3: Merangkai Kata 2 Suku Kata", label: "Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)" },
+                            { value: "Level 4: Merangkai Kata Bervokal & Konsonan Ganda", label: "Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)" },
+                            { value: "Level 5: Membaca Kalimat Sederhana", label: "Level 5: Membaca Kalimat Sederhana" },
+                            { value: "Level 6: Membaca Paragraf Pendek", label: "Level 6: Membaca Paragraf Pendek & Cerita" },
+                            { value: "Level 7: Lancar Membaca & Pemahaman Teks", label: "Level 7: Lancar Membaca & Pemahaman Teks" },
+                          ]
+                        : [
+                            { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
+                            { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan Angka Satuan" },
+                            { value: "Level 2: Kombinasi Rumus Teman Kecil", label: "Level 2: Kombinasi Rumus Teman Kecil" },
+                            { value: "Level 3: Kombinasi Rumus Teman Besar", label: "Level 3: Kombinasi Rumus Teman Besar" },
+                            { value: "Level Utama: Perkalian & Pembagian", label: "Level Utama: Perkalian & Pembagian" },
+                          ]
+                    }
+                  />
+                </div>
 
-              <div>
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
-                  Tingkat Level Kurikulum ({form.programType === "MEMBACA" ? "Membaca" : "Matematika"})
-                </label>
-                <CustomSelect
-                  value={form.levelCurriculum}
-                  onChange={(val) => setForm({ ...form, levelCurriculum: val })}
-                  className="w-full"
-                  size="md"
-                  options={
-                    form.programType === "MEMBACA"
-                      ? [
-                          { value: "Level 1: Pra-Membaca & Pengenalan Huruf", label: "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)" },
-                          { value: "Level 2: Merangkai Suku Kata Sederhana", label: "Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)" },
-                          { value: "Level 3: Merangkai Kata 2 Suku Kata", label: "Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)" },
-                          { value: "Level 4: Merangkai Kata Bervokal & Konsonan Ganda", label: "Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)" },
-                          { value: "Level 5: Membaca Kalimat Sederhana", label: "Level 5: Membaca Kalimat Sederhana" },
-                          { value: "Level 6: Membaca Paragraf Pendek", label: "Level 6: Membaca Paragraf Pendek & Cerita" },
-                          { value: "Level 7: Lancar Membaca & Pemahaman Teks", label: "Level 7: Lancar Membaca & Pemahaman Teks" },
-                        ]
-                      : [
-                          { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
-                          { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan Angka Satuan" },
-                          { value: "Level 2: Kombinasi Rumus Teman Kecil", label: "Level 2: Kombinasi Rumus Teman Kecil" },
-                          { value: "Level 3: Kombinasi Rumus Teman Besar", label: "Level 3: Kombinasi Rumus Teman Besar" },
-                          { value: "Level Utama: Perkalian & Pembagian", label: "Level Utama: Perkalian & Pembagian" },
-                        ]
-                  }
-                />
-              </div>
-
-              {/* Program Type */}
-              <div>
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Program Les</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: "MATEMATIKA", label: "🔢 Les Matematika" },
-                    { key: "MEMBACA", label: "📖 Les Membaca" },
-                  ].map((prog) => (
-                    <button
-                      key={prog.key}
-                      type="button"
-                      onClick={() => {
-                        const nextProg = prog.key as "MATEMATIKA" | "MEMBACA";
-                        setForm({
-                          ...form,
-                          programType: nextProg,
-                          levelCurriculum:
-                            nextProg === "MEMBACA"
-                              ? "Level 1: Pra-Membaca & Pengenalan Huruf"
-                              : "Level Dasar: Pengenalan Simbol Jari",
-                        });
-                      }}
-                      className={`py-2.5 px-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
-                        form.programType === prog.key
-                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
-                          : "border-slate-200 dark:border-[#1d2d5a] text-slate-500 dark:text-slate-400 hover:border-emerald-300"
-                      }`}
-                    >
-                      {prog.label}
-                    </button>
-                  ))}
+                {/* 7. Program Type */}
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                    Pilihan Program Les
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      { key: "MATEMATIKA", label: "🔢 Les Matematika", desc: "Metode Jarimatika" },
+                      { key: "MEMBACA", label: "📖 Les Membaca", desc: "Metode Fonik Praktis" },
+                    ].map((prog) => (
+                      <button
+                        key={prog.key}
+                        type="button"
+                        onClick={() => {
+                          const nextProg = prog.key as "MATEMATIKA" | "MEMBACA";
+                          setForm({
+                            ...form,
+                            programType: nextProg,
+                            levelCurriculum:
+                              nextProg === "MEMBACA"
+                                ? "Level 1: Pra-Membaca & Pengenalan Huruf"
+                                : "Level Dasar: Pengenalan Simbol Jari",
+                          });
+                        }}
+                        className={`p-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer text-left flex flex-col gap-0.5 ${
+                          form.programType === prog.key
+                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/20"
+                            : "border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-600 dark:text-slate-400 hover:border-emerald-300"
+                        }`}
+                      >
+                        <span className="font-extrabold text-xs sm:text-sm">{prog.label}</span>
+                        <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">{prog.desc}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-3 flex gap-3">
+              {/* Modal Footer */}
+              <div className="px-4 sm:px-6 py-3 sm:py-3.5 bg-slate-50 dark:bg-[#0b1329] border-t border-slate-200 dark:border-[#1d2d5a] shrink-0 flex gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
                     setIsAddOpen(false);
                     setEditingStudent(null);
                   }}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                  className="flex-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition text-sm sm:text-xs cursor-pointer active:scale-[0.98]"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-md text-white font-extrabold transition cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 text-white font-black transition cursor-pointer disabled:opacity-50 text-sm sm:text-xs active:scale-[0.98]"
                 >
                   {isSubmitting ? "Menyimpan..." : editingStudent ? "Simpan Perubahan" : "Simpan Siswa Baru"}
                 </button>
