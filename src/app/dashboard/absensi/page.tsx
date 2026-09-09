@@ -61,7 +61,8 @@ function AbsensiContent() {
   const [selectedClass, setSelectedClass] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"A-Z" | "Z-A">("A-Z");
-  const [selectedIds, setSelectedIds] = useState<string[]>(students.map((s) => s.id));
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isSelectionActive, setIsSelectionActive] = useState(false);
   const [notesState, setNotesState] = useState<{ [id: string]: string }>({});
 
   // Quick Note & Status Menu State
@@ -446,11 +447,13 @@ function AbsensiContent() {
     visibleStudentIds.length > 0 && selectedVisibleIds.length === visibleStudentIds.length;
 
   const handleSelectAll = () => {
+    setIsSelectionActive(true);
     setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleStudentIds])));
   };
 
   const handleClearSelection = () => {
     setSelectedIds((prev) => prev.filter((id) => !visibleStudentIds.includes(id)));
+    setIsSelectionActive(false);
   };
 
   const handleMarkAllHadir = () => {
@@ -816,42 +819,31 @@ function AbsensiContent() {
       {/* ========================================================================= */}
       {activeTab === "HARI_INI" && (
         <div className="space-y-3 sm:space-y-5">
-          {/* Date Picker Bar */}
-          <div className="bg-white dark:bg-[#0f1a36] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+          {/* Date Picker Bar (Hidden on mobile, as buttons removed & date moved beside search) */}
+          <div className="hidden sm:flex bg-white dark:bg-[#0f1a36] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
             <div className="flex items-center justify-between sm:justify-start gap-2">
               <div>
                 <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <span className="hidden sm:inline">Pilih Tanggal Sesi Bimbingan</span>
-                  <span className="sm:hidden font-bold">Tanggal Sesi</span>
+                  <span>Pilih Tanggal Sesi Bimbingan</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                     {getDayNameIndonesian(selectedDate)}
                   </span>
                   {lastSavedTime && (
-                    <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-slate-400 font-normal">
+                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-normal">
                       • Terakhir: {lastSavedTime}
                     </span>
                   )}
                 </div>
-                <div className="hidden sm:block text-[11px] text-slate-400">
+                <div className="text-[11px] text-slate-400">
                   Siswa aktif terdaftar bimbingan matematika jaritmatika.
                 </div>
-              </div>
-
-              {/* Mobile-only Date input on top row right side */}
-              <div className="sm:hidden">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-2.5 py-1 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
-                />
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
               {/* Desktop Date input */}
-              <div className="hidden sm:block relative">
+              <div className="relative">
                 <input
                   type="date"
                   value={selectedDate}
@@ -860,12 +852,12 @@ function AbsensiContent() {
                 />
               </div>
 
-              {/* Action buttons side-by-side (50% each on mobile) */}
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              {/* Action buttons side-by-side */}
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleMarkAllHadir}
-                  className="inline-flex items-center justify-center gap-1.5 py-2 sm:py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
                   title="Tandai seluruh siswa hadir untuk sesi hari ini"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -876,7 +868,7 @@ function AbsensiContent() {
                   type="button"
                   onClick={handleSaveTodayAttendance}
                   disabled={isSaving}
-                  className="inline-flex items-center justify-center gap-1.5 py-2 sm:py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-95 text-white text-xs font-extrabold transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 active:scale-95 text-white text-xs font-extrabold transition-all cursor-pointer disabled:opacity-50"
                   title="Simpan seluruh status presensi siswa tanggal ini ke database"
                 >
                   {isSaving ? (
@@ -921,7 +913,7 @@ function AbsensiContent() {
             </div>
           </div>
 
-          {/* Search & Sort Bar */}
+          {/* Search & Tanggal Sesi Bar (Replaces A-Z filter) */}
           <div className="bg-white dark:bg-[#0f1a36] p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex items-center gap-2">
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -932,20 +924,23 @@ function AbsensiContent() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Cari nama siswa..."
-                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
             </div>
 
-            <CustomSelect
-              value={sortOrder}
-              onChange={(val) => setSortOrder(val as any)}
-              size="sm"
-              className="shrink-0 w-24"
-              options={[
-                { value: "A-Z", label: "A - Z" },
-                { value: "Z-A", label: "Z - A" },
-              ]}
-            />
+            {/* Tanggal Sesi Input beside Search */}
+            <div className="relative shrink-0 flex items-center gap-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2.5 py-1.5 shadow-2xs">
+              <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950 px-1.5 py-0.5 rounded-md hidden sm:inline">
+                {getDayNameIndonesian(selectedDate)}
+              </span>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 outline-none cursor-pointer"
+                title="Pilih Tanggal Sesi"
+              />
+            </div>
           </div>
 
           {/* Unified Attendance Card Container (Desktop matches Screenshot 1, Mobile/Tablet touch cards) */}
@@ -956,9 +951,9 @@ function AbsensiContent() {
                 <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={isAllVisibleSelected}
+                    checked={isSelectionActive && isAllVisibleSelected}
                     onChange={() => {
-                      if (isAllVisibleSelected) {
+                      if (isSelectionActive) {
                         handleClearSelection();
                       } else {
                         handleSelectAll();
@@ -967,65 +962,78 @@ function AbsensiContent() {
                     className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
                   <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                    {isAllVisibleSelected ? "Batalkan Semua" : "Pilih Semua"}
+                    {isSelectionActive && isAllVisibleSelected ? "Batalkan Semua" : "Pilih Semua"}
                   </span>
                 </label>
 
-                <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 text-right">
-                  {selectedVisibleIds.length} dari {filteredStudents.length} Siswa Dicentang
+                <div className="flex items-center gap-2">
+                  <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 text-right">
+                    {isSelectionActive ? selectedVisibleIds.length : 0} dari {filteredStudents.length} Siswa Dicentang
+                  </div>
+                  {isSelectionActive && (
+                    <button
+                      type="button"
+                      onClick={() => handleClearSelection()}
+                      className="text-[10px] text-rose-500 hover:text-rose-700 font-bold bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md cursor-pointer transition-all"
+                    >
+                      ✕ Tutup
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-[#1d2d5a]/80 flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleSelectAll}
-                  className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
-                >
-                  Pilih Semua
-                </button>
-                <button
-                  type="button"
-                  onClick={handleClearSelection}
-                  className="px-3.5 py-1.5 rounded-xl border border-emerald-400 dark:border-emerald-800 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
-                >
-                  Hapus Centang
-                </button>
+              {isSelectionActive && (
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-[#1d2d5a]/80 flex-wrap animate-in fade-in">
+                  <button
+                    type="button"
+                    onClick={handleSelectAll}
+                    className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                  >
+                    Pilih Semua
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearSelection}
+                    className="px-3.5 py-1.5 rounded-xl border border-emerald-400 dark:border-emerald-800 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                  >
+                    Hapus Centang
+                  </button>
 
-                {selectedVisibleIds.length > 0 && (
-                  <div className="flex items-center gap-1.5 ml-auto flex-wrap">
-                    <span className="text-[10px] text-slate-400 font-medium">Ubah Terpilih:</span>
-                    <button
-                      type="button"
-                      onClick={() => handleBatchSetSelectedStatus("HADIR")}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-black text-[10px] cursor-pointer"
-                    >
-                      + Hadir
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleBatchSetSelectedStatus("IZIN")}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] cursor-pointer"
-                    >
-                      + Ijin
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleBatchSetSelectedStatus("SAKIT")}
-                      className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] cursor-pointer"
-                    >
-                      + Sakit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleBatchSetSelectedStatus("ABSEN")}
-                      className="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-black text-[10px] cursor-pointer"
-                    >
-                      + Ghaib
-                    </button>
-                  </div>
-                )}
-              </div>
+                  {selectedVisibleIds.length > 0 && (
+                    <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                      <span className="text-[10px] text-slate-400 font-medium">Ubah Terpilih:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleBatchSetSelectedStatus("HADIR")}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-black text-[10px] cursor-pointer"
+                      >
+                        + Hadir
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleBatchSetSelectedStatus("IZIN")}
+                        className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] cursor-pointer"
+                      >
+                        + Ijin
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleBatchSetSelectedStatus("SAKIT")}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] cursor-pointer"
+                      >
+                        + Sakit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleBatchSetSelectedStatus("ABSEN")}
+                        className="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-black text-[10px] cursor-pointer"
+                      >
+                        + Ghaib
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Student Rows */}
@@ -1067,18 +1075,20 @@ function AbsensiContent() {
                     <div className="hidden lg:flex items-center justify-between gap-4 p-4">
                       {/* Left Column */}
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => {
-                            setSelectedIds((prev) =>
-                              prev.includes(st.id)
-                                ? prev.filter((id) => id !== st.id)
-                                : [...prev, st.id]
-                            );
-                          }}
-                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
-                        />
+                        {isSelectionActive && (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedIds((prev) =>
+                                prev.includes(st.id)
+                                  ? prev.filter((id) => id !== st.id)
+                                  : [...prev, st.id]
+                              );
+                            }}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                          />
+                        )}
 
                         {/* Green number badge */}
                         <span className="w-6 h-6 rounded-md border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
@@ -1088,69 +1098,39 @@ function AbsensiContent() {
                         <div className="space-y-1 min-w-0 flex-1">
                           {/* Badges + Student Name + Code + Wali in structured line */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold border border-emerald-400 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/40 uppercase tracking-wide">
-                              {shortLevel}
-                            </span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/40 flex items-center gap-1 uppercase">
-                              <span>🏫</span>
-                              <span>{st.className}</span>
-                            </span>
-                            {record?.method === "QR_SCAN" && (
-                              <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-[#1d2d5a] flex items-center gap-1">
-                                <QrCode className="w-3 h-3" />
-                                <span>QR {record.time || "14:00"}</span>
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2.5 flex-wrap">
                             <span className="font-extrabold text-slate-900 dark:text-white text-sm">
                               {st.name}
                             </span>
                             <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1d2d5a]">
                               #{st.studentCode}
                             </span>
-                            {st.parentName && (
-                              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                Wali: {st.parentName} {st.parentWhatsapp ? `(${st.parentWhatsapp})` : ""}
-                              </span>
-                            )}
                           </div>
 
                           {/* Quick note shortcuts row below student */}
-                          <div className="flex items-center gap-2 pt-0.5 flex-wrap">
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                              Pintasan Catatan:
+                          <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                              Catatan Cepat:
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => handleAddQuickNote(st.id, "Izin Makan")}
-                              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
-                            >
-                              + Izin Makan
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleAddQuickNote(st.id, "Hadir Kembali")}
-                              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
-                            >
-                              + Hadir Kembali
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleAddQuickNote(st.id, "Izin Sakit")}
-                              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
-                            >
-                              + Izin Sakit
-                            </button>
+                            {["Izin Pulang Cepat", "Sakit Perut", "Terlambat 15 Mnt", "Belum Bawa Buku"].map(
+                              (quickNote, qIdx) => (
+                                <button
+                                  key={qIdx}
+                                  type="button"
+                                  onClick={() => handleAddQuickNote(st.id, quickNote)}
+                                  className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 text-slate-600 dark:text-slate-400 text-[10px] font-medium transition-colors cursor-pointer border border-slate-200/60 dark:border-slate-700"
+                                >
+                                  + {quickNote}
+                                </button>
+                              )
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Right Column: Segmented Buttons + Inline Note Input */}
+                      {/* Right Column (Desktop Action Group) */}
                       <div className="flex items-center gap-3 shrink-0">
-                        {/* Segmented 3-Status Selector */}
-                        <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-2xl">
+                        {/* Status Toggle Buttons */}
+                        <div className="flex items-center p-1 bg-slate-100 dark:bg-[#0b1329] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs">
                           <button
                             type="button"
                             onClick={() => handleStatusChange(st.id, "HADIR")}
@@ -1190,160 +1170,120 @@ function AbsensiContent() {
                             <span>Absen</span>
                           </button>
                         </div>
-
-                        {/* Inline Note Input + Send Button */}
-                        <div className="flex items-center gap-1.5 w-64">
-                          <input
-                            type="text"
-                            value={notesState[st.id] !== undefined ? notesState[st.id] : record?.note || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setNotesState((prev) => ({ ...prev, [st.id]: val }));
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                handleSaveSingleNote(st.id);
-                              }
-                            }}
-                            placeholder="Catatan..."
-                            className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleSaveSingleNote(st.id)}
-                            className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-colors shrink-0"
-                            title="Simpan Catatan"
-                          >
-                            <Send className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
                       </div>
                     </div>
 
-                    {/* 2. MOBILE & TABLET VIEW (lg:hidden) - Touch-friendly card with Cycle Button */}
-                    <div className="lg:hidden p-3 sm:p-4">
-                      <div className="flex items-center justify-between gap-2.5 sm:gap-4">
-                        {/* Left Column */}
-                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {
-                              setSelectedIds((prev) =>
-                                prev.includes(st.id)
-                                  ? prev.filter((id) => id !== st.id)
-                                  : [...prev, st.id]
-                              );
-                            }}
-                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0 mt-1"
-                          />
+                    {/* 2. MOBILE & TABLET VIEW (lg:hidden) - Ultra Compact Single Row */}
+                    <div className="lg:hidden px-3 py-2.5 sm:px-4 sm:py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        {/* Left: Checkbox (conditional) + Number + Name + Time beside name */}
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          {isSelectionActive && (
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                setSelectedIds((prev) =>
+                                  prev.includes(st.id)
+                                    ? prev.filter((id) => id !== st.id)
+                                    : [...prev, st.id]
+                                );
+                              }}
+                              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                            />
+                          )}
 
-                          <div className="space-y-1 min-w-0 flex-1">
-                            {/* Badges Row */}
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wide whitespace-nowrap">
-                                {shortLevel}
-                              </span>
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5f3ff] dark:bg-purple-950/70 text-[#7c3aed] dark:text-purple-300 border border-[#ddd6fe] dark:border-purple-800/80 flex items-center gap-1 uppercase whitespace-nowrap">
-                                <span>🏫</span>
-                                <span>{st.className}</span>
-                              </span>
-                              {record?.method === "QR_SCAN" && (
-                                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-[#1d2d5a] flex items-center gap-1 whitespace-nowrap">
-                                  <QrCode className="w-3 h-3" />
-                                  <span>QR {record.time || "14:00"}</span>
-                                </span>
-                              )}
-                            </div>
+                          {/* Number Badge */}
+                          <span className="w-5 h-5 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-black text-[11px] flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
 
-                            {/* Number Box + Student Name */}
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
-                                {idx + 1}
-                              </span>
-                              <div
-                                title={st.name}
-                                className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm md:text-base truncate leading-tight"
+                          {/* Student Name + Time on the SAME line (NIS removed!) */}
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span
+                              title={st.name}
+                              className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm truncate"
+                            >
+                              {st.name}
+                            </span>
+                            {/* Keterangan Waktu di samping nama siswa */}
+                            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium shrink-0 flex items-center gap-0.5 whitespace-nowrap">
+                              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span>{record?.time || lastSavedTime || "12:00 WIB"}</span>
+                            </span>
+                            {currentNote && (
+                              <span
+                                title={`Catatan: ${currentNote}`}
+                                className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0 cursor-pointer"
+                                onClick={() => {
+                                  setActiveNoteStudent({ id: st.id, name: st.name });
+                                  setNoteInputText(currentNote);
+                                }}
                               >
-                                {st.name}
-                              </div>
-                            </div>
-
-                            {/* Student Code tag + Note preview */}
-                            <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                              <span className="px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1d2d5a] inline-flex items-center">
-                                #{st.studentCode}
+                                💬
                               </span>
-                              {currentNote && (
-                                <span
-                                  title={currentNote}
-                                  className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic truncate max-w-[130px] sm:max-w-[220px]"
-                                >
-                                  💬 {currentNote}
-                                </span>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </div>
 
-                        {/* Right Column: Note/Chat button + Circular Status Button */}
-                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
+                        {/* Right Column: Note Button + Circular Status Button */}
+                        <div className="flex items-center gap-1.5 shrink-0 relative">
                           <button
                             type="button"
                             onClick={() => {
                               setActiveNoteStudent({ id: st.id, name: st.name });
                               setNoteInputText(currentNote);
                             }}
-                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                               currentNote
-                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-[#1d2d5a] shadow-xs"
-                                : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/90 dark:border-[#1d2d5a] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800"
+                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 shadow-2xs"
+                                : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-700 border border-slate-200 dark:border-slate-700"
                             }`}
                             title={currentNote ? `Catatan: ${currentNote}` : "Tulis Catatan Presensi"}
                           >
-                            <MessageSquare className="w-4 h-4" />
+                            <MessageSquare className="w-3.5 h-3.5" />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleCycleStatus(st.id)}
-                            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex flex-col items-center justify-center shadow-xs shrink-0 transition-transform active:scale-90 cursor-pointer select-none ${
+                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex flex-col items-center justify-center shadow-xs shrink-0 transition-transform active:scale-90 cursor-pointer select-none ${
                               currentStatus === "HADIR"
-                                ? "bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white ring-2 ring-emerald-500/20"
+                                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs shadow-emerald-500/20"
                                 : currentStatus === "IZIN"
-                                ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-500/20"
+                                ? "bg-blue-600 hover:bg-blue-700 text-white"
                                 : currentStatus === "SAKIT"
-                                ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/20"
-                                : "bg-slate-700 hover:bg-slate-800 text-white ring-2 ring-slate-500/20"
+                                ? "bg-amber-500 hover:bg-amber-600 text-white"
+                                : "bg-slate-700 hover:bg-slate-800 text-white"
                             }`}
-                            title="Klik untuk ganti status: Hadir ➜ Ijin ➜ Sakit ➜ Ghaib"
+                            title="Klik untuk ganti status: Hadir ➜ Izin ➜ Sakit ➜ Absen"
                           >
                             {currentStatus === "HADIR" ? (
                               <>
-                                <Check className="w-4 h-4 stroke-[3]" />
-                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                <span className="text-[7.5px] font-black tracking-wider uppercase -mt-0.5">
                                   HADIR
                                 </span>
                               </>
                             ) : currentStatus === "IZIN" ? (
                               <>
-                                <Info className="w-4 h-4 stroke-[2.5]" />
-                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
-                                  IJIN
+                                <Info className="w-3.5 h-3.5 stroke-[2.5]" />
+                                <span className="text-[7.5px] font-black tracking-wider uppercase -mt-0.5">
+                                  IZIN
                                 </span>
                               </>
                             ) : currentStatus === "SAKIT" ? (
                               <>
-                                <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
-                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
+                                <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
+                                <span className="text-[7.5px] font-black tracking-wider uppercase -mt-0.5">
                                   SAKIT
                                 </span>
                               </>
                             ) : (
                               <>
-                                <X className="w-4 h-4 stroke-[3]" />
-                                <span className="text-[8px] font-black tracking-wider uppercase -mt-0.5">
-                                  GHAIB
+                                <X className="w-3.5 h-3.5 stroke-[3]" />
+                                <span className="text-[7.5px] font-black tracking-wider uppercase -mt-0.5">
+                                  ABSEN
                                 </span>
                               </>
                             )}
@@ -1354,18 +1294,18 @@ function AbsensiContent() {
                             onClick={() =>
                               setStatusMenuStudentId(isStatusMenuOpen ? null : st.id)
                             }
-                            className="p-1 -ml-1 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 cursor-pointer"
-                            title="Pilih status spesifik"
+                            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                            title="Pilih Status"
                           >
-                            <ChevronDown className="w-3.5 h-3.5" />
+                            <ChevronDown className="w-3 h-3" />
                           </button>
 
                           {isStatusMenuOpen && (
-                            <div className="absolute right-0 top-full mt-1.5 z-40 p-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
+                            <div className="absolute right-0 top-full mt-1 z-40 p-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xl flex flex-col gap-1 w-28 animate-in fade-in">
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(st.id, "HADIR")}
-                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
+                                className="w-full text-left px-2 py-1 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
                               >
                                 <span>✓ Hadir</span>
                                 {currentStatus === "HADIR" && (
@@ -1375,17 +1315,17 @@ function AbsensiContent() {
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(st.id, "IZIN")}
-                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer"
+                                className="w-full text-left px-2 py-1 rounded-xl text-xs font-extrabold flex items-center justify-between text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 cursor-pointer"
                               >
-                                <span>ℹ Ijin</span>
+                                <span>ℹ Izin</span>
                                 {currentStatus === "IZIN" && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                                 )}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(st.id, "SAKIT")}
-                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 cursor-pointer"
+                                className="w-full text-left px-2 py-1 rounded-xl text-xs font-extrabold flex items-center justify-between text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 cursor-pointer"
                               >
                                 <span>🏥 Sakit</span>
                                 {currentStatus === "SAKIT" && (
@@ -1395,9 +1335,9 @@ function AbsensiContent() {
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(st.id, "ABSEN")}
-                                className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                                className="w-full text-left px-2 py-1 rounded-xl text-xs font-extrabold flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                               >
-                                <span>✕ Ghaib</span>
+                                <span>✕ Absen</span>
                                 {currentStatus === "ABSEN" && (
                                   <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
                                 )}
