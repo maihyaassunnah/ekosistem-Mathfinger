@@ -336,7 +336,7 @@ function DashboardContent() {
       {/* ========================================================= */}
       {/* MOBILE & TABLET APP VIEW (EXACT MATCH TO ATTACHED SCREENSHOT) */}
       {/* ========================================================= */}
-      <div className="lg:hidden max-w-md md:max-w-xl mx-auto px-4 pt-3 pb-24 space-y-4 font-sans">
+      <div className="lg:hidden w-full max-w-md md:max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-3 pb-24 space-y-4 sm:space-y-5 md:space-y-6 font-sans">
         {/* 1. TOP STATUS / APP HEADER */}
         <div className="flex items-center justify-between">
           {/* Logo with colorful "Math Finger" letters */}
@@ -590,7 +590,7 @@ function DashboardContent() {
 
         {/* 3. HERO CAROUSEL BANNER (EXACT DARK CARD WITH 2 CTAS & INDICATORS) */}
         <div className="relative">
-          <div className="rounded-3xl p-5 text-white shadow-xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-950 border border-emerald-800/40 min-h-[170px] flex flex-col justify-between space-y-3">
+          <div className="rounded-3xl p-5 md:p-6 text-white shadow-xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-950 border border-emerald-800/40 min-h-[170px] md:min-h-[190px] flex flex-col justify-between space-y-3">
             {/* Subtle decorative glow */}
             <div className="absolute top-0 right-0 w-44 h-44 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -660,7 +660,7 @@ function DashboardContent() {
           </div>
 
           {showQuickServices && (
-            <div className="grid grid-cols-4 gap-2.5 sm:gap-3 animate-in fade-in duration-200">
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-2.5 sm:gap-3 md:gap-3.5 animate-in fade-in duration-200">
               {popularServices.map((service, idx) => {
                 const IconComponent = service.icon;
                 return (

@@ -42,7 +42,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         {/* Mobile & Tablet Header Bar (Visible on < lg, hidden on /dashboard home as it has native app header) */}
         {!isDashboardHome && (
-          <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-md border-b border-emerald-100/80 dark:border-[#162244] shrink-0 z-30 shadow-2xs">
+          <header className="lg:hidden flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-md border-b border-emerald-100/80 dark:border-[#162244] shrink-0 z-30 shadow-2xs">
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
@@ -126,8 +126,8 @@ export default function DashboardLayout({
         </main>
 
         {/* Mobile & Tablet Bottom Navigation Dock (Persistent App Bar) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-xl border-t border-emerald-100/80 dark:border-[#162244] px-3 pt-1.5 pb-2.5 shadow-2xl">
-          <div className="max-w-md md:max-w-xl mx-auto flex items-end justify-around relative">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a1128]/95 backdrop-blur-xl border-t border-emerald-100/80 dark:border-[#162244] px-3 sm:px-6 pt-1.5 pb-2.5 shadow-2xl">
+          <div className="max-w-md md:max-w-2xl lg:max-w-4xl mx-auto flex items-end justify-around relative">
             {/* 1. Home (Elevated circle when on /dashboard or clicked) */}
             <Link
               href="/dashboard"

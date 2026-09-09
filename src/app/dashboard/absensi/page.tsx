@@ -71,9 +71,102 @@ function AbsensiContent() {
   const [statusMenuStudentId, setStatusMenuStudentId] = useState<string | null>(null);
 
   // Save State & Toast Feedback
-  const [lastSavedTime, setLastSavedTime] = useState<string | null>("12:00 WIB");
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>("14:00 WIB");
   const [isSaving, setIsSaving] = useState(false);
   const [saveToast, setSaveToast] = useState<{ message: string; count: number } | null>(null);
+
+  // Helper format jam digital konsisten (HH:mm WIB)
+  const cleanTimeDisplay = (timeStr?: string | null): string => {
+    if (!timeStr) return "14:00 WIB";
+    return timeStr.replace(/(\d{1,2})\.(\d{2})/, "$1:$2");
+  };
+
+  const getFormattedLiveTime = (): string => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm} WIB`;
+  };
+
+  // State Modal Sesuaikan Jam Presensi
+  const [timeAdjustModal, setTimeAdjustModal] = useState<{
+    isOpen: boolean;
+    studentId?: string;
+    studentName?: string;
+    selectedTime: string;
+    applyToAll: boolean;
+  }>({
+    isOpen: false,
+    studentId: undefined,
+    studentName: undefined,
+    selectedTime: "14:00 WIB",
+    applyToAll: false,
+  });
+
+  const openAdjustTimeModal = (
+    studentId?: string,
+    studentName?: string,
+    initialTime?: string
+  ) => {
+    setTimeAdjustModal({
+      isOpen: true,
+      studentId,
+      studentName: studentName || (studentId ? "Siswa Terpilih" : "Seluruh Siswa"),
+      selectedTime: cleanTimeDisplay(initialTime || lastSavedTime || "14:00 WIB"),
+      applyToAll: !studentId,
+    });
+  };
+
+  const handleApplyTimeAdjustment = () => {
+    const rawTime = timeAdjustModal.selectedTime.trim() || "14:00 WIB";
+    const formattedNewTime = rawTime.toUpperCase().includes("WIB")
+      ? cleanTimeDisplay(rawTime)
+      : `${cleanTimeDisplay(rawTime)} WIB`;
+
+    if (timeAdjustModal.applyToAll || !timeAdjustModal.studentId) {
+      filteredStudents.forEach((st) => {
+        const currentStatus = getStatus(st.id);
+        const currentNote =
+          notesState[st.id] !== undefined
+            ? notesState[st.id]
+            : attendances[`${st.id}_${selectedDate}`]?.note || "";
+        setAttendance(
+          st.id,
+          selectedDate,
+          currentStatus,
+          currentNote,
+          formattedNewTime,
+          "MANUAL"
+        );
+      });
+      setLastSavedTime(formattedNewTime);
+      setSaveToast({
+        message: `Jam presensi untuk seluruh siswa (${filteredStudents.length}) berhasil disesuaikan ke ${formattedNewTime}!`,
+        count: filteredStudents.length,
+      });
+    } else {
+      const stId = timeAdjustModal.studentId;
+      const currentStatus = getStatus(stId);
+      const currentNote =
+        notesState[stId] !== undefined
+          ? notesState[stId]
+          : attendances[`${stId}_${selectedDate}`]?.note || "";
+      setAttendance(
+        stId,
+        selectedDate,
+        currentStatus,
+        currentNote,
+        formattedNewTime,
+        "MANUAL"
+      );
+      setSaveToast({
+        message: `Jam presensi ${timeAdjustModal.studentName} disesuaikan ke ${formattedNewTime}!`,
+        count: 1,
+      });
+    }
+
+    setTimeAdjustModal((prev) => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     if (saveToast) {
@@ -458,9 +551,7 @@ function AbsensiContent() {
 
   const handleMarkAllHadir = () => {
     batchSetAttendance(selectedDate, "HADIR");
-    const formattedTime =
-      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
-      " WIB";
+    const formattedTime = getFormattedLiveTime();
     setLastSavedTime(formattedTime);
     setSaveToast({
       message: `Seluruh siswa (${students.length}) berhasil ditandai HADIR untuk tanggal ${selectedDate}!`,
@@ -478,8 +569,7 @@ function AbsensiContent() {
   const handleSaveTodayAttendance = async () => {
     setIsSaving(true);
     const count = filteredStudents.length;
-    const currentTime =
-      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+    const currentTime = getFormattedLiveTime();
 
     const payload = filteredStudents.map((st) => {
       const status = getStatus(st.id);
@@ -526,9 +616,7 @@ function AbsensiContent() {
       console.error("Error saving attendances directly to PostgreSQL:", err);
     }
 
-    const formattedTime =
-      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
-      " WIB";
+    const formattedTime = getFormattedLiveTime();
     setLastSavedTime(formattedTime);
     setIsSaving(false);
     setSaveToast({
@@ -541,8 +629,7 @@ function AbsensiContent() {
 
   const handleBatchSetSelectedStatus = (status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => {
     if (selectedVisibleIds.length === 0) return;
-    const currentTime =
-      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+    const currentTime = getFormattedLiveTime();
     selectedVisibleIds.forEach((id) => {
       const existingRec = attendances[`${id}_${selectedDate}`];
       setAttendance(
@@ -554,9 +641,7 @@ function AbsensiContent() {
         (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL"
       );
     });
-    const formattedTime =
-      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) +
-      " WIB";
+    const formattedTime = getFormattedLiveTime();
     setLastSavedTime(formattedTime);
     setSaveToast({
       message: `${selectedVisibleIds.length} siswa terpilih berhasil ditandai sebagai "${status}" dan disimpan.`,
@@ -829,9 +914,23 @@ function AbsensiContent() {
                     {getDayNameIndonesian(selectedDate)}
                   </span>
                   {lastSavedTime && (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-normal">
-                      • Terakhir: {lastSavedTime}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openAdjustTimeModal(
+                          undefined,
+                          "Seluruh Siswa Hari Ini",
+                          lastSavedTime || "14:00 WIB"
+                        )
+                      }
+                      className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium hover:underline cursor-pointer py-0.5 px-1 rounded-md transition-colors"
+                      title="Klik untuk menyesuaikan jam sesi presensi hari ini"
+                    >
+                      <span>• Jam Sesi:</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {cleanTimeDisplay(lastSavedTime)}
+                      </span>
+                    </button>
                   )}
                 </div>
                 <div className="text-[11px] text-slate-400">
@@ -1198,31 +1297,62 @@ function AbsensiContent() {
                             {idx + 1}
                           </span>
 
-                          {/* Student Name + Time on the SAME line (NIS removed!) */}
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          {/* Student Name + Time on the SAME line with STRAIGHT VERTICAL ALIGNMENT */}
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            {/* Nama Siswa: Lebar konsisten agar baris jam sejajar lurus dari atas sampai bawah */}
                             <span
                               title={st.name}
-                              className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm truncate"
+                              className="w-28 xs:w-32 sm:w-44 md:w-56 font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm truncate shrink-0"
                             >
                               {st.name}
                             </span>
-                            {/* Keterangan Waktu di samping nama siswa */}
-                            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium shrink-0 flex items-center gap-0.5 whitespace-nowrap">
-                              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span>{record?.time || lastSavedTime || "12:00 WIB"}</span>
-                            </span>
+
+                            {/* Kolom Jam Presensi: Lurus sejajar vertikal & dapat diklik untuk sesuaikan jam */}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openAdjustTimeModal(
+                                  st.id,
+                                  st.name,
+                                  record?.time || lastSavedTime || "14:00 WIB"
+                                )
+                              }
+                              className="w-20 sm:w-24 text-[10px] sm:text-[11px] text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 font-medium shrink-0 flex items-center gap-1 tabular-nums py-0.5 px-1 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                              title="Klik untuk sesuaikan jam presensi siswa ini"
+                            >
+                              <Clock className="w-3 h-3 text-slate-400 group-hover:text-emerald-600 shrink-0" />
+                              <span className="font-mono font-bold">
+                                {cleanTimeDisplay(record?.time || lastSavedTime || "14:00 WIB")}
+                              </span>
+                            </button>
+
+                            {/* Badge Indikator Catatan jika ada */}
                             {currentNote && (
-                              <span
+                              <button
+                                type="button"
                                 title={`Catatan: ${currentNote}`}
-                                className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0 cursor-pointer"
+                                className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0 cursor-pointer hover:scale-110 transition-transform"
                                 onClick={() => {
                                   setActiveNoteStudent({ id: st.id, name: st.name });
                                   setNoteInputText(currentNote);
                                 }}
                               >
                                 💬
-                              </span>
+                              </button>
                             )}
+
+                            {/* Tablet-only badges: Mengisi tampilan tablet agar penuh, seimbang, dan rapi */}
+                            <div className="hidden sm:flex items-center gap-1.5 shrink-0 ml-1">
+                              <span className="w-6 h-5 flex items-center justify-center rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
+                                {st.gender}
+                              </span>
+                              <span className="px-2 h-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
+                                ★ {st.className}
+                              </span>
+                              <span className="px-2 h-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0 capitalize">
+                                {st.branch.toLowerCase()}
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -2505,6 +2635,117 @@ function AbsensiContent() {
                   Simpan Catatan
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sesuaikan Jam Presensi */}
+      {timeAdjustModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-3xl max-w-sm w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                  Sesuaikan Jam Presensi
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTimeAdjustModal((prev) => ({ ...prev, isOpen: false }))}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-1">
+              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                Target Presensi:
+              </div>
+              <div className="text-xs font-extrabold text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a]">
+                {timeAdjustModal.applyToAll ? "Seluruh Siswa Hari Ini" : timeAdjustModal.studentName}
+              </div>
+            </div>
+
+            {/* Input jam manual */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                Jam Presensi:
+              </label>
+              <input
+                type="text"
+                value={timeAdjustModal.selectedTime}
+                onChange={(e) =>
+                  setTimeAdjustModal((prev) => ({ ...prev, selectedTime: e.target.value }))
+                }
+                placeholder="Contoh: 14:00 WIB"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] font-mono font-bold text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            {/* Pilihan cepat preset jam */}
+            <div className="space-y-1.5">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Preset Jam Populer:
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "14:00 WIB (Siang)", val: "14:00 WIB" },
+                  { label: "15:30 WIB (Sore)", val: "15:30 WIB" },
+                  { label: "10:00 WIB (Pagi)", val: "10:00 WIB" },
+                  { label: "Jam Sekarang", val: getFormattedLiveTime() },
+                ].map((preset, pIdx) => (
+                  <button
+                    key={pIdx}
+                    type="button"
+                    onClick={() =>
+                      setTimeAdjustModal((prev) => ({ ...prev, selectedTime: preset.val }))
+                    }
+                    className={`p-2 rounded-xl text-xs font-bold transition-all border text-left cursor-pointer ${
+                      timeAdjustModal.selectedTime === preset.val
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                        : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-500"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Opsi Terapkan ke Seluruh Siswa */}
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none pt-1">
+              <input
+                type="checkbox"
+                checked={timeAdjustModal.applyToAll}
+                onChange={(e) =>
+                  setTimeAdjustModal((prev) => ({ ...prev, applyToAll: e.target.checked }))
+                }
+                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              />
+              <span>Terapkan ke seluruh {filteredStudents.length} siswa hari ini</span>
+            </label>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setTimeAdjustModal((prev) => ({ ...prev, isOpen: false }))}
+                className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyTimeAdjustment}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-600/20 cursor-pointer transition-all active:scale-95"
+              >
+                Terapkan Jam
+              </button>
             </div>
           </div>
         </div>
