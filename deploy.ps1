@@ -12,7 +12,7 @@ $status = git status --porcelain
 if ($status) {
     Write-Host "📦 Menyimpan perubahan lokal ke git..." -ForegroundColor Yellow
     git add .
-    git commit -m $CommitMessage
+    git commit -m "$CommitMessage"
 } else {
     Write-Host "ℹ️  Tidak ada perubahan lokal baru yang belum di-commit." -ForegroundColor DarkGray
 }
