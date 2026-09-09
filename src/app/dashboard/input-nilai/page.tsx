@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Edit3,
   Sparkles,
@@ -27,6 +27,12 @@ import {
   Filter,
   UserCheck,
   Zap,
+  BookOpen,
+  FileText,
+  History,
+  Printer,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -97,69 +103,57 @@ export default function InputNilaiPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // -------------------------------------------------------------
-  // TAB 2: KEAKTIFAN SISWA STATE & MODAL
+  // TAB 2: PENILAIAN & KEAKTIFAN SISWA (ASPEK: FOKUS, PARTISIPASI, SIKAP DENGAN PREDIKAT A+, A, B, C, D)
   // -------------------------------------------------------------
+  type PredicateGrade = "A+" | "A" | "B" | "C" | "D";
+
+  const [keaktifanViewMode, setKeaktifanViewMode] = useState<"input" | "rekap" | "panduan">("input");
+  const [keaktifanTopic, setKeaktifanTopic] = useState("Pertemuan Reguler - Latihan Jari Matika");
+  const [keaktifanDate, setKeaktifanDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [keaktifanTutor, setKeaktifanTutor] = useState("Math Fingers");
   const [keaktifanSearchQuery, setKeaktifanSearchQuery] = useState("");
   const [keaktifanClassFilter, setKeaktifanClassFilter] = useState("ALL");
-  const [selectedStudentForKeaktifan, setSelectedStudentForKeaktifan] =
-    useState<StudentItem | null>(null);
-  const [keaktifanForm, setKeaktifanForm] = useState({
-    accuracy: 95,
-    speed: "1.8",
-    focus: "Sangat Tinggi",
-    topic: "Observasi Keaktifan & Ketangkasan",
-    date: new Date().toISOString().split("T")[0],
-    note: "",
-  });
+  const [isSubmittingKeaktifan, setIsSubmittingKeaktifan] = useState(false);
   const [keaktifanToast, setKeaktifanToast] = useState<string | null>(null);
 
-  const openKeaktifanModal = (student: StudentItem) => {
-    setSelectedStudentForKeaktifan(student);
-    const existing = behaviors.find((b) => b.studentId === student.id);
-    if (existing) {
-      const accMatch = existing.participation?.match(/\d+/);
-      const accVal = accMatch ? parseInt(accMatch[0]) : 92;
+  // Live database records from PostgreSQL
+  const [dbBehaviors, setDbBehaviors] = useState<any[]>([]);
+  const [isLoadingBehaviors, setIsLoadingBehaviors] = useState(false);
 
-      const speedMatch = existing.attitude?.match(/[\d.]+/);
-      const speedVal = speedMatch ? speedMatch[0] : "1.8";
+  // Per-student active evaluation entry in form
+  const [activityEntries, setActivityEntries] = useState<
+    Record<
+      string,
+      {
+        selected: boolean;
+        focus: PredicateGrade;
+        participation: PredicateGrade;
+        attitude: PredicateGrade;
+        note: string;
+      }
+    >
+  >({});
 
-      setKeaktifanForm({
-        accuracy: accVal,
-        speed: speedVal,
-        focus: existing.focus || "Sangat Tinggi",
-        topic: existing.sessionTopic || "Observasi Keaktifan & Ketangkasan",
-        date: existing.date || new Date().toISOString().split("T")[0],
-        note: existing.note || "",
-      });
-    } else {
-      setKeaktifanForm({
-        accuracy: 92,
-        speed: "1.8",
-        focus: "Sangat Tinggi",
-        topic: "Observasi Keaktifan & Ketangkasan",
-        date: new Date().toISOString().split("T")[0],
-        note: "Kecepatan jari stabil dan respon motorik optimal",
-      });
+  const fetchDbBehaviors = useCallback(async () => {
+    setIsLoadingBehaviors(true);
+    try {
+      const res = await fetch("/api/behaviors");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setDbBehaviors(data);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching db behaviors:", err);
+    } finally {
+      setIsLoadingBehaviors(false);
     }
-  };
+  }, []);
 
-  const handleSaveKeaktifan = async () => {
-    if (!selectedStudentForKeaktifan) return;
-    const student = selectedStudentForKeaktifan;
-    await saveStudentKeaktifan({
-      studentId: student.id,
-      studentName: student.name,
-      date: keaktifanForm.date,
-      sessionTopic: keaktifanForm.topic,
-      focus: keaktifanForm.focus,
-      participation: `${keaktifanForm.accuracy}%`,
-      attitude: `${keaktifanForm.speed}s / soal`,
-      note: keaktifanForm.note,
-    });
-    setKeaktifanToast(`Observasi keaktifan untuk ${student.name} berhasil disimpan!`);
-    setTimeout(() => setKeaktifanToast(null), 3500);
-    setSelectedStudentForKeaktifan(null);
-  };
+  useEffect(() => {
+    fetchDbBehaviors();
+  }, [fetchDbBehaviors]);
 
   const filteredKeaktifanStudents = useMemo(() => {
     return scopedStudents
@@ -173,6 +167,189 @@ export default function InputNilaiPage() {
       })
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [scopedStudents, keaktifanSearchQuery, keaktifanClassFilter]);
+
+  // Helper to get or fallback entry
+  const getStudentActivity = (studentId: string) => {
+    return (
+      activityEntries[studentId] || {
+        selected: true,
+        focus: "A" as PredicateGrade,
+        participation: "A" as PredicateGrade,
+        attitude: "A" as PredicateGrade,
+        note: "",
+      }
+    );
+  };
+
+  const updateStudentActivity = (
+    studentId: string,
+    patch: Partial<{
+      selected: boolean;
+      focus: PredicateGrade;
+      participation: PredicateGrade;
+      attitude: PredicateGrade;
+      note: string;
+    }>
+  ) => {
+    setActivityEntries((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...getStudentActivity(studentId),
+        ...patch,
+      },
+    }));
+  };
+
+  const handleSetAllPredicates = (pred: PredicateGrade) => {
+    setActivityEntries((prev) => {
+      const next = { ...prev };
+      filteredKeaktifanStudents.forEach((s) => {
+        const current = next[s.id] || {
+          selected: true,
+          focus: "A" as PredicateGrade,
+          participation: "A" as PredicateGrade,
+          attitude: "A" as PredicateGrade,
+          note: "",
+        };
+        if (current.selected) {
+          next[s.id] = {
+            ...current,
+            focus: pred,
+            participation: pred,
+            attitude: pred,
+          };
+        }
+      });
+      return next;
+    });
+  };
+
+  const handleToggleSelectAllKeaktifan = (checked: boolean) => {
+    setActivityEntries((prev) => {
+      const next = { ...prev };
+      filteredKeaktifanStudents.forEach((s) => {
+        const current = next[s.id] || {
+          selected: true,
+          focus: "A" as PredicateGrade,
+          participation: "A" as PredicateGrade,
+          attitude: "A" as PredicateGrade,
+          note: "",
+        };
+        next[s.id] = { ...current, selected: checked };
+      });
+      return next;
+    });
+  };
+
+  const handleSaveAllKeaktifan = async () => {
+    const selectedStudents = filteredKeaktifanStudents.filter(
+      (s) => getStudentActivity(s.id).selected
+    );
+
+    if (selectedStudents.length === 0) {
+      alert("Pilih minimal satu siswa untuk disimpan nilainya.");
+      return;
+    }
+
+    setIsSubmittingKeaktifan(true);
+    try {
+      const payload = {
+        sessionTopic: keaktifanTopic,
+        date: keaktifanDate,
+        tutorName: keaktifanTutor,
+        entries: selectedStudents.map((s) => {
+          const act = getStudentActivity(s.id);
+          return {
+            studentId: s.id,
+            className: s.className,
+            tutorName: keaktifanTutor,
+            sessionTopic: keaktifanTopic,
+            date: keaktifanDate,
+            focus: act.focus,
+            participation: act.participation,
+            attitude: act.attitude,
+            notes: act.note,
+          };
+        }),
+      };
+
+      const res = await fetch("/api/behaviors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setKeaktifanToast(
+          `Penilaian keaktifan untuk ${selectedStudents.length} siswa berhasil disimpan ke database!`
+        );
+        setTimeout(() => setKeaktifanToast(null), 4000);
+        await fetchDbBehaviors();
+      } else {
+        const err = await res.json();
+        alert(`Gagal menyimpan: ${err.error || "Terjadi kesalahan"}`);
+      }
+    } catch (err: any) {
+      alert(`Error saat menyimpan: ${err.message}`);
+    } finally {
+      setIsSubmittingKeaktifan(false);
+    }
+  };
+
+  const handleDeleteDbBehavior = async (id: string, studentName: string) => {
+    if (!confirm(`Hapus catatan observasi untuk ${studentName}?`)) return;
+    try {
+      const res = await fetch(`/api/behaviors?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setDbBehaviors((prev) => prev.filter((item) => item.id !== id));
+        setKeaktifanToast(`Catatan observasi ${studentName} berhasil dihapus.`);
+        setTimeout(() => setKeaktifanToast(null), 3000);
+      }
+    } catch (err: any) {
+      alert(`Gagal menghapus: ${err.message}`);
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (dbBehaviors.length === 0) {
+      alert("Belum ada data penilaian keaktifan untuk diekspor.");
+      return;
+    }
+    const headers = [
+      "Tanggal",
+      "Nama Siswa",
+      "Kelas",
+      "Tutor",
+      "Materi/Topik",
+      "Fokus",
+      "Partisipasi",
+      "Sikap & Keaktifan",
+      "Catatan",
+    ];
+    const rows = dbBehaviors.map((b) => [
+      b.date,
+      `"${b.studentName}"`,
+      `"${b.className}"`,
+      `"${b.tutorName}"`,
+      `"${b.sessionTopic}"`,
+      b.focus,
+      b.participation,
+      b.attitude,
+      `"${(b.note || "").replace(/"/g, '""')}"`,
+    ]);
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Rekap_Keaktifan_${keaktifanDate}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // -------------------------------------------------------------
   // TAB 3: LEGER NILAI MATRIKS FULL CRUD
@@ -940,322 +1117,597 @@ export default function InputNilaiPage() {
       {/* SUBTAB 2: OBSERVASI KEAKTIFAN SISWA (INPUT PER ANAK)           */}
       {/* ------------------------------------------------------------- */}
       {activeSubTab === "keaktifan" && (
-        <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                  Observasi Ketangkasan & Keaktifan Siswa
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Pantau kecepatan buka-tutup jari, fokus kuis 1 menit, dan respon motorik Jaritmatika per individu siswa.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-extrabold">
-                {behaviors.length} Siswa Terobservasi
-              </span>
-            </div>
-          </div>
-
-          {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-slate-50 dark:bg-[#0b1329] p-3 rounded-2xl border border-slate-200 dark:border-[#1d2d5a]">
-            <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={keaktifanSearchQuery}
-                onChange={(e) => setKeaktifanSearchQuery(e.target.value)}
-                placeholder="Cari nama atau kode siswa..."
-                className="w-full pl-9 pr-3.5 py-1.5 bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
-            </div>
-
-            <CustomSelect
-              value={keaktifanClassFilter}
-              onChange={setKeaktifanClassFilter}
-              className="w-full sm:w-64"
-              size="sm"
-              options={[
-                { value: "ALL", label: `Semua Kelas (${scopedStudents.length} Siswa)` },
-                ...scopedClasses.map((c) => ({
-                  value: c.name,
-                  label: `${c.name} (${c.branch})`,
-                })),
-              ]}
-            />
-          </div>
-
-          {/* Cards Grid for ALL Students */}
-          {filteredKeaktifanStudents.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-              Tidak ada siswa yang sesuai filter pencarian.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredKeaktifanStudents.map((s) => {
-                const b = behaviors.find((item) => item.studentId === s.id);
-                const rawAcc = b?.participation?.replace("%", "") || "95";
-                const accNum = parseInt(rawAcc) || 90;
-                const speedText = b?.attitude || "1.8s / soal";
-                const focusLevel = b?.focus || "Sangat Tinggi";
-                const noteText = b?.note || "Respon motorik jari lancar dan sigap.";
-
-                const focusBadgeColor =
-                  focusLevel === "Sangat Tinggi"
-                    ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
-                    : focusLevel === "Tinggi"
-                    ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
-                    : focusLevel === "Sedang"
-                    ? "bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
-
-                return (
-                  <div
-                    key={s.id}
-                    className="p-4 rounded-2xl border border-slate-200/90 dark:border-[#1d2d5a] bg-slate-50/40 dark:bg-[#0b1329] hover:bg-slate-50 dark:hover:bg-[#0e1936] transition-all space-y-3.5 shadow-2xs"
-                  >
-                    {/* Top Row: Name & Badges */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
-                          {s.name}
-                        </div>
-                        <div className="flex items-center gap-1.5 pt-0.5">
-                          <span className="text-[11px] font-bold text-slate-400">
-                            #{s.studentCode}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-bold">
-                            🏫 {s.className}
-                          </span>
-                        </div>
-                      </div>
-
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold border ${focusBadgeColor}`}
-                      >
-                        {focusLevel}
-                      </span>
-                    </div>
-
-                    {/* Metrics List */}
-                    <div className="space-y-2 pt-1">
-                      {/* Akurasi Gerakan Bar */}
-                      <div>
-                        <div className="flex justify-between text-xs font-bold mb-1">
-                          <span className="text-slate-500 dark:text-slate-400">
-                            Akurasi Gerakan:
-                          </span>
-                          <span className="text-emerald-600 dark:text-emerald-400">
-                            {accNum}%
-                          </span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                            style={{ width: `${accNum}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Kecepatan Hitung */}
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-slate-500 dark:text-slate-400">
-                          Kecepatan Hitung:
-                        </span>
-                        <span className="font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                          ⚡ {speedText}
-                        </span>
-                      </div>
-
-                      {/* Catatan Observasi Guru */}
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 italic bg-white dark:bg-[#0f1a36] p-2 rounded-xl border border-slate-200/80 dark:border-[#1d2d5a] truncate">
-                        💬 {noteText}
-                      </div>
-                    </div>
-
-                    {/* Action Button: Input / Edit per Anak */}
-                    <button
-                      type="button"
-                      onClick={() => openKeaktifanModal(s)}
-                      className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Input / Edit Keaktifan</span>
-                    </button>
+        <div className="space-y-4 sm:space-y-6">
+          {/* Main Header Card */}
+          <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] p-4 sm:p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                      Penilaian Sikap & Keaktifan Siswa
+                    </h3>
+                    <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      Karakter & Antusiasme
+                    </span>
                   </div>
-                );
-              })}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Evaluasi aspek Fokus, Partisipasi, dan Sikap & Keaktifan siswa sesuai panduan standar Math Fingers.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Export & Print */}
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 hover:bg-slate-100 dark:bg-[#0b1329] dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Ekspor CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 hover:bg-slate-100 dark:bg-[#0b1329] dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Cetak</span>
+                </button>
+              </div>
+            </div>
+
+            {/* View Mode Sub-tabs */}
+            <div className="flex items-center gap-2 pt-4 mt-4 border-t border-slate-100 dark:border-[#1d2d5a] overflow-x-auto no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setKeaktifanViewMode("input")}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                  keaktifanViewMode === "input"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Form Input Kelas</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setKeaktifanViewMode("rekap")}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                  keaktifanViewMode === "rekap"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>Riwayat & Rekap ({dbBehaviors.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setKeaktifanViewMode("panduan")}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                  keaktifanViewMode === "panduan"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Panduan Aspek & Indikator</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Toast Notification */}
+          {keaktifanToast && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{keaktifanToast}</span>
             </div>
           )}
 
-          {/* Modal Input Keaktifan Per Anak */}
-          {selectedStudentForKeaktifan && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-              <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-md w-full p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
-                  <div>
-                    <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                      Observasi Keaktifan Siswa
-                    </h4>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-                      {selectedStudentForKeaktifan.name} ({selectedStudentForKeaktifan.className})
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStudentForKeaktifan(null)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 1: FORM INPUT KELAS (LANGSUNG & MOBILE FRIENDLY)         */}
+          {/* ------------------------------------------------------------- */}
+          {keaktifanViewMode === "input" && (
+            <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
+              {/* Form Card Header */}
+              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#1d2d5a] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>Panel Input Nilai Sikap & Keaktifan Kelas</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Isi topik/materi bimbingan, tanggal, dan tentukan predikat sikap masing-masing siswa di bawah ini.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setKeaktifanViewMode("panduan")}
+                  className="text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Lihat Rubrik Aspek</span>
+                </button>
+              </div>
+
+              {/* Session Meta Inputs (Materi, Tanggal, Tutor) */}
+              <div className="p-4 sm:p-5 bg-slate-50/50 dark:bg-[#09130f] border-b border-slate-100 dark:border-[#1d2d5a] grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block">
+                    Materi / Bab / Pertemuan *
+                  </label>
+                  <input
+                    type="text"
+                    value={keaktifanTopic}
+                    onChange={(e) => setKeaktifanTopic(e.target.value)}
+                    placeholder="Contoh: Pertemuan Reguler - Latihan Jari Matika"
+                    className="w-full px-3 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
                 </div>
 
-                <div className="space-y-3.5 text-xs">
-                  {/* Akurasi Gerakan Slider */}
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <span>Akurasi Gerakan Jari:</span>
-                      <span className="text-emerald-600 font-black text-sm">
-                        {keaktifanForm.accuracy}%
-                      </span>
-                    </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block">
+                    Tanggal Observasi *
+                  </label>
+                  <input
+                    type="date"
+                    value={keaktifanDate}
+                    onChange={(e) => setKeaktifanDate(e.target.value)}
+                    className="w-full px-3 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block">
+                    Tutor Pengampu
+                  </label>
+                  <input
+                    type="text"
+                    value={keaktifanTutor}
+                    onChange={(e) => setKeaktifanTutor(e.target.value)}
+                    placeholder="Nama Tutor..."
+                    className="w-full px-3 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Filter & Batch Actions Toolbar */}
+              <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-[#1d2d5a] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                {/* Search & Class Filter */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 max-w-xl">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
-                      type="range"
-                      min="50"
-                      max="100"
-                      value={keaktifanForm.accuracy}
-                      onChange={(e) =>
-                        setKeaktifanForm({
-                          ...keaktifanForm,
-                          accuracy: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full accent-emerald-600 cursor-pointer"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-400">
-                      <span>50% (Perlu Latihan)</span>
-                      <span>100% (Sangat Presisi)</span>
-                    </div>
-                  </div>
-
-                  {/* Kecepatan Hitung Input */}
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Kecepatan Hitung (detik per soal):
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={keaktifanForm.speed}
-                        onChange={(e) =>
-                          setKeaktifanForm({ ...keaktifanForm, speed: e.target.value })
-                        }
-                        placeholder="Misal: 1.8"
-                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0b1329] text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500"
-                      />
-                      <span className="text-xs text-slate-500 font-semibold whitespace-nowrap">
-                        detik / soal
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Tingkat Fokus Selector */}
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Tingkat Fokus Kuis:
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {["Sangat Tinggi", "Tinggi", "Sedang", "Perlu Bimbingan"].map(
-                        (lvl) => (
-                          <button
-                            key={lvl}
-                            type="button"
-                            onClick={() =>
-                              setKeaktifanForm({ ...keaktifanForm, focus: lvl })
-                            }
-                            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                              keaktifanForm.focus === lvl
-                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                                : "bg-slate-50 dark:bg-[#0b1329] border-slate-200 dark:border-[#1d2d5a] text-slate-600 dark:text-slate-300 hover:bg-slate-100"
-                            }`}
-                          >
-                            {lvl}
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Topik & Tanggal */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                        Tanggal:
-                      </label>
-                      <input
-                        type="date"
-                        value={keaktifanForm.date}
-                        onChange={(e) =>
-                          setKeaktifanForm({ ...keaktifanForm, date: e.target.value })
-                        }
-                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0b1329] text-xs font-medium text-slate-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                        Sesi / Topik:
-                      </label>
-                      <input
-                        type="text"
-                        value={keaktifanForm.topic}
-                        onChange={(e) =>
-                          setKeaktifanForm({ ...keaktifanForm, topic: e.target.value })
-                        }
-                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0b1329] text-xs font-medium text-slate-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Catatan Observasi */}
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Catatan Observasi Guru:
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={keaktifanForm.note}
-                      onChange={(e) =>
-                        setKeaktifanForm({ ...keaktifanForm, note: e.target.value })
-                      }
-                      placeholder="Catatan tambahan respons motorik atau daya tahan..."
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0b1329] text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500"
+                      type="text"
+                      value={keaktifanSearchQuery}
+                      onChange={(e) => setKeaktifanSearchQuery(e.target.value)}
+                      placeholder="Cari nama siswa..."
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
+                  <CustomSelect
+                    value={keaktifanClassFilter}
+                    onChange={setKeaktifanClassFilter}
+                    className="w-full"
+                    size="sm"
+                    options={[
+                      { value: "ALL", label: `Semua Kelas (${scopedStudents.length} Siswa)` },
+                      ...scopedClasses.map((c) => ({
+                        value: c.name,
+                        label: `${c.name} (${c.branch})`,
+                      })),
+                    ]}
+                  />
                 </div>
 
-                {/* Modal Actions */}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-[#1d2d5a]">
+                {/* Batch Set Cepat & Select All */}
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-between md:justify-end">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredKeaktifanStudents.length > 0 &&
+                        filteredKeaktifanStudents.every((s) => getStudentActivity(s.id).selected)
+                      }
+                      onChange={(e) => handleToggleSelectAllKeaktifan(e.target.checked)}
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-[#1d2d5a]"
+                    />
+                    <span>Pilih Semua Siswa</span>
+                  </label>
+
+                  {/* Set Cepat Pills */}
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl">
+                    <span className="text-[10px] font-extrabold text-slate-400 px-1.5 uppercase">Set Cepat:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSetAllPredicates("A+")}
+                      className="px-2 py-1 text-[11px] font-bold rounded-lg bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 border border-slate-200 dark:border-slate-600 shadow-2xs transition cursor-pointer"
+                    >
+                      Semua A+
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetAllPredicates("A")}
+                      className="px-2 py-1 text-[11px] font-bold rounded-lg bg-white dark:bg-slate-700 text-teal-700 dark:text-teal-300 hover:bg-teal-50 border border-slate-200 dark:border-slate-600 shadow-2xs transition cursor-pointer"
+                    >
+                      Semua A
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetAllPredicates("B")}
+                      className="px-2 py-1 text-[11px] font-bold rounded-lg bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 border border-slate-200 dark:border-slate-600 shadow-2xs transition cursor-pointer"
+                    >
+                      Semua B
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Student Evaluation List (Cards on Mobile, Elegant Rows on Desktop) */}
+              <div className="p-3 sm:p-5 space-y-3.5">
+                {filteredKeaktifanStudents.length === 0 ? (
+                  <div className="py-12 text-center text-slate-400 text-xs font-semibold">
+                    Tidak ada siswa aktif ditemukan untuk filter ini.
+                  </div>
+                ) : (
+                  filteredKeaktifanStudents.map((s) => {
+                    const entry = getStudentActivity(s.id);
+                    return (
+                      <div
+                        key={s.id}
+                        className={`rounded-2xl border transition-all p-3.5 sm:p-4 space-y-3 ${
+                          entry.selected
+                            ? "bg-white dark:bg-[#0f1a36] border-slate-200 dark:border-[#1d2d5a] shadow-xs"
+                            : "bg-slate-50/60 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-800 opacity-60"
+                        }`}
+                      >
+                        {/* Student Info Bar */}
+                        <div className="flex items-start justify-between gap-2.5 pb-2 border-b border-slate-100 dark:border-[#1d2d5a]/60">
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={entry.selected}
+                              onChange={(e) => updateStudentActivity(s.id, { selected: e.target.checked })}
+                              className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-[#1d2d5a] cursor-pointer shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">
+                                  {s.name}
+                                </span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                  {s.className}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                Wali: {s.parentName || "-"} • {(s as any).levelCurriculum || (s as any).levelName || "Level Dasar"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 3 Aspect Rating Pill Groups */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {/* 1. Aspek Fokus */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <span>Fokus</span>
+                              </span>
+                              <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                                {entry.focus}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-5 gap-1">
+                              {(["A+", "A", "B", "C", "D"] as PredicateGrade[]).map((pred) => (
+                                <button
+                                  key={pred}
+                                  type="button"
+                                  onClick={() => updateStudentActivity(s.id, { focus: pred, selected: true })}
+                                  className={`py-1.5 sm:py-2 text-xs rounded-xl font-bold transition cursor-pointer select-none text-center ${
+                                    entry.focus === pred
+                                      ? "bg-emerald-600 text-white shadow-xs"
+                                      : "bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                  }`}
+                                >
+                                  {pred}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 2. Aspek Partisipasi */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-teal-500" />
+                                <span>Partisipasi</span>
+                              </span>
+                              <span className="text-xs font-black text-teal-600 dark:text-teal-400">
+                                {entry.participation}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-5 gap-1">
+                              {(["A+", "A", "B", "C", "D"] as PredicateGrade[]).map((pred) => (
+                                <button
+                                  key={pred}
+                                  type="button"
+                                  onClick={() => updateStudentActivity(s.id, { participation: pred, selected: true })}
+                                  className={`py-1.5 sm:py-2 text-xs rounded-xl font-bold transition cursor-pointer select-none text-center ${
+                                    entry.participation === pred
+                                      ? "bg-teal-600 text-white shadow-xs"
+                                      : "bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                  }`}
+                                >
+                                  {pred}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 3. Aspek Sikap & Keaktifan */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                <span>Sikap & Keaktifan</span>
+                              </span>
+                              <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+                                {entry.attitude}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-5 gap-1">
+                              {(["A+", "A", "B", "C", "D"] as PredicateGrade[]).map((pred) => (
+                                <button
+                                  key={pred}
+                                  type="button"
+                                  onClick={() => updateStudentActivity(s.id, { attitude: pred, selected: true })}
+                                  className={`py-1.5 sm:py-2 text-xs rounded-xl font-bold transition cursor-pointer select-none text-center ${
+                                    entry.attitude === pred
+                                      ? "bg-blue-600 text-white shadow-xs"
+                                      : "bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                  }`}
+                                >
+                                  {pred}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Catatan / Apresiasi Guru */}
+                        <div className="pt-0.5">
+                          <input
+                            type="text"
+                            value={entry.note}
+                            onChange={(e) => updateStudentActivity(s.id, { note: e.target.value, selected: true })}
+                            placeholder="Catatan sikap / apresiasi (contoh: 'Sangat fokus saat latihan jari, cepat memahami materi baru')"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Bottom Docked Action Bar */}
+              <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-[#09130f] border-t border-slate-200/80 dark:border-[#1d2d5a] flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-3 shadow-lg z-20 mx-2 sm:mx-4 mb-2 rounded-2xl">
+                <div className="text-xs text-slate-600 dark:text-slate-400 font-medium text-center sm:text-left">
+                  Menampilkan{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {filteredKeaktifanStudents.length} Siswa
+                  </span>{" "}
+                  (
+                  <span className="font-black text-emerald-600 dark:text-emerald-400">
+                    {filteredKeaktifanStudents.filter((s) => getStudentActivity(s.id).selected).length} Dipilih
+                  </span>{" "}
+                  untuk disimpan)
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
-                    onClick={() => setSelectedStudentForKeaktifan(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
+                    onClick={handleSaveAllKeaktifan}
+                    disabled={isSubmittingKeaktifan || filteredKeaktifanStudents.length === 0}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-600/20 cursor-pointer disabled:opacity-50 transition active:scale-[0.98]"
                   >
-                    Batal
+                    <Save className="w-4 h-4" />
+                    <span>
+                      {isSubmittingKeaktifan ? "Menyimpan ke Database..." : "Simpan Penilaian Keaktifan"}
+                    </span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveKeaktifan}
-                    className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
-                  >
-                    Simpan ke Database
-                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 2: RIWAYAT & REKAP OBSERVASI DARI DATABASE               */}
+          {/* ------------------------------------------------------------- */}
+          {keaktifanViewMode === "rekap" && (
+            <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
+                <div>
+                  <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                    Riwayat Observasi Tersimpan di Database
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Total {dbBehaviors.length} rekaman observasi keaktifan tersimpan di PostgreSQL.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={fetchDbBehaviors}
+                  disabled={isLoadingBehaviors}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 transition cursor-pointer self-start sm:self-auto"
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 ${isLoadingBehaviors ? "animate-spin" : ""}`} />
+                  <span>Refresh Data</span>
+                </button>
+              </div>
+
+              {dbBehaviors.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-xs font-semibold">
+                  Belum ada rekaman observasi tersimpan di database. Silakan isi form di tab &quot;Form Input Kelas&quot;.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-[#1d2d5a] text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                        <th className="py-3 px-3">Tanggal</th>
+                        <th className="py-3 px-3">Siswa & Kelas</th>
+                        <th className="py-3 px-3">Materi / Bab</th>
+                        <th className="py-3 px-2 text-center">Fokus</th>
+                        <th className="py-3 px-2 text-center">Partisipasi</th>
+                        <th className="py-3 px-2 text-center">Sikap & Keaktifan</th>
+                        <th className="py-3 px-3">Catatan</th>
+                        <th className="py-3 px-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-[#1d2d5a]/60">
+                      {dbBehaviors.map((b) => (
+                        <tr key={b.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                          <td className="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                            {b.date}
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="font-bold text-slate-900 dark:text-white">{b.studentName}</div>
+                            <div className="text-[10px] text-slate-400">{b.className}</div>
+                          </td>
+                          <td className="py-3 px-3 text-slate-700 dark:text-slate-300 max-w-xs truncate">
+                            {b.sessionTopic}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              {b.focus}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                              {b.participation}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              {b.attitude}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-500 dark:text-slate-400 italic text-[11px] max-w-sm">
+                            {b.note || "-"}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteDbBehavior(b.id, b.studentName)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                              title="Hapus rekaman"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 3: PANDUAN ASPEK & RUBRIK PENILAIAN                      */}
+          {/* ------------------------------------------------------------- */}
+          {keaktifanViewMode === "panduan" && (
+            <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs p-4 sm:p-6 space-y-5">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
+                <BookOpen className="w-5 h-5 text-emerald-600" />
+                <div>
+                  <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                    Panduan & Rubrik Penilaian Karakter Math Fingers
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Standar evaluasi aspek sikap dan keaktifan anak saat bimbingan belajar.
+                  </p>
+                </div>
+              </div>
+
+              {/* 3 Aspek Utama */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <h5 className="font-extrabold text-slate-900 dark:text-white text-xs">1. Aspek Fokus</h5>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Menilai daya konsentrasi, ketenangan, fokus pandangan pada jari/soal, dan ketelitian menghitung tanpa mudah terdistraksi lingkungan sekitar.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-teal-500" />
+                    <h5 className="font-extrabold text-slate-900 dark:text-white text-xs">2. Aspek Partisipasi</h5>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Menilai keaktifan siswa dalam menjawab pertanyaan kuis kilat, merespons arahan guru, dan keterlibatan aktif saat latihan bersama.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-blue-500" />
+                    <h5 className="font-extrabold text-slate-900 dark:text-white text-xs">3. Aspek Sikap & Keaktifan</h5>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Menilai adab bimbingan, kedisiplinan duduk, kesopanan terhadap tutor dan teman sebaya, serta antusiasme menyelesaikan target modul.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabel Skala Predikat A+, A, B, C, D */}
+              <div className="space-y-2 pt-2">
+                <h5 className="font-bold text-xs text-slate-900 dark:text-white">Skala Predikat Penilaian</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-emerald-600 text-white">A+</span>
+                    <div className="font-bold text-emerald-800 dark:text-emerald-200 text-xs">Istimewa</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Sangat unggul, mandiri, konsisten 100% fokus</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-center space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-teal-600 text-white">A</span>
+                    <div className="font-bold text-teal-800 dark:text-teal-200 text-xs">Sangat Baik</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Aktif, antusias, tertib mengikuti arahan tutor</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-center space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-blue-600 text-white">B</span>
+                    <div className="font-bold text-blue-800 dark:text-blue-200 text-xs">Baik</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Cukup fokus, sesekali memerlukan sedikit dorongan</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-amber-600 text-white">C</span>
+                    <div className="font-bold text-amber-800 dark:text-amber-200 text-xs">Cukup</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Mudah terdistraksi, membutuhkan bimbingan intensif</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-center space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md font-black text-xs bg-rose-600 text-white">D</span>
+                    <div className="font-bold text-rose-800 dark:text-rose-200 text-xs">Perhatian Khusus</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Perlu pendekatan personal bersama orang tua siswa</div>
+                  </div>
                 </div>
               </div>
             </div>

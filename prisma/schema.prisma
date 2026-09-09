@@ -288,22 +288,27 @@ model StudentGrade {
 }
 
 model StudentBehavior {
-  id            String   @id @default(uuid())
-  studentId     String   @map("student_id")
-  branchId      String   @map("branch_id")
-  behaviorDate  DateTime @map("behavior_date")
-  sessionTopic  String   @map("session_topic")
-  focus         String   @default("Sangat Baik")
-  participation String   @default("Sangat Aktif")
-  attitude      String   @default("Sopan & Tertib")
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id            String      @id @default(uuid())
+  studentId     String      @map("student_id")
+  branchId      String      @map("branch_id")
+  className     String?     @map("class_name")
+  tutorName     String?     @map("tutor_name")
+  behaviorDate  DateTime    @map("behavior_date")
+  sessionTopic  String      @map("session_topic")
+  focus         String      @default("A")
+  participation String      @default("A")
+  attitude      String      @default("A")
+  notes         String?     @db.Text
+  programType   ProgramType @default(MATEMATIKA) @map("program_type")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
 
   // Relations
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   branch  Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
+  @@index([branchId, behaviorDate])
+  @@index([studentId, behaviorDate])
   @@map("student_behaviors")
 }
 
