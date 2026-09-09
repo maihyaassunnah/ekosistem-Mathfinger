@@ -702,19 +702,18 @@ export default function InputNilaiPage() {
         )}
       </div>
 
-      {/* 3 Sub-tabs with smooth horizontal scrolling on mobile */}
-      <div className="flex items-center gap-2 sm:gap-6 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold overflow-x-auto no-scrollbar scrollbar-none pb-0">
+      {/* 3 Sub-tabs tanpa icon, teks ringkas (Input nilai, keaktifan siswa, Leger) */}
+      <div className="flex items-center gap-4 sm:gap-8 border-b border-slate-200 dark:border-[#1d2d5a] text-xs font-bold overflow-x-auto no-scrollbar scrollbar-none pb-0">
         <button
           type="button"
           onClick={() => setActiveSubTab("input")}
-          className={`flex items-center gap-2 pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 sm:px-0 ${
+          className={`pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activeSubTab === "input"
-              ? "text-emerald-600 dark:text-emerald-400"
+              ? "text-emerald-600 dark:text-emerald-400 font-extrabold"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
-          <Edit3 className="w-4 h-4" />
-          <span>Input & Riwayat Nilai</span>
+          <span>Input Nilai</span>
           {activeSubTab === "input" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-500 rounded-full" />
           )}
@@ -723,14 +722,13 @@ export default function InputNilaiPage() {
         <button
           type="button"
           onClick={() => setActiveSubTab("keaktifan")}
-          className={`flex items-center gap-2 pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 sm:px-0 ${
+          className={`pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activeSubTab === "keaktifan"
-              ? "text-emerald-600 dark:text-emerald-400"
+              ? "text-emerald-600 dark:text-emerald-400 font-extrabold"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Penilaian & Keaktifan Siswa</span>
+          <span>Keaktifan Siswa</span>
           {activeSubTab === "keaktifan" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-500 rounded-full" />
           )}
@@ -739,14 +737,13 @@ export default function InputNilaiPage() {
         <button
           type="button"
           onClick={() => setActiveSubTab("leger")}
-          className={`flex items-center gap-2 pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 sm:px-0 ${
+          className={`pb-3 pt-1 transition-all relative cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activeSubTab === "leger"
-              ? "text-emerald-600 dark:text-emerald-400"
+              ? "text-emerald-600 dark:text-emerald-400 font-extrabold"
               : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
           }`}
         >
-          <FileSpreadsheet className="w-4 h-4" />
-          <span>Leger Nilai (Matriks CRUD)</span>
+          <span>Leger</span>
           {activeSubTab === "leger" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-500 rounded-full" />
           )}
@@ -759,62 +756,50 @@ export default function InputNilaiPage() {
       {activeSubTab === "input" && (
         <div className="space-y-4 sm:space-y-6">
           <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
-            {/* Card Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#1d2d5a] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Panel Input Nilai Kelas (Langsung)
-                  </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-                    Isi materi/bab, tanggal, dan nilai siswa aktif di bawah, lalu klik Simpan Nilai.
-                  </p>
-                </div>
-              </div>
-
-              {saveSuccess && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in self-start sm:self-auto">
+            {/* Feedback sukses simpan (jika ada) */}
+            {saveSuccess && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border-b border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-2 px-4 sm:px-6 animate-in fade-in">
+                <div className="inline-flex items-center gap-2 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Nilai Masuk ke Leger Berurutan!</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSubTab("leger")}
-                    className="underline hover:text-emerald-900 dark:hover:text-emerald-100 cursor-pointer ml-1"
-                  >
-                    Lihat Leger →
-                  </button>
                 </div>
-              )}
-            </div>
-
-            {/* Form Input Fields: Materi & Tanggal (1 Baris) */}
-            <div className="p-3 sm:p-5 bg-slate-50/50 dark:bg-[#09130f] border-b border-slate-100 dark:border-[#1d2d5a] grid grid-cols-12 gap-2 sm:gap-4">
-              <div className="col-span-7 sm:col-span-8 space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase truncate block">
-                  Materi / Bab *
-                </label>
-                <input
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Misal: Penjumlahan Kombinasi 5"
-                  className="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+                <button
+                  type="button"
+                  onClick={() => setActiveSubTab("leger")}
+                  className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 underline hover:text-emerald-900 cursor-pointer"
+                >
+                  Lihat Leger →
+                </button>
               </div>
+            )}
 
-              <div className="col-span-5 sm:col-span-4 space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase truncate block">
-                  Tanggal Ujian *
-                </label>
-                <input
-                  type="date"
-                  value={examDate}
-                  onChange={(e) => setExamDate(e.target.value)}
-                  className="w-full px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+            {/* Form Input Fields: Materi & Tanggal (Centered Layout) */}
+            <div className="p-4 sm:p-5 bg-slate-50/50 dark:bg-[#09130f] border-b border-slate-100 dark:border-[#1d2d5a]">
+              <div className="max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 text-center">
+                  <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block text-center">
+                    Materi / Bab *
+                  </label>
+                  <input
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Misal: Penjumlahan Kombinasi 5"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-center text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5 text-center">
+                  <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block text-center">
+                    Tanggal Ujian *
+                  </label>
+                  <input
+                    type="date"
+                    value={examDate}
+                    onChange={(e) => setExamDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
 
