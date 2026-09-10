@@ -605,54 +605,69 @@ const INITIAL_JOURNALS: JournalItem[] = [
 
 const INITIAL_CURRICULUM: CurriculumModule[] = [
   {
-    id: "cur-1",
+    id: "2407c1b7-5974-486d-a395-71a0acb4b805",
     orderIndex: 1,
     levelTitle: "Level Dasar: Pengenalan Simbol Jari",
-    shortDesc: "1. Pengenalan simbol jari bilangan satuan (...",
+    shortDesc: "Pengenalan simbol jari bilangan satuan dan puluhan (0-99)",
     learningGoals:
-      "Peserta didik mampu mengenal, membaca, dan membentuk simbol jari bilangan 0--99 menggunakan tangan kanan dan tangan kiri sebagai dasar pembelajaran metode Math Finger.",
+      "Peserta didik mampu mengenal, membaca, dan membentuk simbol jari bilangan 0-99 menggunakan tangan kanan dan kiri.",
     competencies:
-      "KD D.1 Menguasai simbol jari bilangan satuan (0-9) menggunakan tangan kanan. KD D.2 Menguasai simbol jari bilangan puluhan menggunakan tangan kiri. KD D.3 Membaca dan membentuk simbol jari bilangan 0-99 secara tepat.",
+      "KD D.1 Menguasai simbol jari 0-9. KD D.2 Menguasai puluhan 10-90. KD D.3 Membaca 0-99.",
     learningMaterials:
-      "1. Pengenalan simbol jari bilangan satuan (0-9) pada tangan kanan.\n2. Pengenalan simbol jari bilangan puluhan pada tangan kiri.\n3. Membaca simbol jari menjadi bilangan 0-99.\n4. Membentuk simbol jari sesuai angka yang diberikan.\n5. Latihan pengenalan simbol melalui permainan edukatif kartu simbol (flash card), dan latihan visual.",
+      "1. Pengenalan simbol 0-9 tangan kanan\n2. Puluhan tangan kiri\n3. Flashcard simbol\n4. Senam motorik jari",
     indicators: [
-      "IPK D.1.1 Mempraktikkan simbol jari bilangan satuan (0-9) menggunakan tangan kanan dengan benar.",
-      "IPK D.2.1 Mempraktikkan simbol jari bilangan puluhan menggunakan tangan kiri dengan benar.",
-      "IPK D.3.1 Membaca simbol jari menjadi bilangan 0--99 secara tepat.",
-      "IPK D.3.2 Membentuk simbol jari sesuai angka yang diberikan secara cepat dan akurat.",
+      "Mempraktikkan simbol jari satuan 0-9",
+      "Membaca simbol puluhan tangan kiri",
+      "Membentuk formasi angka acak dalam 3 detik",
     ],
   },
   {
-    id: "cur-2",
+    id: "dd20d512-95ff-47a1-9a4c-781e38dea8c2",
     orderIndex: 2,
     levelTitle: "Level 1: Penjumlahan & Pengurangan Angka Satuan",
-    shortDesc: "2. Gerak motorik buka tutup jari langsung tanpa rumus...",
+    shortDesc: "Gerak motorik buka tutup jari langsung tanpa rumus",
     learningGoals:
-      "Peserta didik mampu melakukan operasi penjumlahan dan pengurangan angka satuan secara cepat dan tepat menggunakan gerakan tangan kanan langsung tanpa rumus.",
+      "Melakukan operasi penjumlahan dan pengurangan satuan secara reflek dan cepat.",
     competencies:
-      "KD 1.1 Menjumlahkan angka satuan 1-9 secara langsung.\nKD 1.2 Mengurangkan angka satuan 1-9 secara langsung.\nKD 1.3 Menghitung rangkaian operasi gabungan minimal 3 baris.",
+      "KD 1.1 Penjumlahan satuan langsung. KD 1.2 Pengurangan satuan langsung. KD 1.3 Berhitung cepat berantai 3 baris.",
     learningMaterials:
-      "1. Aturan jari naik untuk penjumlahan.\n2. Aturan jari turun untuk pengurangan.\n3. Senam jari dan ritme berhitung teratur.\n4. Latihan kecepatan kuis 1 menit.",
+      "1. Aturan jari naik (+)\n2. Aturan jari turun (-)\n3. Mencongak refleks\n4. Kuis 1 menit 10 soal",
     indicators: [
-      "IPK 1.1.1 Mengoperasikan jari jempol (nilai 5) secara reflek.",
-      "IPK 1.2.1 Mengurangkan angka satuan tanpa ragu dalam 3 detik.",
-      "IPK 1.3.1 Menyelesaikan lembar kuis 10 soal akurat 100%.",
+      "Operasi jari jempol (nilai 5) refleks",
+      "Pengurangan tanpa ragu < 3 detik",
+      "Akurasi kuis 100%",
     ],
   },
   {
-    id: "cur-3",
+    id: "2db83a59-35f1-4430-85b7-059a86adf521",
     orderIndex: 3,
-    levelTitle: "Level 2: Kombinasi Rumus Teman Kecil (+4 s/d +1)",
-    shortDesc: "3. Formula teman kecil berbasis kombinasi angka 5...",
+    levelTitle: "Level 2: Kombinasi Rumus Teman Kecil",
+    shortDesc: "Formula teman kecil (angka 5) dan kombinasi puluhan",
     learningGoals:
-      "Peserta didik memahami konsep teman kecil angka 5 dan mampu memecahkan hitungan ketika jari satuan tidak mencukupi.",
+      "Memahami konsep teman kecil dan menyelesaikan penjumlahan/pengurangan ketika jari tidak mencukupi.",
     competencies:
-      "KD 2.1 Menerapkan rumus teman kecil penjumlahan (+4=+5-1, +3=+5-2, +2=+5-3, +1=+5-4).\nKD 2.2 Menerapkan rumus teman kecil pengurangan (-4=-5+1, -3=-5+2, -2=-5+3, -1=-5+4).",
+      "KD 2.1 Teman kecil tambah (+4=+5-1, dst). KD 2.2 Teman kecil kurang (-4=-5+1, dst).",
     learningMaterials:
-      "1. Pengenalan pasangan teman kecil (1&4, 2&3).\n2. Gerakan jempol turun jari telunjuk ikut turun (+).\n3. Gerakan jempol naik jari lain ikut naik (-).\n4. Soal cerita kontekstual.",
+      "1. Pasangan teman kecil (1&4, 2&3)\n2. Gerakan kombinasi jempol dan telunjuk\n3. Soal cerita kontekstual",
     indicators: [
-      "IPK 2.1.1 Menyebutkan pasangan teman kecil secara spontan.",
-      "IPK 2.2.1 Mempraktekkan rumus kombinasi 5 tanpa jeda berpikir.",
+      "Menyebut pasangan teman kecil spontan",
+      "Mengoperasikan rumus tanpa jeda",
+    ],
+  },
+  {
+    id: "b79e3ade-3270-4796-b526-b373792414c8",
+    orderIndex: 4,
+    levelTitle: "Level 3: Mahir & Olimpiade",
+    shortDesc: "Perkalian dan pembagian cepat jari serta operasi campuran",
+    learningGoals:
+      "Menguasai perkalian dan pembagian jari tangan refleks serta persiapan olimpiade matematika.",
+    competencies:
+      "KD 3.1 Perkalian jari 6-10. KD 3.2 Pembagian jari cepat. KD 3.3 Hitung berantai 5 baris.",
+    learningMaterials:
+      "1. Rumus perkalian formasi jari\n2. Pembagian cepat\n3. Latihan olimpiade",
+    indicators: [
+      "Perkalian 1-100 tanpa kertas cakar",
+      "Kecepatan mencongak < 2 detik",
     ],
   },
 ];
@@ -1616,7 +1631,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
-      const CURRENT_DATA_VERSION = "mf_live_sync_v3";
+      const CURRENT_DATA_VERSION = "mf_live_sync_v4";
       if (localStorage.getItem("mf_data_version") !== CURRENT_DATA_VERSION) {
         localStorage.removeItem("mf_students");
         localStorage.removeItem("mf_classes");
@@ -1624,6 +1639,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("mf_invoices");
         localStorage.removeItem("mf_mutations");
         localStorage.removeItem("mf_branchAdmins");
+        localStorage.removeItem("mf_curriculum");
         localStorage.setItem("mf_data_version", CURRENT_DATA_VERSION);
       }
 
@@ -2551,9 +2567,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {
         if (created && created.id) {
-          setCurriculumModules((prev) =>
-            prev.map((c) => (c.id === tempId ? { ...c, id: created.id } : c))
-          );
+          setCurriculumModules((prev) => {
+            const updated = prev.map((c) => (c.id === tempId ? { ...c, ...created } : c));
+            save("mf_curriculum", updated);
+            return updated;
+          });
         }
       })
       .catch((err) => console.error("Error saving curriculum to PostgreSQL:", err));
@@ -2570,7 +2588,28 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...mod }),
-    }).catch((err) => console.error("Error updating curriculum in PostgreSQL:", err));
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const updatedServer = await res.json();
+          if (updatedServer && updatedServer.id) {
+            setCurriculumModules((prev) => {
+              const updated = prev.map((m) =>
+                m.id === id || m.id === updatedServer.id ? { ...m, ...updatedServer } : m
+              );
+              save("mf_curriculum", updated);
+              return updated;
+            });
+          }
+        } else {
+          console.error("Gagal memperbarui kurikulum di PostgreSQL");
+          fetchAllLiveData();
+        }
+      })
+      .catch((err) => {
+        console.error("Error updating curriculum in PostgreSQL:", err);
+        fetchAllLiveData();
+      });
   };
 
   const deleteCurriculumModule = (id: string) => {
@@ -2582,12 +2621,28 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
     fetch(`/api/curriculums?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
-    }).catch((err) => console.error("Error deleting curriculum from PostgreSQL:", err));
+    })
+      .then((res) => {
+        if (!res.ok) {
+          console.error("Gagal menghapus kurikulum dari PostgreSQL");
+          fetchAllLiveData();
+        }
+      })
+      .catch((err) => {
+        console.error("Error deleting curriculum from PostgreSQL:", err);
+        fetchAllLiveData();
+      });
   };
 
   const resetCurriculumModules = () => {
     setCurriculumModules([]);
     save("mf_curriculum", []);
+
+    fetch("/api/curriculums?all=true", {
+      method: "DELETE",
+    })
+      .then(() => fetchAllLiveData())
+      .catch((err) => console.error("Error resetting curriculum in PostgreSQL:", err));
   };
 
   // Invoices & SPP
