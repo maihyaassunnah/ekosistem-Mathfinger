@@ -12,7 +12,7 @@ Tampilan dan logika pada modul **Presensi & Rekap Kehadiran Siswa** telah diperb
 
 ---
 
-### B. Perapian Layout Rekap Kehadiran Siswa (Gambar 2) di Mode Mobile
+### B. Perapian Layout Rekap Kehadiran Siswa di Mode Mobile
 - **Ikon Presensi Susulan (+) Berdampingan dengan Cari Siswa**:
   - Input `Cari siswa...` dan tombol `+ Susulan` kini berada di dalam kontainer flex horizontal yang rapat (`gap-1.5 flex-1 min-w-0`).
   - Tombol `+` tidak lagi terdorong keluar layar atau terpotong pada layar HP sempit.
@@ -34,6 +34,17 @@ Tampilan dan logika pada modul **Presensi & Rekap Kehadiran Siswa** telah diperb
 
 ---
 
+### D. Input Catatan Secara Manual di Mode Desktop (Menggantikan Catatan Cepat)
+- **Sebelumnya**: Di bawah nama siswa terdapat 4 tombol preset *Catatan Cepat* (`+ Izin Pulang Cepat`, `+ Sakit Perut`, dll).
+- **Sekarang**: Deretan tombol preset tersebut telah **dihilangkan** dan diganti dengan kolom input teks:
+  - Kolom input interaktif berlabel *placeholder* `"Beri catatan secara manual..."` dengan ikon pesan.
+  - Guru dapat langsung mengetik catatan khusus/bebas secara fleksibel untuk setiap siswa.
+  - Mengetik catatan otomatis mencentang siswa terkait dan menyimpan catatan ke *state* presensi.
+  - Dilengkapi tombol silang (`✕`) untuk menghapus catatan secara cepat.
+
+---
+
 ## 2. Hasil Verifikasi Teknis
 
 - **TypeScript Compilation**: Lolos 100% tanpa error (`npx tsc --noEmit` exit code 0).
+- **Build & Deploy**: Berhasil dideploy ke VPS `ubuntu@43.173.12.46` via Docker Compose.

@@ -1236,23 +1236,36 @@ function AbsensiContent() {
                             </span>
                           </div>
 
-                          {/* Quick note shortcuts row below student */}
-                          <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                              Catatan Cepat:
-                            </span>
-                            {["Izin Pulang Cepat", "Sakit Perut", "Terlambat 15 Mnt", "Belum Bawa Buku"].map(
-                              (quickNote, qIdx) => (
+                          {/* Beri Catatan Secara Manual (Desktop) */}
+                          <div className="flex items-center gap-2 pt-0.5 max-w-md">
+                            <div className="relative flex-1">
+                              <MessageSquare className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <input
+                                type="text"
+                                value={currentNote}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setSelectedIds((prev) => Array.from(new Set([...prev, st.id])));
+                                  setNotesState((prev) => ({ ...prev, [st.id]: val }));
+                                  setAttendance(st.id, selectedDate, currentStatus, val);
+                                }}
+                                placeholder="Beri catatan secara manual..."
+                                className="w-full pl-8 pr-7 py-1 bg-slate-50/80 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium transition-all"
+                              />
+                              {currentNote && (
                                 <button
-                                  key={qIdx}
                                   type="button"
-                                  onClick={() => handleAddQuickNote(st.id, quickNote)}
-                                  className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 text-slate-600 dark:text-slate-400 text-[10px] font-medium transition-colors cursor-pointer border border-slate-200/60 dark:border-slate-700"
+                                  onClick={() => {
+                                    setNotesState((prev) => ({ ...prev, [st.id]: "" }));
+                                    setAttendance(st.id, selectedDate, currentStatus, "");
+                                  }}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 p-0.5 cursor-pointer"
+                                  title="Hapus catatan"
                                 >
-                                  + {quickNote}
+                                  <X className="w-3.5 h-3.5" />
                                 </button>
-                              )
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
