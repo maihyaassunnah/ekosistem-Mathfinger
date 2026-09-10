@@ -29,6 +29,7 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import MultiStudentSelect from "@/components/ui/MultiStudentSelect";
 import { useAppStore, InvoiceItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function SppContent() {
   const { students, invoices, addInvoice, addInvoicesBulk, updateInvoiceStatus, deleteInvoice, branches } =
@@ -103,6 +104,23 @@ Salam Hangat,
   );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Confirmation modal state
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "danger" | "success" | "primary";
+    onConfirm: () => void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
   // Form for new invoice
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [form, setForm] = useState({
@@ -147,16 +165,7 @@ Salam Hangat,
     setIsAddOpen(true);
   };
 
-  const handleSubmitAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedStudentIds.length === 0) {
-      alert("Silakan pilih minimal 1 siswa untuk menerbitkan invoice.");
-      return;
-    }
-
-    const selectedStudents = students.filter((s) => selectedStudentIds.includes(s.id));
-    if (selectedStudents.length === 0) return;
-
+  const executeSubmitAdd = (selectedStudents: typeof students) => {
     const invoicesToCreate = selectedStudents.map((st) => ({
       studentId: st.id,
       studentName: st.name,
@@ -176,6 +185,47 @@ Salam Hangat,
     } else {
       showToast(`${selectedStudents.length} Invoice baru berhasil diterbitkan sekaligus!`);
     }
+  };
+
+  const handleSubmitAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedStudentIds.length === 0) {
+      alert("Silakan pilih minimal 1 siswa untuk menerbitkan invoice.");
+      return;
+    }
+
+    const selectedStudents = students.filter((s) => selectedStudentIds.includes(s.id));
+    if (selectedStudents.length === 0) return;
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Terbitkan Invoice SPP",
+      message: (
+        <div className="space-y-2">
+          <p>
+            Apakah Anda yakin ingin menerbitkan tagihan invoice untuk{" "}
+            <strong>{selectedStudents.length} siswa</strong>?
+          </p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1 text-xs">
+            <p className="text-slate-600 dark:text-slate-300">
+              Periode: <strong>{form.period}</strong> • Jatuh Tempo: <strong>{form.dueDate}</strong>
+            </p>
+            <p className="text-slate-600 dark:text-slate-300">
+              Nominal: <strong>Rp {form.amount.toLocaleString("id-ID")}</strong> / siswa
+            </p>
+            <p className="text-emerald-600 dark:text-emerald-400 font-bold pt-1 border-t border-slate-200 dark:border-slate-700/60">
+              Total Tagihan: Rp {(selectedStudents.length * form.amount).toLocaleString("id-ID")}
+            </p>
+          </div>
+        </div>
+      ),
+      confirmText: `Ya, Terbitkan ${selectedStudents.length} Invoice`,
+      variant: "success",
+      onConfirm: () => {
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        executeSubmitAdd(selectedStudents);
+      },
+    });
   };
 
   const handleConfirmPayment = (method: string) => {
@@ -882,6 +932,18 @@ Salam Hangat,
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        variant={confirmModalConfig.variant}
+        isLoading={confirmModalConfig.isLoading}
+        onConfirm={confirmModalConfig.onConfirm}
+        onClose={() => setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

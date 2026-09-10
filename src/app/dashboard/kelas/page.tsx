@@ -27,6 +27,7 @@ import {
 import { useAppStore, ClassItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function KelasContent() {
   const { classes, addClass, updateClass, deleteClass, students, updateStudent, branches } = useAppStore();
@@ -48,6 +49,23 @@ function KelasContent() {
 
   const [search, setSearch] = useState("");
   const [selectedBranch, setSelectedBranch] = useState(allowedBranch || "ALL");
+
+  // Confirmation modal state
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "danger" | "success" | "primary";
+    onConfirm: () => void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
   const [viewingStudentsClass, setViewingStudentsClass] = useState<ClassItem | null>(null);
@@ -103,21 +121,35 @@ function KelasContent() {
 
   const handleRemoveStudent = (studentId: string, studentName: string) => {
     if (!viewingStudentsClass) return;
-    if (!confirm(`Keluarkan ${studentName} dari kelas ${viewingStudentsClass.name}?`)) return;
 
-    const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
-    updateStudent(studentId, { className: "-" });
-    const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch, classProgType);
-    const newCount = Math.max(0, currentList.length - 1);
-    updateClass(viewingStudentsClass.id, { enrolledCount: newCount });
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Keluarkan Siswa",
+      message: (
+        <p>
+          Apakah Anda yakin ingin mengeluarkan siswa <strong>{studentName}</strong> dari kelas{" "}
+          <strong>{viewingStudentsClass.name}</strong>?
+        </p>
+      ),
+      confirmText: "Ya, Keluarkan Siswa",
+      variant: "danger",
+      onConfirm: () => {
+        const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+        updateStudent(studentId, { className: "-" });
+        const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch, classProgType);
+        const newCount = Math.max(0, currentList.length - 1);
+        updateClass(viewingStudentsClass.id, { enrolledCount: newCount });
 
-    setViewingStudentsClass({
-      ...viewingStudentsClass,
-      enrolledCount: newCount,
+        setViewingStudentsClass({
+          ...viewingStudentsClass,
+          enrolledCount: newCount,
+        });
+
+        setActionFeedback(`${studentName} telah dikeluarkan dari kelas ${viewingStudentsClass.name}`);
+        setTimeout(() => setActionFeedback(null), 3500);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+      },
     });
-
-    setActionFeedback(`${studentName} telah dikeluarkan dari kelas ${viewingStudentsClass.name}`);
-    setTimeout(() => setActionFeedback(null), 3500);
   };
 
   useEffect(() => {
@@ -217,16 +249,63 @@ function KelasContent() {
 
   const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    addClass(formData as any);
-    setIsAddOpen(false);
+    if (!formData.name.trim()) {
+      alert("Nama kelas wajib diisi!");
+      return;
+    }
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Tambah Kelas Baru",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menambahkan kelas baru berikut?</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1 text-xs">
+            <p className="font-bold text-slate-800 dark:text-slate-100">{formData.name}</p>
+            <p className="text-slate-600 dark:text-slate-300">
+              Cabang: <strong>{formData.branch}</strong> • Jadwal: {formData.days} ({formData.time})
+            </p>
+          </div>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Kelas",
+      variant: "success",
+      onConfirm: () => {
+        addClass(formData as any);
+        setIsAddOpen(false);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        setActionFeedback(`Kelas "${formData.name}" berhasil dibuat.`);
+        setTimeout(() => setActionFeedback(null), 3500);
+      },
+    });
   };
 
   const handleSubmitEdit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingClass) {
-      updateClass(editingClass.id, formData);
-      setEditingClass(null);
+    if (!editingClass) return;
+    if (!formData.name.trim()) {
+      alert("Nama kelas wajib diisi!");
+      return;
     }
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Simpan Perubahan Kelas",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menyimpan perubahan pada kelas <strong>{editingClass.name}</strong>?</p>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Perubahan",
+      variant: "success",
+      onConfirm: () => {
+        updateClass(editingClass.id, formData);
+        setEditingClass(null);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        setActionFeedback(`Perubahan kelas "${formData.name}" berhasil disimpan.`);
+        setTimeout(() => setActionFeedback(null), 3500);
+      },
+    });
   };
 
   return (
@@ -411,11 +490,26 @@ function KelasContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (confirm(`Yakin ingin menghapus ${c.name}?`)) {
-                          deleteClass(c.id);
-                        }
+                        setConfirmModalConfig({
+                          isOpen: true,
+                          title: "Konfirmasi Hapus Kelas",
+                          message: (
+                            <div className="space-y-2">
+                              <p>Apakah Anda yakin ingin menghapus kelas <strong className="text-slate-900 dark:text-white">{c.name}</strong> ({c.branch})?</p>
+                              <p className="text-[11px] text-rose-500 font-semibold">Tindakan ini tidak dapat dibatalkan.</p>
+                            </div>
+                          ),
+                          confirmText: "Ya, Hapus Kelas",
+                          variant: "danger",
+                          onConfirm: () => {
+                            deleteClass(c.id);
+                            setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+                            setActionFeedback(`Kelas "${c.name}" berhasil dihapus.`);
+                            setTimeout(() => setActionFeedback(null), 3500);
+                          },
+                        });
                       }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                       title="Hapus Kelas"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -922,6 +1016,18 @@ function KelasContent() {
           </div>
         );
       })()}
+      {/* Reusable ConfirmModal for Add, Edit, Delete Class & Remove Student */}
+      <ConfirmModal
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        variant={confirmModalConfig.variant}
+        isLoading={confirmModalConfig.isLoading}
+        onConfirm={confirmModalConfig.onConfirm}
+        onClose={() => setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

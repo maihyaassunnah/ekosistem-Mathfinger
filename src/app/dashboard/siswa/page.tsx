@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -25,6 +25,7 @@ import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 // Helper format nomor WhatsApp standar Indonesia (08xx-xxxx-xxxx)
 function formatPhoneNumber(phone: string): string {
@@ -48,7 +49,7 @@ function formatPhoneNumber(phone: string): string {
 }
 
 function SiswaContent() {
-  const { students, addStudent, updateStudent, deleteStudent, classes, branches, refreshData } = useAppStore();
+  const { students, addStudent, updateStudent, deleteStudent, classes, branches, refreshData, curriculumModules } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const searchParams = useSearchParams();
   const paramProgram = searchParams?.get("program");
@@ -107,6 +108,52 @@ function SiswaContent() {
   const [viewingGuide, setViewingGuide] = useState<StudentItem | null>(null);
   const [viewingDetail, setViewingDetail] = useState<StudentItem | null>(null);
 
+  // Confirmation modal state for all saves and deletes
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "danger" | "success" | "primary";
+    onConfirm: () => void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
+  // Dynamic level options matching curriculum modules
+  const mathLevelOptions = useMemo(() => {
+    if (curriculumModules && curriculumModules.length > 0) {
+      return curriculumModules.map((m) => ({
+        value: m.levelTitle,
+        label: m.levelTitle,
+      }));
+    }
+    return [
+      { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
+      { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan Angka Satuan" },
+      { value: "Level 2: Kombinasi Rumus Teman Kecil", label: "Level 2: Kombinasi Rumus Teman Kecil" },
+      { value: "Level 3: Mahir & Olimpiade", label: "Level 3: Mahir & Olimpiade" },
+    ];
+  }, [curriculumModules]);
+
+  const readingLevelOptions = useMemo(
+    () => [
+      { value: "Level 1: Pra-Membaca & Pengenalan Huruf", label: "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)" },
+      { value: "Level 2: Merangkai Suku Kata Sederhana", label: "Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)" },
+      { value: "Level 3: Merangkai Kata 2 Suku Kata", label: "Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)" },
+      { value: "Level 4: Merangkai Kata Bervokal & Konsonan Ganda", label: "Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)" },
+      { value: "Level 5: Membaca Kalimat Sederhana", label: "Level 5: Membaca Kalimat Sederhana" },
+      { value: "Level 6: Membaca Paragraf Pendek", label: "Level 6: Membaca Paragraf Pendek & Cerita" },
+      { value: "Level 7: Lancar Membaca & Pemahaman Teks", label: "Level 7: Lancar Membaca & Pemahaman Teks" },
+    ],
+    []
+  );
+
   // Form state
   const [form, setForm] = useState({
     name: "",
@@ -125,6 +172,14 @@ function SiswaContent() {
     registeredDate: new Date().toISOString().split("T")[0],
     programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
   });
+
+  const currentLevelOptions = useMemo(() => {
+    const base = form.programType === "MEMBACA" ? readingLevelOptions : mathLevelOptions;
+    if (form.levelCurriculum && !base.some((opt) => opt.value === form.levelCurriculum)) {
+      return [{ value: form.levelCurriculum, label: form.levelCurriculum }, ...base];
+    }
+    return base;
+  }, [form.programType, form.levelCurriculum, mathLevelOptions, readingLevelOptions]);
 
   // Program counts scoped by branch
   const branchScopedForCounts =
@@ -169,6 +224,7 @@ function SiswaContent() {
       )?.name || "Kelas A";
 
     const defaultBranch = (allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"))) as any;
+    const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
 
     setForm({
       name: "",
@@ -186,7 +242,7 @@ function SiswaContent() {
       levelCurriculum:
         activeProgram === "MEMBACA"
           ? "Level 1: Pra-Membaca & Pengenalan Huruf"
-          : "Level Dasar: Pengenalan Simbol Jari",
+          : defaultMathLevel,
       registeredDate: new Date().toISOString().split("T")[0],
       programType: activeProgram,
     });
@@ -214,12 +270,8 @@ function SiswaContent() {
     });
   };
 
-  const handleSubmitAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim()) {
-      alert("Nama siswa wajib diisi!");
-      return;
-    }
+  // Core Submit Add
+  const executeSubmitAdd = async () => {
     setIsSubmitting(true);
     try {
       const finalProgram = form.programType || activeProgram;
@@ -230,8 +282,9 @@ function SiswaContent() {
       };
       await addStudent(payload);
       setIsAddOpen(false);
-      setSyncToast(`Siswa "${form.name}" berhasil ditambahkan ke Les ${finalProgram === "MEMBACA" ? "Membaca" : "Matematika"}!`);
+      setSyncToast(`Siswa "${form.name}" berhasil didaftarkan ke Les ${finalProgram === "MEMBACA" ? "Membaca" : "Matematika"}!`);
       const finalBranch = (allowedBranch as any) || form.branch || "Singkut";
+      const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
       setForm({
         name: "",
         studentCode:
@@ -254,7 +307,7 @@ function SiswaContent() {
         levelCurriculum:
           finalProgram === "MEMBACA"
             ? "Level 1: Pra-Membaca & Pengenalan Huruf"
-            : "Level Dasar: Pengenalan Simbol Jari",
+            : defaultMathLevel,
         registeredDate: new Date().toISOString().split("T")[0],
         programType: finalProgram,
       });
@@ -267,12 +320,138 @@ function SiswaContent() {
     }
   };
 
-  const handleSubmitEdit = (e: React.FormEvent) => {
+  // Form handler for Add with confirmation popup
+  const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name.trim()) {
+      alert("Nama siswa wajib diisi!");
+      return;
+    }
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Tambah Siswa Baru",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin mendaftarkan data siswa baru berikut ke dalam sistem?</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 space-y-1.5 text-xs">
+            <div className="font-extrabold text-slate-900 dark:text-white text-sm">{form.name}</div>
+            <div className="text-slate-600 dark:text-slate-300">
+              Program: <strong className="text-emerald-600 dark:text-emerald-400">{form.programType === "MEMBACA" ? "Les Membaca" : "Les Matematika"}</strong>
+            </div>
+            <div className="text-slate-600 dark:text-slate-300">
+              Kelas: <strong>{form.className}</strong> • Cabang: <strong>{form.branch}</strong>
+            </div>
+            <div className="text-slate-600 dark:text-slate-300">
+              Level Kurikulum: <strong>{form.levelCurriculum}</strong>
+            </div>
+          </div>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Siswa Baru",
+      variant: "success",
+      onConfirm: async () => {
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        await executeSubmitAdd();
+      },
+    });
+  };
+
+  // Core Submit Edit
+  const executeSubmitEdit = () => {
     if (editingStudent) {
       updateStudent(editingStudent.id, form);
+      const studentName = form.name;
       setEditingStudent(null);
+      setSyncToast(`Perubahan data siswa "${studentName}" berhasil disimpan!`);
+      setTimeout(() => setSyncToast(null), 3500);
     }
+  };
+
+  // Form handler for Edit with confirmation popup
+  const handleSubmitEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      alert("Nama siswa wajib diisi!");
+      return;
+    }
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Simpan Perubahan",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menyimpan perubahan data siswa ini?</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 space-y-1.5 text-xs">
+            <div className="font-extrabold text-slate-900 dark:text-white text-sm">{form.name}</div>
+            <div className="text-slate-600 dark:text-slate-300">
+              Kelas: <strong>{form.className}</strong> • Cabang: <strong>{form.branch}</strong>
+            </div>
+            <div className="text-slate-600 dark:text-slate-300">
+              Level Kurikulum: <strong>{form.levelCurriculum}</strong>
+            </div>
+          </div>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Perubahan",
+      variant: "success",
+      onConfirm: () => {
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        executeSubmitEdit();
+      },
+    });
+  };
+
+  // Handler for Single Delete with confirmation popup
+  const handleRequestDeleteSingle = (st: StudentItem) => {
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Hapus Siswa",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menghapus data siswa <strong className="text-slate-900 dark:text-white">{st.name}</strong> ({st.className})?</p>
+          <p className="text-[11px] text-rose-500 font-semibold">
+            Tindakan ini tidak dapat dibatalkan. Seluruh rekaman siswa ini akan dihapus dari sistem.
+          </p>
+        </div>
+      ),
+      confirmText: "Ya, Hapus Siswa",
+      variant: "danger",
+      onConfirm: () => {
+        deleteStudent(st.id);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        setSyncToast(`Data siswa "${st.name}" berhasil dihapus.`);
+        setTimeout(() => setSyncToast(null), 3000);
+      },
+    });
+  };
+
+  // Handler for Bulk Delete with confirmation popup
+  const handleRequestDeleteBulk = () => {
+    if (selectedIds.length === 0) return;
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Hapus Siswa Terpilih",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menghapus <strong className="text-slate-900 dark:text-white">{selectedIds.length} data siswa</strong> yang dipilih?</p>
+          <p className="text-[11px] text-rose-500 font-semibold">
+            Tindakan ini akan menghapus permanen seluruh data siswa yang dicentang.
+          </p>
+        </div>
+      ),
+      confirmText: `Ya, Hapus ${selectedIds.length} Siswa`,
+      variant: "danger",
+      onConfirm: () => {
+        selectedIds.forEach((id) => deleteStudent(id));
+        const count = selectedIds.length;
+        setSelectedIds([]);
+        setShowCheckboxes(false);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        setSyncToast(`${count} data siswa berhasil dihapus.`);
+        setTimeout(() => setSyncToast(null), 3000);
+      },
+    });
   };
 
   const toggleSelectAll = () => {
@@ -495,13 +674,7 @@ function SiswaContent() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => {
-                if (confirm(`Hapus ${selectedIds.length} data siswa yang dipilih?`)) {
-                  selectedIds.forEach((id) => deleteStudent(id));
-                  setSelectedIds([]);
-                  setShowCheckboxes(false);
-                }
-              }}
+              onClick={handleRequestDeleteBulk}
               className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -760,11 +933,7 @@ function SiswaContent() {
                       )}
                       <button
                         type="button"
-                        onClick={() => {
-                          if (confirm(`Hapus data siswa ${st.name}?`)) {
-                            deleteStudent(st.id);
-                          }
-                        }}
+                        onClick={() => handleRequestDeleteSingle(st)}
                         className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-500 hover:text-rose-600 transition-all cursor-pointer"
                         title="Hapus Siswa"
                         aria-label="Hapus Siswa"
@@ -993,25 +1162,7 @@ function SiswaContent() {
                     className="w-full"
                     menuClassName="w-full max-w-full"
                     size="md"
-                    options={
-                      form.programType === "MEMBACA"
-                        ? [
-                            { value: "Level 1: Pra-Membaca & Pengenalan Huruf", label: "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)" },
-                            { value: "Level 2: Merangkai Suku Kata Sederhana", label: "Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)" },
-                            { value: "Level 3: Merangkai Kata 2 Suku Kata", label: "Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)" },
-                            { value: "Level 4: Merangkai Kata Bervokal & Konsonan Ganda", label: "Level 4: Kata Bervokal & Konsonan (ny, ng, kh...)" },
-                            { value: "Level 5: Membaca Kalimat Sederhana", label: "Level 5: Membaca Kalimat Sederhana" },
-                            { value: "Level 6: Membaca Paragraf Pendek", label: "Level 6: Membaca Paragraf Pendek & Cerita" },
-                            { value: "Level 7: Lancar Membaca & Pemahaman Teks", label: "Level 7: Lancar Membaca & Pemahaman Teks" },
-                          ]
-                        : [
-                            { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
-                            { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan Angka Satuan" },
-                            { value: "Level 2: Kombinasi Rumus Teman Kecil", label: "Level 2: Kombinasi Rumus Teman Kecil" },
-                            { value: "Level 3: Kombinasi Rumus Teman Besar", label: "Level 3: Kombinasi Rumus Teman Besar" },
-                            { value: "Level Utama: Perkalian & Pembagian", label: "Level Utama: Perkalian & Pembagian" },
-                          ]
-                    }
+                    options={currentLevelOptions}
                   />
                 </div>
 
@@ -1030,13 +1181,14 @@ function SiswaContent() {
                         type="button"
                         onClick={() => {
                           const nextProg = prog.key as "MATEMATIKA" | "MEMBACA";
+                          const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
                           setForm({
                             ...form,
                             programType: nextProg,
                             levelCurriculum:
                               nextProg === "MEMBACA"
                                 ? "Level 1: Pra-Membaca & Pengenalan Huruf"
-                                : "Level Dasar: Pengenalan Simbol Jari",
+                                : defaultMathLevel,
                           });
                         }}
                         className={`p-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer text-left flex flex-col gap-0.5 ${
@@ -1284,6 +1436,19 @@ function SiswaContent() {
           <span>{syncToast}</span>
         </div>
       )}
+
+      {/* Confirmation Modal for Saves and Deletes */}
+      <ConfirmModal
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        variant={confirmModalConfig.variant}
+        isLoading={confirmModalConfig.isLoading}
+        onConfirm={confirmModalConfig.onConfirm}
+        onClose={() => setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

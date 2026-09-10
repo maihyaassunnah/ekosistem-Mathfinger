@@ -18,6 +18,7 @@ import { useAppStore, JournalItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
 import MultiStudentSelect from "@/components/ui/MultiStudentSelect";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function JurnalGuruContent() {
   const { journals, addJournal, addJournalsBulk, deleteJournal, classes, students } = useAppStore();
@@ -31,6 +32,23 @@ function JurnalGuruContent() {
   const [studentFilter, setStudentFilter] = useState("ALL");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Confirmation modal state
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "danger" | "success" | "primary";
+    onConfirm: () => void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -94,13 +112,7 @@ function JurnalGuruContent() {
     return matchBranch && matchSearch && matchClass && matchStudent && matchProgram;
   });
 
-  const handleSubmitAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedStudentIds.length === 0) {
-      alert("Silakan pilih minimal 1 siswa untuk menyimpan jurnal.");
-      return;
-    }
-
+  const executeSubmitAdd = () => {
     const selectedStudents = scopedStudents.filter((s) => selectedStudentIds.includes(s.id));
     if (selectedStudents.length === 0) return;
 
@@ -124,6 +136,42 @@ function JurnalGuruContent() {
     } else {
       showToast(`Jurnal harian berhasil disimpan sekaligus untuk ${selectedStudents.length} siswa!`);
     }
+  };
+
+  const handleSubmitAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedStudentIds.length === 0) {
+      alert("Silakan pilih minimal 1 siswa untuk menyimpan jurnal.");
+      return;
+    }
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Simpan Jurnal Guru",
+      message: (
+        <div className="space-y-2">
+          <p>
+            Apakah Anda yakin ingin menyimpan jurnal harian untuk{" "}
+            <strong>{selectedStudentIds.length} siswa terpilih</strong> di kelas{" "}
+            <strong>{form.className}</strong>?
+          </p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1 text-xs">
+            <p className="text-slate-600 dark:text-slate-300">
+              Materi: <strong>{form.topic}</strong>
+            </p>
+            <p className="text-slate-600 dark:text-slate-300">
+              Pengajar: <strong>{form.teacher}</strong> • Tanggal: <strong>{form.date}</strong>
+            </p>
+          </div>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Jurnal",
+      variant: "success",
+      onConfirm: () => {
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+        executeSubmitAdd();
+      },
+    });
   };
 
   const handleSendWA = (j: JournalItem) => {
@@ -256,11 +304,30 @@ function JurnalGuruContent() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm("Hapus catatan jurnal ini?")) {
-                        deleteJournal(j.id);
-                      }
+                      setConfirmModalConfig({
+                        isOpen: true,
+                        title: "Konfirmasi Hapus Catatan Jurnal",
+                        message: (
+                          <div className="space-y-2">
+                            <p>
+                              Apakah Anda yakin ingin menghapus catatan jurnal untuk siswa{" "}
+                              <strong>{j.studentName}</strong>?
+                            </p>
+                            <p className="text-[11px] text-rose-500 font-semibold">
+                              Tindakan ini tidak dapat dibatalkan.
+                            </p>
+                          </div>
+                        ),
+                        confirmText: "Ya, Hapus Jurnal",
+                        variant: "danger",
+                        onConfirm: () => {
+                          deleteJournal(j.id);
+                          setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+                          showToast(`Catatan jurnal siswa "${j.studentName}" berhasil dihapus.`);
+                        },
+                      });
                     }}
-                    className="p-1 rounded-lg text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                     title="Hapus Jurnal"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -445,6 +512,18 @@ function JurnalGuruContent() {
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        variant={confirmModalConfig.variant}
+        isLoading={confirmModalConfig.isLoading}
+        onConfirm={confirmModalConfig.onConfirm}
+        onClose={() => setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

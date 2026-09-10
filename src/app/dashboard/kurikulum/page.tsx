@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, CurriculumModule } from "@/lib/store";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function KurikulumPage() {
   const {
@@ -35,6 +36,23 @@ export default function KurikulumPage() {
     null
   );
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  // Confirmation modal state
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "danger" | "success" | "primary";
+    onConfirm: () => void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Form state
   const [form, setForm] = useState({
@@ -76,39 +94,81 @@ export default function KurikulumPage() {
 
   const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    const indicators = form.indicatorsText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    if (!form.levelTitle.trim()) {
+      alert("Nama tingkat level kurikulum wajib diisi!");
+      return;
+    }
 
-    addCurriculumModule({
-      levelTitle: form.levelTitle,
-      shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
-      learningGoals: form.learningGoals,
-      competencies: form.competencies,
-      learningMaterials: form.learningMaterials,
-      indicators,
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Tambah Materi Kurikulum",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menambahkan materi kurikulum baru berikut?</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1 text-xs">
+            <p className="font-bold text-slate-800 dark:text-slate-100">{form.levelTitle}</p>
+            {form.shortDesc && <p className="text-[11px] text-slate-500 dark:text-slate-400">{form.shortDesc}</p>}
+          </div>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Materi",
+      variant: "success",
+      onConfirm: () => {
+        const indicators = form.indicatorsText
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        addCurriculumModule({
+          levelTitle: form.levelTitle,
+          shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
+          learningGoals: form.learningGoals,
+          competencies: form.competencies,
+          learningMaterials: form.learningMaterials,
+          indicators,
+        });
+        setIsAddOpen(false);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+      },
     });
-    setIsAddOpen(false);
   };
 
   const handleSubmitEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingModule) return;
-    const indicators = form.indicatorsText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    if (!form.levelTitle.trim()) {
+      alert("Nama tingkat level kurikulum wajib diisi!");
+      return;
+    }
 
-    updateCurriculumModule(editingModule.id, {
-      levelTitle: form.levelTitle,
-      shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
-      learningGoals: form.learningGoals,
-      competencies: form.competencies,
-      learningMaterials: form.learningMaterials,
-      indicators,
+    setConfirmModalConfig({
+      isOpen: true,
+      title: "Konfirmasi Simpan Perubahan Kurikulum",
+      message: (
+        <div className="space-y-2">
+          <p>Apakah Anda yakin ingin menyimpan perubahan pada modul kurikulum <strong>{editingModule.levelTitle}</strong>?</p>
+        </div>
+      ),
+      confirmText: "Ya, Simpan Perubahan",
+      variant: "success",
+      onConfirm: () => {
+        const indicators = form.indicatorsText
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        updateCurriculumModule(editingModule.id, {
+          levelTitle: form.levelTitle,
+          shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
+          learningGoals: form.learningGoals,
+          competencies: form.competencies,
+          learningMaterials: form.learningMaterials,
+          indicators,
+        });
+        setEditingModule(null);
+        setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+      },
     });
-    setEditingModule(null);
   };
 
   return (
@@ -225,8 +285,26 @@ export default function KurikulumPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deleteCurriculumModule(activeModule.id)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042] transition-colors cursor-pointer"
+                    onClick={() => {
+                      if (!activeModule) return;
+                      setConfirmModalConfig({
+                        isOpen: true,
+                        title: "Konfirmasi Hapus Modul Kurikulum",
+                        message: (
+                          <div className="space-y-2">
+                            <p>Apakah Anda yakin ingin menghapus modul kurikulum <strong className="text-slate-900 dark:text-white">{activeModule.levelTitle}</strong>?</p>
+                            <p className="text-[11px] text-rose-500 font-semibold">Tindakan ini tidak dapat dibatalkan.</p>
+                          </div>
+                        ),
+                        confirmText: "Ya, Hapus Modul",
+                        variant: "danger",
+                        onConfirm: () => {
+                          deleteCurriculumModule(activeModule.id);
+                          setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+                        },
+                      });
+                    }}
+                    className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                     title="Hapus Modul"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -527,7 +605,7 @@ export default function KurikulumPage() {
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 mx-auto flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 mx-auto flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -542,7 +620,7 @@ export default function KurikulumPage() {
               <button
                 type="button"
                 onClick={() => setIsResetConfirmOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer"
               >
                 Batal
               </button>
@@ -552,7 +630,7 @@ export default function KurikulumPage() {
                   resetCurriculumModules();
                   setIsResetConfirmOpen(false);
                 }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 shadow-xs shadow-rose-500/20 text-white text-xs font-bold cursor-pointer"
               >
                 Ya, Kosongkan
               </button>
@@ -560,6 +638,19 @@ export default function KurikulumPage() {
           </div>
         </div>
       )}
+
+      {/* Reusable ConfirmModal for Add, Edit, and Delete */}
+      <ConfirmModal
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        variant={confirmModalConfig.variant}
+        isLoading={confirmModalConfig.isLoading}
+        onConfirm={confirmModalConfig.onConfirm}
+        onClose={() => setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
