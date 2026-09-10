@@ -56,7 +56,24 @@ Tampilan dan logika pada modul **Presensi & Rekap Kehadiran Siswa** telah diperb
 
 ---
 
+### F. Perbaikan Persistensi Data Kurikulum & Silabus (`/dashboard/kurikulum`)
+- **Penyebab Masalah Sebelumnya**:
+  1. Frontend menggunakan ID statis bawaan (`cur-1`, `cur-2`, `cur-3`) yang tidak cocok dengan UUID acak di tabel PostgreSQL `levels`, sehingga perintah `PUT` dan `DELETE` ke `/api/curriculums` menghasilkan galat *Record not found*.
+  2. Saat menghapus level dasar, database PostgreSQL menolak karena *foreign key constraint* (masih ada 13 siswa aktif yang terdaftar di level tersebut).
+  3. Rute API membatasi izin hanya untuk `SUPER_ADMIN`, sehingga akun *Admin Cabang* yang mengelola kurikulum mendapatkan respon *403 Forbidden*.
+  4. Tombol *Kosongkan Kurikulum* sebelumnya hanya mengosongkan state lokal tanpa memicu request delete ke PostgreSQL.
+- **Perbaikan yang Diterapkan**:
+  1. **UUID Realtime Sync**: Mengganti `INITIAL_CURRICULUM` dengan 4 level resmi dari database PostgreSQL (`Level Dasar`, `Level 1`, `Level 2`, `Level 3`).
+  2. **Smart ID Matching**: API `PUT` dan `DELETE` kini secara cerdas dapat mencocokkan level baik melalui UUID database asli, pola `cur-X`, maupun nama level. Jika belum ada saat di-edit, API secara otomatis membuatnya (*upsert*).
+  3. **Proteksi & Relokasi Relasi Siswa**: Sebelum menghapus level, siswa yang masih terdaftar di level tersebut otomatis dialihkan ke level alternatif yang tersedia sehingga database tidak mengalami benturan *foreign key*.
+  4. **Sinkronisasi Reset Database**: Tombol *Kosongkan Kurikulum* kini memanggil endpoint API `/api/curriculums?all=true` secara riil.
+  5. **Izin Fleksibel**: Operasi kurikulum kini dapat dilakukan oleh `SUPER_ADMIN` maupun `BRANCH_ADMIN`.
+  6. **Cache Invalidation**: Versi data dinaikkan ke `mf_live_sync_v4` untuk membersihkan cache lama di browser pengguna secara otomatis.
+
+---
+
 ## 2. Hasil Verifikasi Teknis
 
 - **TypeScript Compilation**: Lolos 100% tanpa error (`npx tsc --noEmit` exit code 0).
-- **Build & Deploy**: Berhasil di-commit (`1aabf7b`), di-push ke GitHub, dan dideploy ke VPS `ubuntu@43.173.12.46` via Docker Compose.
+- **Build & Deploy**: Berhasil di-commit (`718f1e9`), di-push ke GitHub, dan dideploy ke VPS `ubuntu@43.173.12.46` via Docker Compose (`Container mathfingers-app Started`).
+- **HTTP Status**: Endpoint `/dashboard/kurikulum` terverifikasi aktif dan terproteksi di balik Cloudflare CDN.
