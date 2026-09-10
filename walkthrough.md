@@ -42,9 +42,21 @@ Tampilan dan logika pada modul **Presensi & Rekap Kehadiran Siswa** telah diperb
   - Mengetik catatan otomatis mencentang siswa terkait dan menyimpan catatan ke *state* presensi.
   - Dilengkapi tombol silang (`✕`) untuk menghapus catatan secara cepat.
 
+### E. Perapian Tabel Input Nilai & Uji Kecepatan (`/dashboard/input-nilai`)
+- **Keterangan Kelas Lurus Simetris dari Atas Sampai Bawah**:
+  - Badge kelas siswa (`🏫 CLASS A`, `🏫 CLASS B`) dipisahkan ke dalam kolom tersendiri (**`KELAS`**) dengan `text-center`.
+  - Tidak lagi menempel di ujung nama siswa yang panjangnya bervariasi, sehingga seluruh badge kelas tersusun lurus rapi secara vertikal dari atas ke bawah.
+- **Nilai Skor Default Kosong (Bukan 0)**:
+  - Input `SKOR (0-100)` kini secara *default* kosong/blank (bukan angka `0`).
+  - Guru dapat langsung mengetikkan skor tanpa harus menghapus angka 0 terlebih dahulu.
+- **Kotak Centang Siswa Tidak Dimunculkan Kecuali Master Checkbox / Status Ikut Aktif**:
+  - Saat pertama kali membuka halaman, kotak centang (*checkbox*) di samping nama siswa **tidak dimunculkan**.
+  - Kotak centang seluruh siswa baru akan muncul (*dimunculkan*) ketika guru menekan kotak centang paling atas di samping kata **IKUT** (yang secara otomatis mencentang semua siswa).
+  - Guru juga dapat mengaktifkan siswa individual dengan menekan tombol status badge `YA`/`TIDAK` atau langsung menginput skor siswa terkait.
+
 ---
 
 ## 2. Hasil Verifikasi Teknis
 
 - **TypeScript Compilation**: Lolos 100% tanpa error (`npx tsc --noEmit` exit code 0).
-- **Build & Deploy**: Berhasil dideploy ke VPS `ubuntu@43.173.12.46` via Docker Compose.
+- **Build & Deploy**: Berhasil di-commit (`1aabf7b`), di-push ke GitHub, dan dideploy ke VPS `ubuntu@43.173.12.46` via Docker Compose.
