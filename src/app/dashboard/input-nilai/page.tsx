@@ -82,18 +82,18 @@ export default function InputNilaiPage() {
 
   // Row entries state: studentId -> { isJoined, score, note }
   const [entries, setEntries] = useState<
-    Record<string, { isJoined: boolean; score: number; note: string }>
+    Record<string, { isJoined: boolean; score: number | ""; note: string }>
   >(() => {
     const initial: Record<
       string,
-      { isJoined: boolean; score: number; note: string }
+      { isJoined: boolean; score: number | ""; note: string }
     > = {};
     (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students)
       .filter((s) => (s as any).programType !== "MEMBACA")
       .forEach((s) => {
         initial[s.id] = {
-          isJoined: true,
-          score: 0,
+          isJoined: false,
+          score: "",
           note: "Sangat cepat / fokus tinggi",
         };
       });
@@ -621,12 +621,20 @@ export default function InputNilaiPage() {
     }));
   };
 
-  const handleScoreChange = (studentId: string, val: number) => {
+  const handleScoreChange = (studentId: string, rawVal: string) => {
+    let newScore: number | "" = "";
+    if (rawVal !== "") {
+      const parsed = parseInt(rawVal, 10);
+      if (!isNaN(parsed)) {
+        newScore = Math.max(0, Math.min(100, parsed));
+      }
+    }
     setEntries((prev) => ({
       ...prev,
       [studentId]: {
         ...prev[studentId],
-        score: Math.max(0, Math.min(100, isNaN(val) ? 0 : val)),
+        score: newScore,
+        isJoined: newScore !== "" ? true : (prev[studentId]?.isJoined ?? false),
       },
     }));
   };
@@ -667,7 +675,12 @@ export default function InputNilaiPage() {
         className: s.className,
         topic,
         examDate,
-        score: entries[s.id]?.score || 0,
+        score:
+          typeof entries[s.id]?.score === "number"
+            ? (entries[s.id].score as number)
+            : entries[s.id]?.score
+            ? Number(entries[s.id]?.score)
+            : 0,
         note: entries[s.id]?.note || "",
         isJoined: true,
       }));
@@ -861,27 +874,32 @@ export default function InputNilaiPage() {
                 </div>
               ) : (
                 filteredStudents.map((s) => {
-                  const isJoined = entries[s.id]?.isJoined ?? true;
-                  const score = entries[s.id]?.score ?? 0;
+                  const isJoined = entries[s.id]?.isJoined ?? false;
+                  const score = entries[s.id]?.score ?? "";
                   const note = entries[s.id]?.note ?? "";
+                  const allChecked =
+                    filteredStudents.length > 0 &&
+                    filteredStudents.every((st) => entries[st.id]?.isJoined);
 
                   return (
                     <div
                       key={`mobile-${s.id}`}
                       className={`p-3 space-y-2 transition-colors ${
                         !isJoined
-                          ? "opacity-50 bg-slate-50/50 dark:bg-slate-900/30"
+                          ? "opacity-80 bg-slate-50/50 dark:bg-slate-900/30"
                           : "hover:bg-slate-50/70 dark:hover:bg-slate-800/40"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <input
-                            type="checkbox"
-                            checked={isJoined}
-                            onChange={() => handleToggleJoined(s.id)}
-                            className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0 cursor-pointer"
-                          />
+                          {(allChecked || isJoined) && (
+                            <input
+                              type="checkbox"
+                              checked={isJoined}
+                              onChange={() => handleToggleJoined(s.id)}
+                              className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0 cursor-pointer"
+                            />
+                          )}
                           <div className="min-w-0">
                             <div className="font-bold text-slate-900 dark:text-slate-100 text-xs truncate">
                               {s.name}
@@ -890,15 +908,21 @@ export default function InputNilaiPage() {
                               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md border border-purple-200 dark:border-purple-800 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/30">
                                 🏫 {s.className}
                               </span>
-                              <span
-                                className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold ${
-                                  isJoined
-                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
-                                    : "bg-slate-200 dark:bg-slate-800 text-slate-500"
-                                }`}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleJoined(s.id)}
+                                className="cursor-pointer"
                               >
-                                {isJoined ? "IKUT" : "TIDAK IKUT"}
-                              </span>
+                                <span
+                                  className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold transition-colors ${
+                                    isJoined
+                                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
+                                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 border border-slate-300/60 dark:border-slate-700"
+                                  }`}
+                                >
+                                  {isJoined ? "IKUT" : "TIDAK IKUT"}
+                                </span>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -912,12 +936,12 @@ export default function InputNilaiPage() {
                             type="number"
                             min="0"
                             max="100"
-                            disabled={!isJoined}
                             value={score}
+                            placeholder=""
                             onChange={(e) =>
-                              handleScoreChange(s.id, parseInt(e.target.value))
+                              handleScoreChange(s.id, e.target.value)
                             }
-                            className="w-14 px-1.5 py-1 rounded-lg border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] text-xs font-black text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                            className="w-14 px-1.5 py-1 rounded-lg border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] text-xs font-black text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           />
                         </div>
                       </div>
@@ -926,11 +950,10 @@ export default function InputNilaiPage() {
                       <div>
                         <input
                           type="text"
-                          disabled={!isJoined}
                           value={note}
                           onChange={(e) => handleNoteChange(s.id, e.target.value)}
                           placeholder="Catatan performa siswa..."
-                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         />
                       </div>
                     </div>
@@ -952,12 +975,14 @@ export default function InputNilaiPage() {
                           filteredStudents.every((s) => entries[s.id]?.isJoined)
                         }
                         onChange={handleToggleSelectAll}
-                        className="rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        className="rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer w-4 h-4"
+                        title="Centang Semua Siswa"
                       />
                     </th>
-                    <th className="py-3 px-4">IKUT</th>
-                    <th className="py-3 px-4">NAMA SISWA</th>
-                    <th className="py-3 px-4 w-32">SKOR (0-100)</th>
+                    <th className="py-3 px-4 w-20">IKUT</th>
+                    <th className="py-3 px-4 min-w-[180px]">NAMA SISWA</th>
+                    <th className="py-3 px-4 w-32 text-center">KELAS</th>
+                    <th className="py-3 px-4 w-32 text-center">SKOR (0-100)</th>
                     <th className="py-3 px-4 min-w-[280px]">CATATAN TAMBAHAN</th>
                   </tr>
                 </thead>
@@ -965,7 +990,7 @@ export default function InputNilaiPage() {
                   {filteredStudents.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="py-12 text-center text-slate-400 dark:text-slate-500"
                       >
                         Tidak ada siswa yang sesuai filter
@@ -973,68 +998,79 @@ export default function InputNilaiPage() {
                     </tr>
                   ) : (
                     filteredStudents.map((s) => {
-                      const isJoined = entries[s.id]?.isJoined ?? true;
-                      const score = entries[s.id]?.score ?? 0;
+                      const isJoined = entries[s.id]?.isJoined ?? false;
+                      const score = entries[s.id]?.score ?? "";
                       const note = entries[s.id]?.note ?? "";
+                      const allChecked =
+                        filteredStudents.length > 0 &&
+                        filteredStudents.every((st) => entries[st.id]?.isJoined);
 
                       return (
                         <tr
                           key={s.id}
                           className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors ${
-                            !isJoined ? "opacity-50" : ""
+                            !isJoined ? "opacity-75" : ""
                           }`}
                         >
-                          <td className="py-3.5 px-4 text-center">
-                            <input
-                              type="checkbox"
-                              checked={isJoined}
-                              onChange={() => handleToggleJoined(s.id)}
-                              className="rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                            />
+                          <td className="py-3.5 px-4 text-center w-12">
+                            {/* Centang disamping nama siswa hanya dimunculkan jika ditekan centang yang paling atas samping kata Ikut (atau jika siswa sudah tercentang) */}
+                            {(allChecked || isJoined) ? (
+                              <input
+                                type="checkbox"
+                                checked={isJoined}
+                                onChange={() => handleToggleJoined(s.id)}
+                                className="rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer w-4 h-4"
+                              />
+                            ) : null}
                           </td>
                           <td className="py-3.5 px-4">
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                isJoined
-                                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
-                                  : "bg-slate-200 dark:bg-slate-800 text-slate-500"
-                              }`}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleJoined(s.id)}
+                              className="cursor-pointer focus:outline-none"
                             >
-                              {isJoined ? "YA" : "TIDAK"}
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors ${
+                                  isJoined
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
+                                }`}
+                              >
+                                {isJoined ? "YA" : "TIDAK"}
+                              </span>
+                            </button>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                              {s.name}
                             </span>
                           </td>
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-900 dark:text-slate-100">
-                                {s.name}
-                              </span>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/30">
-                                <span>🏫</span>
-                                <span>{s.className}</span>
-                              </span>
-                            </div>
+                          <td className="py-3.5 px-4 text-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/30">
+                              <span>🏫</span>
+                              <span>{s.className}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 text-center">
                             <input
                               type="number"
                               min="0"
                               max="100"
-                              disabled={!isJoined}
                               value={score}
+                              placeholder=""
                               onChange={(e) =>
-                                handleScoreChange(s.id, parseInt(e.target.value))
+                                handleScoreChange(s.id, e.target.value)
                               }
-                              className="w-20 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs font-bold text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                              className="w-20 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs font-bold text-center text-slate-900 dark:text-slate-100 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
                           </td>
                           <td className="py-3.5 px-4">
                             <input
                               type="text"
-                              disabled={!isJoined}
                               value={note}
                               onChange={(e) => handleNoteChange(s.id, e.target.value)}
                               placeholder="Catatan performa / ketangkasan siswa..."
-                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
                           </td>
                         </tr>
@@ -1063,8 +1099,8 @@ export default function InputNilaiPage() {
                       const reset: typeof prev = {};
                       students.forEach((s) => {
                         reset[s.id] = {
-                          isJoined: true,
-                          score: 0,
+                          isJoined: false,
+                          score: "",
                           note: "Sangat cepat / fokus tinggi",
                         };
                       });
