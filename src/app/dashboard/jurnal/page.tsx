@@ -17,9 +17,10 @@ import {
 import { useAppStore, JournalItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
+import MultiStudentSelect from "@/components/ui/MultiStudentSelect";
 
 function JurnalGuruContent() {
-  const { journals, addJournal, deleteJournal, classes, students } = useAppStore();
+  const { journals, addJournal, addJournalsBulk, deleteJournal, classes, students } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const searchParams = useSearchParams();
   const paramProgram = searchParams?.get("program");
@@ -29,6 +30,12 @@ function JurnalGuruContent() {
   const [classFilter, setClassFilter] = useState("ALL");
   const [studentFilter, setStudentFilter] = useState("ALL");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const scopedStudents = (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students).filter((s) =>
     isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
@@ -38,8 +45,8 @@ function JurnalGuruContent() {
   );
 
   // Form state
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [form, setForm] = useState({
-    studentName: scopedStudents[0]?.name || "Aishwa Rahma Annida",
     className: scopedClasses[0]?.name || "Kelas A",
     branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
     topic: isMembaca ? "Kelancaran Membaca Suku Kata" : "Pengurangan (jari turun)",
@@ -49,6 +56,20 @@ function JurnalGuruContent() {
     teacher: "Febrianti Dewi, S.Pd",
     date: new Date().toISOString().split("T")[0],
   });
+
+  const handleOpenAddModal = () => {
+    // If a class is selected, pre-select students in that class if any, or first student
+    const defaultClassName = form.className || scopedClasses[0]?.name || "";
+    const matchingInClass = scopedStudents.filter((s) => s.className === defaultClassName);
+    if (matchingInClass.length > 0) {
+      setSelectedStudentIds(matchingInClass.map((s) => s.id));
+    } else if (scopedStudents.length > 0) {
+      setSelectedStudentIds([scopedStudents[0].id]);
+    } else {
+      setSelectedStudentIds([]);
+    }
+    setIsAddOpen(true);
+  };
 
   const filteredJournals = journals.filter((j) => {
     const matchBranch = allowedBranch ? j.branch === allowedBranch : true;
@@ -75,11 +96,34 @@ function JurnalGuruContent() {
 
   const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    addJournal({
-      ...form,
-      programType: isMembaca ? "MEMBACA" : "MATEMATIKA",
-    });
+    if (selectedStudentIds.length === 0) {
+      alert("Silakan pilih minimal 1 siswa untuk menyimpan jurnal.");
+      return;
+    }
+
+    const selectedStudents = scopedStudents.filter((s) => selectedStudentIds.includes(s.id));
+    if (selectedStudents.length === 0) return;
+
+    const journalsToCreate = selectedStudents.map((st) => ({
+      studentId: st.id,
+      studentName: st.name,
+      className: form.className,
+      branch: (st.branch || form.branch) as "Singkut" | "Bangko",
+      topic: form.topic,
+      content: form.content,
+      teacher: form.teacher,
+      date: form.date,
+      programType: isMembaca ? ("MEMBACA" as const) : ("MATEMATIKA" as const),
+    }));
+
+    addJournalsBulk(journalsToCreate);
     setIsAddOpen(false);
+
+    if (selectedStudents.length === 1) {
+      showToast(`Jurnal harian berhasil disimpan untuk ${selectedStudents[0].name}!`);
+    } else {
+      showToast(`Jurnal harian berhasil disimpan sekaligus untuk ${selectedStudents.length} siswa!`);
+    }
   };
 
   const handleSendWA = (j: JournalItem) => {
@@ -110,13 +154,21 @@ function JurnalGuruContent() {
 
         <button
           type="button"
-          onClick={() => setIsAddOpen(true)}
+          onClick={handleOpenAddModal}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           + Buat Jurnal Harian Kelas
         </button>
       </div>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-3 bg-emerald-600 text-white text-xs font-bold rounded-2xl shadow-xl shadow-emerald-600/30 animate-in fade-in-0 slide-in-from-bottom-4 duration-200">
+          <Check className="w-4 h-4" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       {/* Filter Bar */}
       <div className="bg-white dark:bg-[#0f1a36] p-3.5 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row items-center gap-3">
@@ -260,25 +312,60 @@ function JurnalGuruContent() {
             <form onSubmit={handleSubmitAdd} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Nama Siswa</label>
-                  <CustomSelect
-                    value={form.studentName}
-                    onChange={(val) => setForm({ ...form, studentName: val })}
-                    className="w-full"
-                    size="md"
-                    placeholder="Pilih Siswa..."
-                    options={scopedStudents.map((s) => ({
-                      value: s.name,
-                      label: `${s.name} (${s.branch})`,
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold">Nama Siswa</label>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                      {selectedStudentIds.length} Siswa Terpilih
+                    </span>
+                  </div>
+                  <MultiStudentSelect
+                    students={scopedStudents.map((s) => ({
+                      id: s.id,
+                      name: s.name,
+                      className: s.className,
+                      branch: s.branch,
+                      programType: (s as any).programType,
                     }))}
+                    selectedIds={selectedStudentIds}
+                    onChange={setSelectedStudentIds}
+                    targetClassName={form.className}
+                    placeholder="Pilih satu / banyak siswa..."
+                    size="md"
+                    className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Pilihan Kelas</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold">Pilihan Kelas</label>
+                    {form.className && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const classMatches = scopedStudents.filter((s) => s.className === form.className);
+                          if (classMatches.length > 0) {
+                            setSelectedStudentIds(classMatches.map((s) => s.id));
+                          }
+                        }}
+                        className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-bold cursor-pointer"
+                        title="Pilih seluruh siswa yang terdaftar di kelas ini"
+                      >
+                        Pilih Semua di Kelas
+                      </button>
+                    )}
+                  </div>
                   <CustomSelect
                     value={form.className}
-                    onChange={(val) => setForm({ ...form, className: val })}
+                    onChange={(val) => {
+                      setForm({ ...form, className: val });
+                      // Auto-select students of the new class if currently empty
+                      if (selectedStudentIds.length === 0) {
+                        const classMatches = scopedStudents.filter((s) => s.className === val);
+                        if (classMatches.length > 0) {
+                          setSelectedStudentIds(classMatches.map((s) => s.id));
+                        }
+                      }
+                    }}
                     className="w-full"
                     size="md"
                     placeholder="Pilih Kelas..."
@@ -348,9 +435,10 @@ function JurnalGuruContent() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-bold cursor-pointer transition-all shadow-xs"
+                  disabled={selectedStudentIds.length === 0}
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 shadow-xs shadow-emerald-500/20 text-white font-bold cursor-pointer transition-all shadow-xs"
                 >
-                  Simpan Jurnal
+                  Simpan Jurnal {selectedStudentIds.length > 1 ? `(${selectedStudentIds.length} Siswa)` : ""}
                 </button>
               </div>
             </form>

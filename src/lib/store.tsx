@@ -230,6 +230,7 @@ interface AppStoreContextType {
   // Journals
   journals: JournalItem[];
   addJournal: (journal: Omit<JournalItem, "id" | "refCode">) => void;
+  addJournalsBulk: (journalsList: Omit<JournalItem, "id" | "refCode">[]) => Promise<void>;
   deleteJournal: (id: string) => void;
 
   // Grades / Nilai
@@ -276,6 +277,7 @@ interface AppStoreContextType {
   // Invoices & SPP
   invoices: InvoiceItem[];
   addInvoice: (inv: Omit<InvoiceItem, "id" | "invoiceNo">) => void;
+  addInvoicesBulk: (invs: Omit<InvoiceItem, "id" | "invoiceNo">[]) => Promise<void>;
   updateInvoiceStatus: (id: string, status: "LUNAS" | "BELUM BAYAR", paidDate?: string, paidMethod?: string) => void;
   deleteInvoice: (id: string) => void;
 
@@ -2264,33 +2266,58 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Journals
-  const addJournal = (j: Omit<JournalItem, "id" | "refCode">) => {
-    const tempId = `j-${Date.now()}`;
-    const newJ: JournalItem = {
-      ...j,
-      id: tempId,
-      refCode: `#${Math.random().toString(16).substring(2, 8)}`,
-    };
+  const addJournalsBulk = async (journalsList: Omit<JournalItem, "id" | "refCode">[]) => {
+    if (!journalsList || journalsList.length === 0) return;
+    const now = Date.now();
+    const newItems: { item: JournalItem; tempId: string }[] = journalsList.map((j, idx) => {
+      const tempId = `j-${now}-${idx}-${Math.floor(Math.random() * 1000)}`;
+      return {
+        tempId,
+        item: {
+          ...j,
+          id: tempId,
+          refCode: `#${Math.random().toString(16).substring(2, 8)}`,
+        },
+      };
+    });
+
+    const newJournals = newItems.map((n) => n.item);
     setJournals((prev) => {
-      const updated = [newJ, ...prev];
+      const updated = [...newJournals, ...prev];
       save("mf_journals", updated);
       return updated;
     });
 
-    fetch("/api/journals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(j),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((created) => {
-        if (created && created.id) {
-          setJournals((prev) =>
-            prev.map((item) => (item.id === tempId ? { ...item, id: created.id, refCode: created.refCode } : item))
-          );
+    try {
+      const res = await fetch("/api/journals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ journals: newJournals }),
+      });
+      if (res.ok) {
+        const createdList = await res.json();
+        if (Array.isArray(createdList)) {
+          setJournals((prev) => {
+            const mapped = [...prev];
+            createdList.forEach((c: any, i: number) => {
+              const tempId = newItems[i]?.tempId;
+              const idx = mapped.findIndex((m) => m.id === tempId);
+              if (idx !== -1) {
+                mapped[idx] = { ...mapped[idx], id: c.id, refCode: c.refCode };
+              }
+            });
+            save("mf_journals", mapped);
+            return mapped;
+          });
         }
-      })
-      .catch((err) => console.error("Error saving journal to PostgreSQL:", err));
+      }
+    } catch (err) {
+      console.error("Error saving bulk journals to PostgreSQL:", err);
+    }
+  };
+
+  const addJournal = (j: Omit<JournalItem, "id" | "refCode">) => {
+    addJournalsBulk([j]);
   };
 
   const deleteJournal = (id: string) => {
@@ -2646,37 +2673,62 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Invoices & SPP
-  const addInvoice = (inv: Omit<InvoiceItem, "id" | "invoiceNo">) => {
-    const tempId = `inv-${Date.now()}`;
-    const code = Math.floor(1000 + Math.random() * 9000);
-    const st = students.find((s) => s.id === inv.studentId);
-    const progType = inv.programType || (st as any)?.programType || "MATEMATIKA";
-    const newInv: InvoiceItem = {
-      ...inv,
-      id: tempId,
-      invoiceNo: `INV/MF/2608/${code}`,
-      programType: progType,
-    };
+  const addInvoicesBulk = async (invs: Omit<InvoiceItem, "id" | "invoiceNo">[]) => {
+    if (!invs || invs.length === 0) return;
+    const now = Date.now();
+    const newItems: { item: InvoiceItem; tempId: string }[] = invs.map((inv, idx) => {
+      const tempId = `inv-${now}-${idx}-${Math.floor(Math.random() * 1000)}`;
+      const code = Math.floor(1000 + Math.random() * 9000);
+      const st = students.find((s) => s.id === inv.studentId);
+      const progType = inv.programType || (st as any)?.programType || "MATEMATIKA";
+      return {
+        tempId,
+        item: {
+          ...inv,
+          id: tempId,
+          invoiceNo: `INV/MF/2608/${code}`,
+          programType: progType,
+        },
+      };
+    });
+
+    const newInvoices = newItems.map((n) => n.item);
     setInvoices((prev) => {
-      const updated = [newInv, ...prev];
+      const updated = [...newInvoices, ...prev];
       save("mf_invoices", updated);
       return updated;
     });
 
-    fetch("/api/invoices", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...inv, programType: progType }),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((created) => {
-        if (created && created.id) {
-          setInvoices((prev) =>
-            prev.map((i) => (i.id === tempId ? { ...i, id: created.id, invoiceNo: created.invoiceNo } : i))
-          );
+    try {
+      const res = await fetch("/api/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoices: newInvoices }),
+      });
+      if (res.ok) {
+        const createdList = await res.json();
+        if (Array.isArray(createdList)) {
+          setInvoices((prev) => {
+            const mapped = [...prev];
+            createdList.forEach((c: any, i: number) => {
+              const tempId = newItems[i]?.tempId;
+              const idx = mapped.findIndex((m) => m.id === tempId);
+              if (idx !== -1) {
+                mapped[idx] = { ...mapped[idx], id: c.id, invoiceNo: c.invoiceNo };
+              }
+            });
+            save("mf_invoices", mapped);
+            return mapped;
+          });
         }
-      })
-      .catch((err) => console.error("Error saving invoice to PostgreSQL:", err));
+      }
+    } catch (err) {
+      console.error("Error saving bulk invoices to PostgreSQL:", err);
+    }
+  };
+
+  const addInvoice = (inv: Omit<InvoiceItem, "id" | "invoiceNo">) => {
+    addInvoicesBulk([inv]);
   };
 
   const updateInvoiceStatus = (
@@ -3081,6 +3133,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         deleteAttendanceRecord,
         journals,
         addJournal,
+        addJournalsBulk,
         deleteJournal,
         grades,
         saveGrades,
@@ -3099,6 +3152,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         resetCurriculumModules,
         invoices,
         addInvoice,
+        addInvoicesBulk,
         updateInvoiceStatus,
         deleteInvoice,
         cashMutations,

@@ -47,18 +47,31 @@ export async function GET(req: Request) {
 }
 
 // POST /api/journals - Create new teacher journal
+// POST /api/journals - Create new teacher journal (supports single or bulk)
 export async function POST(req: Request) {
   try {
     const { error } = await requireAuth();
     if (error) return error;
 
     const body = await req.json();
-    const { studentName, className, branch: branchName, topic, content, teacher, date, programType: rawProgramType } = body;
+    const {
+      studentName,
+      studentNames,
+      students: rawStudents,
+      journals: rawJournals,
+      className,
+      branch: branchName,
+      topic,
+      content,
+      teacher,
+      date,
+      programType: rawProgramType,
+    } = body;
 
-    if (!topic || !content) {
-      return NextResponse.json({ error: "Topik dan materi jurnal wajib diisi" }, { status: 400 });
-    }
+    const generateRefCode = () => `#${Math.random().toString(16).substring(2, 8)}`;
+    const journalDate = date ? new Date(date) : new Date();
 
+    // Find branch
     let branch = await prisma.branch.findFirst({
       where: { branchName: { contains: branchName || "Singkut", mode: "insensitive" } },
     });
@@ -66,10 +79,140 @@ export async function POST(req: Request) {
       branch = await prisma.branch.findFirst();
     }
 
-    const refCode = `#${Math.random().toString(16).substring(2, 8)}`;
-    const journalDate = date ? new Date(date) : new Date();
+    // Case 1: Bulk journals array provided
+    if (Array.isArray(rawJournals) && rawJournals.length > 0) {
+      const createdList = [];
+      for (const item of rawJournals) {
+        if (!item.topic || !item.content) continue;
 
-    const programType = (rawProgramType || (className?.toLowerCase().includes("membaca") ? "MEMBACA" : "MATEMATIKA")).toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+        let itemBranch = branch;
+        if (item.branch) {
+          const found = await prisma.branch.findFirst({
+            where: { branchName: { contains: item.branch, mode: "insensitive" } },
+          });
+          if (found) itemBranch = found;
+        }
+
+        const pType = (
+          item.programType ||
+          (item.className?.toLowerCase().includes("membaca") ? "MEMBACA" : "MATEMATIKA")
+        ).toUpperCase() === "MEMBACA"
+          ? "MEMBACA"
+          : "MATEMATIKA";
+
+        const itemDate = item.date ? new Date(item.date) : new Date();
+
+        const created = await prisma.teacherJournal.create({
+          data: {
+            branchId: itemBranch!.id,
+            studentId: item.studentId || null,
+            studentName: item.studentName || "Semua Siswa",
+            className: item.className || "Kelas Reguler",
+            teacherName: item.teacher || "Tutor",
+            topic: item.topic,
+            content: item.content,
+            journalDate: itemDate,
+            refCode: generateRefCode(),
+            programType: pType,
+          },
+          include: { branch: true },
+        });
+
+        createdList.push({
+          id: created.id,
+          studentName: created.studentName,
+          className: created.className,
+          branch: created.branch?.branchName || "Singkut",
+          topic: created.topic,
+          content: created.content,
+          teacher: created.teacherName,
+          date: created.journalDate.toISOString().split("T")[0],
+          refCode: created.refCode,
+          programType: created.programType,
+        });
+      }
+
+      return NextResponse.json(createdList, { status: 201 });
+    }
+
+    // Case 2: Array of studentNames or students objects provided
+    const targetStudents: { id?: string; name: string }[] = [];
+    if (Array.isArray(rawStudents) && rawStudents.length > 0) {
+      targetStudents.push(
+        ...rawStudents.map((s: any) =>
+          typeof s === "string" ? { name: s } : { id: s.id, name: s.name || s.studentName }
+        )
+      );
+    } else if (Array.isArray(studentNames) && studentNames.length > 0) {
+      targetStudents.push(...studentNames.map((name: string) => ({ name })));
+    }
+
+    if (targetStudents.length > 0) {
+      if (!topic || !content) {
+        return NextResponse.json({ error: "Topik dan materi jurnal wajib diisi" }, { status: 400 });
+      }
+
+      const programType = (
+        rawProgramType || (className?.toLowerCase().includes("membaca") ? "MEMBACA" : "MATEMATIKA")
+      ).toUpperCase() === "MEMBACA"
+        ? "MEMBACA"
+        : "MATEMATIKA";
+
+      const createdList = [];
+      for (const st of targetStudents) {
+        let studentId = st.id || null;
+        if (!studentId && st.name) {
+          const foundStudent = await prisma.student.findFirst({
+            where: { studentName: { contains: st.name, mode: "insensitive" } },
+          });
+          if (foundStudent) studentId = foundStudent.id;
+        }
+
+        const created = await prisma.teacherJournal.create({
+          data: {
+            branchId: branch!.id,
+            studentId,
+            studentName: st.name || "Semua Siswa",
+            className: className || "Kelas Reguler",
+            teacherName: teacher || "Tutor",
+            topic,
+            content,
+            journalDate,
+            refCode: generateRefCode(),
+            programType,
+          },
+          include: { branch: true },
+        });
+
+        createdList.push({
+          id: created.id,
+          studentName: created.studentName,
+          className: created.className,
+          branch: created.branch?.branchName || "Singkut",
+          topic: created.topic,
+          content: created.content,
+          teacher: created.teacherName,
+          date: created.journalDate.toISOString().split("T")[0],
+          refCode: created.refCode,
+          programType: created.programType,
+        });
+      }
+
+      return NextResponse.json(createdList, { status: 201 });
+    }
+
+    // Case 3: Single student creation (backward compatibility)
+    if (!topic || !content) {
+      return NextResponse.json({ error: "Topik dan materi jurnal wajib diisi" }, { status: 400 });
+    }
+
+    const programType = (
+      rawProgramType || (className?.toLowerCase().includes("membaca") ? "MEMBACA" : "MATEMATIKA")
+    ).toUpperCase() === "MEMBACA"
+      ? "MEMBACA"
+      : "MATEMATIKA";
+
+    const refCode = generateRefCode();
 
     const created = await prisma.teacherJournal.create({
       data: {

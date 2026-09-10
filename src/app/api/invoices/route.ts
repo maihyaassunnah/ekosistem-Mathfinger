@@ -51,15 +51,150 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/invoices - Create new invoice
+// POST /api/invoices - Create new invoice (supports single or bulk)
 export async function POST(req: Request) {
   try {
     const { error } = await requireAuth();
     if (error) return error;
 
     const body = await req.json();
-    const { studentId, studentName, period, dueDate, amount, status, programType: rawProgramType } = body;
+    const {
+      studentId,
+      studentIds,
+      invoices: rawInvoices,
+      studentName,
+      period,
+      dueDate,
+      amount,
+      status,
+      programType: rawProgramType,
+    } = body;
 
+    // Helper to generate a unique invoice number
+    const usedNumbers = new Set<string>();
+    const generateUniqueInvoiceNo = () => {
+      let invNo = "";
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const code = Math.floor(1000 + Math.random() * 9000);
+        invNo = `INV/MF/2608/${code}`;
+        if (!usedNumbers.has(invNo)) {
+          usedNumbers.add(invNo);
+          return invNo;
+        }
+      }
+      return `INV/MF/2608/${Date.now().toString().slice(-4)}`;
+    };
+
+    // Case 1: Bulk invoices array provided
+    if (Array.isArray(rawInvoices) && rawInvoices.length > 0) {
+      const createdList = [];
+      for (const item of rawInvoices) {
+        let student = null;
+        if (item.studentId) {
+          student = await prisma.student.findUnique({ where: { id: item.studentId } });
+        }
+        if (!student && item.studentName) {
+          student = await prisma.student.findFirst({
+            where: { studentName: { contains: item.studentName, mode: "insensitive" } },
+          });
+        }
+        if (!student) continue;
+
+        const due = item.dueDate ? new Date(item.dueDate) : new Date(Date.now() + 10 * 86400000);
+        const programType = (
+          item.programType ||
+          student.programType ||
+          "MATEMATIKA"
+        ).toUpperCase() === "MEMBACA"
+          ? "MEMBACA"
+          : "MATEMATIKA";
+
+        const created = await prisma.invoice.create({
+          data: {
+            invoiceNumber: generateUniqueInvoiceNo(),
+            studentId: student.id,
+            branchId: student.branchId,
+            amount: item.amount ? Number(item.amount) : 100000,
+            period: item.period || "September 2026",
+            dueDate: due,
+            status: item.status === "LUNAS" ? "PAID" : "UNPAID",
+            programType,
+          },
+          include: { student: true, branch: true },
+        });
+
+        createdList.push({
+          id: created.id,
+          invoiceNo: created.invoiceNumber,
+          studentId: created.studentId,
+          studentName: created.student.studentName,
+          branch: (created.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+          period: created.period,
+          dueDate: created.dueDate.toISOString().split("T")[0],
+          amount: Number(created.amount),
+          status: created.status === "PAID" ? "LUNAS" : "BELUM BAYAR",
+          programType: created.programType,
+        });
+      }
+
+      return NextResponse.json(createdList, { status: 201 });
+    }
+
+    // Case 2: Array of studentIds provided with common parameters
+    if (Array.isArray(studentIds) && studentIds.length > 0) {
+      const students = await prisma.student.findMany({
+        where: { id: { in: studentIds } },
+        include: { branch: true },
+      });
+
+      if (students.length === 0) {
+        return NextResponse.json({ error: "Tidak ada siswa yang valid ditemukan" }, { status: 400 });
+      }
+
+      const due = dueDate ? new Date(dueDate) : new Date(Date.now() + 10 * 86400000);
+      const createdList = [];
+
+      for (const st of students) {
+        const programType = (
+          rawProgramType ||
+          st.programType ||
+          "MATEMATIKA"
+        ).toUpperCase() === "MEMBACA"
+          ? "MEMBACA"
+          : "MATEMATIKA";
+
+        const created = await prisma.invoice.create({
+          data: {
+            invoiceNumber: generateUniqueInvoiceNo(),
+            studentId: st.id,
+            branchId: st.branchId,
+            amount: amount ? Number(amount) : 100000,
+            period: period || "September 2026",
+            dueDate: due,
+            status: status === "LUNAS" ? "PAID" : "UNPAID",
+            programType,
+          },
+          include: { student: true, branch: true },
+        });
+
+        createdList.push({
+          id: created.id,
+          invoiceNo: created.invoiceNumber,
+          studentId: created.studentId,
+          studentName: created.student.studentName,
+          branch: (created.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+          period: created.period,
+          dueDate: created.dueDate.toISOString().split("T")[0],
+          amount: Number(created.amount),
+          status: created.status === "PAID" ? "LUNAS" : "BELUM BAYAR",
+          programType: created.programType,
+        });
+      }
+
+      return NextResponse.json(createdList, { status: 201 });
+    }
+
+    // Case 3: Single student creation (backward compatibility)
     let student = null;
     if (studentId) {
       student = await prisma.student.findUnique({ where: { id: studentId } });
@@ -77,19 +212,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Data siswa tidak ditemukan" }, { status: 400 });
     }
 
-    const code = Math.floor(1000 + Math.random() * 9000);
-    const invoiceNo = `INV/MF/2608/${code}`;
+    const invoiceNo = generateUniqueInvoiceNo();
     const due = dueDate ? new Date(dueDate) : new Date(Date.now() + 10 * 86400000);
 
-    const programType = (rawProgramType || student.programType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+    const programType =
+      (rawProgramType || student.programType || "MATEMATIKA").toUpperCase() === "MEMBACA"
+        ? "MEMBACA"
+        : "MATEMATIKA";
 
     const created = await prisma.invoice.create({
       data: {
         invoiceNumber: invoiceNo,
         studentId: student.id,
         branchId: student.branchId,
-        amount: amount ? Number(amount) : 250000,
-        period: period || "Bulan Berjalan",
+        amount: amount ? Number(amount) : 100000,
+        period: period || "September 2026",
         dueDate: due,
         status: status === "LUNAS" ? "PAID" : "UNPAID",
         programType,
@@ -108,6 +245,7 @@ export async function POST(req: Request) {
         dueDate: created.dueDate.toISOString().split("T")[0],
         amount: Number(created.amount),
         status: created.status === "PAID" ? "LUNAS" : "BELUM BAYAR",
+        programType: created.programType,
       },
       { status: 201 }
     );

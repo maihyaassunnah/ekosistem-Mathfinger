@@ -26,11 +26,12 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
+import MultiStudentSelect from "@/components/ui/MultiStudentSelect";
 import { useAppStore, InvoiceItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 function SppContent() {
-  const { students, invoices, addInvoice, updateInvoiceStatus, deleteInvoice, branches } =
+  const { students, invoices, addInvoice, addInvoicesBulk, updateInvoiceStatus, deleteInvoice, branches } =
     useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const searchParams = useSearchParams();
@@ -103,10 +104,10 @@ Salam Hangat,
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Form for new invoice
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [form, setForm] = useState({
-    studentId: "",
     period: "September 2026",
-    dueDate: "2026-09-10",
+    dueDate: new Date().toISOString().split("T")[0],
     amount: 100000,
   });
 
@@ -137,10 +138,10 @@ Salam Hangat,
   const unpaidCount = scopedInvoices.filter((i) => i.status === "BELUM BAYAR").length;
 
   const handleOpenAdd = () => {
+    setSelectedStudentIds(scopedStudents.length > 0 ? [scopedStudents[0].id] : []);
     setForm({
-      studentId: scopedStudents[0]?.id || "",
       period: "September 2026",
-      dueDate: "2026-09-10",
+      dueDate: new Date().toISOString().split("T")[0],
       amount: 100000,
     });
     setIsAddOpen(true);
@@ -148,21 +149,33 @@ Salam Hangat,
 
   const handleSubmitAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    const st = students.find((s) => s.id === form.studentId);
-    if (!st) return;
+    if (selectedStudentIds.length === 0) {
+      alert("Silakan pilih minimal 1 siswa untuk menerbitkan invoice.");
+      return;
+    }
 
-    addInvoice({
+    const selectedStudents = students.filter((s) => selectedStudentIds.includes(s.id));
+    if (selectedStudents.length === 0) return;
+
+    const invoicesToCreate = selectedStudents.map((st) => ({
       studentId: st.id,
       studentName: st.name,
       period: form.period,
       dueDate: form.dueDate,
       amount: form.amount,
-      status: "BELUM BAYAR",
+      status: "BELUM BAYAR" as const,
       branch: st.branch,
-      programType: isMembaca ? "MEMBACA" : "MATEMATIKA",
-    });
+      programType: isMembaca ? ("MEMBACA" as const) : ("MATEMATIKA" as const),
+    }));
+
+    addInvoicesBulk(invoicesToCreate);
     setIsAddOpen(false);
-    showToast(`Invoice baru berhasil diterbitkan untuk ${st.name}!`);
+
+    if (selectedStudents.length === 1) {
+      showToast(`Invoice baru berhasil diterbitkan untuk ${selectedStudents[0].name}!`);
+    } else {
+      showToast(`${selectedStudents.length} Invoice baru berhasil diterbitkan sekaligus!`);
+    }
   };
 
   const handleConfirmPayment = (method: string) => {
@@ -628,19 +641,27 @@ Salam Hangat,
 
             <form onSubmit={handleSubmitAdd} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-extrabold text-slate-700 dark:text-slate-200">
-                  Pilih Siswa *
-                </label>
-                <CustomSelect
-                  value={form.studentId}
-                  onChange={(val) => setForm({ ...form, studentId: val })}
+                <div className="flex items-center justify-between">
+                  <label className="font-extrabold text-slate-700 dark:text-slate-200">
+                    Pilih Siswa *
+                  </label>
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    {selectedStudentIds.length} Siswa Terpilih
+                  </span>
+                </div>
+                <MultiStudentSelect
+                  students={scopedStudents.map((s) => ({
+                    id: s.id,
+                    name: s.name,
+                    className: s.className,
+                    branch: s.branch,
+                    programType: (s as any).programType,
+                  }))}
+                  selectedIds={selectedStudentIds}
+                  onChange={setSelectedStudentIds}
+                  placeholder="Pilih satu atau beberapa siswa..."
                   className="w-full"
                   size="md"
-                  placeholder="Pilih Siswa..."
-                  options={scopedStudents.map((s) => ({
-                    value: s.id,
-                    label: `${s.name} (${s.className} - ${s.branch})`,
-                  }))}
                 />
               </div>
 
@@ -677,7 +698,7 @@ Salam Hangat,
 
               <div className="space-y-1">
                 <label className="font-extrabold text-slate-700 dark:text-slate-200">
-                  Nominal Tagihan (Rp) *
+                  Nominal Tagihan per Siswa (Rp) *
                 </label>
                 <input
                   type="number"
@@ -690,6 +711,28 @@ Salam Hangat,
                 />
               </div>
 
+              {/* Total calculation preview */}
+              {selectedStudentIds.length > 0 && (
+                <div className="p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                      Total {selectedStudentIds.length} Invoice Diterbitkan
+                    </span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      {selectedStudentIds.length} Siswa × Rp {form.amount.toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">
+                      Total Nominal
+                    </span>
+                    <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300">
+                      Rp {(selectedStudentIds.length * form.amount).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end gap-2 pt-3">
                 <button
                   type="button"
@@ -700,9 +743,10 @@ Salam Hangat,
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-extrabold cursor-pointer transition-colors"
+                  disabled={selectedStudentIds.length === 0}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 shadow-xs shadow-emerald-500/20 text-white font-extrabold cursor-pointer transition-colors"
                 >
-                  Terbitkan
+                  Terbitkan {selectedStudentIds.length > 1 ? `(${selectedStudentIds.length} Invoice)` : "Invoice"}
                 </button>
               </div>
             </form>
