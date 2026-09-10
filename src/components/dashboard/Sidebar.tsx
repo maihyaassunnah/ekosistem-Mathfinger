@@ -192,12 +192,16 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           badge: mathClassCount > 0 ? `${mathClassCount}` : null,
           badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-emerald-300 font-bold",
         },
-        {
-          name: "Kartu QR Siswa",
-          href: "/dashboard/kartu-qr",
-          icon: QrCode,
-          badge: null,
-        },
+        ...(isSuperAdmin
+          ? [
+              {
+                name: "Kartu QR Siswa",
+                href: "/dashboard/kartu-qr",
+                icon: QrCode,
+                badge: null,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -330,12 +334,16 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           badge: readingClassCount > 0 ? `${readingClassCount}` : null,
           badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
         },
-        {
-          name: "Kartu QR Siswa",
-          href: "/dashboard/kartu-qr?program=MEMBACA",
-          icon: QrCode,
-          badge: null,
-        },
+        ...(isSuperAdmin
+          ? [
+              {
+                name: "Kartu QR Siswa",
+                href: "/dashboard/kartu-qr?program=MEMBACA",
+                icon: QrCode,
+                badge: null,
+              },
+            ]
+          : []),
       ],
     },
     {

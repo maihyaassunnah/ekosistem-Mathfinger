@@ -212,7 +212,9 @@ function DashboardContent() {
         "Scan instan kartu QR siswa dan rekap kehadiran real-time terhubung ke wali murid.",
       pill: "🪪 Presensi Realtime",
       btn1: { label: "📷 Scan QR", href: "/dashboard/absensi" },
-      btn2: { label: "🪪 Cetak Kartu", href: "/dashboard/kartu-qr" },
+      btn2: isSuperAdmin
+        ? { label: "🪪 Cetak Kartu", href: "/dashboard/kartu-qr" }
+        : { label: "👥 Data Siswa", href: "/dashboard/siswa" },
     },
     {
       title: "Rapor Digital & Jurnal Guru",
@@ -256,12 +258,17 @@ function DashboardContent() {
       icon: Layers,
       color: "bg-indigo-50 text-indigo-500 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/60",
     },
-    {
-      label: "Kartu QR",
-      href: "/dashboard/kartu-qr",
-      icon: QrCode,
-      color: "bg-cyan-50 text-cyan-600 border border-cyan-100 dark:bg-cyan-950/60 dark:text-cyan-400 dark:border-cyan-900/60",
-    },
+    ...(isSuperAdmin
+      ? [
+          {
+            label: "Kartu QR",
+            href: "/dashboard/kartu-qr",
+            icon: QrCode,
+            color:
+              "bg-cyan-50 text-cyan-600 border border-cyan-100 dark:bg-cyan-950/60 dark:text-cyan-400 dark:border-cyan-900/60",
+          },
+        ]
+      : []),
     {
       label: "Jurnal Guru",
       href: "/dashboard/jurnal",

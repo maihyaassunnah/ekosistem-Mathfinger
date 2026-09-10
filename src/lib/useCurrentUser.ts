@@ -103,21 +103,23 @@ export function useCurrentUser(): CurrentUserInfo {
   const canAccess = (pathname: string): boolean => {
     if (isSuperAdmin) return true;
 
-    // Admin Cabang cannot access Cabang, Pengaturan, Database, and Website
+    // Admin Cabang cannot access Cabang, Pengaturan, Database, Website, and Kartu QR
     if (isBranchAdmin) {
       if (pathname.startsWith("/dashboard/cabang")) return false;
       if (pathname.startsWith("/dashboard/pengaturan")) return false;
       if (pathname.startsWith("/dashboard/database")) return false;
       if (pathname.startsWith("/dashboard/website")) return false;
+      if (pathname.startsWith("/dashboard/kartu-qr")) return false;
       return true;
     }
 
-    // Asisten Cabang cannot access Cabang, Pengaturan, Database, Website, and Keuangan (SPP, Riwayat SPP, Arus Keuangan)
+    // Asisten Cabang cannot access Cabang, Pengaturan, Database, Website, Kartu QR, and Keuangan (SPP, Riwayat SPP, Arus Keuangan)
     if (isBranchAssistant) {
       if (pathname.startsWith("/dashboard/cabang")) return false;
       if (pathname.startsWith("/dashboard/pengaturan")) return false;
       if (pathname.startsWith("/dashboard/database")) return false;
       if (pathname.startsWith("/dashboard/website")) return false;
+      if (pathname.startsWith("/dashboard/kartu-qr")) return false;
       if (pathname.startsWith("/dashboard/arus-keuangan")) return false;
       if (pathname.startsWith("/dashboard/riwayat-spp")) return false;
       if (pathname.startsWith("/dashboard/spp")) return false;
@@ -130,6 +132,7 @@ export function useCurrentUser(): CurrentUserInfo {
       if (pathname.startsWith("/dashboard/pengaturan")) return false;
       if (pathname.startsWith("/dashboard/database")) return false;
       if (pathname.startsWith("/dashboard/website")) return false;
+      if (pathname.startsWith("/dashboard/kartu-qr")) return false;
       if (pathname.startsWith("/dashboard/arus-keuangan")) return false;
       if (pathname.startsWith("/dashboard/riwayat-spp")) return false;
       if (pathname.startsWith("/dashboard/spp")) return false;

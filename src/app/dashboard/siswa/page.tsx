@@ -748,14 +748,16 @@ function SiswaContent() {
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <Link
-                        href="/dashboard/kartu-qr"
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-emerald-600 transition-all"
-                        title="Kartu QR"
-                        aria-label="Kartu QR"
-                      >
-                        <QrCode className="w-3.5 h-3.5" />
-                      </Link>
+                      {isSuperAdmin && (
+                        <Link
+                          href="/dashboard/kartu-qr"
+                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-emerald-600 transition-all"
+                          title="Kartu QR"
+                          aria-label="Kartu QR"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                        </Link>
+                      )}
                       <button
                         type="button"
                         onClick={() => {
