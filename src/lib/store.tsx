@@ -1430,30 +1430,7 @@ export const INITIAL_ATTENDANCES: Record<string, AttendanceItem> = {
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [students, setStudents] = useState<StudentItem[]>(STUDENTS_DATA);
   const [classes, setClasses] = useState<ClassItem[]>(INITIAL_CLASSES);
-  const [branches, setBranches] = useState<BranchItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const savedBranches = localStorage.getItem("mf_branches");
-        const savedFinance = localStorage.getItem("mf_branch_finance_settings");
-        const financeMap = savedFinance ? JSON.parse(savedFinance) : {};
-        const base = savedBranches ? JSON.parse(savedBranches) : BRANCHES_DATA;
-        return base.map((b: BranchItem) => {
-          const custom = financeMap[b.id] || financeMap[b.name] || {};
-          return {
-            ...b,
-            bankName: custom.bankName !== undefined ? custom.bankName : (b.bankName || (b.name === "Singkut" ? "BCA" : "BRI")),
-            accountNumber: custom.accountNumber !== undefined ? custom.accountNumber : (b.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8")),
-            accountHolder: custom.accountHolder !== undefined ? custom.accountHolder : (b.accountHolder || `Math Fingers ${b.name}`),
-            adminName: custom.adminName !== undefined ? custom.adminName : (b.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd")),
-            signatureUrl: custom.signatureUrl !== undefined ? custom.signatureUrl : (b.signatureUrl || ""),
-          };
-        });
-      } catch {
-        return BRANCHES_DATA;
-      }
-    }
-    return BRANCHES_DATA;
-  });
+  const [branches, setBranches] = useState<BranchItem[]>(BRANCHES_DATA);
   const [branchAdmins, setBranchAdmins] = useState<BranchAdminItem[]>(INITIAL_ADMINS);
   const [journals, setJournals] = useState<JournalItem[]>(INITIAL_JOURNALS);
   const [attendances, setAttendances] = useState<Record<string, AttendanceItem>>(INITIAL_ATTENDANCES);
@@ -1657,7 +1634,27 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (savedClasses) setClasses(JSON.parse(savedClasses));
 
       const savedBranches = localStorage.getItem("mf_branches");
-      if (savedBranches) setBranches(JSON.parse(savedBranches));
+      if (savedBranches) {
+        try {
+          const parsed = JSON.parse(savedBranches);
+          const savedFinance = localStorage.getItem("mf_branch_finance_settings");
+          const financeMap = savedFinance ? JSON.parse(savedFinance) : {};
+          const enriched = parsed.map((b: BranchItem) => {
+            const custom = financeMap[b.id] || financeMap[b.name] || {};
+            return {
+              ...b,
+              bankName: custom.bankName !== undefined ? custom.bankName : (b.bankName || (b.name === "Singkut" ? "BCA" : "BRI")),
+              accountNumber: custom.accountNumber !== undefined ? custom.accountNumber : (b.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8")),
+              accountHolder: custom.accountHolder !== undefined ? custom.accountHolder : (b.accountHolder || `Math Fingers ${b.name}`),
+              adminName: custom.adminName !== undefined ? custom.adminName : (b.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd")),
+              signatureUrl: custom.signatureUrl !== undefined ? custom.signatureUrl : (b.signatureUrl || ""),
+            };
+          });
+          setBranches(enriched);
+        } catch {
+          // ignore
+        }
+      }
 
       const savedAdmins = localStorage.getItem("mf_branchAdmins");
       if (savedAdmins) setBranchAdmins(JSON.parse(savedAdmins));

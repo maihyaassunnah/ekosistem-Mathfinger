@@ -107,7 +107,7 @@ function DashboardContent() {
 
   // Mobile/Tablet specific state
   const [mobileBranch, setMobileBranch] = useState<string>(
-    allowedBranch || (branches[0]?.name || "Singkut")
+    allowedBranch || "Singkut"
   );
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -403,10 +403,10 @@ function DashboardContent() {
                 </div>
                 <div>
                   <div className="font-black text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                    <span>Cabang {mobileBranch}</span>
+                    <span suppressHydrationWarning>Cabang {mobileBranch}</span>
                     <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-emerald-600" />
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
+                  <div suppressHydrationWarning className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
                     {mobileBranch === "Singkut"
                       ? "Depan Ponpes Ihya' As-Sunnah..."
                       : "Jl. Jenderal Sudirman No. 45..."}
@@ -420,13 +420,13 @@ function DashboardContent() {
                 </div>
                 <div>
                   <div className="font-black text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                    <span>Cabang {allowedBranch}</span>
+                    <span suppressHydrationWarning>Cabang {allowedBranch || "Singkut"}</span>
                     <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                       Terkunci
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
-                    {allowedBranch === "Singkut"
+                  <div suppressHydrationWarning className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-[190px]">
+                    {(allowedBranch || "Singkut") === "Singkut"
                       ? "Depan Ponpes Ihya' As-Sunnah..."
                       : "Jl. Jenderal Sudirman No. 45..."}
                   </div>
@@ -830,11 +830,11 @@ function DashboardContent() {
                   ? "PUSAT KENDALI SUPER ADMIN"
                   : `PANEL ADMIN CABANG ${allowedBranch?.toUpperCase() || ""}`}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300">
+              <span suppressHydrationWarning className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300">
                 <Calendar className="w-3.5 h-3.5" />
                 {currentDateFormatted}
               </span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold">
+              <span suppressHydrationWarning className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold">
                 {isSuperAdmin ? `${branches.length} Cabang Aktif` : `Cabang ${allowedBranch || "Singkut"}`}
               </span>
             </div>
