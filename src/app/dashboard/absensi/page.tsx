@@ -56,8 +56,17 @@ function AbsensiContent() {
     refreshData,
   } = useAppStore();
 
+  // Helper tanggal hari ini (YYYY-MM-DD)
+  const getTodayDateString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const [activeTab, setActiveTab] = useState<"HARI_INI" | "REKAP">("HARI_INI");
-  const [selectedDate, setSelectedDate] = useState("2026-09-06");
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString);
   const [selectedClass, setSelectedClass] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"A-Z" | "Z-A">("A-Z");
@@ -349,35 +358,30 @@ function AbsensiContent() {
       return;
     }
 
-    // Check schedule match
+    // Success Check-in every day (Senin s/d Ahad) tanpa pembatasan hari tertentu!
     const currentTime =
       new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
 
-    if (!isScheduleMatch) {
-      setScanResult({
-        type: "WARNING_SCHEDULE",
-        student,
-        message: `Perhatian: Hari ini adalah hari ${dayToday}, sedangkan jadwal reguler kelas ${student.className} adalah [${schedule.days}].`,
-        scheduleInfo: `${schedule.days} • ${schedule.time}`,
-      });
-      return;
-    }
+    const progType = (student as any)?.programType || (isMembacaProgram ? "MEMBACA" : "MATEMATIKA");
 
-    // Success Check-in!
     setAttendance(
       student.id,
       selectedDate,
       "HADIR",
-      "Scan QR Presensi berhasil",
+      `Scan QR Presensi (${dayToday})`,
       currentTime,
-      "QR_SCAN"
+      "QR_SCAN",
+      progType
     );
+
+    // Otomatis tandai centang siswa pada list hari ini
+    setSelectedIds((prev) => Array.from(new Set([...prev, student.id])));
 
     setScanResult({
       type: "SUCCESS",
       student,
-      message: `Presensi Berhasil! ${student.name} tercatat HADIR pada ${currentTime} sesuai jadwal.`,
-      scheduleInfo: `${schedule.days} • ${schedule.time}`,
+      message: `Presensi Berhasil! ${student.name} tercatat HADIR pada ${currentTime} (${dayToday}) - Program ${progType === "MEMBACA" ? "Les Membaca" : "Les Matematika"}.`,
+      scheduleInfo: `Jadwal Reguler: ${schedule.days} • ${schedule.time}`,
     });
 
     setScannerInputCode("");
@@ -513,7 +517,12 @@ function AbsensiContent() {
     const recordedIds = branchScopedStudents
       .filter((st) => !!attendances[`${st.id}_${selectedDate}`])
       .map((st) => st.id);
-    setSelectedIds(recordedIds);
+    if (recordedIds.length > 0) {
+      setSelectedIds(recordedIds);
+    } else {
+      // Sesi hari baru: otomatis centang seluruh siswa terdaftar agar langsung siap diabsenkan
+      setSelectedIds(branchScopedStudents.map((st) => st.id));
+    }
   }, [selectedDate, branchScopedStudents.length]);
 
   const handleToggleStudentSelect = (studentId: string) => {
@@ -529,7 +538,16 @@ function AbsensiContent() {
     status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN"
   ) => {
     setSelectedIds((prev) => Array.from(new Set([...prev, studentId])));
-    setAttendance(studentId, selectedDate, status, notesState[studentId]);
+    const progType = isMembacaProgram ? "MEMBACA" : "MATEMATIKA";
+    setAttendance(
+      studentId,
+      selectedDate,
+      status,
+      notesState[studentId],
+      undefined,
+      undefined,
+      progType
+    );
     setStatusMenuStudentId(null);
   };
 
@@ -549,7 +567,16 @@ function AbsensiContent() {
     const current = notesState[studentId] || "";
     const updated = current ? `${current}, ${text}` : text;
     setNotesState((prev) => ({ ...prev, [studentId]: updated }));
-    setAttendance(studentId, selectedDate, getStatus(studentId), updated);
+    const progType = isMembacaProgram ? "MEMBACA" : "MATEMATIKA";
+    setAttendance(
+      studentId,
+      selectedDate,
+      getStatus(studentId),
+      updated,
+      undefined,
+      undefined,
+      progType
+    );
   };
 
   const visibleStudentIds = filteredStudents.map((s) => s.id);
@@ -566,13 +593,29 @@ function AbsensiContent() {
   };
 
   const handleMarkAllHadir = () => {
-    setSelectedIds(filteredStudents.map((s) => s.id));
-    batchSetAttendance(selectedDate, "HADIR");
+    const targetStudents = filteredStudents;
+    const targetIds = targetStudents.map((s) => s.id);
+    setSelectedIds(targetIds);
     const formattedTime = getFormattedLiveTime();
     setLastSavedTime(formattedTime);
+
+    const progType = isMembacaProgram ? "MEMBACA" : "MATEMATIKA";
+
+    targetStudents.forEach((st) => {
+      setAttendance(
+        st.id,
+        selectedDate,
+        "HADIR",
+        notesState[st.id] || "",
+        formattedTime,
+        "MANUAL",
+        progType
+      );
+    });
+
     setSaveToast({
-      message: `Seluruh siswa (${filteredStudents.length}) berhasil dicentang HADIR untuk tanggal ${selectedDate}! Tekan Simpan Presensi untuk menyimpan ke database.`,
-      count: filteredStudents.length,
+      message: `Seluruh siswa (${targetStudents.length}) berhasil dicentang HADIR untuk ${getDayNameIndonesian(selectedDate)}, ${selectedDate}! Tekan Simpan Presensi untuk menyimpan ke database.`,
+      count: targetStudents.length,
     });
   };
 
@@ -586,13 +629,22 @@ function AbsensiContent() {
   const handleSaveTodayAttendance = async () => {
     setIsSaving(true);
     const currentTime = getFormattedLiveTime();
+    const progType = isMembacaProgram ? "MEMBACA" : "MATEMATIKA";
 
     // Siswa yang DICENTANG absensinya
-    const checkedStudents = filteredStudents.filter((st) => selectedIds.includes(st.id));
-    // Siswa yang TIDAK DICENTANG absensinya
-    const uncheckedStudents = filteredStudents.filter((st) => !selectedIds.includes(st.id));
+    let checkedStudents = filteredStudents.filter((st) => selectedIds.includes(st.id));
 
-    // 1. Data absensi hanya untuk siswa yang dicentang
+    // Fallback cerdas: Jika tidak ada yang dicentang secara manual, otomatis sertakan semua siswa pada view ini
+    if (checkedStudents.length === 0 && filteredStudents.length > 0) {
+      checkedStudents = filteredStudents;
+      setSelectedIds(filteredStudents.map((st) => st.id));
+    }
+
+    const uncheckedStudents = filteredStudents.filter(
+      (st) => !checkedStudents.some((cs) => cs.id === st.id)
+    );
+
+    // 1. Data absensi untuk siswa yang dicentang
     const payload = checkedStudents.map((st) => {
       const status = getStatus(st.id);
       const note =
@@ -611,6 +663,7 @@ function AbsensiContent() {
         note,
         time: existingRec?.time || currentTime,
         method: (existingRec?.method as "QR_SCAN" | "MANUAL") || "MANUAL",
+        programType: (st as any)?.programType || progType,
       };
     });
 
@@ -622,7 +675,8 @@ function AbsensiContent() {
         item.status,
         item.note,
         item.time,
-        item.method
+        item.method,
+        item.programType
       );
     });
 
@@ -635,12 +689,12 @@ function AbsensiContent() {
     // 3. Simpan ke database PostgreSQL jika ada siswa dicentang
     if (payload.length > 0) {
       try {
-        await fetch("/api/attendances", {
+        const res = await fetch("/api/attendances", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (typeof refreshData === "function") {
+        if (res.ok && typeof refreshData === "function") {
           refreshData();
         }
       } catch (err) {
@@ -654,11 +708,7 @@ function AbsensiContent() {
     setSaveToast({
       message:
         checkedStudents.length > 0
-          ? `Presensi ${checkedStudents.length} siswa dicentang berhasil disimpan! ${
-              uncheckedStudents.length > 0
-                ? `(${uncheckedStudents.length} siswa tidak dicentang dibiarkan kosong di riwayat & database)`
-                : ""
-            }`
+          ? `Presensi ${checkedStudents.length} siswa (${isMembacaProgram ? "Les Membaca" : "Les Matematika"}) tanggal ${selectedDate} (${getDayNameIndonesian(selectedDate)}) berhasil disimpan ke Database!`
           : `Tidak ada siswa yang dicentang. Presensi sesi ${selectedDate} dikosongkan.`,
       count: checkedStudents.length,
     });
@@ -909,7 +959,10 @@ function AbsensiContent() {
           <div className="grid grid-cols-2 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl w-full sm:w-auto sm:flex sm:bg-transparent sm:dark:bg-transparent sm:p-0 sm:gap-2">
             <button
               type="button"
-              onClick={() => setActiveTab("HARI_INI")}
+              onClick={() => {
+                setActiveTab("HARI_INI");
+                setSelectedDate(getTodayDateString());
+              }}
               className={`inline-flex items-center justify-center gap-1.5 py-2 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "HARI_INI"
                   ? "bg-emerald-600 text-white shadow-xs"
@@ -945,10 +998,16 @@ function AbsensiContent() {
           <div className="hidden sm:flex bg-white dark:bg-[#0f1a36] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
             <div className="flex items-center justify-between sm:justify-start gap-2">
               <div>
-                <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
                   <span>Pilih Tanggal Sesi Bimbingan</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                     {getDayNameIndonesian(selectedDate)}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-bold">
+                    {isMembacaProgram ? "Les Membaca" : "Les Matematika"}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-medium hidden lg:inline">
+                    Bisa absen setiap hari (Senin - Ahad)
                   </span>
                   {lastSavedTime && (
                     <button
@@ -971,20 +1030,34 @@ function AbsensiContent() {
                   )}
                 </div>
                 <div className="text-[11px] text-slate-400">
-                  Siswa aktif terdaftar bimbingan matematika jaritmatika.
+                  {isMembacaProgram
+                    ? "Pencatatan presensi siswa aktif les membaca (berlaku fleksibel setiap hari)."
+                    : "Pencatatan presensi siswa aktif bimbingan matematika jaritmatika (berlaku fleksibel setiap hari)."}
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              {/* Desktop Date input */}
-              <div className="relative">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Quick Today button & Desktop Date input */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(getTodayDateString())}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    selectedDate === getTodayDateString()
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1d2d5a]"
+                  }`}
+                  title="Pilih tanggal hari ini"
+                >
+                  Hari Ini
+                </button>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3.5 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
+                  className="px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -1065,10 +1138,19 @@ function AbsensiContent() {
             </div>
 
             {/* Tanggal Sesi Input beside Search */}
-            <div className="relative shrink-0 flex items-center gap-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2.5 py-1.5 shadow-2xs">
-              <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950 px-1.5 py-0.5 rounded-md hidden sm:inline">
-                {getDayNameIndonesian(selectedDate)}
-              </span>
+            <div className="relative shrink-0 flex items-center gap-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl px-2 py-1.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setSelectedDate(getTodayDateString())}
+                className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                  selectedDate === getTodayDateString()
+                    ? "bg-emerald-600 text-white"
+                    : "bg-emerald-100/80 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900"
+                }`}
+                title="Klik untuk langsung ke tanggal hari ini"
+              >
+                {selectedDate === getTodayDateString() ? "Hari Ini" : getDayNameIndonesian(selectedDate)}
+              </button>
               <input
                 type="date"
                 value={selectedDate}

@@ -222,7 +222,12 @@ interface AppStoreContextType {
     method?: "QR_SCAN" | "MANUAL",
     programType?: "MATEMATIKA" | "MEMBACA"
   ) => void;
-  batchSetAttendance: (date: string, status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => void;
+  batchSetAttendance: (
+    date: string,
+    status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN",
+    targetStudentIds?: string[],
+    programType?: "MATEMATIKA" | "MEMBACA"
+  ) => void;
   addAttendanceRecord: (record: AttendanceItem) => void;
   updateAttendanceRecord: (key: string, updated: Partial<AttendanceItem>) => void;
   deleteAttendanceRecord: (key: string) => void;
@@ -2149,16 +2154,25 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error syncing attendance to PostgreSQL:", err));
   };
 
-  const batchSetAttendance = (date: string, status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN") => {
+  const batchSetAttendance = (
+    date: string,
+    status: "HADIR" | "IZIN" | "SAKIT" | "ABSEN",
+    targetStudentIds?: string[],
+    programType?: "MATEMATIKA" | "MEMBACA"
+  ) => {
     const currentTime =
       new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
     const payload: any[] = [];
 
+    const targetList = targetStudentIds && targetStudentIds.length > 0
+      ? students.filter((s) => targetStudentIds.includes(s.id))
+      : students;
+
     setAttendances((prev) => {
       const next = { ...prev };
-      students.forEach((s) => {
+      targetList.forEach((s) => {
         const key = `${s.id}_${date}`;
-        const progType = (s as any)?.programType || "MATEMATIKA";
+        const progType = programType || (s as any)?.programType || "MATEMATIKA";
         next[key] = {
           id: prev[key]?.id || `att-${Date.now()}-${s.id}`,
           studentId: s.id,
@@ -2699,6 +2713,28 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
+    // If any newly added invoices are already LUNAS, sync to transactions
+    const paidNewInvs = newInvoices.filter((i) => i.status === "LUNAS");
+    if (paidNewInvs.length > 0) {
+      setTransactions((prev) => {
+        const newTxs: CashTransactionItem[] = paidNewInvs.map((inv) => ({
+          id: `tx-inv-${inv.invoiceNo}-${Date.now()}`,
+          date: inv.paidDate || new Date().toISOString().split("T")[0],
+          type: "INCOME",
+          category: "SPP",
+          title: `Pembayaran SPP - ${inv.studentName} (${inv.period})`,
+          amount: inv.amount,
+          branch: (inv.branch as "Singkut" | "Bangko") || "Singkut",
+          sourceOrRecipient: inv.studentName,
+          notes: `[INV:${inv.invoiceNo}] Metode: ${inv.paidMethod || "Tunai"}`,
+          programType: ((inv.programType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA") as "MATEMATIKA" | "MEMBACA",
+        }));
+        const updated = [...newTxs, ...prev];
+        save("mf_transactions", updated);
+        return updated;
+      });
+    }
+
     try {
       const res = await fetch("/api/invoices", {
         method: "POST",
@@ -2756,33 +2792,86 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (status === "LUNAS") {
-      setCashMutations((prev) => {
-        const inv = targetInv || invoices.find((i) => i.id === id);
-        if (!inv) return prev;
-        const exists = prev.some((m) => m.invoiceNo === inv.invoiceNo);
-        if (exists) return prev;
-        const newMut: CashMutationItem = {
-          id: `mut-${Date.now()}`,
-          date: paidDate || new Date().toISOString().split("T")[0],
-          invoiceNo: inv.invoiceNo,
-          studentName: inv.studentName,
-          period: inv.period,
-          method: paidMethod?.toUpperCase().includes("TRANSFER") ? "TRANSFER" : "TUNAI",
-          description: "Pelunasan Penuh",
-          amount: inv.amount,
-        };
-        const next = [newMut, ...prev];
-        save("mf_mutations", next);
-        return next;
-      });
+      const inv = targetInv || invoices.find((i) => i.id === id);
+      if (inv) {
+        // 1. Sync Cash Mutation
+        setCashMutations((prev) => {
+          const exists = prev.some((m) => m.invoiceNo === inv.invoiceNo);
+          if (exists) return prev;
+          const newMut: CashMutationItem = {
+            id: `mut-${Date.now()}`,
+            date: paidDate || new Date().toISOString().split("T")[0],
+            invoiceNo: inv.invoiceNo,
+            studentName: inv.studentName,
+            period: inv.period,
+            method: paidMethod?.toUpperCase().includes("TRANSFER") ? "TRANSFER" : "TUNAI",
+            description: "Pelunasan Penuh",
+            amount: inv.amount,
+          };
+          const next = [newMut, ...prev];
+          save("mf_mutations", next);
+          return next;
+        });
+
+        // 2. Sync Cash Transaction (Pemasukan Arus Keuangan)
+        setTransactions((prev) => {
+          const refTag = `[INV:${inv.invoiceNo}]`;
+          const exists = prev.some((t) => t.notes?.includes(refTag));
+          const txDate = paidDate || new Date().toISOString().split("T")[0];
+          const methodStr = paidMethod || "Tunai";
+          const progType: "MATEMATIKA" | "MEMBACA" =
+            (inv.programType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
+          const branchVal: "Singkut" | "Bangko" = (inv.branch as "Singkut" | "Bangko") || "Singkut";
+
+          if (exists) {
+            const updated: CashTransactionItem[] = prev.map((t) =>
+              t.notes?.includes(refTag)
+                ? {
+                    ...t,
+                    amount: inv.amount,
+                    date: txDate,
+                    notes: `${refTag} Metode: ${methodStr}`,
+                    programType: progType,
+                  }
+                : t
+            );
+            save("mf_transactions", updated);
+            return updated;
+          }
+
+          const newTx: CashTransactionItem = {
+            id: `tx-inv-${inv.invoiceNo}-${Date.now()}`,
+            date: txDate,
+            type: "INCOME",
+            category: "SPP",
+            title: `Pembayaran SPP - ${inv.studentName} (${inv.period})`,
+            amount: inv.amount,
+            branch: branchVal,
+            sourceOrRecipient: inv.studentName,
+            notes: `${refTag} Metode: ${methodStr}`,
+            programType: progType,
+          };
+          const next = [newTx, ...prev];
+          save("mf_transactions", next);
+          return next;
+        });
+      }
     } else {
-      setCashMutations((prev) => {
-        const inv = invoices.find((i) => i.id === id);
-        if (!inv) return prev;
-        const filtered = prev.filter((m) => m.invoiceNo !== inv.invoiceNo);
-        save("mf_mutations", filtered);
-        return filtered;
-      });
+      const inv = invoices.find((i) => i.id === id);
+      if (inv) {
+        setCashMutations((prev) => {
+          const filtered = prev.filter((m) => m.invoiceNo !== inv.invoiceNo);
+          save("mf_mutations", filtered);
+          return filtered;
+        });
+
+        setTransactions((prev) => {
+          const refTag = `[INV:${inv.invoiceNo}]`;
+          const filtered = prev.filter((t) => !t.notes?.includes(refTag));
+          save("mf_transactions", filtered);
+          return filtered;
+        });
+      }
     }
 
     fetch("/api/invoices", {
@@ -2793,11 +2882,27 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteInvoice = (id: string) => {
+    const inv = invoices.find((i) => i.id === id);
     setInvoices((prev) => {
-      const filtered = prev.filter((inv) => inv.id !== id);
+      const filtered = prev.filter((item) => item.id !== id);
       save("mf_invoices", filtered);
       return filtered;
     });
+
+    if (inv) {
+      setCashMutations((prev) => {
+        const filtered = prev.filter((m) => m.invoiceNo !== inv.invoiceNo);
+        save("mf_mutations", filtered);
+        return filtered;
+      });
+
+      setTransactions((prev) => {
+        const refTag = `[INV:${inv.invoiceNo}]`;
+        const filtered = prev.filter((t) => !t.notes?.includes(refTag));
+        save("mf_transactions", filtered);
+        return filtered;
+      });
+    }
 
     fetch(`/api/invoices?id=${encodeURIComponent(id)}`, {
       method: "DELETE",

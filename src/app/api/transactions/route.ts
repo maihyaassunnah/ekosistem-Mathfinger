@@ -23,6 +23,7 @@ export async function GET() {
       branch: (t.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
       sourceOrRecipient: t.sourceOrRecipient,
       notes: t.notes || "",
+      programType: t.programType || "MATEMATIKA",
     }));
 
     return NextResponse.json(formatted);
@@ -39,7 +40,17 @@ export async function POST(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { date, type, category, title, amount, branch: branchName, sourceOrRecipient, notes } = body;
+    const {
+      date,
+      type,
+      category,
+      title,
+      amount,
+      branch: branchName,
+      sourceOrRecipient,
+      notes,
+      programType: rawProgramType,
+    } = body;
 
     if (!title || !amount) {
       return NextResponse.json({ error: "Judul dan nominal transaksi wajib diisi" }, { status: 400 });
@@ -53,6 +64,8 @@ export async function POST(req: Request) {
     }
 
     const txDate = date ? new Date(date) : new Date();
+    const programType =
+      (rawProgramType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
 
     const created = await prisma.cashTransaction.create({
       data: {
@@ -63,6 +76,7 @@ export async function POST(req: Request) {
         amount: Number(amount),
         sourceOrRecipient: sourceOrRecipient || "Kasir",
         transactionDate: txDate,
+        programType,
         notes: notes || "",
       },
       include: { branch: true },
@@ -79,6 +93,7 @@ export async function POST(req: Request) {
         branch: created.branch?.branchName || "Singkut",
         sourceOrRecipient: created.sourceOrRecipient,
         notes: created.notes || "",
+        programType: created.programType,
       },
       { status: 201 }
     );

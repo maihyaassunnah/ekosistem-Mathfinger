@@ -97,10 +97,11 @@ function ArusKeuanganContent() {
     });
   }, [programFilteredTransactions, effectiveBranch]);
 
-  // Current month active transactions (August/September 2026)
+  // Current month active transactions (dynamic current month + August/September 2026)
   const currentMonthTransactions = useMemo(() => {
+    const currentYm = new Date().toISOString().slice(0, 7);
     return branchFilteredTransactions.filter((t) => {
-      return t.date.startsWith("2026-08") || t.date.startsWith("2026-09");
+      return t.date.startsWith(currentYm) || t.date.startsWith("2026-08") || t.date.startsWith("2026-09");
     });
   }, [branchFilteredTransactions]);
 

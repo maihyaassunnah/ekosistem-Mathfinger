@@ -51,6 +51,105 @@ export async function GET(req: Request) {
   }
 }
 
+// Helper to sync invoice payment to CashTransaction and CashMutation
+async function syncInvoiceCashTransaction(invoiceId: string, paidDate?: string, paidMethod?: string) {
+  try {
+    const inv = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      include: { student: true, branch: true },
+    });
+    if (!inv) return;
+
+    const invRef = `[INV:${inv.invoiceNumber}]`;
+
+    if (inv.status === "PAID") {
+      const txDate = paidDate ? new Date(paidDate) : (inv.paidAt || new Date());
+      const methodStr = paidMethod || inv.paidMethod || "Tunai";
+      const studentName = inv.student?.studentName || "Siswa";
+      const title = `Pembayaran SPP - ${studentName} (${inv.period || "Bulan Berjalan"})`;
+      const notes = `${invRef} Metode: ${methodStr}`;
+
+      // 1. Synchronize CashMutation
+      const existingMut = await prisma.cashMutation.findFirst({ where: { invoiceId: inv.id } });
+      if (!existingMut) {
+        await prisma.cashMutation.create({
+          data: {
+            invoiceId: inv.id,
+            studentName,
+            period: inv.period || "September 2026",
+            method: methodStr.toUpperCase().includes("TRANSFER") ? "TRANSFER" : "TUNAI",
+            description: "Pelunasan Penuh",
+            amount: inv.amount,
+            mutationDate: txDate,
+          },
+        });
+      }
+
+      // 2. Synchronize CashTransaction (Pemasukan Arus Keuangan)
+      const existingTx = await prisma.cashTransaction.findFirst({
+        where: { notes: { contains: invRef } },
+      });
+
+      if (existingTx) {
+        await prisma.cashTransaction.update({
+          where: { id: existingTx.id },
+          data: {
+            branchId: inv.branchId,
+            type: "INCOME",
+            category: "SPP",
+            title,
+            amount: inv.amount,
+            sourceOrRecipient: studentName,
+            transactionDate: txDate,
+            programType: inv.programType || "MATEMATIKA",
+            notes,
+          },
+        });
+      } else {
+        await prisma.cashTransaction.create({
+          data: {
+            branchId: inv.branchId,
+            type: "INCOME",
+            category: "SPP",
+            title,
+            amount: inv.amount,
+            sourceOrRecipient: studentName,
+            transactionDate: txDate,
+            programType: inv.programType || "MATEMATIKA",
+            notes,
+          },
+        });
+      }
+    } else {
+      // Reverted to UNPAID - remove CashMutation and CashTransaction
+      await prisma.cashMutation.deleteMany({ where: { invoiceId: inv.id } });
+      await prisma.cashTransaction.deleteMany({
+        where: { notes: { contains: invRef } },
+      });
+    }
+  } catch (err) {
+    console.error("Error syncing invoice to cash transaction:", err);
+  }
+}
+
+// Helper to remove CashTransaction and CashMutation before deleting invoice
+async function removeInvoiceCashTransaction(invoiceId: string) {
+  try {
+    const inv = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+    if (inv) {
+      const invRef = `[INV:${inv.invoiceNumber}]`;
+      await prisma.cashTransaction.deleteMany({
+        where: { notes: { contains: invRef } },
+      });
+      await prisma.cashMutation.deleteMany({
+        where: { invoiceId: inv.id },
+      });
+    }
+  } catch (err) {
+    console.error("Error removing invoice cash transaction:", err);
+  }
+}
+
 // POST /api/invoices - Create new invoice (supports single or bulk)
 export async function POST(req: Request) {
   try {
@@ -135,6 +234,10 @@ export async function POST(req: Request) {
           status: created.status === "PAID" ? "LUNAS" : "BELUM BAYAR",
           programType: created.programType,
         });
+
+        if (item.status === "LUNAS") {
+          await syncInvoiceCashTransaction(created.id, item.paidDate, item.paidMethod);
+        }
       }
 
       return NextResponse.json(createdList, { status: 201 });
@@ -189,6 +292,10 @@ export async function POST(req: Request) {
           status: created.status === "PAID" ? "LUNAS" : "BELUM BAYAR",
           programType: created.programType,
         });
+
+        if (status === "LUNAS") {
+          await syncInvoiceCashTransaction(created.id, dueDate, undefined);
+        }
       }
 
       return NextResponse.json(createdList, { status: 201 });
@@ -233,6 +340,10 @@ export async function POST(req: Request) {
       },
       include: { student: true, branch: true },
     });
+
+    if (status === "LUNAS") {
+      await syncInvoiceCashTransaction(created.id, undefined, undefined);
+    }
 
     return NextResponse.json(
       {
@@ -279,25 +390,8 @@ export async function PUT(req: Request) {
       include: { student: true, branch: true },
     });
 
-    // Synchronize CashMutation
-    if (isPaid) {
-      const existingMut = await prisma.cashMutation.findFirst({ where: { invoiceId: updated.id } });
-      if (!existingMut) {
-        await prisma.cashMutation.create({
-          data: {
-            invoiceId: updated.id,
-            studentName: updated.student?.studentName || "Siswa",
-            period: updated.period || "September 2026",
-            method: paidMethod?.toUpperCase().includes("TRANSFER") ? "TRANSFER" : "TUNAI",
-            description: "Pelunasan Penuh",
-            amount: updated.amount,
-            mutationDate: paidDate ? new Date(paidDate) : new Date(),
-          },
-        });
-      }
-    } else {
-      await prisma.cashMutation.deleteMany({ where: { invoiceId: updated.id } });
-    }
+    // Synchronize CashTransaction and CashMutation automatically
+    await syncInvoiceCashTransaction(updated.id, paidDate, paidMethod);
 
     return NextResponse.json({
       id: updated.id,
@@ -331,6 +425,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "ID invoice diperlukan" }, { status: 400 });
     }
 
+    await removeInvoiceCashTransaction(id);
     await prisma.invoice.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

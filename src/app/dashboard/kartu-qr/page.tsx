@@ -199,7 +199,7 @@ function KartuQrContent() {
 
         <div className="flex items-center gap-2.5">
           <Link
-            href="/dashboard/absensi?scan=true"
+            href={isMembaca ? "/dashboard/absensi?program=MEMBACA&scan=true" : "/dashboard/absensi?scan=true"}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Camera className="w-4 h-4" />
