@@ -1,3 +1,11 @@
+export interface EnrolledClassInfo {
+  id: string;
+  className: string;
+  programType?: string;
+  days?: string;
+  time?: string;
+}
+
 export interface StudentItem {
   id: string;
   index: number;
@@ -7,6 +15,7 @@ export interface StudentItem {
   codeLabel: string;
   branch: "Singkut" | "Bangko";
   className: string;
+  enrolledClasses?: EnrolledClassInfo[];
   birthPlace: string;
   birthDate: string;
   address: string;

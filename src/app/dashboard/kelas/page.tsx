@@ -30,7 +30,17 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function KelasContent() {
-  const { classes, addClass, updateClass, deleteClass, students, updateStudent, branches } = useAppStore();
+  const {
+    classes,
+    addClass,
+    updateClass,
+    deleteClass,
+    students,
+    updateStudent,
+    branches,
+    enrollStudentInClass,
+    unenrollStudentFromClass,
+  } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const searchParams = useSearchParams();
   const paramProgram = searchParams?.get("program");
@@ -75,39 +85,41 @@ function KelasContent() {
   const [studentSearchInModal, setStudentSearchInModal] = useState<string>("");
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  // Helpers to get live enrolled students and candidates for a class (strictly filtered by programType)
-  const getEnrolledStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA") => {
+  // Helper to check if a student is enrolled in a class (via enrolledClasses or comma-separated className)
+  const isStudentEnrolled = (s: any, clsName: string, clsId?: string) => {
+    if (s.enrolledClasses && Array.isArray(s.enrolledClasses)) {
+      if (clsId && s.enrolledClasses.some((c: any) => c.id === clsId)) return true;
+      if (s.enrolledClasses.some((c: any) => c.className?.toLowerCase().trim() === clsName.toLowerCase().trim())) return true;
+    }
+    if (!s.className || s.className === "-") return false;
+    const splitNames = s.className.split(",").map((name: string) => name.trim().toLowerCase());
+    return splitNames.includes(clsName.toLowerCase().trim());
+  };
+
+  // Helpers to get live enrolled students and candidates for a class
+  const getEnrolledStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
     return students.filter((s) => {
       const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
-      const classMatch = s.className && s.className.toLowerCase().trim() === clsName.toLowerCase().trim();
-      const progMatch = classProgType
-        ? (classProgType === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA")
-        : true;
-      return branchMatch && classMatch && progMatch;
+      const classMatch = isStudentEnrolled(s, clsName, clsId);
+      return branchMatch && classMatch;
     });
   };
 
-  const getCandidateStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA") => {
+  const getCandidateStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
     return students.filter((s) => {
       const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
-      const notInThisClass = !s.className || s.className.toLowerCase().trim() !== clsName.toLowerCase().trim();
-      const progMatch = classProgType
-        ? (classProgType === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA")
-        : true;
-      return branchMatch && notInThisClass && progMatch;
+      const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId);
+      return branchMatch && !alreadyInThisClass;
     });
   };
 
-  const handleEnrollStudent = (studentId: string) => {
+  const handleEnrollStudent = async (studentId: string) => {
     if (!studentId || !viewingStudentsClass) return;
     const st = students.find((s) => s.id === studentId);
     if (!st) return;
 
-    const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
-    updateStudent(studentId, { className: viewingStudentsClass.name });
-    const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch, classProgType);
-    const newCount = currentList.length + 1;
-    updateClass(viewingStudentsClass.id, { enrolledCount: newCount });
+    await enrollStudentInClass(studentId, viewingStudentsClass.id);
+    const newCount = (viewingStudentsClass.enrolledCount || 0) + 1;
 
     setViewingStudentsClass({
       ...viewingStudentsClass,
@@ -115,7 +127,7 @@ function KelasContent() {
     });
 
     setSelectedStudentToAdd("");
-    setActionFeedback(`Berhasil memasukkan ${st.name} ke kelas ${viewingStudentsClass.name}`);
+    setActionFeedback(`Berhasil menambahkan ${st.name} ke kelas ${viewingStudentsClass.name}`);
     setTimeout(() => setActionFeedback(null), 3500);
   };
 
@@ -126,19 +138,21 @@ function KelasContent() {
       isOpen: true,
       title: "Konfirmasi Keluarkan Siswa",
       message: (
-        <p>
-          Apakah Anda yakin ingin mengeluarkan siswa <strong>{studentName}</strong> dari kelas{" "}
-          <strong>{viewingStudentsClass.name}</strong>?
-        </p>
+        <div className="space-y-1">
+          <p>
+            Apakah Anda yakin ingin mengeluarkan siswa <strong>{studentName}</strong> dari kelas{" "}
+            <strong>{viewingStudentsClass.name}</strong>?
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            *Jika siswa terdaftar di kelas lain, keanggotaan di kelas lain tersebut akan tetap aman.
+          </p>
+        </div>
       ),
       confirmText: "Ya, Keluarkan Siswa",
       variant: "danger",
-      onConfirm: () => {
-        const classProgType = (viewingStudentsClass as any).programType === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
-        updateStudent(studentId, { className: "-" });
-        const currentList = getEnrolledStudents(viewingStudentsClass.name, viewingStudentsClass.branch, classProgType);
-        const newCount = Math.max(0, currentList.length - 1);
-        updateClass(viewingStudentsClass.id, { enrolledCount: newCount });
+      onConfirm: async () => {
+        await unenrollStudentFromClass(studentId, viewingStudentsClass.id);
+        const newCount = Math.max(0, (viewingStudentsClass.enrolledCount || 1) - 1);
 
         setViewingStudentsClass({
           ...viewingStudentsClass,
@@ -800,12 +814,14 @@ function KelasContent() {
         const currentEnrolled = getEnrolledStudents(
           viewingStudentsClass.name,
           viewingStudentsClass.branch,
-          classProgType
+          classProgType,
+          viewingStudentsClass.id
         );
         const candidates = getCandidateStudents(
           viewingStudentsClass.name,
           viewingStudentsClass.branch,
-          classProgType
+          classProgType,
+          viewingStudentsClass.id
         );
         const filteredEnrolled = currentEnrolled.filter(
           (st) =>
@@ -914,10 +930,17 @@ function KelasContent() {
                     placeholder={`-- Pilih Siswa Cabang ${viewingStudentsClass.branch} --`}
                     options={[
                       { value: "", label: `-- Pilih Siswa Cabang ${viewingStudentsClass.branch} (${classProgType === "MEMBACA" ? "Les Membaca" : "Les Matematika"}) --` },
-                      ...candidates.map((st) => ({
-                        value: st.id,
-                        label: `${st.name} (#${st.studentCode}) ${st.className && st.className !== "-" ? `• [Pindah dari: ${st.className}]` : `• [Belum ada kelas]`}`,
-                      })),
+                      ...candidates.map((st) => {
+                        const otherClasses = (st.enrolledClasses || []).map((c: any) => c.className).filter(Boolean);
+                        const classSummary = otherClasses.length > 0 ? otherClasses.join(", ") : (st.className && st.className !== "-" ? st.className : null);
+                        const statusNote = classSummary
+                          ? `• [Sudah di: ${classSummary}] (Bisa tambah ke kelas ini)`
+                          : `• [Belum ada kelas]`;
+                        return {
+                          value: st.id,
+                          label: `${st.name} (#${st.studentCode}) ${statusNote}`,
+                        };
+                      }),
                     ]}
                   />
 
@@ -965,12 +988,24 @@ function KelasContent() {
                           {idx + 1}
                         </span>
                         <div className="truncate">
-                          <div className="font-extrabold text-slate-900 dark:text-white truncate">
-                            {st.name}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-extrabold text-slate-900 dark:text-white truncate">
+                              {st.name}
+                            </span>
+                            {((st.enrolledClasses && st.enrolledClasses.length > 1) || (st.className && st.className.includes(","))) && (
+                              <span className="px-1.5 py-0.5 text-[9px] font-black bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded-md border border-amber-300 dark:border-amber-800 shrink-0">
+                                Multi-Kelas
+                              </span>
+                            )}
                           </div>
                           <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                             #{st.studentCode} • Ortu: {st.parentName || "-"} {st.parentWhatsapp ? `(${st.parentWhatsapp})` : ""}
                           </div>
+                          {((st.enrolledClasses && st.enrolledClasses.length > 1) || (st.className && st.className.includes(","))) && (
+                            <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold truncate mt-0.5">
+                              Semua Kelas: {st.className}
+                            </div>
+                          )}
                         </div>
                       </div>
 

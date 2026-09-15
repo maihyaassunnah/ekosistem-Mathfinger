@@ -25,35 +25,53 @@ export async function GET(req: Request) {
       include: {
         branch: true,
         currentLevel: true,
+        enrollments: {
+          where: { status: "ACTIVE" },
+          include: { class: true },
+        },
       },
       orderBy: { createdAt: "asc" },
     });
 
-    const formatted = students.map((s, idx) => ({
-      id: s.id,
-      index: idx + 1,
-      studentCode: s.studentCode,
-      name: s.studentName,
-      studentName: s.studentName,
-      gender: (s.gender as "P" | "L") || (s.qrIdentifier?.includes("P") ? "P" : "L"),
-      codeLabel: s.gender === "L" ? "6L" : "8P",
-      branch: (s.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
-      branchId: s.branchId,
-      className: s.className || "-",
-      birthPlace: s.birthPlace || "Singkut",
-      birthDate: s.birthDate || "2018-01-01",
-      address: s.address || "Jl. Poros Singkut",
-      gradeLevel: s.gradeLevel || (s.currentLevel?.levelName ? `Ket: ${s.currentLevel.levelName}` : "Ket: Kelas 3"),
-      parentName: s.parentName,
-      parentWhatsapp: s.parentWhatsapp,
-      levelCurriculum:
-        s.programType === "MEMBACA"
-          ? (s.gradeLevel || "Level 1: Pra-Membaca & Pengenalan Huruf")
-          : (s.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari"),
-      registeredDate: s.registeredDate ? s.registeredDate.toISOString().split("T")[0] : s.createdAt.toISOString().split("T")[0],
-      status: s.status,
-      programType: s.programType || "MATEMATIKA",
-    }));
+    const formatted = students.map((s, idx) => {
+      const enrolledClasses = (s.enrollments || []).map((e) => ({
+        id: e.class.id,
+        className: e.class.className,
+        programType: e.class.programType,
+        days: e.class.days,
+        time: e.class.time,
+      }));
+
+      const activeClassNames = enrolledClasses.map((c) => c.className);
+      const displayClassName = activeClassNames.length > 0 ? activeClassNames.join(", ") : (s.className || "-");
+
+      return {
+        id: s.id,
+        index: idx + 1,
+        studentCode: s.studentCode,
+        name: s.studentName,
+        studentName: s.studentName,
+        gender: (s.gender as "P" | "L") || (s.qrIdentifier?.includes("P") ? "P" : "L"),
+        codeLabel: s.gender === "L" ? "6L" : "8P",
+        branch: (s.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+        branchId: s.branchId,
+        className: displayClassName,
+        enrolledClasses,
+        birthPlace: s.birthPlace || "Singkut",
+        birthDate: s.birthDate || "2018-01-01",
+        address: s.address || "Jl. Poros Singkut",
+        gradeLevel: s.gradeLevel || (s.currentLevel?.levelName ? `Ket: ${s.currentLevel.levelName}` : "Ket: Kelas 3"),
+        parentName: s.parentName,
+        parentWhatsapp: s.parentWhatsapp,
+        levelCurriculum:
+          s.programType === "MEMBACA"
+            ? (s.gradeLevel || "Level 1: Pra-Membaca & Pengenalan Huruf")
+            : (s.currentLevel?.levelName || "Level Dasar: Pengenalan Simbol Jari"),
+        registeredDate: s.registeredDate ? s.registeredDate.toISOString().split("T")[0] : s.createdAt.toISOString().split("T")[0],
+        status: s.status,
+        programType: s.programType || "MATEMATIKA",
+      };
+    });
 
     return NextResponse.json(formatted);
   } catch (error: any) {

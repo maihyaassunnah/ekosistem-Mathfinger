@@ -113,13 +113,14 @@ export function useCurrentUser(): CurrentUserInfo {
       return true;
     }
 
-    // Asisten Cabang cannot access Cabang, Pengaturan, Database, Website, Kartu QR, and Keuangan (SPP, Riwayat SPP, Arus Keuangan)
+    // Asisten Cabang cannot access Cabang, Pengaturan, Database, Website, Kartu QR, Keuangan, and Presensi Tutor Admin
     if (isBranchAssistant) {
       if (pathname.startsWith("/dashboard/cabang")) return false;
       if (pathname.startsWith("/dashboard/pengaturan")) return false;
       if (pathname.startsWith("/dashboard/database")) return false;
       if (pathname.startsWith("/dashboard/website")) return false;
       if (pathname.startsWith("/dashboard/kartu-qr")) return false;
+      if (pathname.startsWith("/dashboard/presensi-tutor")) return false;
       if (pathname.startsWith("/dashboard/arus-keuangan")) return false;
       if (pathname.startsWith("/dashboard/riwayat-spp")) return false;
       if (pathname.startsWith("/dashboard/spp")) return false;
@@ -133,6 +134,7 @@ export function useCurrentUser(): CurrentUserInfo {
       if (pathname.startsWith("/dashboard/database")) return false;
       if (pathname.startsWith("/dashboard/website")) return false;
       if (pathname.startsWith("/dashboard/kartu-qr")) return false;
+      if (pathname.startsWith("/dashboard/presensi-tutor")) return false;
       if (pathname.startsWith("/dashboard/arus-keuangan")) return false;
       if (pathname.startsWith("/dashboard/riwayat-spp")) return false;
       if (pathname.startsWith("/dashboard/spp")) return false;

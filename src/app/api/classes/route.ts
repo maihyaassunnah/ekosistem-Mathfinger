@@ -28,9 +28,25 @@ export async function GET(req: Request) {
 
     const formatted = await Promise.all(
       classes.map(async (c) => {
-        const studentCount = await prisma.student.count({
-          where: { className: c.className, status: "ACTIVE", branchId: c.branchId, programType: c.programType },
+        const enrollmentCount = await prisma.classEnrollment.count({
+          where: { classId: c.id, status: "ACTIVE" },
         });
+
+        let studentCount = enrollmentCount;
+        if (studentCount === 0) {
+          // Fallback legacy matching
+          studentCount = await prisma.student.count({
+            where: {
+              OR: [
+                { className: c.className },
+                { className: { contains: c.className } },
+              ],
+              status: "ACTIVE",
+              branchId: c.branchId,
+            },
+          });
+        }
+
         return {
           id: c.id,
           name: c.className,

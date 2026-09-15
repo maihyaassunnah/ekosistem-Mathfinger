@@ -26,6 +26,7 @@ export async function GET(req: Request) {
         student: true,
         branch: true,
         tutor: true,
+        class: true,
       },
       orderBy: { attendanceDate: "desc" },
       take: 1000,
@@ -49,7 +50,8 @@ export async function GET(req: Request) {
         studentId: att.studentId,
         studentName: att.student?.studentName || "Siswa",
         studentCode: att.student?.studentCode || "-",
-        className: att.student?.className || "-",
+        className: att.class?.className || att.student?.className || "-",
+        classId: att.classId,
         branch: (att.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
         date: dateStr,
         time: recordedTime,
@@ -208,10 +210,19 @@ export async function POST(req: Request) {
 
       const programType = (item.programType || student.programType || "MATEMATIKA").toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
 
+      let classId = item.classId || null;
+      if (!classId && item.className && item.className !== "-") {
+        const foundCls = await prisma.class.findFirst({
+          where: { className: item.className, branchId: student.branchId },
+        });
+        if (foundCls) classId = foundCls.id;
+      }
+
       const saved = await prisma.attendance.upsert({
         where: {
-          studentId_attendanceDate: {
+          studentId_classId_attendanceDate: {
             studentId: student.id,
+            classId: classId,
             attendanceDate: attDate,
           },
         },
@@ -224,6 +235,7 @@ export async function POST(req: Request) {
         },
         create: {
           studentId: student.id,
+          classId: classId,
           branchId: student.branchId,
           tutorId: defaultUser.id,
           attendanceDate: attDate,
@@ -235,6 +247,7 @@ export async function POST(req: Request) {
         include: {
           student: true,
           branch: true,
+          class: true,
         },
       });
 
@@ -267,11 +280,13 @@ export async function PUT(req: Request) {
       const cleanDate = date.includes("T") ? date.split("T")[0] : date;
       const parts = cleanDate.split("-").map(Number);
       const attDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
+      const classId = body.classId || null;
 
       const found = await prisma.attendance.findUnique({
         where: {
-          studentId_attendanceDate: {
+          studentId_classId_attendanceDate: {
             studentId,
+            classId,
             attendanceDate: attDate,
           },
         },
@@ -326,12 +341,10 @@ export async function DELETE(req: Request) {
       if (kStudentId && kDate) {
         const parts = kDate.split("-").map(Number);
         const attDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
-        const found = await prisma.attendance.findUnique({
+        const found = await prisma.attendance.findFirst({
           where: {
-            studentId_attendanceDate: {
-              studentId: kStudentId,
-              attendanceDate: attDate,
-            },
+            studentId: kStudentId,
+            attendanceDate: attDate,
           },
         });
         if (found) targetId = found.id;
@@ -339,12 +352,10 @@ export async function DELETE(req: Request) {
     } else if (!targetId && studentId && date) {
       const parts = date.split("-").map(Number);
       const attDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
-      const found = await prisma.attendance.findUnique({
+      const found = await prisma.attendance.findFirst({
         where: {
-          studentId_attendanceDate: {
-            studentId,
-            attendanceDate: attDate,
-          },
+          studentId,
+          attendanceDate: attDate,
         },
       });
       if (found) targetId = found.id;

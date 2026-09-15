@@ -213,6 +213,8 @@ interface AppStoreContextType {
   addClass: (cls: Omit<ClassItem, "id" | "enrolledCount">) => void;
   updateClass: (id: string, updated: Partial<ClassItem>) => void;
   deleteClass: (id: string) => void;
+  enrollStudentInClass: (studentId: string, classId: string) => Promise<boolean>;
+  unenrollStudentFromClass: (studentId: string, classId: string) => Promise<boolean>;
 
   // Branches
   branches: BranchItem[];
@@ -1962,6 +1964,163 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error deleting class in PostgreSQL:", err));
   };
 
+  const enrollStudentInClass = async (studentId: string, classId: string): Promise<boolean> => {
+    const targetClass = classes.find((c) => c.id === classId);
+    const targetStudent = students.find((s) => s.id === studentId);
+    if (!targetClass || !targetStudent) return false;
+
+    // Optimistically update local state
+    const currentEnrolled = targetStudent.enrolledClasses || [];
+    const alreadyEnrolled = currentEnrolled.some((e) => e.id === classId || e.className === targetClass.name);
+    
+    if (!alreadyEnrolled) {
+      const updatedClassesList = [
+        ...currentEnrolled,
+        {
+          id: targetClass.id,
+          className: targetClass.name,
+          programType: (targetClass as any).programType,
+          days: targetClass.days,
+          time: targetClass.time,
+        },
+      ];
+      const combinedNames = updatedClassesList.map((c) => c.className).join(", ");
+      
+      setStudents((prev) => {
+        const updated = prev.map((s) =>
+          s.id === studentId
+            ? {
+                ...s,
+                className: combinedNames,
+                enrolledClasses: updatedClassesList,
+              }
+            : s
+        );
+        save("mf_students", updated);
+        return updated;
+      });
+
+      setClasses((prev) => {
+        const updated = prev.map((c) =>
+          c.id === classId ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 } : c
+        );
+        save("mf_classes", updated);
+        return updated;
+      });
+    }
+
+    try {
+      const res = await fetch("/api/classes/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, classId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.student) {
+          setStudents((prev) => {
+            const updated = prev.map((s) =>
+              s.id === studentId
+                ? {
+                    ...s,
+                    className: data.student.className,
+                    enrolledClasses: data.student.enrolledClasses,
+                  }
+                : s
+            );
+            save("mf_students", updated);
+            return updated;
+          });
+          if (data.classEnrolledCount !== undefined) {
+            setClasses((prev) => {
+              const updated = prev.map((c) =>
+                c.id === classId ? { ...c, enrolledCount: data.classEnrolledCount } : c
+              );
+              save("mf_classes", updated);
+              return updated;
+            });
+          }
+        }
+        return true;
+      }
+    } catch (err) {
+      console.error("Error enrolling student in class:", err);
+    }
+    return true;
+  };
+
+  const unenrollStudentFromClass = async (studentId: string, classId: string): Promise<boolean> => {
+    const targetClass = classes.find((c) => c.id === classId);
+    const targetStudent = students.find((s) => s.id === studentId);
+    if (!targetClass || !targetStudent) return false;
+
+    // Optimistically update local state
+    const currentEnrolled = targetStudent.enrolledClasses || [];
+    const remainingClasses = currentEnrolled.filter((e) => e.id !== classId && e.className !== targetClass.name);
+    const combinedNames = remainingClasses.length > 0 ? remainingClasses.map((c) => c.className).join(", ") : "-";
+
+    setStudents((prev) => {
+      const updated = prev.map((s) =>
+        s.id === studentId
+          ? {
+              ...s,
+              className: combinedNames,
+              enrolledClasses: remainingClasses,
+            }
+          : s
+      );
+      save("mf_students", updated);
+      return updated;
+    });
+
+    setClasses((prev) => {
+      const updated = prev.map((c) =>
+        c.id === classId ? { ...c, enrolledCount: Math.max(0, (c.enrolledCount || 1) - 1) } : c
+      );
+      save("mf_classes", updated);
+      return updated;
+    });
+
+    try {
+      const res = await fetch("/api/classes/enroll", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, classId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.student) {
+          setStudents((prev) => {
+            const updated = prev.map((s) =>
+              s.id === studentId
+                ? {
+                    ...s,
+                    className: data.student.className,
+                    enrolledClasses: data.student.enrolledClasses,
+                  }
+                : s
+            );
+            save("mf_students", updated);
+            return updated;
+          });
+          if (data.classEnrolledCount !== undefined) {
+            setClasses((prev) => {
+              const updated = prev.map((c) =>
+                c.id === classId ? { ...c, enrolledCount: data.classEnrolledCount } : c
+              );
+              save("mf_classes", updated);
+              return updated;
+            });
+          }
+        }
+        return true;
+      }
+    } catch (err) {
+      console.error("Error unenrolling student from class:", err);
+    }
+    return true;
+  };
+
   // Branch CRUD
   const addBranch = (br: Omit<BranchItem, "id" | "activeStudents" | "adminCount" | "monthlyRevenue">) => {
     const tempId = `br-${Date.now()}`;
@@ -3439,6 +3598,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         addClass,
         updateClass,
         deleteClass,
+        enrollStudentInClass,
+        unenrollStudentFromClass,
         branches,
         addBranch,
         updateBranch,
