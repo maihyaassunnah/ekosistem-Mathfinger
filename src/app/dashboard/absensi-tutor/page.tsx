@@ -27,7 +27,7 @@ interface AttendanceRecord {
   date: string;
   checkInTime: string;
   checkOutTime: string;
-  status: "HADIR" | "IZIN" | "SAKIT" | "ALPHA";
+  status: "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPHA";
   distanceMeter: number | null;
   isLocationValid: boolean;
   notes: string;
@@ -46,6 +46,14 @@ export default function AbsensiTutorScanPage() {
     message: string;
     time?: string;
     distance?: number | null;
+  } | null>(null);
+
+  // Branch Work Hours & Schedule
+  const [branchSchedule, setBranchSchedule] = useState<{
+    workStartTime: string;
+    workEndTime: string;
+    lateToleranceMinutes: number;
+    earlyLeaveToleranceMinutes: number;
   } | null>(null);
 
   // GPS State
@@ -67,6 +75,28 @@ export default function AbsensiTutorScanPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Fetch branch schedule
+  const fetchBranchSchedule = async () => {
+    try {
+      const branchQuery = allowedBranch ? encodeURIComponent(allowedBranch) : "Singkut";
+      const res = await fetch(`/api/branch-qr-config?branch=${branchQuery}`);
+      if (res.ok) {
+        const data = await res.json();
+        const conf = Array.isArray(data) ? data[0] : data;
+        if (conf) {
+          setBranchSchedule({
+            workStartTime: conf.workStartTime || "08:00",
+            workEndTime: conf.workEndTime || "17:00",
+            lateToleranceMinutes: conf.lateToleranceMinutes ?? 15,
+            earlyLeaveToleranceMinutes: conf.earlyLeaveToleranceMinutes ?? 0,
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch branch schedule:", e);
+    }
+  };
+
   // Fetch my attendance history
   const fetchMyHistory = async () => {
     try {
@@ -86,7 +116,8 @@ export default function AbsensiTutorScanPage() {
   useEffect(() => {
     fetchMyHistory();
     requestGpsLocation();
-  }, []);
+    fetchBranchSchedule();
+  }, [allowedBranch]);
 
   // Request GPS with dual-stage fallback
   const requestGpsLocation = async () => {
@@ -208,9 +239,17 @@ export default function AbsensiTutorScanPage() {
       const data = await res.json();
 
       if (res.ok) {
+        const isLate = Boolean(data.isLate);
+        const isEarlyLeave = Boolean(data.isEarlyLeave);
         setScanFeedback({
-          type: "success",
-          title: scanType === "IN" ? "Presensi Masuk Berhasil! 🎉" : "Presensi Pulang Berhasil! 🏠",
+          type: isLate || isEarlyLeave ? "warning" : "success",
+          title: isLate
+            ? `Presensi Masuk Berhasil (Terlambat ${data.lateMinutes} mnt) ⚠️`
+            : isEarlyLeave
+            ? `Presensi Pulang Berhasil (Pulang Awal ${data.earlyMinutes} mnt) ⚠️`
+            : scanType === "IN"
+            ? "Presensi Masuk Berhasil! 🎉"
+            : "Presensi Pulang Berhasil! 🏠",
           message: data.message || "Presensi kehadiran Anda telah diverifikasi oleh sistem.",
           time: scanType === "IN" ? data.attendance?.checkInTime : data.attendance?.checkOutTime,
           distance: data.distanceMeter,
@@ -236,7 +275,7 @@ export default function AbsensiTutorScanPage() {
   };
 
   // Count stats
-  const totalMyHadir = myHistory.filter((r) => r.status === "HADIR").length;
+  const totalMyHadir = myHistory.filter((r) => r.status === "HADIR" || r.status === "TERLAMBAT").length;
   const todayRecord = myHistory.find(
     (r) => r.date === new Date().toISOString().split("T")[0]
   );
@@ -286,6 +325,36 @@ export default function AbsensiTutorScanPage() {
           </div>
         </div>
       </div>
+
+      {/* Branch Work Schedule Info Banner */}
+      {branchSchedule && (
+        <div className="bg-emerald-500/10 dark:bg-emerald-950/40 p-4 rounded-3xl border border-emerald-300/60 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in">
+          <div className="flex items-center gap-2.5 text-emerald-950 dark:text-emerald-200">
+            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-extrabold block text-slate-900 dark:text-white">
+                Jadwal Jam Kerja Cabang {allowedBranch || "Singkut"}
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Masuk: <strong className="text-emerald-600 dark:text-emerald-400">{branchSchedule.workStartTime} WIB</strong> • Pulang: <strong className="text-slate-700 dark:text-slate-300">{branchSchedule.workEndTime} WIB</strong>
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap text-[11px]">
+            <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
+              ⏱️ Toleransi Masuk: <span className="text-emerald-600 dark:text-emerald-400 font-black">{branchSchedule.lateToleranceMinutes} mnt</span>
+            </span>
+            {branchSchedule.earlyLeaveToleranceMinutes > 0 && (
+              <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                🏃 Toleransi Pulang: <span className="text-emerald-600 dark:text-emerald-400 font-black">{branchSchedule.earlyLeaveToleranceMinutes} mnt</span>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: QR Scanner & GPS Status */}
@@ -399,14 +468,18 @@ export default function AbsensiTutorScanPage() {
                 className={`p-4 rounded-3xl border animate-in zoom-in-95 space-y-2 ${
                   scanFeedback.type === "success"
                     ? "bg-emerald-50 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-100"
+                    : scanFeedback.type === "warning"
+                    ? "bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-100"
                     : "bg-rose-50 dark:bg-rose-950/80 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   {scanFeedback.type === "success" ? (
                     <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : scanFeedback.type === "warning" ? (
+                    <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
                   ) : (
-                    <AlertTriangle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
+                    <AlertCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
                   )}
                   <div className="space-y-1">
                     <h3 className="font-black text-sm">{scanFeedback.title}</h3>
@@ -497,10 +570,16 @@ export default function AbsensiTutorScanPage() {
                       <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>{rec.date}</span>
                         <span
-                          className={`px-2 py-0.2 rounded-md text-[9px] font-black border ${
+                          className={`px-2 py-0.5 rounded-md text-[9px] font-black border ${
                             rec.status === "HADIR"
                               ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800"
-                              : "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                              : rec.status === "TERLAMBAT"
+                              ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                              : rec.status === "IZIN"
+                              ? "bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800"
+                              : rec.status === "SAKIT"
+                              ? "bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-800"
+                              : "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800"
                           }`}
                         >
                           {rec.status}
@@ -512,6 +591,11 @@ export default function AbsensiTutorScanPage() {
                           <span>Pulang: <strong className="text-slate-700 dark:text-slate-300">{rec.checkOutTime}</strong></span>
                         )}
                       </div>
+                      {rec.notes && (
+                        <div className="text-[10px] font-medium text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800/60 inline-block">
+                          {rec.notes}
+                        </div>
+                      )}
                       {rec.distanceMeter !== null && (
                         <div className="text-[10px] text-slate-400 flex items-center gap-1">
                           <MapPin className="w-2.5 h-2.5" /> Jarak: {rec.distanceMeter}m

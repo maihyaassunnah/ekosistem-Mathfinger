@@ -26,6 +26,7 @@ import {
   UserCheck,
   AlertCircle,
   FileSpreadsheet,
+  Sparkles,
 } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useAppStore } from "@/lib/store";
@@ -44,6 +45,10 @@ interface BranchQrConfig {
   radiusMeters: number;
   qrSecret: string;
   qrPayload: string;
+  workStartTime?: string;
+  workEndTime?: string;
+  lateToleranceMinutes?: number;
+  earlyLeaveToleranceMinutes?: number;
 }
 
 interface TutorAttendanceItem {
@@ -58,13 +63,38 @@ interface TutorAttendanceItem {
   date: string;
   checkInTime: string;
   checkOutTime: string;
-  status: "HADIR" | "IZIN" | "SAKIT" | "ALPHA";
+  status: "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPHA";
+  lateMinutes?: number;
+  earlyLeaveMinutes?: number;
   latitude: number | null;
   longitude: number | null;
   distanceMeter: number | null;
   isLocationValid: boolean;
   notes: string;
   createdAt: string;
+}
+
+// Helper: Calculate Time plus minutes
+function calculateTimePlus(timeStr: string, minutesToAdd: string | number): string {
+  if (!timeStr) return "-";
+  const [h, m] = timeStr.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  const total = h * 60 + m + (parseInt(String(minutesToAdd), 10) || 0);
+  const newH = Math.floor((total / 60) % 24);
+  const newM = total % 60;
+  return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
+}
+
+// Helper: Calculate Time minus minutes
+function calculateTimeMinus(timeStr: string, minutesToSubtract: string | number): string {
+  if (!timeStr) return "-";
+  const [h, m] = timeStr.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  let total = h * 60 + m - (parseInt(String(minutesToSubtract), 10) || 0);
+  if (total < 0) total += 24 * 60;
+  const newH = Math.floor((total / 60) % 24);
+  const newM = total % 60;
+  return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
 }
 
 export default function PresensiTutorAdminPage() {
@@ -76,7 +106,15 @@ export default function PresensiTutorAdminPage() {
   const [configs, setConfigs] = useState<BranchQrConfig[]>([]);
   const [attendances, setAttendances] = useState<TutorAttendanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
+
+  // Sync selectedBranch when allowedBranch is hydrated for branch admins
+  useEffect(() => {
+    if (allowedBranch && !isSuperAdmin) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [allowedBranch, isSuperAdmin]);
 
   // GPS Settings Form State
   const [gpsForm, setGpsForm] = useState({
@@ -87,17 +125,28 @@ export default function PresensiTutorAdminPage() {
   const [isDetectingGps, setIsDetectingGps] = useState(false);
   const [gpsFeedback, setGpsFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Work Hours & Tolerance Settings Form State
+  const [workTimeForm, setWorkTimeForm] = useState({
+    workStartTime: "08:00",
+    workEndTime: "17:00",
+    lateToleranceMinutes: "15",
+    earlyLeaveToleranceMinutes: "0",
+  });
+  const [isSavingWorkTime, setIsSavingWorkTime] = useState(false);
+  const [workTimeFeedback, setWorkTimeFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   // Rekap Filters
   const [filterMonth, setFilterMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM
   const [filterDate, setFilterDate] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("ALL");
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Modal manual edit/input
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<TutorAttendanceItem | null>(null);
   const [editForm, setEditForm] = useState({
-    status: "HADIR" as "HADIR" | "IZIN" | "SAKIT" | "ALPHA",
+    status: "HADIR" as "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPHA",
     checkInTime: "14:00 WIB",
     checkOutTime: "-",
     notes: "",
@@ -105,11 +154,14 @@ export default function PresensiTutorAdminPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  // Determine active branch scope
+  const targetBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
+
   // Fetch branch QR & GPS configs
   const fetchConfigs = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/branch-qr-config?branch=${encodeURIComponent(selectedBranch)}`);
+      const res = await fetch(`/api/branch-qr-config?branch=${encodeURIComponent(targetBranch)}`);
       if (res.ok) {
         const data = await res.json();
         setConfigs(data);
@@ -119,6 +171,12 @@ export default function PresensiTutorAdminPage() {
             latitude: cfg.latitude ? String(cfg.latitude) : "-2.3125",
             longitude: cfg.longitude ? String(cfg.longitude) : "102.6847",
             radiusMeters: String(cfg.radiusMeters || 100),
+          });
+          setWorkTimeForm({
+            workStartTime: cfg.workStartTime || "08:00",
+            workEndTime: cfg.workEndTime || "17:00",
+            lateToleranceMinutes: String(cfg.lateToleranceMinutes ?? 15),
+            earlyLeaveToleranceMinutes: String(cfg.earlyLeaveToleranceMinutes ?? 0),
           });
           generateQrImage(cfg.qrPayload);
         }
@@ -133,7 +191,8 @@ export default function PresensiTutorAdminPage() {
   // Fetch tutor attendances
   const fetchAttendances = async () => {
     try {
-      const url = `/api/tutor-attendance?branch=${encodeURIComponent(selectedBranch)}${
+      setIsRefreshing(true);
+      const url = `/api/tutor-attendance?branch=${encodeURIComponent(targetBranch)}${
         filterDate ? `&date=${filterDate}` : `&month=${filterMonth}`
       }`;
       const res = await fetch(url);
@@ -143,13 +202,15 @@ export default function PresensiTutorAdminPage() {
       }
     } catch (err) {
       console.error("Error fetching attendances:", err);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchConfigs();
     fetchAttendances();
-  }, [selectedBranch, filterMonth, filterDate]);
+  }, [targetBranch, filterMonth, filterDate]);
 
   // Generate QR Canvas
   const generateQrImage = async (payload: string) => {
@@ -245,7 +306,7 @@ export default function PresensiTutorAdminPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          branchName: selectedBranch,
+          branchName: targetBranch,
           latitude: parseFloat(gpsForm.latitude),
           longitude: parseFloat(gpsForm.longitude),
           radiusMeters: parseInt(gpsForm.radiusMeters, 10),
@@ -256,7 +317,7 @@ export default function PresensiTutorAdminPage() {
         const data = await res.json();
         setGpsFeedback({
           type: "success",
-          text: `Titik GPS & Radius Cabang ${selectedBranch} berhasil disimpan ke PostgreSQL!`,
+          text: `Titik GPS & Radius Cabang ${targetBranch} berhasil disimpan ke PostgreSQL!`,
         });
         generateQrImage(data.qrPayload);
         fetchConfigs();
@@ -268,6 +329,40 @@ export default function PresensiTutorAdminPage() {
       setGpsFeedback({ type: "error", text: err.message || "Gagal menyimpan pengaturan" });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Save Work Hours & Tolerance Settings
+  const handleSaveWorkTime = async () => {
+    try {
+      setIsSavingWorkTime(true);
+      setWorkTimeFeedback(null);
+      const res = await fetch("/api/branch-qr-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          branchName: targetBranch,
+          workStartTime: workTimeForm.workStartTime,
+          workEndTime: workTimeForm.workEndTime,
+          lateToleranceMinutes: parseInt(workTimeForm.lateToleranceMinutes, 10) || 0,
+          earlyLeaveToleranceMinutes: parseInt(workTimeForm.earlyLeaveToleranceMinutes, 10) || 0,
+        }),
+      });
+
+      if (res.ok) {
+        setWorkTimeFeedback({
+          type: "success",
+          text: `Jam kerja (${workTimeForm.workStartTime} - ${workTimeForm.workEndTime} WIB) & batas toleransi Cabang ${targetBranch} berhasil disimpan!`,
+        });
+        fetchConfigs();
+      } else {
+        const err = await res.json();
+        setWorkTimeFeedback({ type: "error", text: err.error || "Gagal menyimpan jam kerja" });
+      }
+    } catch (err: any) {
+      setWorkTimeFeedback({ type: "error", text: err.message || "Gagal menyimpan jam kerja" });
+    } finally {
+      setIsSavingWorkTime(false);
     }
   };
 
@@ -283,7 +378,7 @@ export default function PresensiTutorAdminPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          branchName: selectedBranch,
+          branchName: targetBranch,
           regenerateQr: true,
         }),
       });
@@ -348,10 +443,12 @@ export default function PresensiTutorAdminPage() {
       att.tutorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       att.tutorEmail.toLowerCase().includes(searchTerm.toLowerCase());
     const matchRole = filterRole === "ALL" || att.tutorRole === filterRole;
-    return matchSearch && matchRole;
+    const matchStatus = filterStatus === "ALL" || att.status === filterStatus;
+    return matchSearch && matchRole && matchStatus;
   });
 
   const totalHadir = filteredAttendances.filter((a) => a.status === "HADIR").length;
+  const totalTerlambat = filteredAttendances.filter((a) => a.status === "TERLAMBAT").length;
   const totalIzin = filteredAttendances.filter((a) => a.status === "IZIN" || a.status === "SAKIT").length;
   const totalAlpha = filteredAttendances.filter((a) => a.status === "ALPHA").length;
 
@@ -385,9 +482,9 @@ export default function PresensiTutorAdminPage() {
                 size="md"
                 options={[
                   { value: "Singkut", label: "Cabang Singkut" },
-                  { value: "Bangko", label: "Cabang Bangko / Tabir" },
+                  { value: "Tabir Timur", label: "Cabang Tabir Timur (Bangko)" },
                   ...(branches || [])
-                    .filter((b) => b.name !== "Singkut" && b.name !== "Bangko")
+                    .filter((b) => b.name !== "Singkut" && b.name !== "Bangko" && b.name !== "Tabir Timur")
                     .map((b) => ({ value: b.name, label: `Cabang ${b.name}` })),
                 ]}
               />
@@ -396,7 +493,7 @@ export default function PresensiTutorAdminPage() {
           {!isSuperAdmin && (
             <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
-              Cabang {selectedBranch}
+              Cabang {targetBranch}
             </span>
           )}
         </div>
@@ -418,7 +515,10 @@ export default function PresensiTutorAdminPage() {
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("REKAP")}
+          onClick={() => {
+            setActiveTab("REKAP");
+            fetchAttendances();
+          }}
           className={`pb-3 px-3 font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all border-b-2 cursor-pointer ${
             activeTab === "REKAP"
               ? "border-emerald-600 text-emerald-600 dark:text-emerald-400"
@@ -683,6 +783,166 @@ export default function PresensiTutorAdminPage() {
               </button>
             </div>
           </div>
+
+          {/* Bottom Card: Pengaturan Jam Kerja & Batas Toleransi Cabang */}
+          <div className="lg:col-span-12 bg-white dark:bg-[#0f1a36] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+                  Pengaturan Jam Kerja & Toleransi Waktu Cabang
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-slate-400">Cabang {targetBranch}</span>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Atur jam masuk, jam pulang, serta batas toleransi menit untuk tutor di Cabang {targetBranch}. Sistem akan secara otomatis menandai status <strong>HADIR (Tepat Waktu)</strong> atau <strong>TERLAMBAT</strong> saat tutor memindai QR Code.
+            </p>
+
+            {workTimeFeedback && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in ${
+                  workTimeFeedback.type === "success"
+                    ? "bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
+                    : "bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200"
+                }`}
+              >
+                {workTimeFeedback.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                )}
+                <span>{workTimeFeedback.text}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Jam Masuk Kerja
+                </label>
+                <input
+                  type="time"
+                  value={workTimeForm.workStartTime}
+                  onChange={(e) => setWorkTimeForm({ ...workTimeForm, workStartTime: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">Jadwal mulai masuk kantor (WIB)</span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Toleransi Terlambat
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    max="180"
+                    value={workTimeForm.lateToleranceMinutes}
+                    onChange={(e) => setWorkTimeForm({ ...workTimeForm, lateToleranceMinutes: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 pr-14"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
+                    Menit
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 block">Batas toleransi keterlambatan</span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Jam Pulang Kerja
+                </label>
+                <input
+                  type="time"
+                  value={workTimeForm.workEndTime}
+                  onChange={(e) => setWorkTimeForm({ ...workTimeForm, workEndTime: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">Jadwal jam selesai kerja (WIB)</span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Toleransi Pulang Awal
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    max="180"
+                    value={workTimeForm.earlyLeaveToleranceMinutes}
+                    onChange={(e) => setWorkTimeForm({ ...workTimeForm, earlyLeaveToleranceMinutes: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 pr-14"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
+                    Menit
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 block">Batas toleransi pulang lebih awal</span>
+              </div>
+            </div>
+
+            {/* Live Rule Calculation Preview */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 space-y-2">
+              <div className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Simulasi Aturan Presensi Cabang {targetBranch}:</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px] text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>
+                    Masuk <strong>Tepat Waktu</strong>: Scan sebelum atau tepat pukul{" "}
+                    <strong className="text-emerald-600 dark:text-emerald-400">
+                      {calculateTimePlus(workTimeForm.workStartTime, workTimeForm.lateToleranceMinutes)} WIB
+                    </strong>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+                  <span>
+                    Status <strong>TERLAMBAT</strong>: Scan setelah pukul{" "}
+                    <strong className="text-amber-600 dark:text-amber-400">
+                      {calculateTimePlus(workTimeForm.workStartTime, workTimeForm.lateToleranceMinutes)} WIB
+                    </strong>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
+                  <span>
+                    Pulang <strong>Standar</strong>: Scan pada atau setelah pukul{" "}
+                    <strong className="text-blue-600 dark:text-blue-400">
+                      {calculateTimeMinus(workTimeForm.workEndTime, workTimeForm.earlyLeaveToleranceMinutes)} WIB
+                    </strong>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
+                  <span>
+                    Catatan <strong>Pulang Awal</strong>: Scan sebelum pukul{" "}
+                    <strong className="text-rose-600 dark:text-rose-400">
+                      {calculateTimeMinus(workTimeForm.workEndTime, workTimeForm.earlyLeaveToleranceMinutes)} WIB
+                    </strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={handleSaveWorkTime}
+                disabled={isSavingWorkTime}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{isSavingWorkTime ? "Menyimpan..." : "Simpan Pengaturan Jam Kerja & Toleransi"}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -690,20 +950,30 @@ export default function PresensiTutorAdminPage() {
       {activeTab === "REKAP" && (
         <div className="space-y-4">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 rounded-3xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white">{totalHadir}</div>
-                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">Total Hadir (GPS Valid)</div>
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">Hadir Tepat Waktu</div>
               </div>
             </div>
 
             <div className="p-4 rounded-3xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black">
                 <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">{totalTerlambat}</div>
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">Terlambat Scan</div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-3xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
+                <Calendar className="w-6 h-6" />
               </div>
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white">{totalIzin}</div>
@@ -760,6 +1030,31 @@ export default function PresensiTutorAdminPage() {
                   { value: "BRANCH_ADMIN", label: "Admin Cabang" },
                 ]}
               />
+
+              <CustomSelect
+                value={filterStatus}
+                onChange={setFilterStatus}
+                size="sm"
+                options={[
+                  { value: "ALL", label: "Semua Status" },
+                  { value: "HADIR", label: "Hadir (Tepat Waktu)" },
+                  { value: "TERLAMBAT", label: "Terlambat" },
+                  { value: "IZIN", label: "Izin" },
+                  { value: "SAKIT", label: "Sakit" },
+                  { value: "ALPHA", label: "Alpha" },
+                ]}
+              />
+
+              <button
+                type="button"
+                onClick={fetchAttendances}
+                disabled={isRefreshing}
+                className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                title="Muat Ulang Data Presensi"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                <span>{isRefreshing ? "Memuat..." : "Segarkan"}</span>
+              </button>
             </div>
 
             <div className="relative w-full sm:w-64">
@@ -819,7 +1114,12 @@ export default function PresensiTutorAdminPage() {
                           {att.checkInTime}
                         </td>
                         <td className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300">
-                          {att.checkOutTime || "-"}
+                          <span>{att.checkOutTime || "-"}</span>
+                          {att.earlyLeaveMinutes && att.earlyLeaveMinutes > 0 ? (
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                              -{att.earlyLeaveMinutes}m
+                            </span>
+                          ) : null}
                         </td>
                         <td className="py-3.5 px-4">
                           {att.distanceMeter !== null ? (
@@ -839,15 +1139,24 @@ export default function PresensiTutorAdminPage() {
                         </td>
                         <td className="py-3.5 px-4">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border inline-flex items-center gap-1 ${
                               att.status === "HADIR"
                                 ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                                : att.status === "TERLAMBAT"
+                                ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700"
                                 : att.status === "IZIN"
-                                ? "bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                ? "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                                : att.status === "SAKIT"
+                                ? "bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
                                 : "bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
                             }`}
                           >
-                            {att.status}
+                            <span>{att.status}</span>
+                            {att.status === "TERLAMBAT" && att.lateMinutes && att.lateMinutes > 0 ? (
+                              <span className="font-mono text-[9px] bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-1 rounded">
+                                +{att.lateMinutes}m
+                              </span>
+                            ) : null}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 max-w-xs truncate">
@@ -905,6 +1214,7 @@ export default function PresensiTutorAdminPage() {
                   onChange={(v) => setEditForm({ ...editForm, status: v as any })}
                   options={[
                     { value: "HADIR", label: "HADIR (Tepat Waktu)" },
+                    { value: "TERLAMBAT", label: "TERLAMBAT" },
                     { value: "IZIN", label: "IZIN" },
                     { value: "SAKIT", label: "SAKIT" },
                     { value: "ALPHA", label: "ALPHA" },
@@ -920,6 +1230,20 @@ export default function PresensiTutorAdminPage() {
                   type="text"
                   value={editForm.checkInTime}
                   onChange={(e) => setEditForm({ ...editForm, checkInTime: e.target.value })}
+                  placeholder="Contoh: 14:00 WIB"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Jam Pulang
+                </label>
+                <input
+                  type="text"
+                  value={editForm.checkOutTime}
+                  onChange={(e) => setEditForm({ ...editForm, checkOutTime: e.target.value })}
+                  placeholder="Contoh: 17:00 WIB atau -"
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white"
                 />
               </div>
@@ -955,6 +1279,7 @@ export default function PresensiTutorAdminPage() {
                       id: editingRecord.id,
                       status: editForm.status,
                       checkInTime: editForm.checkInTime,
+                      checkOutTime: editForm.checkOutTime,
                       notes: editForm.notes,
                     }),
                   });

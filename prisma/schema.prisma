@@ -64,6 +64,7 @@ enum AttendanceMethod {
 
 enum AttendanceStatus {
   HADIR
+  TERLAMBAT
   IZIN
   SAKIT
   ALPHA
@@ -115,6 +116,11 @@ model BranchSetting {
   longitude     Float?
   radiusMeters  Int?     @default(100) @map("radius_meters")
   qrSecret      String?  @map("qr_secret")
+  // Jam Kerja & Toleransi Waktu Presensi Tutor
+  workStartTime               String?  @default("08:00") @map("work_start_time")
+  workEndTime                 String?  @default("17:00") @map("work_end_time")
+  lateToleranceMinutes        Int?     @default(15) @map("late_tolerance_minutes")
+  earlyLeaveToleranceMinutes  Int?     @default(0) @map("early_leave_tolerance_minutes")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -156,10 +162,12 @@ model TutorAttendance {
   status          AttendanceStatus @default(HADIR)
   latitude        Float?
   longitude       Float?
-  distanceMeter   Float?           @map("distance_meter")
-  isLocationValid Boolean          @default(true) @map("is_location_valid")
-  notes           String?          @db.Text
-  createdAt       DateTime         @default(now()) @map("created_at")
+  distanceMeter       Float?           @map("distance_meter")
+  isLocationValid     Boolean          @default(true) @map("is_location_valid")
+  lateMinutes         Int?             @default(0) @map("late_minutes")
+  earlyLeaveMinutes   Int?             @default(0) @map("early_leave_minutes")
+  notes               String?          @db.Text
+  createdAt           DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
   // Relations

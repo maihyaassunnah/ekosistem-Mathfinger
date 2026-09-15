@@ -2,6 +2,39 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 
+// Helper: Build branch filter supporting aliases (Bangko, Tabir Timur, Singkut)
+function buildBranchFilter(branchStr: string) {
+  const clean = branchStr.replace(/^Cabang\s+/i, "").trim();
+  const isBangkoOrTabir = /^(bangko|tabir|bgk)/i.test(clean);
+  const isSingkut = /^(singkut|skt)/i.test(clean);
+
+  if (isBangkoOrTabir) {
+    return {
+      OR: [
+        { branchName: { contains: "Tabir", mode: "insensitive" as const } },
+        { branchName: { contains: "Bangko", mode: "insensitive" as const } },
+        { branchCode: { equals: "BGK", mode: "insensitive" as const } },
+      ],
+    };
+  }
+
+  if (isSingkut) {
+    return {
+      OR: [
+        { branchName: { contains: "Singkut", mode: "insensitive" as const } },
+        { branchCode: { equals: "SKT", mode: "insensitive" as const } },
+      ],
+    };
+  }
+
+  return {
+    OR: [
+      { branchName: { contains: clean, mode: "insensitive" as const } },
+      { branchCode: { contains: clean, mode: "insensitive" as const } },
+    ],
+  };
+}
+
 // GET /api/branch-qr-config - Get GPS & QR config for branches
 export async function GET(req: Request) {
   try {
@@ -11,9 +44,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const branchName = searchParams.get("branch");
 
-    const whereClause: any = {};
+    let whereClause: any = {};
     if (branchName && branchName !== "ALL") {
-      whereClause.branchName = { contains: branchName.replace(/^Cabang\s+/i, ""), mode: "insensitive" };
+      whereClause = buildBranchFilter(branchName);
     }
 
     const branches = await prisma.branch.findMany({
@@ -61,6 +94,10 @@ export async function GET(req: Request) {
           longitude: setting.longitude,
           radiusMeters: setting.radiusMeters || 100,
           qrSecret: setting.qrSecret,
+          workStartTime: setting.workStartTime || "08:00",
+          workEndTime: setting.workEndTime || "17:00",
+          lateToleranceMinutes: setting.lateToleranceMinutes ?? 15,
+          earlyLeaveToleranceMinutes: setting.earlyLeaveToleranceMinutes ?? 0,
           // Encoded payload inside QR for scanner
           qrPayload: JSON.stringify({
             type: "MATHFINGERS_TUTOR_ATTENDANCE",
@@ -68,6 +105,9 @@ export async function GET(req: Request) {
             branchCode: b.branchCode,
             branchName: b.branchName,
             secret: setting.qrSecret,
+            workStartTime: setting.workStartTime || "08:00",
+            workEndTime: setting.workEndTime || "17:00",
+            lateToleranceMinutes: setting.lateToleranceMinutes ?? 15,
           }),
         };
       })
@@ -80,14 +120,25 @@ export async function GET(req: Request) {
   }
 }
 
-// PUT /api/branch-qr-config - Update GPS location and/or regenerate QR Secret
+// PUT /api/branch-qr-config - Update GPS location, work hours, tolerance, or regenerate QR Secret
 export async function PUT(req: Request) {
   try {
     const { error } = await requireAuth();
     if (error) return error;
 
     const body = await req.json();
-    const { branchId, branchName, latitude, longitude, radiusMeters, regenerateQr } = body;
+    const {
+      branchId,
+      branchName,
+      latitude,
+      longitude,
+      radiusMeters,
+      regenerateQr,
+      workStartTime,
+      workEndTime,
+      lateToleranceMinutes,
+      earlyLeaveToleranceMinutes,
+    } = body;
 
     let targetBranch = null;
     if (branchId) {
@@ -97,7 +148,7 @@ export async function PUT(req: Request) {
       });
     } else if (branchName) {
       targetBranch = await prisma.branch.findFirst({
-        where: { branchName: { contains: branchName.replace(/^Cabang\s+/i, ""), mode: "insensitive" } },
+        where: buildBranchFilter(branchName),
         include: { setting: true },
       });
     }
@@ -118,6 +169,10 @@ export async function PUT(req: Request) {
         ...(longitude !== undefined ? { longitude: Number(longitude) } : {}),
         ...(radiusMeters !== undefined ? { radiusMeters: Number(radiusMeters) } : {}),
         ...(newQrSecret ? { qrSecret: newQrSecret } : {}),
+        ...(workStartTime !== undefined ? { workStartTime: String(workStartTime) } : {}),
+        ...(workEndTime !== undefined ? { workEndTime: String(workEndTime) } : {}),
+        ...(lateToleranceMinutes !== undefined ? { lateToleranceMinutes: Number(lateToleranceMinutes) } : {}),
+        ...(earlyLeaveToleranceMinutes !== undefined ? { earlyLeaveToleranceMinutes: Number(earlyLeaveToleranceMinutes) } : {}),
       },
       create: {
         branchId: targetBranch.id,
@@ -125,6 +180,10 @@ export async function PUT(req: Request) {
         longitude: longitude ? Number(longitude) : 102.6847,
         radiusMeters: radiusMeters ? Number(radiusMeters) : 100,
         qrSecret: newQrSecret,
+        workStartTime: workStartTime ? String(workStartTime) : "08:00",
+        workEndTime: workEndTime ? String(workEndTime) : "17:00",
+        lateToleranceMinutes: lateToleranceMinutes !== undefined ? Number(lateToleranceMinutes) : 15,
+        earlyLeaveToleranceMinutes: earlyLeaveToleranceMinutes !== undefined ? Number(earlyLeaveToleranceMinutes) : 0,
       },
     });
 
@@ -136,12 +195,19 @@ export async function PUT(req: Request) {
       longitude: updatedSetting.longitude,
       radiusMeters: updatedSetting.radiusMeters,
       qrSecret: updatedSetting.qrSecret,
+      workStartTime: updatedSetting.workStartTime,
+      workEndTime: updatedSetting.workEndTime,
+      lateToleranceMinutes: updatedSetting.lateToleranceMinutes,
+      earlyLeaveToleranceMinutes: updatedSetting.earlyLeaveToleranceMinutes,
       qrPayload: JSON.stringify({
         type: "MATHFINGERS_TUTOR_ATTENDANCE",
         branchId: targetBranch.id,
         branchCode: targetBranch.branchCode,
         branchName: targetBranch.branchName,
         secret: updatedSetting.qrSecret,
+        workStartTime: updatedSetting.workStartTime,
+        workEndTime: updatedSetting.workEndTime,
+        lateToleranceMinutes: updatedSetting.lateToleranceMinutes,
       }),
     });
   } catch (error: any) {

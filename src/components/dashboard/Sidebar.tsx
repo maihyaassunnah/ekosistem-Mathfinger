@@ -216,7 +216,24 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           icon: CheckSquare,
           badge: null,
         },
-        ...(isSuperAdmin || isBranchAdmin
+        ...(isSuperAdmin
+          ? [
+              {
+                name: "Presensi & QR Tutor",
+                href: "/dashboard/presensi-tutor",
+                icon: UserCheck,
+                badge: "GPS",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-extrabold",
+              },
+              {
+                name: "Scan Presensi Tutor",
+                href: "/dashboard/absensi-tutor",
+                icon: QrCode,
+                badge: "GPS",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-extrabold",
+              },
+            ]
+          : isBranchAdmin
           ? [
               {
                 name: "Presensi & QR Tutor",
@@ -388,7 +405,24 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           icon: CheckSquare,
           badge: null,
         },
-        ...(isSuperAdmin || isBranchAdmin
+        ...(isSuperAdmin
+          ? [
+              {
+                name: "Presensi & QR Tutor",
+                href: "/dashboard/presensi-tutor",
+                icon: UserCheck,
+                badge: "GPS",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-extrabold",
+              },
+              {
+                name: "Scan Presensi Tutor",
+                href: "/dashboard/absensi-tutor",
+                icon: QrCode,
+                badge: "GPS",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-extrabold",
+              },
+            ]
+          : isBranchAdmin
           ? [
               {
                 name: "Presensi & QR Tutor",

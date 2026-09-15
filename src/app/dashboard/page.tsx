@@ -42,6 +42,7 @@ import {
   Menu,
   BookText,
   Calculator,
+  UserCheck,
 } from "lucide-react";
 import {
   CURRENT_USER,
@@ -267,8 +268,23 @@ function DashboardContent() {
             color:
               "bg-cyan-50 text-cyan-600 border border-cyan-100 dark:bg-cyan-950/60 dark:text-cyan-400 dark:border-cyan-900/60",
           },
+          {
+            label: "Presensi Tutor",
+            href: "/dashboard/presensi-tutor",
+            icon: UserCheck,
+            color:
+              "bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/60",
+          },
         ]
-      : []),
+      : [
+          {
+            label: "Presensi Tutor",
+            href: "/dashboard/presensi-tutor",
+            icon: UserCheck,
+            color:
+              "bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/60",
+          },
+        ]),
     {
       label: "Jurnal Guru",
       href: "/dashboard/jurnal",
