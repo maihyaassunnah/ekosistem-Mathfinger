@@ -407,7 +407,7 @@ function KenaikanLevelContent() {
       )}
 
       {/* Top Status Bar Component */}
-      <TopStatusBar />
+      <TopStatusBar title="Kenaikan Level Siswa" />
 
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white p-6 sm:p-8 shadow-xl shadow-emerald-900/10">
@@ -1280,9 +1280,9 @@ function KenaikanLevelContent() {
         message={`Apakah Anda yakin ingin menghapus kolom ${confirmDeleteLevel.name}? Data tanggal kenaikan level ini untuk semua siswa akan terhapus.`}
         confirmText="Hapus Kolom"
         cancelText="Batal"
-        type="danger"
+        variant="danger"
         onConfirm={handleExecuteDeleteLevel}
-        onCancel={() => setConfirmDeleteLevel({ open: false, id: "", name: "" })}
+        onClose={() => setConfirmDeleteLevel({ open: false, id: "", name: "" })}
       />
     </div>
   );
