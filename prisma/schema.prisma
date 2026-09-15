@@ -193,6 +193,7 @@ model Student {
   behaviors       StudentBehavior[]
   teacherJournals TeacherJournal[]
   readingGrades   ReadingGrade[]
+  levelProgresses StudentLevelProgress[]
 
   @@map("students")
 }
@@ -504,3 +505,42 @@ model WebsiteLead {
 
   @@map("website_leads")
 }
+
+// ----------------------------------------------------
+// D. LEVEL PROGRESSION MODELS (Kenaikan Level)
+// ----------------------------------------------------
+
+model LevelProgression {
+  id          String   @id @default(uuid())
+  levelNumber Int      @map("level_number")
+  name        String
+  description String?  @db.Text
+  orderIndex  Int      @default(1) @map("order_index")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  records StudentLevelProgress[]
+
+  @@map("level_progressions")
+}
+
+model StudentLevelProgress {
+  id                 String           @id @default(uuid())
+  studentId          String           @map("student_id")
+  levelProgressionId String           @map("level_progression_id")
+  passedDate         DateTime         @map("passed_date")
+  notes              String?          @db.Text
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  levelProgression LevelProgression @relation(fields: [levelProgressionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, levelProgressionId])
+  @@index([studentId])
+  @@index([levelProgressionId])
+  @@map("student_level_progress")
+}
+

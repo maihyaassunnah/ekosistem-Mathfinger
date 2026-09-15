@@ -35,6 +35,7 @@ import {
   HeartHandshake,
   UserPlus,
   BookText,
+  Award,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useAppStore } from "@/lib/store";
@@ -52,7 +53,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const currentProgram = searchParams?.get("program");
 
   const currentUser = useCurrentUser();
-  const { isSuperAdmin, isBranchAssistant, allowedBranch } = currentUser;
+  const { isSuperAdmin, isBranchAdmin, isBranchAssistant, allowedBranch } = currentUser;
   const { theme, toggleTheme } = useTheme();
   const {
     students,
@@ -231,6 +232,17 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           icon: Edit3,
           badge: null,
         },
+        ...(isSuperAdmin || isBranchAdmin || (!isBranchAssistant && !currentUser.isTutor)
+          ? [
+              {
+                name: "Kenaikan Level",
+                href: "/dashboard/kenaikan-level",
+                icon: Award,
+                badge: "Level 1-3+",
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold",
+              },
+            ]
+          : []),
         {
           name: "Kurikulum & Panduan",
           href: "/dashboard/kurikulum",
@@ -374,6 +386,16 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           badge: "Level 1-7",
           badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
         },
+        ...(isSuperAdmin || isBranchAdmin || (!isBranchAssistant && !currentUser.isTutor)
+          ? [
+              {
+                name: "Kenaikan Level",
+                href: "/dashboard/kenaikan-level?program=MEMBACA",
+                icon: Award,
+                badge: null,
+              },
+            ]
+          : []),
       ],
     },
     ...(!isBranchAssistant && !currentUser.isTutor

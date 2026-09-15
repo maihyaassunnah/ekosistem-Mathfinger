@@ -185,6 +185,22 @@ export interface LandingPartnerItem {
   active: boolean;
 }
 
+export interface LevelProgressionConfig {
+  id: string;
+  levelNumber: number;
+  name: string;
+  description?: string;
+}
+
+export interface StudentLevelRecord {
+  id: string;
+  studentId: string;
+  levelId: string;
+  passedDate: string;
+  notes?: string;
+  updatedAt?: string;
+}
+
 interface AppStoreContextType {
   // Students
   students: StudentItem[];
@@ -313,6 +329,16 @@ interface AppStoreContextType {
   addLandingPartner: (partner: Omit<LandingPartnerItem, "id">) => void;
   updateLandingPartner: (id: string, partner: Partial<LandingPartnerItem>) => void;
   deleteLandingPartner: (id: string) => void;
+
+  // Level Progression Matrix (Kenaikan Level)
+  levelColumns: LevelProgressionConfig[];
+  studentLevelRecords: StudentLevelRecord[];
+  addLevelColumn: (name: string, description?: string) => void;
+  updateLevelColumn: (id: string, name: string, description?: string) => void;
+  deleteLevelColumn: (id: string) => void;
+  setStudentLevelRecord: (studentId: string, levelId: string, passedDate: string, notes?: string) => Promise<void>;
+  deleteStudentLevelRecord: (studentId: string, levelId: string) => Promise<void>;
+  batchUpdateStudentLevelRecords: (studentId: string, records: { levelId: string; passedDate: string; notes?: string }[]) => Promise<void>;
 }
 
 const AppStoreContext = createContext<AppStoreContextType | null>(null);
@@ -677,6 +703,23 @@ const INITIAL_CURRICULUM: CurriculumModule[] = [
       "Kecepatan mencongak < 2 detik",
     ],
   },
+];
+
+const INITIAL_LEVEL_COLUMNS: LevelProgressionConfig[] = [
+  { id: "lvl-1", levelNumber: 1, name: "Level 1", description: "Penjumlahan & Pengurangan Satuan Langsung" },
+  { id: "lvl-2", levelNumber: 2, name: "Level 2", description: "Kombinasi Rumus Teman Kecil (Basis 5)" },
+  { id: "lvl-3", levelNumber: 3, name: "Level 3", description: "Kombinasi Rumus Teman Besar & Campuran" },
+];
+
+const INITIAL_STUDENT_LEVEL_RECORDS: StudentLevelRecord[] = [
+  { id: "slr-1-1", studentId: "ef8da238-f2e5-47cf-a3d5-7f620e5ec8d8", levelId: "lvl-1", passedDate: "2025-05-10", notes: "Lulus evaluasi jari tangan satuan" },
+  { id: "slr-1-2", studentId: "ef8da238-f2e5-47cf-a3d5-7f620e5ec8d8", levelId: "lvl-2", passedDate: "2025-09-14", notes: "Lulus rumus teman kecil" },
+  { id: "slr-1-3", studentId: "ef8da238-f2e5-47cf-a3d5-7f620e5ec8d8", levelId: "lvl-3", passedDate: "2026-02-20", notes: "Lulus Level 3 nilai sangat baik" },
+  { id: "slr-2-1", studentId: "d4f895ab-5484-4861-a5bf-8a5fffe2027e", levelId: "lvl-1", passedDate: "2025-04-18", notes: "Lulus tes kuis cepat" },
+  { id: "slr-2-2", studentId: "d4f895ab-5484-4861-a5bf-8a5fffe2027e", levelId: "lvl-2", passedDate: "2025-10-02", notes: "Lulus rumus teman kecil" },
+  { id: "slr-3-1", studentId: "75cba270-36a8-4c8d-8fb2-540192e21245", levelId: "lvl-1", passedDate: "2025-06-12", notes: "Lulus ujian dasar" },
+  { id: "slr-4-1", studentId: "e1b5cf3c-5353-4a1a-a1b7-a36746816409", levelId: "lvl-1", passedDate: "2025-05-25", notes: "Lulus nilai sempurna" },
+  { id: "slr-4-2", studentId: "e1b5cf3c-5353-4a1a-a1b7-a36746816409", levelId: "lvl-2", passedDate: "2025-11-15", notes: "Lulus Level 2" },
 ];
 
 const INITIAL_INVOICES: InvoiceItem[] = [
@@ -1467,6 +1510,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [landingTestimonials, setLandingTestimonials] = useState<LandingTestimonialItem[]>(INITIAL_LANDING_TESTIMONIALS);
   const [landingLeads, setLandingLeads] = useState<LandingLeadItem[]>(INITIAL_LANDING_LEADS);
   const [landingPartners, setLandingPartners] = useState<LandingPartnerItem[]>(INITIAL_LANDING_PARTNERS);
+  const [levelColumns, setLevelColumns] = useState<LevelProgressionConfig[]>(INITIAL_LEVEL_COLUMNS);
+  const [studentLevelRecords, setStudentLevelRecords] = useState<StudentLevelRecord[]>(INITIAL_STUDENT_LEVEL_RECORDS);
 
   // Save to LocalStorage helper
   const save = useCallback((key: string, value: any) => {
@@ -1498,6 +1543,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         fetch("/api/website/testimonials", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/website/leads", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/website/partners", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/level-progress", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
       ]);
 
       const [
@@ -1518,6 +1564,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         testimonialsRes,
         leadsRes,
         partnersRes,
+        levelProgressRes,
       ] = results.map((res) => (res.status === "fulfilled" ? res.value : null));
 
       if (Array.isArray(studentsRes) && studentsRes.length > 0) {
@@ -1630,6 +1677,16 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         setLandingPartners(partnersRes);
         save("mf_landing_partners", partnersRes);
       }
+      if (levelProgressRes) {
+        if (Array.isArray(levelProgressRes.columns) && levelProgressRes.columns.length > 0) {
+          setLevelColumns(levelProgressRes.columns);
+          save("mf_level_progression_columns", levelProgressRes.columns);
+        }
+        if (Array.isArray(levelProgressRes.records)) {
+          setStudentLevelRecords(levelProgressRes.records);
+          save("mf_student_level_records", levelProgressRes.records);
+        }
+      }
     } catch (err) {
       console.warn("Error synchronizing live PostgreSQL data:", err);
     }
@@ -1708,6 +1765,22 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
       const savedInvoices = localStorage.getItem("mf_invoices");
       if (savedInvoices) setInvoices(JSON.parse(savedInvoices));
+
+      const savedLevelCols = localStorage.getItem("mf_level_progression_columns");
+      if (savedLevelCols) {
+        try {
+          const parsed = JSON.parse(savedLevelCols);
+          if (Array.isArray(parsed) && parsed.length > 0) setLevelColumns(parsed);
+        } catch {}
+      }
+
+      const savedStudentLevels = localStorage.getItem("mf_student_level_records");
+      if (savedStudentLevels) {
+        try {
+          const parsed = JSON.parse(savedStudentLevels);
+          if (Array.isArray(parsed) && parsed.length > 0) setStudentLevelRecords(parsed);
+        } catch {}
+      }
 
       const savedMutations = localStorage.getItem("mf_mutations");
       if (savedMutations) setCashMutations(JSON.parse(savedMutations));
@@ -3210,6 +3283,151 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error deleting website partner from PostgreSQL:", err));
   };
 
+  // Level Progression Matrix Handlers (Kenaikan Level)
+  const addLevelColumn = useCallback((name: string, description?: string) => {
+    setLevelColumns((prev) => {
+      const nextNum = prev.length + 1;
+      const newCol: LevelProgressionConfig = {
+        id: `lvl-${Date.now()}`,
+        levelNumber: nextNum,
+        name: name.trim() || `Level ${nextNum}`,
+        description: description?.trim() || "",
+      };
+      const updated = [...prev, newCol];
+      save("mf_level_progression_columns", updated);
+      return updated;
+    });
+
+    fetch("/api/level-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "ADD_LEVEL_COLUMN", name, description }),
+    }).catch((err) => console.error("Error creating level column:", err));
+  }, [save]);
+
+  const updateLevelColumn = useCallback((id: string, name: string, description?: string) => {
+    setLevelColumns((prev) => {
+      const updated = prev.map((col) =>
+        col.id === id ? { ...col, name: name.trim(), ...(description !== undefined ? { description: description.trim() } : {}) } : col
+      );
+      save("mf_level_progression_columns", updated);
+      return updated;
+    });
+
+    fetch("/api/level-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "UPDATE_LEVEL_COLUMN", id, name, description }),
+    }).catch((err) => console.error("Error updating level column:", err));
+  }, [save]);
+
+  const deleteLevelColumn = useCallback((id: string) => {
+    setLevelColumns((prev) => {
+      const updated = prev.filter((col) => col.id !== id);
+      save("mf_level_progression_columns", updated);
+      return updated;
+    });
+    setStudentLevelRecords((prev) => {
+      const updated = prev.filter((rec) => rec.levelId !== id);
+      save("mf_student_level_records", updated);
+      return updated;
+    });
+
+    fetch("/api/level-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "DELETE_LEVEL_COLUMN", id }),
+    }).catch((err) => console.error("Error deleting level column:", err));
+  }, [save]);
+
+  const setStudentLevelRecord = useCallback(async (studentId: string, levelId: string, passedDate: string, notes?: string) => {
+    setStudentLevelRecords((prev) => {
+      const existingIndex = prev.findIndex((r) => r.studentId === studentId && r.levelId === levelId);
+      let updated: StudentLevelRecord[];
+      if (existingIndex >= 0) {
+        updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          passedDate,
+          notes: notes !== undefined ? notes : updated[existingIndex].notes,
+          updatedAt: new Date().toISOString(),
+        };
+      } else {
+        const newRecord: StudentLevelRecord = {
+          id: `slr-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          studentId,
+          levelId,
+          passedDate,
+          notes: notes || "",
+          updatedAt: new Date().toISOString(),
+        };
+        updated = [...prev, newRecord];
+      }
+      save("mf_student_level_records", updated);
+      return updated;
+    });
+
+    fetch("/api/level-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "SET_STUDENT_LEVEL", studentId, levelId, passedDate, notes }),
+    }).catch((err) => console.error("Error setting student level:", err));
+  }, [save]);
+
+  const deleteStudentLevelRecord = useCallback(async (studentId: string, levelId: string) => {
+    setStudentLevelRecords((prev) => {
+      const updated = prev.filter((r) => !(r.studentId === studentId && r.levelId === levelId));
+      save("mf_student_level_records", updated);
+      return updated;
+    });
+
+    fetch("/api/level-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "DELETE_STUDENT_LEVEL", studentId, levelId }),
+    }).catch((err) => console.error("Error deleting student level:", err));
+  }, [save]);
+
+  const batchUpdateStudentLevelRecords = useCallback(async (studentId: string, records: { levelId: string; passedDate: string; notes?: string }[]) => {
+    setStudentLevelRecords((prev) => {
+      let updated = [...prev];
+      records.forEach((rec) => {
+        const existingIndex = updated.findIndex((r) => r.studentId === studentId && r.levelId === rec.levelId);
+        if (rec.passedDate) {
+          if (existingIndex >= 0) {
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              passedDate: rec.passedDate,
+              notes: rec.notes !== undefined ? rec.notes : updated[existingIndex].notes,
+              updatedAt: new Date().toISOString(),
+            };
+          } else {
+            updated.push({
+              id: `slr-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+              studentId,
+              levelId: rec.levelId,
+              passedDate: rec.passedDate,
+              notes: rec.notes || "",
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        } else {
+          if (existingIndex >= 0) {
+            updated.splice(existingIndex, 1);
+          }
+        }
+      });
+      save("mf_student_level_records", updated);
+      return updated;
+    });
+
+    fetch("/api/level-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "BATCH_UPDATE_STUDENT_LEVELS", studentId, records }),
+    }).catch((err) => console.error("Error batch updating student levels:", err));
+  }, [save]);
+
   return (
     <AppStoreContext.Provider
       value={{
@@ -3282,6 +3500,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         addLandingPartner,
         updateLandingPartner,
         deleteLandingPartner,
+        levelColumns,
+        studentLevelRecords,
+        addLevelColumn,
+        updateLevelColumn,
+        deleteLevelColumn,
+        setStudentLevelRecord,
+        deleteStudentLevelRecord,
+        batchUpdateStudentLevelRecords,
       }}
     >
       {children}
