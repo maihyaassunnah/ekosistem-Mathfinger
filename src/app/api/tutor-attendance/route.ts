@@ -71,7 +71,11 @@ export async function GET(req: Request) {
     const whereClause: any = {};
 
     if (branch && branch !== "ALL") {
-      whereClause.branch = buildBranchFilter(branch);
+      const branchFilter = buildBranchFilter(branch);
+      whereClause.OR = [
+        { branch: branchFilter },
+        { user: { branch: branchFilter } },
+      ];
     }
 
     if (userId) {
@@ -118,6 +122,13 @@ export async function GET(req: Request) {
             email: true,
             role: true,
             avatarUrl: true,
+            branch: {
+              select: {
+                id: true,
+                branchName: true,
+                branchCode: true,
+              },
+            },
           },
         },
         branch: {
@@ -139,7 +150,7 @@ export async function GET(req: Request) {
       tutorRole: r.user?.role || "TUTOR",
       avatarUrl: r.user?.avatarUrl || "",
       branchId: r.branchId,
-      branchName: r.branch?.branchName || "Singkut",
+      branchName: (r.user as any)?.branch?.branchName || r.branch?.branchName || "Singkut",
       date: r.attendanceDate.toISOString().split("T")[0],
       checkInTime: r.checkInTime,
       checkOutTime: r.checkOutTime || "-",
@@ -200,23 +211,44 @@ export async function POST(req: Request) {
     }
 
     // Find branch by QR secret or branchId in payload
-    let branch = null;
+    let branch: any = null;
     if (parsedQr?.branchId) {
       branch = await prisma.branch.findUnique({
         where: { id: parsedQr.branchId },
         include: { setting: true },
       });
-    } else if (parsedQr?.secret) {
-      const setting = await prisma.branchSetting.findFirst({
-        where: { qrSecret: parsedQr.secret },
-        include: { branch: true },
-      });
-      if (setting?.branch) {
-        branch = { ...setting.branch, setting };
+    }
+
+    if (!branch && parsedQr?.secret) {
+      // 1. Look up in dedicated tutor_attendance_qrs table
+      try {
+        const qrRows = await prisma.$queryRawUnsafe<any[]>(
+          `SELECT "branch_id" FROM "tutor_attendance_qrs" WHERE "qr_secret" = $1 LIMIT 1`,
+          parsedQr.secret
+        );
+        if (qrRows.length > 0 && qrRows[0].branch_id) {
+          branch = await prisma.branch.findUnique({
+            where: { id: qrRows[0].branch_id },
+            include: { setting: true },
+          });
+        }
+      } catch (qrLookupErr) {
+        console.warn("Could not query tutor_attendance_qrs by secret:", qrLookupErr);
+      }
+
+      // 2. Fallback to branchSetting.qrSecret
+      if (!branch) {
+        const setting = await prisma.branchSetting.findFirst({
+          where: { qrSecret: parsedQr.secret },
+          include: { branch: true },
+        });
+        if (setting?.branch) {
+          branch = { ...setting.branch, setting };
+        }
       }
     }
 
-    // Fallback: match QR branch name/code if specified
+    // Fallback: match QR branch name/code if specified in payload
     if (!branch && (parsedQr?.branchName || parsedQr?.branchCode)) {
       const branchTerm = parsedQr.branchName || parsedQr.branchCode;
       branch = await prisma.branch.findFirst({
@@ -225,19 +257,24 @@ export async function POST(req: Request) {
       });
     }
 
-    // Fallback: match user branch
-    if (!branch && userRecord.branchId) {
-      branch = await prisma.branch.findUnique({
-        where: { id: userRecord.branchId },
-        include: { setting: true },
-      });
-    }
     if (!branch) {
-      branch = await prisma.branch.findFirst({ include: { setting: true } });
+      return NextResponse.json({ error: "QR Code Presensi tidak dikenali atau belum terdaftar di cabang manapun." }, { status: 400 });
     }
 
-    if (!branch) {
-      return NextResponse.json({ error: "QR Code Presensi Cabang tidak valid" }, { status: 400 });
+    // Cross-Branch Validation: Ensure tutor only scans QR belonging to their assigned branch
+    if (userRecord.role !== "SUPER_ADMIN" && userRecord.branchId && branch) {
+      if (userRecord.branchId !== branch.id) {
+        const userBranch = await prisma.branch.findUnique({
+          where: { id: userRecord.branchId },
+          select: { branchName: true },
+        });
+        return NextResponse.json(
+          {
+            error: `Presensi Ditolak! Kode QR ini milik Cabang ${branch.branchName}. Anda terdaftar di Cabang ${userBranch?.branchName || "lain"}!`,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // 3. Geofencing GPS Distance Calculation
@@ -304,6 +341,21 @@ export async function POST(req: Request) {
       },
     });
 
+    // Fetch accurate branch work schedule from tutor_attendance_qrs
+    let branchScheduleRow: any = null;
+    try {
+      const rows = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT * FROM "tutor_attendance_qrs" WHERE "branch_id" = $1 LIMIT 1`,
+        branch.id
+      );
+      if (rows.length > 0) branchScheduleRow = rows[0];
+    } catch {}
+
+    const workEndStr = branchScheduleRow?.work_end_time || branch.setting?.workEndTime || "17:00";
+    const earlyLeaveTolerance = branchScheduleRow?.early_leave_tolerance_minutes ?? branch.setting?.earlyLeaveToleranceMinutes ?? 0;
+    const workStartStr = branchScheduleRow?.work_start_time || branch.setting?.workStartTime || "08:00";
+    const lateTolerance = branchScheduleRow?.late_tolerance_minutes ?? branch.setting?.lateToleranceMinutes ?? 15;
+
     if (isCheckOut) {
       if (!existingAttendance) {
         return NextResponse.json(
@@ -312,8 +364,6 @@ export async function POST(req: Request) {
         );
       }
 
-      const workEndStr = branch.setting?.workEndTime || "17:00";
-      const earlyLeaveTolerance = branch.setting?.earlyLeaveToleranceMinutes ?? 0;
       const workEndMinutes = parseTimeToMinutes(workEndStr) ?? 1020; // 17:00 default
 
       let isEarlyLeave = false;
@@ -358,6 +408,9 @@ export async function POST(req: Request) {
         isCheckOut: true,
         isEarlyLeave,
         earlyMinutes,
+        workStartTime: workEndStr,
+        workEndTime: workEndStr,
+        earlyLeaveToleranceMinutes: earlyLeaveTolerance,
         message: isEarlyLeave
           ? `Presensi Pulang berhasil dicatat pada ${currentTimeStr} (Pulang lebih awal ${earlyMinutes} menit).`
           : `Presensi Pulang berhasil dicatat pada ${currentTimeStr}!`,
@@ -367,8 +420,6 @@ export async function POST(req: Request) {
     }
 
     // Check In
-    const workStartStr = branch.setting?.workStartTime || "08:00";
-    const lateTolerance = branch.setting?.lateToleranceMinutes ?? 15;
     const workStartMinutes = parseTimeToMinutes(workStartStr) ?? 480; // 08:00 default
 
     let isLate = false;
@@ -385,6 +436,8 @@ export async function POST(req: Request) {
       initialNotes = initialNotes ? `${initialNotes} | ${lateNote}` : lateNote;
     }
 
+    const attendanceBranchId = userRecord.branchId || branch.id;
+
     const attendance = await prisma.tutorAttendance.upsert({
       where: {
         userId_attendanceDate: {
@@ -400,11 +453,11 @@ export async function POST(req: Request) {
         distanceMeter: distanceMeter,
         isLocationValid: isLocationValid,
         notes: initialNotes || undefined,
-        branchId: branch.id,
+        branchId: attendanceBranchId,
       },
       create: {
         userId: userRecord.id,
-        branchId: branch.id,
+        branchId: attendanceBranchId,
         attendanceDate: todayMidnight,
         checkInTime: currentTimeStr,
         status: statusToSave,
@@ -437,6 +490,9 @@ export async function POST(req: Request) {
       isCheckIn: true,
       isLate,
       lateMinutes,
+      workStartTime: workStartStr,
+      workEndTime: workEndStr,
+      lateToleranceMinutes: lateTolerance,
       message: isLate
         ? `Presensi Masuk dicatat pada ${currentTimeStr} (Terlambat ${lateMinutes} menit). Harap perhatikan jam kerja!`
         : `Presensi Masuk berhasil dicatat tepat waktu pada ${currentTimeStr}! (Jarak: ${distanceMeter !== null ? `${distanceMeter}m` : "Terverifikasi"})`,

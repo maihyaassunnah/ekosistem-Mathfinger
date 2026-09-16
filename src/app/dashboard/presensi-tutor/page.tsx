@@ -166,19 +166,37 @@ export default function PresensiTutorAdminPage() {
         const data = await res.json();
         setConfigs(data);
         if (data.length > 0) {
-          const cfg = data[0];
-          setGpsForm({
-            latitude: cfg.latitude ? String(cfg.latitude) : "-2.3125",
-            longitude: cfg.longitude ? String(cfg.longitude) : "102.6847",
-            radiusMeters: String(cfg.radiusMeters || 100),
-          });
-          setWorkTimeForm({
-            workStartTime: cfg.workStartTime || "08:00",
-            workEndTime: cfg.workEndTime || "17:00",
-            lateToleranceMinutes: String(cfg.lateToleranceMinutes ?? 15),
-            earlyLeaveToleranceMinutes: String(cfg.earlyLeaveToleranceMinutes ?? 0),
-          });
-          generateQrImage(cfg.qrPayload);
+          const isTargetTabir =
+            targetBranch.toLowerCase().includes("bangko") ||
+            targetBranch.toLowerCase().includes("tabir");
+
+          const cfg =
+            data.find((c: any) => {
+              const name = (c.branchName || "").toLowerCase();
+              const code = (c.branchCode || "").toUpperCase();
+              if (isTargetTabir) {
+                return name.includes("tabir") || name.includes("bangko") || code === "BGK";
+              } else {
+                return name.includes("singkut") || code === "SKT";
+              }
+            }) || (data.length === 1 ? data[0] : null);
+
+          if (cfg) {
+            setGpsForm({
+              latitude: cfg.latitude ? String(cfg.latitude) : isTargetTabir ? "-2.0717" : "-2.3125",
+              longitude: cfg.longitude ? String(cfg.longitude) : isTargetTabir ? "102.2655" : "102.6847",
+              radiusMeters: String(cfg.radiusMeters || 100),
+            });
+            setWorkTimeForm({
+              workStartTime: cfg.workStartTime || "08:00",
+              workEndTime: cfg.workEndTime || "17:00",
+              lateToleranceMinutes: String(cfg.lateToleranceMinutes ?? 15),
+              earlyLeaveToleranceMinutes: String(cfg.earlyLeaveToleranceMinutes ?? 0),
+            });
+            if (cfg.qrPayload) {
+              generateQrImage(cfg.qrPayload);
+            }
+          }
         }
       }
     } catch (err) {
@@ -188,10 +206,10 @@ export default function PresensiTutorAdminPage() {
     }
   };
 
-  // Fetch tutor attendances
-  const fetchAttendances = async () => {
+  // Fetch tutor attendances with optional silent background refresh
+  const fetchAttendances = async (isSilent = false) => {
     try {
-      setIsRefreshing(true);
+      if (!isSilent) setIsRefreshing(true);
       const url = `/api/tutor-attendance?branch=${encodeURIComponent(targetBranch)}${
         filterDate ? `&date=${filterDate}` : `&month=${filterMonth}`
       }`;
@@ -203,13 +221,49 @@ export default function PresensiTutorAdminPage() {
     } catch (err) {
       console.error("Error fetching attendances:", err);
     } finally {
-      setIsRefreshing(false);
+      if (!isSilent) setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchConfigs();
-    fetchAttendances();
+    fetchAttendances(false);
+
+    // 1. Real-time auto-sync polling every 3.5 seconds
+    const intervalId = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchAttendances(true);
+      }
+    }, 3500);
+
+    // 2. Real-time window focus & visibility handler
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchAttendances(true);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleVisibility);
+
+    // 3. Zero-latency BroadcastChannel listener for scans across tabs/windows
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+        bc = new BroadcastChannel("mf_tutor_attendance");
+        bc.onmessage = () => {
+          fetchAttendances(true);
+        };
+      }
+    } catch (bcErr) {
+      console.warn("BroadcastChannel error:", bcErr);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleVisibility);
+      if (bc) bc.close();
+    };
   }, [targetBranch, filterMonth, filterDate]);
 
   // Generate QR Canvas
@@ -319,7 +373,9 @@ export default function PresensiTutorAdminPage() {
           type: "success",
           text: `Titik GPS & Radius Cabang ${targetBranch} berhasil disimpan ke PostgreSQL!`,
         });
-        generateQrImage(data.qrPayload);
+        if (data.qrPayload) {
+          generateQrImage(data.qrPayload);
+        }
         fetchConfigs();
       } else {
         const err = await res.json();
@@ -350,9 +406,19 @@ export default function PresensiTutorAdminPage() {
       });
 
       if (res.ok) {
+        const resData = await res.json();
+        setWorkTimeForm({
+          workStartTime: resData.workStartTime || workTimeForm.workStartTime,
+          workEndTime: resData.workEndTime || workTimeForm.workEndTime,
+          lateToleranceMinutes: String(resData.lateToleranceMinutes ?? workTimeForm.lateToleranceMinutes),
+          earlyLeaveToleranceMinutes: String(resData.earlyLeaveToleranceMinutes ?? workTimeForm.earlyLeaveToleranceMinutes),
+        });
+        if (resData.qrPayload) {
+          generateQrImage(resData.qrPayload);
+        }
         setWorkTimeFeedback({
           type: "success",
-          text: `Jam kerja (${workTimeForm.workStartTime} - ${workTimeForm.workEndTime} WIB) & batas toleransi Cabang ${targetBranch} berhasil disimpan!`,
+          text: `Jam kerja (${resData.workStartTime || workTimeForm.workStartTime} - ${resData.workEndTime || workTimeForm.workEndTime} WIB) & batas toleransi Cabang ${targetBranch} berhasil disimpan!`,
         });
         fetchConfigs();
       } else {
@@ -385,7 +451,9 @@ export default function PresensiTutorAdminPage() {
 
       if (res.ok) {
         const data = await res.json();
-        generateQrImage(data.qrPayload);
+        if (data.qrPayload) {
+          generateQrImage(data.qrPayload);
+        }
         fetchConfigs();
         setGpsFeedback({
           type: "success",
@@ -408,7 +476,7 @@ export default function PresensiTutorAdminPage() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Code Presensi Tutor - Cabang ${selectedBranch}</title>
+          <title>QR Code Presensi Tutor - Cabang ${targetBranch}</title>
           <style>
             body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 40px; }
             .card { border: 4px solid #064e3b; border-radius: 24px; padding: 30px; max-width: 480px; margin: 0 auto; }
@@ -423,7 +491,7 @@ export default function PresensiTutorAdminPage() {
           <div class="card">
             <h1>MATHFINGERS</h1>
             <h2>QR PRESENSI KEHADIRAN TUTOR & STAFF</h2>
-            <p><strong>Cabang ${selectedBranch}</strong></p>
+            <p><strong>Cabang ${targetBranch}</strong></p>
             <img class="qr-img" src="${qrDataUrl}" alt="QR Code" />
             <p>Scan menggunakan smartphone Anda melalui menu <strong>"Scan Presensi Saya"</strong> saat tiba di area kantor cabang.</p>
             <div class="badge">📍 Terverifikasi Geofencing GPS (Radius: ${gpsForm.radiusMeters} Meter)</div>
@@ -542,7 +610,7 @@ export default function PresensiTutorAdminPage() {
                   Titik Koordinat & Radius GPS Cabang
                 </h2>
               </div>
-              <span className="text-xs font-bold text-slate-400">Cabang {selectedBranch}</span>
+              <span className="text-xs font-bold text-slate-400">Cabang {targetBranch}</span>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -569,21 +637,25 @@ export default function PresensiTutorAdminPage() {
             <div className="space-y-4">
               {/* Quick Preset Buttons & Paste Helper */}
               <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
-                <span className="text-[11px] font-bold text-slate-400">Pintasan Cepat:</span>
-                <button
-                  type="button"
-                  onClick={() => handleSetPreset("-2.312500", "102.600000", "Cabang Singkut")}
-                  className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
-                >
-                  📍 Preset Singkut
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetPreset("-2.071700", "102.265500", "Cabang Bangko")}
-                  className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
-                >
-                  📍 Preset Bangko
-                </button>
+                <span className="text-[11px] font-bold text-slate-400">Pintasan Koordinat Resmi:</span>
+                {targetBranch.toLowerCase().includes("singkut") && (
+                  <button
+                    type="button"
+                    onClick={() => handleSetPreset("-2.312500", "102.684700", "Cabang Singkut")}
+                    className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+                  >
+                    📍 Titik Koordinat Resmi Cabang Singkut
+                  </button>
+                )}
+                {(targetBranch.toLowerCase().includes("tabir") || targetBranch.toLowerCase().includes("bangko")) && (
+                  <button
+                    type="button"
+                    onClick={() => handleSetPreset("-2.071700", "102.265500", "Cabang Tabir Timur")}
+                    className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
+                  >
+                    📍 Titik Koordinat Resmi Cabang Tabir Timur
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setIsParsingOpen(!isParsingOpen)}
@@ -742,7 +814,7 @@ export default function PresensiTutorAdminPage() {
                 </div>
               )}
               <div className="mt-3 text-xs font-black text-slate-800 dark:text-white">
-                Cabang {selectedBranch}
+                Cabang {targetBranch}
               </div>
               <div className="text-[10px] text-slate-500 dark:text-slate-400">
                 Scan via menu <strong>Scan Presensi Saya</strong>
@@ -1045,15 +1117,24 @@ export default function PresensiTutorAdminPage() {
                 ]}
               />
 
+              {/* Live Realtime Indicator */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-[11px] font-black text-emerald-700 dark:text-emerald-300 shadow-xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Live Sync Realtime</span>
+              </div>
+
               <button
                 type="button"
-                onClick={fetchAttendances}
+                onClick={() => fetchAttendances(false)}
                 disabled={isRefreshing}
                 className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
                 title="Muat Ulang Data Presensi"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-                <span>{isRefreshing ? "Memuat..." : "Segarkan"}</span>
+                <span>{isRefreshing ? "Menyinkronkan..." : "Segarkan"}</span>
               </button>
             </div>
 

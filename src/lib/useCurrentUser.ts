@@ -61,17 +61,23 @@ export function useCurrentUser(): CurrentUserInfo {
   }
 
   const isSuperAdmin =
-    rawRole === "SUPER_ADMIN" ||
-    rawRole === "Super Admin" ||
-    rawEmail.toLowerCase() === "wahyudinhafiz123@gmail.com" ||
-    rawEmail.toLowerCase() === "ma.ihyaassunnah@gmail.com" ||
-    rawEmail.toLowerCase().includes("superadmin");
+    (rawRole === "SUPER_ADMIN" ||
+      rawRole === "Super Admin" ||
+      rawEmail.toLowerCase() === "wahyudinhafiz123@gmail.com" ||
+      rawEmail.toLowerCase() === "ma.ihyaassunnah@gmail.com" ||
+      rawEmail.toLowerCase().includes("superadmin")) &&
+    !rawEmail.toLowerCase().includes("febri") &&
+    !rawEmail.toLowerCase().includes("dwsafitri") &&
+    !rawEmail.toLowerCase().includes("uswatun") &&
+    !rawEmail.toLowerCase().includes("singkut") &&
+    !rawEmail.toLowerCase().includes("bangko");
 
   const isBranchAssistant =
     !isSuperAdmin &&
     (rawRole === "BRANCH_ASSISTANT" ||
       rawRole === "Asisten Cabang" ||
-      rawEmail.toLowerCase().includes("asisten"));
+      rawEmail.toLowerCase().includes("asisten") ||
+      rawEmail.toLowerCase().includes("uswatun"));
 
   const isBranchAdmin =
     !isSuperAdmin &&
@@ -91,10 +97,22 @@ export function useCurrentUser(): CurrentUserInfo {
 
   let allowedBranch: string | null = null;
   if (!isSuperAdmin) {
-    if (rawBranch && !rawBranch.toLowerCase().includes("pusat") && !rawBranch.toLowerCase().includes("semua")) {
-      allowedBranch = rawBranch.replace(/^Cabang\s+/i, "").trim();
-    } else if (rawEmail.toLowerCase().includes("bangko") || rawEmail.toLowerCase().includes("dwsafitri")) {
+    if (
+      rawEmail.toLowerCase().includes("bangko") ||
+      rawEmail.toLowerCase().includes("dwsafitri") ||
+      rawEmail.toLowerCase().includes("uswatun") ||
+      rawBranch.toLowerCase().includes("tabir") ||
+      rawBranch.toLowerCase().includes("bangko")
+    ) {
       allowedBranch = "Tabir Timur";
+    } else if (
+      rawEmail.toLowerCase().includes("febri") ||
+      rawEmail.toLowerCase().includes("singkut") ||
+      rawBranch.toLowerCase().includes("singkut")
+    ) {
+      allowedBranch = "Singkut";
+    } else if (rawBranch && !rawBranch.toLowerCase().includes("pusat") && !rawBranch.toLowerCase().includes("semua")) {
+      allowedBranch = rawBranch.replace(/^Cabang\s+/i, "").trim();
     } else {
       allowedBranch = "Singkut";
     }

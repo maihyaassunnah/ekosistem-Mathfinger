@@ -40,12 +40,20 @@ export default function AbsensiTutorScanPage() {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [scanFeedback, setScanFeedback] = useState<{
     type: "success" | "error" | "warning";
     title: string;
     message: string;
     time?: string;
     distance?: number | null;
+    isLate?: boolean;
+    lateMinutes?: number;
+    isEarlyLeave?: boolean;
+    earlyMinutes?: number;
+    workStartTime?: string;
+    workEndTime?: string;
+    lateToleranceMinutes?: number;
   } | null>(null);
 
   // Branch Work Hours & Schedule
@@ -82,7 +90,16 @@ export default function AbsensiTutorScanPage() {
       const res = await fetch(`/api/branch-qr-config?branch=${branchQuery}`);
       if (res.ok) {
         const data = await res.json();
-        const conf = Array.isArray(data) ? data[0] : data;
+        const conf = Array.isArray(data)
+          ? data.find(
+              (c: any) =>
+                (allowedBranch && c.branchName.toLowerCase().includes(allowedBranch.toLowerCase())) ||
+                (allowedBranch && allowedBranch.toLowerCase().includes(c.branchName.toLowerCase())) ||
+                (allowedBranch?.toLowerCase().includes("bangko") && c.branchCode === "BGK") ||
+                (allowedBranch?.toLowerCase().includes("tabir") && c.branchCode === "BGK") ||
+                (allowedBranch?.toLowerCase().includes("singkut") && c.branchCode === "SKT")
+            ) || data[0]
+          : data;
         if (conf) {
           setBranchSchedule({
             workStartTime: conf.workStartTime || "08:00",
@@ -241,34 +258,63 @@ export default function AbsensiTutorScanPage() {
       if (res.ok) {
         const isLate = Boolean(data.isLate);
         const isEarlyLeave = Boolean(data.isEarlyLeave);
-        setScanFeedback({
-          type: isLate || isEarlyLeave ? "warning" : "success",
+        const fbData = {
+          type: (isLate || isEarlyLeave ? "warning" : "success") as "warning" | "success",
           title: isLate
-            ? `Presensi Masuk Berhasil (Terlambat ${data.lateMinutes} mnt) ⚠️`
+            ? `Presensi Masuk (Terlambat ${data.lateMinutes} Menit)`
             : isEarlyLeave
-            ? `Presensi Pulang Berhasil (Pulang Awal ${data.earlyMinutes} mnt) ⚠️`
+            ? `Presensi Pulang (Pulang Awal ${data.earlyMinutes} Menit)`
             : scanType === "IN"
-            ? "Presensi Masuk Berhasil! 🎉"
+            ? "Presensi Masuk Berhasil Tepat Waktu! 🎉"
             : "Presensi Pulang Berhasil! 🏠",
           message: data.message || "Presensi kehadiran Anda telah diverifikasi oleh sistem.",
           time: scanType === "IN" ? data.attendance?.checkInTime : data.attendance?.checkOutTime,
           distance: data.distanceMeter,
-        });
+          isLate,
+          lateMinutes: data.lateMinutes ?? 0,
+          isEarlyLeave,
+          earlyMinutes: data.earlyMinutes ?? 0,
+          workStartTime: data.workStartTime || branchSchedule?.workStartTime || "08:00",
+          workEndTime: data.workEndTime || branchSchedule?.workEndTime || "17:00",
+          lateToleranceMinutes: data.lateToleranceMinutes ?? branchSchedule?.lateToleranceMinutes ?? 15,
+        };
+        setScanFeedback(fbData);
+        setShowFeedbackModal(true);
         fetchMyHistory();
+
+        // Broadcast to admin dashboard tabs for zero-latency realtime update
+        try {
+          if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+            const bc = new BroadcastChannel("mf_tutor_attendance");
+            bc.postMessage({ type: "NEW_ATTENDANCE", timestamp: Date.now() });
+            bc.close();
+          }
+        } catch (bcErr) {
+          console.warn("BroadcastChannel error:", bcErr);
+        }
       } else {
-        setScanFeedback({
-          type: "error",
-          title: "Presensi Ditolak!",
+        const fbData = {
+          type: "error" as const,
+          title: "Presensi Ditolak! ❌",
           message: data.error || "Gagal memproses absensi.",
           distance: data.distanceMeter,
-        });
+          isLate: false,
+          lateMinutes: 0,
+          isEarlyLeave: false,
+          earlyMinutes: 0,
+        };
+        setScanFeedback(fbData);
+        setShowFeedbackModal(true);
       }
     } catch (err: any) {
-      setScanFeedback({
-        type: "error",
+      const fbData = {
+        type: "error" as const,
         title: "Kesalahan Jaringan",
         message: err.message || "Gagal menghubungi server database.",
-      });
+        distance: null,
+      };
+      setScanFeedback(fbData);
+      setShowFeedbackModal(true);
     } finally {
       setIsScanning(false);
     }
@@ -619,6 +665,148 @@ export default function AbsensiTutorScanPage() {
           </div>
         </div>
       </div>
+
+      {/* POP-UP MODAL KETERANGAN TELAT / HASIL PRESENSI */}
+      {showFeedbackModal && scanFeedback && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div
+            className="bg-white dark:bg-[#0f1a36] w-full max-w-md rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl p-6 sm:p-7 space-y-5 animate-in zoom-in-95 duration-200 text-center relative overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Decorative Top Accent Bar */}
+            <div
+              className={`absolute top-0 left-0 right-0 h-2.5 ${
+                scanFeedback.isLate
+                  ? "bg-rose-500"
+                  : scanFeedback.isEarlyLeave
+                  ? "bg-amber-500"
+                  : scanFeedback.type === "success"
+                  ? "bg-emerald-500"
+                  : "bg-rose-500"
+              }`}
+            />
+
+            {/* Central Animated Icon */}
+            <div className="mx-auto flex items-center justify-center pt-1">
+              {scanFeedback.isLate ? (
+                <div className="w-16 h-16 rounded-3xl bg-rose-100 dark:bg-rose-950/90 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-lg shadow-rose-500/10 animate-bounce">
+                  <Clock className="w-8 h-8" />
+                </div>
+              ) : scanFeedback.isEarlyLeave ? (
+                <div className="w-16 h-16 rounded-3xl bg-amber-100 dark:bg-amber-950/90 border border-amber-300 dark:border-amber-800 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/10">
+                  <AlertTriangle className="w-8 h-8" />
+                </div>
+              ) : scanFeedback.type === "success" ? (
+                <div className="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-3xl bg-rose-100 dark:bg-rose-950/90 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-lg shadow-rose-500/10">
+                  <AlertCircle className="w-8 h-8" />
+                </div>
+              )}
+            </div>
+
+            {/* Title & Pop-up Late Breakdown Badge */}
+            <div className="space-y-2">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                {scanFeedback.title}
+              </h2>
+
+              {scanFeedback.isLate && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/90 border-2 border-rose-400 dark:border-rose-700 text-rose-700 dark:text-rose-300 shadow-xs">
+                  <span className="text-xs uppercase font-black tracking-wider">Keterangan:</span>
+                  <span className="text-lg sm:text-xl font-black">
+                    Telat {scanFeedback.lateMinutes} Menit
+                  </span>
+                </div>
+              )}
+
+              {scanFeedback.isEarlyLeave && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/90 border-2 border-amber-400 dark:border-amber-700 text-amber-700 dark:text-amber-300 shadow-xs">
+                  <span className="text-xs uppercase font-black tracking-wider">Keterangan:</span>
+                  <span className="text-lg sm:text-xl font-black">
+                    Pulang Awal {scanFeedback.earlyMinutes} Menit
+                  </span>
+                </div>
+              )}
+
+              {!scanFeedback.isLate && !scanFeedback.isEarlyLeave && scanFeedback.type === "success" && (
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300">
+                  <span className="text-xs font-black">Tepat Waktu (Hadir)</span>
+                </div>
+              )}
+            </div>
+
+            {/* Detailed Parameters Grid */}
+            <div className="bg-slate-50 dark:bg-[#0b1329] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] text-xs space-y-2.5 text-left">
+              {scanFeedback.time && (
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">Waktu Scan Tercatat</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white">{scanFeedback.time}</span>
+                </div>
+              )}
+
+              {scanFeedback.isLate && (
+                <>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Jadwal Masuk Resmi</span>
+                    <span className="font-extrabold text-slate-900 dark:text-white">{scanFeedback.workStartTime} WIB</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Batas Toleransi Cabang</span>
+                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400">+{scanFeedback.lateToleranceMinutes} Menit</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Status Absensi</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                      TERLAMBAT
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {scanFeedback.isEarlyLeave && (
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">Jadwal Pulang Resmi</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white">{scanFeedback.workEndTime} WIB</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 dark:text-slate-400 font-bold">Verifikasi Geofencing GPS</span>
+                <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                  {scanFeedback.distance !== null && scanFeedback.distance !== undefined
+                    ? `Jarak ${scanFeedback.distance}m (Valid)`
+                    : "Terverifikasi di Area Cabang"}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              {scanFeedback.message}
+            </p>
+
+            {/* Action Button */}
+            <button
+              type="button"
+              onClick={() => setShowFeedbackModal(false)}
+              className={`w-full py-3.5 rounded-2xl font-black text-sm text-white shadow-md cursor-pointer transition-all ${
+                scanFeedback.isLate
+                  ? "bg-rose-600 hover:bg-rose-700 shadow-rose-600/20"
+                  : scanFeedback.isEarlyLeave
+                  ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
+                  : scanFeedback.type === "success"
+                  ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                  : "bg-slate-700 hover:bg-slate-800"
+              }`}
+            >
+              {scanFeedback.isLate ? "Saya Mengerti (Keterlambatan Tercatat)" : "Tutup"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

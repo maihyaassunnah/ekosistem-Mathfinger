@@ -27,7 +27,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # 3. Jalankan pull dan rebuild di VPS via SSH
 Write-Host "🌐 Mengupdate container Docker di VPS (43.173.12.46)..." -ForegroundColor Yellow
-$remoteCmd = "cd /var/www/ekosistem-Mathfinger && git pull origin main && docker compose build app && docker compose up -d app && docker builder prune -f"
+$remoteCmd = "cd /var/www/ekosistem-Mathfinger && git pull origin main && docker compose build app prisma-studio && docker compose up -d app prisma-studio && docker builder prune -f"
 
 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 ubuntu@43.173.12.46 $remoteCmd
 

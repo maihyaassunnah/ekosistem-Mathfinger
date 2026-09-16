@@ -99,6 +99,7 @@ model Branch {
   transactions     CashTransaction[]
   readingGrades    ReadingGrade[]
   tutorAttendances TutorAttendance[]
+  tutorQr          TutorAttendanceQr?
 
   @@map("branches")
 }
@@ -178,6 +179,30 @@ model TutorAttendance {
   @@index([branchId, attendanceDate])
   @@index([userId, attendanceDate])
   @@map("tutor_attendances")
+}
+
+model TutorAttendanceQr {
+  id                         String   @id @default(uuid())
+  branchId                   String   @unique @map("branch_id")
+  branchName                 String   @map("branch_name")
+  branchCode                 String   @map("branch_code")
+  qrSecret                   String   @unique @map("qr_secret")
+  qrPayload                  String   @db.Text @map("qr_payload")
+  workStartTime              String   @default("08:00") @map("work_start_time")
+  workEndTime                String   @default("17:00") @map("work_end_time")
+  lateToleranceMinutes       Int      @default(15) @map("late_tolerance_minutes")
+  earlyLeaveToleranceMinutes Int      @default(0) @map("early_leave_tolerance_minutes")
+  latitude                   Float?
+  longitude                  Float?
+  radiusMeters               Int      @default(100) @map("radius_meters")
+  isActive                   Boolean  @default(true) @map("is_active")
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@map("tutor_attendance_qrs")
 }
 
 model Level {
