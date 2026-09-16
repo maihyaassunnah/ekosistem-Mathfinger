@@ -724,17 +724,17 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             />
           </div>
           {!collapsed && (
-            <div className="overflow-hidden">
+            <div className="overflow-hidden min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-black text-slate-900 dark:text-white text-sm tracking-tight truncate">
-                  Easy Learning
+                  Easy Learning House
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 shrink-0">
                   v3.3
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                House of Math Fingers
+                Lembaga Bimbingan Belajar Anak
               </p>
             </div>
           )}

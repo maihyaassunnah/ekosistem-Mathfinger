@@ -758,14 +758,20 @@ export default function PresensiTutorAdminPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: GPS Geofencing Configuration */}
           <div className="lg:col-span-7 bg-white dark:bg-[#0f1a36] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-emerald-600" />
-                <h2 className="font-extrabold text-slate-900 dark:text-white text-base">
-                  Titik Koordinat & Radius GPS Cabang
-                </h2>
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center border border-emerald-100 dark:border-emerald-800 text-emerald-600 shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="font-extrabold text-slate-900 dark:text-white text-base leading-tight">
+                    Titik Koordinat & Radius GPS Cabang
+                  </h2>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-400">Cabang {targetBranch}</span>
+              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                Cabang {targetBranch}
+              </span>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -790,33 +796,44 @@ export default function PresensiTutorAdminPage() {
             )}
 
             <div className="space-y-4">
-              {/* Quick Preset Buttons & Paste Helper */}
-              <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
-                <span className="text-[11px] font-bold text-slate-400">Pintasan Koordinat Resmi:</span>
-                {targetBranch.toLowerCase().includes("singkut") && (
-                  <button
-                    type="button"
-                    onClick={() => handleSetPreset("-2.312500", "102.684700", "Cabang Singkut")}
-                    className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
-                  >
-                    📍 Titik Koordinat Resmi Cabang Singkut
-                  </button>
-                )}
-                {(targetBranch.toLowerCase().includes("tabir") || targetBranch.toLowerCase().includes("bangko")) && (
-                  <button
-                    type="button"
-                    onClick={() => handleSetPreset("-2.071700", "102.265500", "Cabang Tabir Timur")}
-                    className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
-                  >
-                    📍 Titik Koordinat Resmi Cabang Tabir Timur
-                  </button>
-                )}
+              {/* Quick Preset Buttons & Paste Helper Toolbar */}
+              <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200/80 dark:border-[#1d2d5a] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0">
+                    Pintasan Koordinat Resmi:
+                  </span>
+                  {targetBranch.toLowerCase().includes("singkut") && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPreset("-2.312500", "102.684700", "Cabang Singkut")}
+                      className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <span>📍</span>
+                      <span>Titik Koordinat Resmi Cabang Singkut</span>
+                    </button>
+                  )}
+                  {(targetBranch.toLowerCase().includes("tabir") || targetBranch.toLowerCase().includes("bangko")) && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPreset("-2.071700", "102.265500", "Cabang Tabir Timur")}
+                      className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-950/80 dark:hover:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-800 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <span>📍</span>
+                      <span>Titik Koordinat Resmi Cabang Tabir Timur</span>
+                    </button>
+                  )}
+                </div>
+
                 <button
                   type="button"
                   onClick={() => setIsParsingOpen(!isParsingOpen)}
-                  className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center gap-1 transition-colors cursor-pointer ml-auto"
+                  className={`px-3 py-1.5 text-[11px] font-extrabold rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+                    isParsingOpen
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                      : "bg-white dark:bg-[#121c38] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
                 >
-                  <Link2 className="w-3 h-3 text-emerald-600" />
+                  <Link2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>{isParsingOpen ? "Tutup Paste Link" : "Paste Link/Koordinat G-Maps"}</span>
                 </button>
               </div>
@@ -824,86 +841,116 @@ export default function PresensiTutorAdminPage() {
               {/* Expandable Paste Google Maps Box */}
               {isParsingOpen && (
                 <div className="p-3.5 bg-slate-50 dark:bg-[#0b1329] rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-black text-slate-800 dark:text-slate-200">
-                      Tempel URL Google Maps atau Format `Lat, Long`:
-                    </label>
-                  </div>
+                  <label className="block text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                    Tempel URL Google Maps atau Format `Lat, Long`:
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={pasteInput}
                       onChange={(e) => setPasteInput(e.target.value)}
-                      placeholder="Contoh: https://maps.app.goo.gl/... atau -2.3125, 102.6847"
-                      className="flex-1 px-3 py-2 text-xs rounded-xl bg-white dark:bg-[#121c38] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
+                      placeholder="Contoh: https://maps.app.goo.gl/... atau -2.480248, 102.719886"
+                      className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-white dark:bg-[#121c38] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
                     />
                     <button
                       type="button"
                       onClick={handleApplyPastedCoordinates}
-                      className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl transition-colors cursor-pointer shrink-0"
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl transition-colors cursor-pointer shrink-0 shadow-xs"
                     >
                       Terapkan
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     💡 Tips: Buka Google Maps di browser / HP, klik kanan pada lokasi cabang, klik angka koordinatnya untuk menyalin, lalu tempel di sini.
                   </p>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Latitude & Longitude Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">
                     Latitude (Garis Lintang)
                   </label>
                   <input
                     type="text"
                     value={gpsForm.latitude}
                     onChange={(e) => setGpsForm({ ...gpsForm, latitude: e.target.value })}
-                    placeholder="-2.3125"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
+                    placeholder="-2.480248"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">
                     Longitude (Garis Bujur)
                   </label>
                   <input
                     type="text"
                     value={gpsForm.longitude}
                     onChange={(e) => setGpsForm({ ...gpsForm, longitude: e.target.value })}
-                    placeholder="102.6847"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
+                    placeholder="102.719886"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 transition-all"
                   />
                 </div>
               </div>
 
+              {/* Radius Control with Presets */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Radius Toleransi Jarak (Meter)
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    min="10"
-                    max="1000"
-                    step="10"
-                    value={gpsForm.radiusMeters}
-                    onChange={(e) => setGpsForm({ ...gpsForm, radiusMeters: e.target.value })}
-                    className="w-32 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
-                  />
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    Siswa/Tutor harus berada dalam radius maksimal <strong>{gpsForm.radiusMeters} meter</strong> dari titik cabang.
-                  </span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
+                    Radius Toleransi Jarak (Meter)
+                  </label>
+                  <div className="flex items-center gap-1">
+                    {[50, 100, 200].map((presetVal) => (
+                      <button
+                        key={presetVal}
+                        type="button"
+                        onClick={() => setGpsForm({ ...gpsForm, radiusMeters: String(presetVal) })}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold transition-all cursor-pointer ${
+                          Number(gpsForm.radiusMeters) === presetVal
+                            ? "bg-emerald-600 text-white shadow-2xs"
+                            : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+                        }`}
+                      >
+                        {presetVal}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="relative w-full sm:w-36 shrink-0">
+                    <input
+                      type="number"
+                      min="10"
+                      max="1000"
+                      step="10"
+                      value={gpsForm.radiusMeters}
+                      onChange={(e) => setGpsForm({ ...gpsForm, radiusMeters: e.target.value })}
+                      className="w-full px-3.5 py-2.5 pr-14 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500 pointer-events-none">
+                      meter
+                    </span>
+                  </div>
+
+                  <div className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200/70 dark:border-[#1d2d5a] text-xs text-slate-600 dark:text-slate-400">
+                    Siswa/Tutor harus berada dalam radius maksimal{" "}
+                    <strong className="text-emerald-700 dark:text-emerald-300 font-extrabold">
+                      {gpsForm.radiusMeters || 100} meter
+                    </strong>{" "}
+                    dari titik cabang.
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              {/* Action Buttons: 2-column balanced grid */}
+              <div className="pt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={handleDetectCurrentLocation}
                   disabled={isDetectingGps}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-200 dark:border-slate-700"
                 >
                   <Compass className={`w-4 h-4 text-emerald-600 ${isDetectingGps ? "animate-spin" : ""}`} />
                   <span>{isDetectingGps ? "Mendeteksi Lokasi..." : "Gunakan Lokasi GPS Saya Saat Ini"}</span>
@@ -913,7 +960,7 @@ export default function PresensiTutorAdminPage() {
                   type="button"
                   onClick={handleSaveGps}
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+                  className="w-full px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-emerald-500/20 hover:shadow-md hover:shadow-emerald-500/30 transition-all"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Simpan Pengaturan Titik GPS</span>
@@ -922,20 +969,21 @@ export default function PresensiTutorAdminPage() {
             </div>
 
             {/* Google Maps Pinpoint Preview Link */}
-            <div className="p-3.5 bg-emerald-50/50 dark:bg-[#0b1329] rounded-2xl border border-emerald-200/60 dark:border-[#1d2d5a] flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-300 font-bold">
-                <Navigation className="w-4 h-4 text-emerald-600" />
+            <a
+              href={`https://www.google.com/maps?q=${gpsForm.latitude},${gpsForm.longitude}`}
+              target="_blank"
+              rel="noreferrer"
+              className="group p-3.5 bg-emerald-50/60 hover:bg-emerald-100/70 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-xs transition-all"
+            >
+              <div className="flex items-center gap-2.5 text-emerald-950 dark:text-emerald-200 font-extrabold">
+                <Navigation className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
                 <span>Lihat di Google Maps</span>
               </div>
-              <a
-                href={`https://www.google.com/maps?q=${gpsForm.latitude},${gpsForm.longitude}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline"
-              >
-                Buka Peta ↗
-              </a>
-            </div>
+              <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-extrabold group-hover:translate-x-0.5 transition-transform">
+                <span>Buka Peta</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </div>
+            </a>
           </div>
 
           {/* Right Column: QR Code Display & Print */}

@@ -63,7 +63,7 @@ export default function DashboardLayout({
                 </div>
                 <div>
                   <span className="font-black text-sm text-slate-900 dark:text-slate-100 tracking-tight">
-                    Easy Learning
+                    Easy Learning House
                   </span>
                   <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[9px] font-bold">
                     v3.3
