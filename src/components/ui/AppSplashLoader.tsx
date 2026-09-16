@@ -87,7 +87,7 @@ export default function AppSplashLoader() {
           Easy Learning House
         </h1>
         <p className="text-xs sm:text-sm font-semibold text-emerald-300/90 tracking-wide">
-          Bimbingan Belajar & Ekosistem Jaritmatika
+          Bimbel By Easy Learning House
         </p>
 
         {/* Minimalist Professional Loading Progress Bar */}
