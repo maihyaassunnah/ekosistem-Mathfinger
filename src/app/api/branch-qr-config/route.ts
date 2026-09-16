@@ -35,6 +35,37 @@ function buildBranchFilter(branchStr: string) {
   };
 }
 
+// Default Weekly Work Session Schedule (0 = Minggu, 1 = Senin, ..., 6 = Sabtu)
+export const DEFAULT_WEEKLY_SCHEDULE: Record<string, any[]> = {
+  "1": [ // Senin
+    { id: "mon-1", name: "Sesi Pagi", startTime: "08:00", endTime: "11:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "mon-2", name: "Sesi Siang", startTime: "13:30", endTime: "15:30", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "mon-3", name: "Sesi Sore", startTime: "16:00", endTime: "17:30", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+  ],
+  "2": [ // Selasa
+    { id: "tue-1", name: "Sesi Pagi", startTime: "08:00", endTime: "11:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "tue-2", name: "Sesi Sore", startTime: "14:00", endTime: "17:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+  ],
+  "3": [ // Rabu
+    { id: "wed-1", name: "Sesi Pagi", startTime: "08:00", endTime: "11:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "wed-2", name: "Sesi Siang", startTime: "13:30", endTime: "15:30", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "wed-3", name: "Sesi Sore", startTime: "16:00", endTime: "17:30", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+  ],
+  "4": [ // Kamis
+    { id: "thu-1", name: "Sesi Pagi", startTime: "08:00", endTime: "11:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "thu-2", name: "Sesi Sore", startTime: "14:00", endTime: "17:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+  ],
+  "5": [ // Jumat
+    { id: "fri-1", name: "Sesi Pagi", startTime: "08:00", endTime: "10:30", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "fri-2", name: "Sesi Sore", startTime: "14:00", endTime: "17:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+  ],
+  "6": [ // Sabtu
+    { id: "sat-1", name: "Sesi Pagi", startTime: "08:00", endTime: "11:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+    { id: "sat-2", name: "Sesi Sore", startTime: "14:00", endTime: "17:00", lateTolerance: 15, earlyLeaveTolerance: 0, isActive: true },
+  ],
+  "0": [], // Minggu (Libur)
+};
+
 // GET /api/branch-qr-config - Get GPS & QR config for branches
 export async function GET(req: Request) {
   try {
@@ -141,6 +172,7 @@ export async function GET(req: Request) {
         const lateTol = qrData.late_tolerance_minutes ?? 15;
         const earlyTol = qrData.early_leave_tolerance_minutes ?? 0;
         const secret = qrData.qr_secret;
+        const weeklySchedule = qrData.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE;
 
         const distinctPayload = qrData.qr_payload || JSON.stringify({
           type: "MATHFINGERS_TUTOR_ATTENDANCE",
@@ -167,6 +199,7 @@ export async function GET(req: Request) {
           lateToleranceMinutes: lateTol,
           earlyLeaveToleranceMinutes: earlyTol,
           qrPayload: distinctPayload,
+          weeklySchedule,
         };
       })
     );
@@ -178,7 +211,7 @@ export async function GET(req: Request) {
   }
 }
 
-// PUT /api/branch-qr-config - Update GPS location, work hours, tolerance, or regenerate QR Secret
+// PUT /api/branch-qr-config - Update GPS location, work hours, tolerance, weekly schedule, or regenerate QR Secret
 export async function PUT(req: Request) {
   try {
     const { error, session } = await requireAuth();
@@ -197,6 +230,7 @@ export async function PUT(req: Request) {
       workEndTime,
       lateToleranceMinutes,
       earlyLeaveToleranceMinutes,
+      weeklySchedule,
     } = body;
 
     let targetBranch = null;
@@ -307,12 +341,14 @@ export async function PUT(req: Request) {
       lateToleranceMinutes: finalLateTol,
     });
 
+    const weeklyScheduleJson = weeklySchedule !== undefined ? JSON.stringify(weeklySchedule) : null;
+
     // Save to dedicated tutor_attendance_qrs table
     try {
       await prisma.$executeRawUnsafe(
         `INSERT INTO "tutor_attendance_qrs"
-         ("id", "branch_id", "branch_name", "branch_code", "qr_secret", "qr_payload", "work_start_time", "work_end_time", "late_tolerance_minutes", "early_leave_tolerance_minutes", "latitude", "longitude", "radius_meters", "is_active", "updated_at")
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, CURRENT_TIMESTAMP)
+         ("id", "branch_id", "branch_name", "branch_code", "qr_secret", "qr_payload", "work_start_time", "work_end_time", "late_tolerance_minutes", "early_leave_tolerance_minutes", "latitude", "longitude", "radius_meters", "weekly_schedule", "is_active", "updated_at")
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, COALESCE($13::jsonb, '{}'::jsonb), true, CURRENT_TIMESTAMP)
          ON CONFLICT ("branch_id") DO UPDATE SET
            "branch_name" = EXCLUDED."branch_name",
            "branch_code" = EXCLUDED."branch_code",
@@ -325,6 +361,7 @@ export async function PUT(req: Request) {
            "latitude" = $10,
            "longitude" = $11,
            "radius_meters" = $12,
+           "weekly_schedule" = COALESCE($13::jsonb, "tutor_attendance_qrs"."weekly_schedule"),
            "updated_at" = CURRENT_TIMESTAMP`,
         targetBranch.id,
         targetBranch.branchName,
@@ -337,11 +374,14 @@ export async function PUT(req: Request) {
         finalEarlyTol,
         finalLat,
         finalLon,
-        finalRad
+        finalRad,
+        weeklyScheduleJson
       );
     } catch (qrErr) {
       console.warn("Could not sync to tutor_attendance_qrs table:", qrErr);
     }
+
+    const finalWeeklySchedule = weeklySchedule !== undefined ? weeklySchedule : (existingQr?.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE);
 
     return NextResponse.json({
       success: true,
@@ -355,6 +395,7 @@ export async function PUT(req: Request) {
       workEndTime: finalWorkEnd,
       lateToleranceMinutes: finalLateTol,
       earlyLeaveToleranceMinutes: finalEarlyTol,
+      weeklySchedule: finalWeeklySchedule,
       qrPayload: distinctQrPayload,
     });
   } catch (error: any) {

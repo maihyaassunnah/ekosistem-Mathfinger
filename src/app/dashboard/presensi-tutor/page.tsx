@@ -33,7 +33,30 @@ import { useAppStore } from "@/lib/store";
 import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { getBrowserCoordinates, parseCoordinatesFromString } from "@/lib/gpsHelper";
-import { Copy, Link2, ExternalLink, HelpCircle } from "lucide-react";
+import { Copy, Link2, ExternalLink, HelpCircle, Check, CalendarDays } from "lucide-react";
+import { DEFAULT_WEEKLY_SCHEDULE } from "@/app/api/branch-qr-config/route";
+
+export interface WorkSession {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  lateTolerance: number;
+  earlyLeaveTolerance: number;
+  isActive: boolean;
+}
+
+export type WeeklySchedule = Record<string, WorkSession[]>;
+
+export const DAYS_LIST = [
+  { key: "1", label: "Senin", short: "Sen" },
+  { key: "2", label: "Selasa", short: "Sel" },
+  { key: "3", label: "Rabu", short: "Rab" },
+  { key: "4", label: "Kamis", short: "Kam" },
+  { key: "5", label: "Jumat", short: "Jum" },
+  { key: "6", label: "Sabtu", short: "Sab" },
+  { key: "0", label: "Minggu", short: "Min" },
+];
 
 interface BranchQrConfig {
   branchId: string;
@@ -49,6 +72,7 @@ interface BranchQrConfig {
   workEndTime?: string;
   lateToleranceMinutes?: number;
   earlyLeaveToleranceMinutes?: number;
+  weeklySchedule?: WeeklySchedule;
 }
 
 interface TutorAttendanceItem {
@@ -61,6 +85,8 @@ interface TutorAttendanceItem {
   branchId: string;
   branchName: string;
   date: string;
+  sessionName?: string;
+  sessionId?: string;
   checkInTime: string;
   checkOutTime: string;
   status: "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPHA";
@@ -125,7 +151,15 @@ export default function PresensiTutorAdminPage() {
   const [isDetectingGps, setIsDetectingGps] = useState(false);
   const [gpsFeedback, setGpsFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Work Hours & Tolerance Settings Form State
+  // Flexible Weekly Schedule State (0 = Minggu, 1 = Senin..6 = Sabtu)
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>(DEFAULT_WEEKLY_SCHEDULE);
+  const [selectedDayKey, setSelectedDayKey] = useState<string>("1"); // Default Senin
+  const [isSavingSchedule, setIsSavingSchedule] = useState(false);
+  const [scheduleFeedback, setScheduleFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [copyTargetDays, setCopyTargetDays] = useState<string[]>([]);
+
+  // Work Hours & Tolerance Settings Form State (legacy fallback)
   const [workTimeForm, setWorkTimeForm] = useState({
     workStartTime: "08:00",
     workEndTime: "17:00",
@@ -140,6 +174,7 @@ export default function PresensiTutorAdminPage() {
   const [filterDate, setFilterDate] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("ALL");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterSession, setFilterSession] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Modal manual edit/input
@@ -147,6 +182,7 @@ export default function PresensiTutorAdminPage() {
   const [editingRecord, setEditingRecord] = useState<TutorAttendanceItem | null>(null);
   const [editForm, setEditForm] = useState({
     status: "HADIR" as "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPHA",
+    sessionName: "Sesi 1",
     checkInTime: "14:00 WIB",
     checkOutTime: "-",
     notes: "",
@@ -193,6 +229,9 @@ export default function PresensiTutorAdminPage() {
               lateToleranceMinutes: String(cfg.lateToleranceMinutes ?? 15),
               earlyLeaveToleranceMinutes: String(cfg.earlyLeaveToleranceMinutes ?? 0),
             });
+            if (cfg.weeklySchedule && Object.keys(cfg.weeklySchedule).length > 0) {
+              setWeeklySchedule(cfg.weeklySchedule);
+            }
             if (cfg.qrPayload) {
               generateQrImage(cfg.qrPayload);
             }
@@ -432,6 +471,119 @@ export default function PresensiTutorAdminPage() {
     }
   };
 
+  // Weekly Schedule Session Handlers
+  const handleAddSession = (dayKey: string) => {
+    const currentSessions = weeklySchedule[dayKey] || [];
+    const count = currentSessions.length + 1;
+    const defaultName = count === 1 ? "Sesi Pagi" : count === 2 ? "Sesi Siang" : count === 3 ? "Sesi Sore" : `Sesi ${count}`;
+    const defaultStart = count === 1 ? "08:00" : count === 2 ? "13:30" : count === 3 ? "16:00" : "19:00";
+    const defaultEnd = count === 1 ? "11:00" : count === 2 ? "15:30" : count === 3 ? "17:30" : "21:00";
+
+    const newSession: WorkSession = {
+      id: `${dayKey}-${Date.now().toString(36)}`,
+      name: defaultName,
+      startTime: defaultStart,
+      endTime: defaultEnd,
+      lateTolerance: 15,
+      earlyLeaveTolerance: 0,
+      isActive: true,
+    };
+
+    setWeeklySchedule((prev) => ({
+      ...prev,
+      [dayKey]: [...(prev[dayKey] || []), newSession],
+    }));
+  };
+
+  const handleUpdateSession = (dayKey: string, index: number, updated: Partial<WorkSession>) => {
+    setWeeklySchedule((prev) => {
+      const dayList = [...(prev[dayKey] || [])];
+      if (!dayList[index]) return prev;
+      dayList[index] = { ...dayList[index], ...updated };
+      return { ...prev, [dayKey]: dayList };
+    });
+  };
+
+  const handleDeleteSession = (dayKey: string, index: number) => {
+    setWeeklySchedule((prev) => {
+      const dayList = [...(prev[dayKey] || [])];
+      dayList.splice(index, 1);
+      return { ...prev, [dayKey]: dayList };
+    });
+  };
+
+  const handleSaveWeeklySchedule = async () => {
+    try {
+      setIsSavingSchedule(true);
+      setScheduleFeedback(null);
+
+      // Also extract primary workStartTime / workEndTime from first session of selected day or Monday
+      const monSessions = weeklySchedule["1"] || [];
+      const primaryStart = monSessions[0]?.startTime || "08:00";
+      const primaryEnd = monSessions[monSessions.length - 1]?.endTime || "17:00";
+      const primaryLate = monSessions[0]?.lateTolerance ?? 15;
+
+      const res = await fetch("/api/branch-qr-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          branchName: targetBranch,
+          weeklySchedule: weeklySchedule,
+          workStartTime: primaryStart,
+          workEndTime: primaryEnd,
+          lateToleranceMinutes: primaryLate,
+        }),
+      });
+
+      if (res.ok) {
+        const resData = await res.json();
+        if (resData.weeklySchedule) {
+          setWeeklySchedule(resData.weeklySchedule);
+        }
+        if (resData.qrPayload) {
+          generateQrImage(resData.qrPayload);
+        }
+        setScheduleFeedback({
+          type: "success",
+          text: `Jadwal fleksibel mingguan Cabang ${targetBranch} berhasil disimpan! Sistem otomatis mengenali sesi aktif per hari.`,
+        });
+        fetchConfigs();
+      } else {
+        const err = await res.json();
+        setScheduleFeedback({ type: "error", text: err.error || "Gagal menyimpan jadwal mingguan" });
+      }
+    } catch (err: any) {
+      setScheduleFeedback({ type: "error", text: err.message || "Gagal menyimpan jadwal mingguan" });
+    } finally {
+      setIsSavingSchedule(false);
+    }
+  };
+
+  const handleApplyCopySchedule = () => {
+    if (copyTargetDays.length === 0) return;
+    const sourceSessions = weeklySchedule[selectedDayKey] || [];
+    setWeeklySchedule((prev) => {
+      const next = { ...prev };
+      copyTargetDays.forEach((targetKey) => {
+        // Deep clone sessions with fresh unique IDs
+        next[targetKey] = sourceSessions.map((s, idx) => ({
+          ...s,
+          id: `${targetKey}-${idx + 1}-${Date.now().toString(36)}`,
+        }));
+      });
+      return next;
+    });
+
+    const sourceDayName = DAYS_LIST.find((d) => d.key === selectedDayKey)?.label;
+    const targetDayNames = copyTargetDays.map((k) => DAYS_LIST.find((d) => d.key === k)?.label).join(", ");
+    setScheduleFeedback({
+      type: "success",
+      text: `Jadwal dari hari ${sourceDayName} berhasil disalin ke: ${targetDayNames}. Jangan lupa klik "Simpan Jadwal Mingguan"!`,
+    });
+    setIsCopyModalOpen(false);
+    setCopyTargetDays([]);
+  };
+
   // Regenerate QR Secret
   const handleRegenerateQr = async () => {
     if (!confirm("Regenerate QR akan mengganti kode QR lama. Kode QR lama yang telah dicetak tidak akan berlaku lagi. Lanjutkan?")) {
@@ -512,7 +664,10 @@ export default function PresensiTutorAdminPage() {
       att.tutorEmail.toLowerCase().includes(searchTerm.toLowerCase());
     const matchRole = filterRole === "ALL" || att.tutorRole === filterRole;
     const matchStatus = filterStatus === "ALL" || att.status === filterStatus;
-    return matchSearch && matchRole && matchStatus;
+    const matchSession =
+      filterSession === "ALL" ||
+      (att.sessionName || "Sesi 1").toLowerCase() === filterSession.toLowerCase();
+    return matchSearch && matchRole && matchStatus && matchSession;
   });
 
   const totalHadir = filteredAttendances.filter((a) => a.status === "HADIR").length;
@@ -856,162 +1011,325 @@ export default function PresensiTutorAdminPage() {
             </div>
           </div>
 
-          {/* Bottom Card: Pengaturan Jam Kerja & Batas Toleransi Cabang */}
+          {/* Bottom Card: Visual Weekly Multi-Session Schedule Editor */}
           <div className="lg:col-span-12 bg-white dark:bg-[#0f1a36] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                  Pengaturan Jam Kerja & Toleransi Waktu Cabang
-                </h3>
+                <CalendarDays className="w-5 h-5 text-emerald-600" />
+                <div>
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+                    Skema Jadwal Fleksibel Mingguan (Multi-Sesi)
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Atur jadwal fleksibel per sesi (Pagi, Siang, Sore, Malam) untuk setiap hari dalam sepekan di Cabang {targetBranch}.
+                  </p>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-400">Cabang {targetBranch}</span>
+              <span className="text-xs font-black px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 self-start sm:self-center">
+                Cabang {targetBranch}
+              </span>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Atur jam masuk, jam pulang, serta batas toleransi menit untuk tutor di Cabang {targetBranch}. Sistem akan secara otomatis menandai status <strong>HADIR (Tepat Waktu)</strong> atau <strong>TERLAMBAT</strong> saat tutor memindai QR Code.
-            </p>
-
-            {workTimeFeedback && (
+            {scheduleFeedback && (
               <div
                 className={`p-3.5 rounded-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in ${
-                  workTimeFeedback.type === "success"
+                  scheduleFeedback.type === "success"
                     ? "bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
                     : "bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200"
                 }`}
               >
-                {workTimeFeedback.type === "success" ? (
+                {scheduleFeedback.type === "success" ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                 )}
-                <span>{workTimeFeedback.text}</span>
+                <span>{scheduleFeedback.text}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Jam Masuk Kerja
-                </label>
-                <input
-                  type="time"
-                  value={workTimeForm.workStartTime}
-                  onChange={(e) => setWorkTimeForm({ ...workTimeForm, workStartTime: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">Jadwal mulai masuk kantor (WIB)</span>
-              </div>
+            {/* Day Selector Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-100 dark:border-slate-800">
+              {DAYS_LIST.map((day) => {
+                const sessions = weeklySchedule[day.key] || [];
+                const activeCount = sessions.filter((s) => s.isActive).length;
+                const isSelected = selectedDayKey === day.key;
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Toleransi Terlambat
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min="0"
-                    max="180"
-                    value={workTimeForm.lateToleranceMinutes}
-                    onChange={(e) => setWorkTimeForm({ ...workTimeForm, lateToleranceMinutes: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 pr-14"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
-                    Menit
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">Batas toleransi keterlambatan</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Jam Pulang Kerja
-                </label>
-                <input
-                  type="time"
-                  value={workTimeForm.workEndTime}
-                  onChange={(e) => setWorkTimeForm({ ...workTimeForm, workEndTime: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">Jadwal jam selesai kerja (WIB)</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Toleransi Pulang Awal
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min="0"
-                    max="180"
-                    value={workTimeForm.earlyLeaveToleranceMinutes}
-                    onChange={(e) => setWorkTimeForm({ ...workTimeForm, earlyLeaveToleranceMinutes: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 pr-14"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
-                    Menit
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">Batas toleransi pulang lebih awal</span>
-              </div>
+                return (
+                  <button
+                    key={day.key}
+                    type="button"
+                    onClick={() => setSelectedDayKey(day.key)}
+                    className={`px-3.5 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+                      isSelected
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-slate-50 dark:bg-[#0b1329] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a]"
+                    }`}
+                  >
+                    <span>{day.label}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                        isSelected
+                          ? "bg-emerald-700/80 text-white"
+                          : activeCount > 0
+                          ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                          : "bg-slate-200 dark:bg-slate-800 text-slate-400"
+                      }`}
+                    >
+                      {activeCount > 0 ? `${activeCount} Sesi` : "Libur"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Live Rule Calculation Preview */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 space-y-2">
-              <div className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>Simulasi Aturan Presensi Cabang {targetBranch}:</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px] text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>
-                    Masuk <strong>Tepat Waktu</strong>: Scan sebelum atau tepat pukul{" "}
-                    <strong className="text-emerald-600 dark:text-emerald-400">
-                      {calculateTimePlus(workTimeForm.workStartTime, workTimeForm.lateToleranceMinutes)} WIB
-                    </strong>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-                  <span>
-                    Status <strong>TERLAMBAT</strong>: Scan setelah pukul{" "}
-                    <strong className="text-amber-600 dark:text-amber-400">
-                      {calculateTimePlus(workTimeForm.workStartTime, workTimeForm.lateToleranceMinutes)} WIB
-                    </strong>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
-                  <span>
-                    Pulang <strong>Standar</strong>: Scan pada atau setelah pukul{" "}
-                    <strong className="text-blue-600 dark:text-blue-400">
-                      {calculateTimeMinus(workTimeForm.workEndTime, workTimeForm.earlyLeaveToleranceMinutes)} WIB
-                    </strong>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                  <span>
-                    Catatan <strong>Pulang Awal</strong>: Scan sebelum pukul{" "}
-                    <strong className="text-rose-600 dark:text-rose-400">
-                      {calculateTimeMinus(workTimeForm.workEndTime, workTimeForm.earlyLeaveToleranceMinutes)} WIB
-                    </strong>
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Active Day Content */}
+            {(() => {
+              const currentDayObj = DAYS_LIST.find((d) => d.key === selectedDayKey);
+              const sessions = weeklySchedule[selectedDayKey] || [];
 
-            <div className="flex justify-end pt-1">
+              return (
+                <div className="space-y-4">
+                  {/* Action Bar for Current Day */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-[#0b1329] p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-slate-900 dark:text-white">
+                        Sesi Kerja Hari {currentDayObj?.label}
+                      </span>
+                      <span className="text-xs text-slate-400">({sessions.length} sesi terdaftar)</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCopyTargetDays([]);
+                          setIsCopyModalOpen(true);
+                        }}
+                        disabled={sessions.length === 0}
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
+                        title="Salin sesi hari ini ke hari lainnya"
+                      >
+                        <Copy className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Salin ke Hari Lain</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddSession(selectedDayKey)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Sesi</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Sessions List */}
+                  {sessions.length === 0 ? (
+                    <div className="p-8 text-center rounded-3xl bg-slate-50 dark:bg-[#0b1329] border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-3">
+                      <Clock className="w-8 h-8 text-slate-400 mx-auto" />
+                      <div>
+                        <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                          Hari {currentDayObj?.label} Ditandai Sebagai Hari Libur
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          Tidak ada sesi kerja tutor untuk hari ini. Klik tombol di bawah jika ingin menambahkan sesi.
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddSession(selectedDayKey)}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Sesi di Hari {currentDayObj?.label}</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {sessions.map((sess, idx) => (
+                        <div
+                          key={sess.id || idx}
+                          className={`p-4 rounded-3xl border transition-all space-y-3.5 ${
+                            sess.isActive
+                              ? "bg-white dark:bg-[#111c38] border-slate-200 dark:border-[#1d2d5a] shadow-xs"
+                              : "bg-slate-50 dark:bg-[#0b1329] border-slate-200 dark:border-slate-800 opacity-60"
+                          }`}
+                        >
+                          {/* Session Header */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-black flex items-center justify-center">
+                                {idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={sess.name}
+                                onChange={(e) =>
+                                  handleUpdateSession(selectedDayKey, idx, { name: e.target.value })
+                                }
+                                placeholder="Nama Sesi (contoh: Sesi Pagi)"
+                                className="px-2 py-1 text-xs font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-[#0b1329] rounded-lg border border-slate-200 dark:border-slate-700 w-32 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                              />
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {/* Quick preset dropdown buttons */}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleUpdateSession(selectedDayKey, idx, {
+                                    isActive: !sess.isActive,
+                                  })
+                                }
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${
+                                  sess.isActive
+                                    ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300"
+                                    : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                                }`}
+                              >
+                                {sess.isActive ? "Aktif" : "Nonaktif"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSession(selectedDayKey, idx)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer transition-colors"
+                                title="Hapus Sesi"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Preset Name Chips */}
+                          <div className="flex flex-wrap gap-1">
+                            {["Sesi Pagi", "Sesi Siang", "Sesi Sore", "Sesi Malam"].map((pName) => (
+                              <button
+                                key={pName}
+                                type="button"
+                                onClick={() =>
+                                  handleUpdateSession(selectedDayKey, idx, { name: pName })
+                                }
+                                className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-colors cursor-pointer ${
+                                  sess.name === pName
+                                    ? "bg-emerald-600 text-white"
+                                    : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+                                }`}
+                              >
+                                {pName}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Hours Input Grid */}
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                Jam Mulai (Masuk)
+                              </label>
+                              <input
+                                type="time"
+                                value={sess.startTime}
+                                onChange={(e) =>
+                                  handleUpdateSession(selectedDayKey, idx, {
+                                    startTime: e.target.value,
+                                  })
+                                }
+                                className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                Jam Selesai (Pulang)
+                              </label>
+                              <input
+                                type="time"
+                                value={sess.endTime}
+                                onChange={(e) =>
+                                  handleUpdateSession(selectedDayKey, idx, {
+                                    endTime: e.target.value,
+                                  })
+                                }
+                                className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Tolerances Grid */}
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                Toleransi Telat (Mnt)
+                              </label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="120"
+                                value={sess.lateTolerance}
+                                onChange={(e) =>
+                                  handleUpdateSession(selectedDayKey, idx, {
+                                    lateTolerance: parseInt(e.target.value, 10) || 0,
+                                  })
+                                }
+                                className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                Toleransi Pulang Awal
+                              </label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="120"
+                                value={sess.earlyLeaveTolerance}
+                                onChange={(e) =>
+                                  handleUpdateSession(selectedDayKey, idx, {
+                                    earlyLeaveTolerance: parseInt(e.target.value, 10) || 0,
+                                  })
+                                }
+                                className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Calculation Note */}
+                          <div className="text-[10px] p-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 font-medium leading-relaxed">
+                            💡 Tepat waktu s/d{" "}
+                            <strong>
+                              {calculateTimePlus(sess.startTime, sess.lateTolerance)} WIB
+                            </strong>
+                            , pulang mulai{" "}
+                            <strong>
+                              {calculateTimeMinus(sess.endTime, sess.earlyLeaveTolerance)} WIB
+                            </strong>
+                            .
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Bottom Save Action */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                ✨ Tutor dapat melakukan presensi terpisah di setiap sesi pada hari yang sama.
+              </div>
+
               <button
                 type="button"
-                onClick={handleSaveWorkTime}
-                disabled={isSavingWorkTime}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+                onClick={handleSaveWeeklySchedule}
+                disabled={isSavingSchedule}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>{isSavingWorkTime ? "Menyimpan..." : "Simpan Pengaturan Jam Kerja & Toleransi"}</span>
+                <span>{isSavingSchedule ? "Menyimpan Jadwal..." : "Simpan Jadwal Fleksibel Mingguan"}</span>
               </button>
             </div>
           </div>
@@ -1117,6 +1435,19 @@ export default function PresensiTutorAdminPage() {
                 ]}
               />
 
+              <CustomSelect
+                value={filterSession}
+                onChange={setFilterSession}
+                size="sm"
+                options={[
+                  { value: "ALL", label: "Semua Sesi" },
+                  { value: "Sesi Pagi", label: "Sesi Pagi" },
+                  { value: "Sesi Siang", label: "Sesi Siang" },
+                  { value: "Sesi Sore", label: "Sesi Sore" },
+                  { value: "Sesi Malam", label: "Sesi Malam" },
+                ]}
+              />
+
               {/* Live Realtime Indicator */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-[11px] font-black text-emerald-700 dark:text-emerald-300 shadow-xs">
                 <span className="relative flex h-2 w-2">
@@ -1158,6 +1489,7 @@ export default function PresensiTutorAdminPage() {
                   <tr className="bg-slate-50 dark:bg-[#0b1329] text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-[#1d2d5a]">
                     <th className="py-3 px-4">Tutor / Staff</th>
                     <th className="py-3 px-4">Tanggal</th>
+                    <th className="py-3 px-4">Sesi</th>
                     <th className="py-3 px-4">Jam Masuk</th>
                     <th className="py-3 px-4">Jam Pulang</th>
                     <th className="py-3 px-4">Jarak GPS</th>
@@ -1190,6 +1522,11 @@ export default function PresensiTutorAdminPage() {
                         </td>
                         <td className="py-3.5 px-4 font-bold text-slate-700 dark:text-slate-300">
                           {att.date}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="px-2.5 py-1 rounded-xl text-[10px] font-black tracking-wide bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1 shadow-2xs">
+                            {att.sessionName || "Sesi 1"}
+                          </span>
                         </td>
                         <td className="py-3.5 px-4 font-extrabold text-emerald-600 dark:text-emerald-400">
                           {att.checkInTime}
@@ -1250,6 +1587,7 @@ export default function PresensiTutorAdminPage() {
                               setEditingRecord(att);
                               setEditForm({
                                 status: att.status,
+                                sessionName: att.sessionName || "Sesi 1",
                                 checkInTime: att.checkInTime,
                                 checkOutTime: att.checkOutTime || "-",
                                 notes: att.notes || "",
@@ -1266,7 +1604,7 @@ export default function PresensiTutorAdminPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                      <td colSpan={9} className="py-8 text-center text-slate-400 text-xs">
                         Belum ada riwayat presensi tutor untuk periode yang dipilih.
                       </td>
                     </tr>
@@ -1286,6 +1624,19 @@ export default function PresensiTutorAdminPage() {
               Edit Presensi {editingRecord.tutorName}
             </h3>
             <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Nama Sesi
+                </label>
+                <input
+                  type="text"
+                  value={editForm.sessionName}
+                  onChange={(e) => setEditForm({ ...editForm, sessionName: e.target.value })}
+                  placeholder="Contoh: Sesi Pagi / Sesi Siang / Sesi Sore"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-900 dark:text-white"
+                />
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Status Kehadiran
@@ -1359,6 +1710,7 @@ export default function PresensiTutorAdminPage() {
                     body: JSON.stringify({
                       id: editingRecord.id,
                       status: editForm.status,
+                      sessionName: editForm.sessionName,
                       checkInTime: editForm.checkInTime,
                       checkOutTime: editForm.checkOutTime,
                       notes: editForm.notes,
@@ -1370,6 +1722,83 @@ export default function PresensiTutorAdminPage() {
                 className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs cursor-pointer"
               >
                 Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy Schedule Modal */}
+      {isCopyModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-[#1d2d5a] shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                Salin Jadwal Hari {DAYS_LIST.find((d) => d.key === selectedDayKey)?.label}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsCopyModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Pilih hari target di mana susunan sesi hari {DAYS_LIST.find((d) => d.key === selectedDayKey)?.label} akan diduplikasi:
+            </p>
+
+            <div className="space-y-2 py-1">
+              {DAYS_LIST.filter((d) => d.key !== selectedDayKey).map((d) => {
+                const isChecked = copyTargetDays.includes(d.key);
+                return (
+                  <label
+                    key={d.key}
+                    className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
+                      isChecked
+                        ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 font-extrabold"
+                        : "bg-slate-50 dark:bg-[#0b1329] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCopyTargetDays((prev) => [...prev, d.key]);
+                          } else {
+                            setCopyTargetDays((prev) => prev.filter((k) => k !== d.key));
+                          }
+                        }}
+                        className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                      />
+                      <span>Hari {d.label}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">
+                      {(weeklySchedule[d.key] || []).length} Sesi saat ini
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsCopyModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyCopySchedule}
+                disabled={copyTargetDays.length === 0}
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs cursor-pointer disabled:opacity-40"
+              >
+                Terapkan Salinan ({copyTargetDays.length} Hari)
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
+import { DEFAULT_WEEKLY_SCHEDULE } from "@/app/api/branch-qr-config/route";
 
 // Helper: Haversine distance in meters
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -50,6 +51,14 @@ function buildBranchFilter(branchStr: string) {
   };
 }
 
+// Helper: parse "HH:mm" to minutes
+function parseTimeToMinutes(timeStr?: string | null): number | null {
+  if (!timeStr) return null;
+  const match = timeStr.match(/(\d{1,2})[:.](\d{1,2})/);
+  if (!match) return null;
+  return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+}
+
 // GET /api/tutor-attendance - List tutor attendances
 export async function GET(req: Request) {
   try {
@@ -62,6 +71,7 @@ export async function GET(req: Request) {
     const date = searchParams.get("date");
     const month = searchParams.get("month"); // format: YYYY-MM
     const userId = searchParams.get("userId");
+    const sessionFilter = searchParams.get("session");
 
     // Auto-scope for branch admin if branch query is ALL or missing
     if ((!branch || branch === "ALL") && authUser?.role === "BRANCH_ADMIN" && authUser?.branchName) {
@@ -142,7 +152,7 @@ export async function GET(req: Request) {
       orderBy: { attendanceDate: "desc" },
     });
 
-    const formatted = records.map((r) => ({
+    let formatted = records.map((r) => ({
       id: r.id,
       userId: r.userId,
       tutorName: r.user?.fullName || "Tutor",
@@ -152,6 +162,8 @@ export async function GET(req: Request) {
       branchId: r.branchId,
       branchName: (r.user as any)?.branch?.branchName || r.branch?.branchName || "Singkut",
       date: r.attendanceDate.toISOString().split("T")[0],
+      sessionName: (r as any).sessionName || "Sesi 1",
+      sessionId: (r as any).sessionId || null,
       checkInTime: r.checkInTime,
       checkOutTime: r.checkOutTime || "-",
       status: r.status,
@@ -165,6 +177,10 @@ export async function GET(req: Request) {
       createdAt: r.createdAt.toISOString(),
     }));
 
+    if (sessionFilter && sessionFilter !== "ALL") {
+      formatted = formatted.filter((f) => f.sessionName?.toLowerCase() === sessionFilter.toLowerCase());
+    }
+
     return NextResponse.json(formatted);
   } catch (error: any) {
     console.error("Error fetching tutor attendances:", error);
@@ -172,7 +188,7 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/tutor-attendance - Record scan attendance with GPS geofencing
+// POST /api/tutor-attendance - Record scan attendance with GPS geofencing and multi-session detection
 export async function POST(req: Request) {
   try {
     const { error, session } = await requireAuth();
@@ -180,7 +196,16 @@ export async function POST(req: Request) {
 
     const authUser = session?.user as any;
     const body = await req.json();
-    const { qrData, latitude, longitude, userId: targetUserId, notes, isCheckOut } = body;
+    const {
+      qrData,
+      latitude,
+      longitude,
+      userId: targetUserId,
+      notes,
+      isCheckOut,
+      sessionId,
+      sessionName,
+    } = body;
 
     // 1. Resolve User
     let userId = targetUserId || authUser?.id;
@@ -320,28 +345,9 @@ export async function POST(req: Request) {
       hour12: false,
     });
     const currentTimeStr = `${timeFormatter.format(now).replace(".", ":")} WIB`;
-
-    // Helper: parse "HH:mm" to minutes
-    const parseTimeToMinutes = (timeStr?: string | null): number | null => {
-      if (!timeStr) return null;
-      const match = timeStr.match(/(\d{1,2})[:.](\d{1,2})/);
-      if (!match) return null;
-      return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
-    };
-
     const currentWibMinutes = parseTimeToMinutes(currentTimeStr) ?? 0;
 
-    // 5. Check if already checked in today
-    const existingAttendance = await prisma.tutorAttendance.findUnique({
-      where: {
-        userId_attendanceDate: {
-          userId: userRecord.id,
-          attendanceDate: todayMidnight,
-        },
-      },
-    });
-
-    // Fetch accurate branch work schedule from tutor_attendance_qrs
+    // Fetch branch work schedule & weekly_schedule from tutor_attendance_qrs
     let branchScheduleRow: any = null;
     try {
       const rows = await prisma.$queryRawUnsafe<any[]>(
@@ -351,15 +357,72 @@ export async function POST(req: Request) {
       if (rows.length > 0) branchScheduleRow = rows[0];
     } catch {}
 
-    const workEndStr = branchScheduleRow?.work_end_time || branch.setting?.workEndTime || "17:00";
-    const earlyLeaveTolerance = branchScheduleRow?.early_leave_tolerance_minutes ?? branch.setting?.earlyLeaveToleranceMinutes ?? 0;
-    const workStartStr = branchScheduleRow?.work_start_time || branch.setting?.workStartTime || "08:00";
-    const lateTolerance = branchScheduleRow?.late_tolerance_minutes ?? branch.setting?.lateToleranceMinutes ?? 15;
+    const weeklySchedule = branchScheduleRow?.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE;
+
+    // Calculate day of week in WIB (0 = Minggu, 1 = Senin, ..., 6 = Sabtu)
+    const dayOfWeek = String(todayMidnight.getUTCDay());
+    const daySessions: any[] = (weeklySchedule && Array.isArray(weeklySchedule[dayOfWeek]))
+      ? weeklySchedule[dayOfWeek]
+      : [];
+
+    // 5. Match Active Work Session for today
+    let matchedSession: any = null;
+    if (sessionId) {
+      matchedSession = daySessions.find((s) => s.id === sessionId);
+    }
+    if (!matchedSession && sessionName) {
+      matchedSession = daySessions.find((s) => s.name?.toLowerCase() === sessionName?.toLowerCase());
+    }
+    if (!matchedSession && daySessions.length > 0) {
+      // Find session where current time falls into [start - 60 min, end + 60 min]
+      matchedSession = daySessions.find((s) => {
+        if (!s.isActive && s.isActive !== undefined) return false;
+        const sStart = parseTimeToMinutes(s.startTime);
+        const sEnd = parseTimeToMinutes(s.endTime);
+        if (sStart !== null && sEnd !== null) {
+          return currentWibMinutes >= sStart - 60 && currentWibMinutes <= sEnd + 60;
+        }
+        return false;
+      });
+
+      // If still none, find session with closest start time
+      if (!matchedSession) {
+        let minDiff = Infinity;
+        for (const s of daySessions) {
+          if (!s.isActive && s.isActive !== undefined) continue;
+          const sStart = parseTimeToMinutes(s.startTime);
+          if (sStart !== null) {
+            const diff = Math.abs(currentWibMinutes - sStart);
+            if (diff < minDiff) {
+              minDiff = diff;
+              matchedSession = s;
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback if no sessions configured for this day
+    const activeSessionName = matchedSession?.name || sessionName || (daySessions[0]?.name) || "Sesi 1";
+    const activeSessionId = matchedSession?.id || sessionId || (daySessions[0]?.id) || null;
+    const workStartStr = matchedSession?.startTime || branchScheduleRow?.work_start_time || branch.setting?.workStartTime || "08:00";
+    const workEndStr = matchedSession?.endTime || branchScheduleRow?.work_end_time || branch.setting?.workEndTime || "17:00";
+    const lateTolerance = matchedSession?.lateTolerance ?? (branchScheduleRow?.late_tolerance_minutes ?? branch.setting?.lateToleranceMinutes ?? 15);
+    const earlyLeaveTolerance = matchedSession?.earlyLeaveTolerance ?? (branchScheduleRow?.early_leave_tolerance_minutes ?? branch.setting?.earlyLeaveToleranceMinutes ?? 0);
+
+    // 6. Check existing attendance for this user, date, and specific sessionName
+    const existingAttendance = await prisma.tutorAttendance.findFirst({
+      where: {
+        userId: userRecord.id,
+        attendanceDate: todayMidnight,
+        sessionName: activeSessionName,
+      },
+    });
 
     if (isCheckOut) {
       if (!existingAttendance) {
         return NextResponse.json(
-          { error: "Anda belum melakukan presensi masuk hari ini." },
+          { error: `Anda belum melakukan presensi masuk untuk ${activeSessionName} hari ini.` },
           { status: 400 }
         );
       }
@@ -375,7 +438,7 @@ export async function POST(req: Request) {
 
       let checkoutNote = notes ? `Pulang: ${notes.trim()}` : "";
       if (isEarlyLeave) {
-        const earlyNote = `Pulang Awal ${earlyMinutes} mnt (Jadwal: ${workEndStr})`;
+        const earlyNote = `Pulang Awal ${earlyMinutes} mnt (${activeSessionName}: ${workEndStr})`;
         checkoutNote = checkoutNote ? `${checkoutNote} | ${earlyNote}` : earlyNote;
       }
 
@@ -408,12 +471,14 @@ export async function POST(req: Request) {
         isCheckOut: true,
         isEarlyLeave,
         earlyMinutes,
-        workStartTime: workEndStr,
+        sessionName: activeSessionName,
+        sessionId: activeSessionId,
+        workStartTime: workStartStr,
         workEndTime: workEndStr,
         earlyLeaveToleranceMinutes: earlyLeaveTolerance,
         message: isEarlyLeave
-          ? `Presensi Pulang berhasil dicatat pada ${currentTimeStr} (Pulang lebih awal ${earlyMinutes} menit).`
-          : `Presensi Pulang berhasil dicatat pada ${currentTimeStr}!`,
+          ? `Presensi Pulang ${activeSessionName} berhasil dicatat pada ${currentTimeStr} (Pulang lebih awal ${earlyMinutes} menit).`
+          : `Presensi Pulang ${activeSessionName} berhasil dicatat pada ${currentTimeStr}!`,
         attendance: updated,
         distanceMeter,
       });
@@ -432,53 +497,56 @@ export async function POST(req: Request) {
     const statusToSave = body.status || (isLate ? "TERLAMBAT" : "HADIR");
     let initialNotes = notes ? notes.trim() : "";
     if (isLate) {
-      const lateNote = `Terlambat ${lateMinutes} mnt (Jadwal: ${workStartStr}, Toleransi: ${lateTolerance} mnt)`;
+      const lateNote = `Terlambat ${lateMinutes} mnt (${activeSessionName}: ${workStartStr}, Toleransi: ${lateTolerance} mnt)`;
       initialNotes = initialNotes ? `${initialNotes} | ${lateNote}` : lateNote;
     }
 
     const attendanceBranchId = userRecord.branchId || branch.id;
 
-    const attendance = await prisma.tutorAttendance.upsert({
-      where: {
-        userId_attendanceDate: {
-          userId: userRecord.id,
-          attendanceDate: todayMidnight,
+    let attendanceRecord: any;
+    if (existingAttendance) {
+      attendanceRecord = await prisma.tutorAttendance.update({
+        where: { id: existingAttendance.id },
+        data: {
+          checkInTime: currentTimeStr,
+          status: statusToSave,
+          latitude: latitude ? Number(latitude) : null,
+          longitude: longitude ? Number(longitude) : null,
+          distanceMeter: distanceMeter,
+          isLocationValid: isLocationValid,
+          notes: initialNotes || undefined,
+          branchId: attendanceBranchId,
+          sessionName: activeSessionName,
+          sessionId: activeSessionId,
         },
-      },
-      update: {
-        checkInTime: currentTimeStr,
-        status: statusToSave,
-        latitude: latitude ? Number(latitude) : null,
-        longitude: longitude ? Number(longitude) : null,
-        distanceMeter: distanceMeter,
-        isLocationValid: isLocationValid,
-        notes: initialNotes || undefined,
-        branchId: attendanceBranchId,
-      },
-      create: {
-        userId: userRecord.id,
-        branchId: attendanceBranchId,
-        attendanceDate: todayMidnight,
-        checkInTime: currentTimeStr,
-        status: statusToSave,
-        latitude: latitude ? Number(latitude) : null,
-        longitude: longitude ? Number(longitude) : null,
-        distanceMeter: distanceMeter,
-        isLocationValid: isLocationValid,
-        notes: initialNotes || null,
-      },
-      include: {
-        user: true,
-        branch: true,
-      },
-    });
+        include: { user: true, branch: true },
+      });
+    } else {
+      attendanceRecord = await prisma.tutorAttendance.create({
+        data: {
+          userId: userRecord.id,
+          branchId: attendanceBranchId,
+          attendanceDate: todayMidnight,
+          checkInTime: currentTimeStr,
+          status: statusToSave,
+          latitude: latitude ? Number(latitude) : null,
+          longitude: longitude ? Number(longitude) : null,
+          distanceMeter: distanceMeter,
+          isLocationValid: isLocationValid,
+          notes: initialNotes || null,
+          sessionName: activeSessionName,
+          sessionId: activeSessionId,
+        },
+        include: { user: true, branch: true },
+      });
+    }
 
     if (isLate && lateMinutes > 0) {
       try {
         await prisma.$executeRawUnsafe(
           `UPDATE "tutor_attendances" SET "late_minutes" = $1 WHERE "id" = $2`,
           lateMinutes,
-          attendance.id
+          attendanceRecord.id
         );
       } catch (err) {
         console.warn("Error updating late_minutes:", err);
@@ -490,13 +558,15 @@ export async function POST(req: Request) {
       isCheckIn: true,
       isLate,
       lateMinutes,
+      sessionName: activeSessionName,
+      sessionId: activeSessionId,
       workStartTime: workStartStr,
       workEndTime: workEndStr,
       lateToleranceMinutes: lateTolerance,
       message: isLate
-        ? `Presensi Masuk dicatat pada ${currentTimeStr} (Terlambat ${lateMinutes} menit). Harap perhatikan jam kerja!`
-        : `Presensi Masuk berhasil dicatat tepat waktu pada ${currentTimeStr}! (Jarak: ${distanceMeter !== null ? `${distanceMeter}m` : "Terverifikasi"})`,
-      attendance,
+        ? `Presensi Masuk ${activeSessionName} dicatat pada ${currentTimeStr} (Terlambat ${lateMinutes} menit). Harap perhatikan jam sesi!`
+        : `Presensi Masuk ${activeSessionName} berhasil dicatat tepat waktu pada ${currentTimeStr}! (Jarak: ${distanceMeter !== null ? `${distanceMeter}m` : "Terverifikasi"})`,
+      attendance: attendanceRecord,
       distanceMeter,
       maxRadius,
     });
@@ -513,7 +583,7 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, status, notes, checkInTime, checkOutTime, lateMinutes, earlyLeaveMinutes } = body;
+    const { id, status, notes, checkInTime, checkOutTime, lateMinutes, earlyLeaveMinutes, sessionName } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID presensi diperlukan" }, { status: 400 });
@@ -526,6 +596,7 @@ export async function PUT(req: Request) {
         ...(notes !== undefined ? { notes } : {}),
         ...(checkInTime ? { checkInTime } : {}),
         ...(checkOutTime !== undefined ? { checkOutTime } : {}),
+        ...(sessionName ? { sessionName } : {}),
       },
       include: { user: true, branch: true },
     });

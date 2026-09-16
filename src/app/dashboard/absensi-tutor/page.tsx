@@ -22,15 +22,54 @@ import {
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { getBrowserCoordinates } from "@/lib/gpsHelper";
 
+import { DEFAULT_WEEKLY_SCHEDULE } from "@/app/api/branch-qr-config/route";
+
+export interface WorkSession {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  lateTolerance: number;
+  earlyLeaveTolerance: number;
+  isActive: boolean;
+}
+
+export type WeeklySchedule = Record<string, WorkSession[]>;
+
 interface AttendanceRecord {
   id: string;
   date: string;
+  sessionName?: string;
+  sessionId?: string;
   checkInTime: string;
   checkOutTime: string;
   status: "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPHA";
   distanceMeter: number | null;
   isLocationValid: boolean;
   notes: string;
+}
+
+// Helper: Calculate Time plus minutes
+function calculateTimePlus(timeStr?: string, minutesToAdd?: string | number): string {
+  if (!timeStr) return "-";
+  const [h, m] = timeStr.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  const total = h * 60 + m + (parseInt(String(minutesToAdd || 0), 10) || 0);
+  const newH = Math.floor((total / 60) % 24);
+  const newM = total % 60;
+  return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
+}
+
+// Helper: Calculate Time minus minutes
+function calculateTimeMinus(timeStr?: string, minutesToSubtract?: string | number): string {
+  if (!timeStr) return "-";
+  const [h, m] = timeStr.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  let total = h * 60 + m - (parseInt(String(minutesToSubtract || 0), 10) || 0);
+  if (total < 0) total += 24 * 60;
+  const newH = Math.floor((total / 60) % 24);
+  const newM = total % 60;
+  return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
 }
 
 export default function AbsensiTutorScanPage() {
@@ -45,6 +84,7 @@ export default function AbsensiTutorScanPage() {
     type: "success" | "error" | "warning";
     title: string;
     message: string;
+    sessionName?: string;
     time?: string;
     distance?: number | null;
     isLate?: boolean;
@@ -56,13 +96,46 @@ export default function AbsensiTutorScanPage() {
     lateToleranceMinutes?: number;
   } | null>(null);
 
-  // Branch Work Hours & Schedule
+  // Flexible Multi-Session Schedule State
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>(DEFAULT_WEEKLY_SCHEDULE);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  // Branch Work Hours & Schedule fallback
   const [branchSchedule, setBranchSchedule] = useState<{
     workStartTime: string;
     workEndTime: string;
     lateToleranceMinutes: number;
     earlyLeaveToleranceMinutes: number;
   } | null>(null);
+
+  // Helper: Get WIB Day of Week (0 = Minggu, 1 = Senin, ..., 6 = Sabtu)
+  const getTodayWibDayOfWeek = (): string => {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now).split("-").map(Number);
+    const wibMidnight = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+    return String(wibMidnight.getUTCDay());
+  };
+
+  // Helper: Get WIB current minutes from midnight
+  const getTodayWibMinutes = (): number => {
+    const now = new Date();
+    const timeParts = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(now).replace(".", ":").split(":").map(Number);
+    return (timeParts[0] || 0) * 60 + (timeParts[1] || 0);
+  };
+
+  const todayDayKey = getTodayWibDayOfWeek();
+  const todaySessions = (weeklySchedule[todayDayKey] || []).filter((s) => s.isActive);
+  const currentSession = todaySessions.find((s) => s.id === selectedSessionId) || todaySessions[0] || null;
 
   // GPS State
   const [gpsLocation, setGpsLocation] = useState<{
@@ -83,7 +156,7 @@ export default function AbsensiTutorScanPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Fetch branch schedule
+  // Fetch branch schedule & weekly schedule
   const fetchBranchSchedule = async () => {
     try {
       const branchQuery = allowedBranch ? encodeURIComponent(allowedBranch) : "Singkut";
@@ -107,6 +180,28 @@ export default function AbsensiTutorScanPage() {
             lateToleranceMinutes: conf.lateToleranceMinutes ?? 15,
             earlyLeaveToleranceMinutes: conf.earlyLeaveToleranceMinutes ?? 0,
           });
+
+          if (conf.weeklySchedule) {
+            setWeeklySchedule(conf.weeklySchedule);
+            const dayKey = getTodayWibDayOfWeek();
+            const sessionsToday = (conf.weeklySchedule[dayKey] || []).filter((s: any) => s.isActive);
+            const currMin = getTodayWibMinutes();
+
+            // Auto-select session matching current time in [start - 60, end + 60]
+            const activeMatch = sessionsToday.find((s: any) => {
+              const [sh, sm] = (s.startTime || "00:00").split(":").map(Number);
+              const [eh, em] = (s.endTime || "23:59").split(":").map(Number);
+              const sMin = (sh || 0) * 60 + (sm || 0);
+              const eMin = (eh || 0) * 60 + (em || 0);
+              return currMin >= sMin - 60 && currMin <= eMin + 60;
+            });
+
+            if (activeMatch) {
+              setSelectedSessionId(activeMatch.id);
+            } else if (sessionsToday.length > 0) {
+              setSelectedSessionId(sessionsToday[0].id);
+            }
+          }
         }
       }
     } catch (e) {
@@ -250,6 +345,8 @@ export default function AbsensiTutorScanPage() {
           latitude: lat,
           longitude: lon,
           isCheckOut: scanType === "OUT",
+          sessionId: currentSession?.id,
+          sessionName: currentSession?.name,
         }),
       });
 
@@ -258,15 +355,17 @@ export default function AbsensiTutorScanPage() {
       if (res.ok) {
         const isLate = Boolean(data.isLate);
         const isEarlyLeave = Boolean(data.isEarlyLeave);
+        const sessName = data.sessionName || currentSession?.name || "Sesi Reguler";
         const fbData = {
           type: (isLate || isEarlyLeave ? "warning" : "success") as "warning" | "success",
+          sessionName: sessName,
           title: isLate
-            ? `Presensi Masuk (Terlambat ${data.lateMinutes} Menit)`
+            ? `Presensi Masuk ${sessName} (Terlambat ${data.lateMinutes} Menit)`
             : isEarlyLeave
-            ? `Presensi Pulang (Pulang Awal ${data.earlyMinutes} Menit)`
+            ? `Presensi Pulang ${sessName} (Pulang Awal ${data.earlyMinutes} Menit)`
             : scanType === "IN"
-            ? "Presensi Masuk Berhasil Tepat Waktu! 🎉"
-            : "Presensi Pulang Berhasil! 🏠",
+            ? `Presensi Masuk ${sessName} Berhasil Tepat Waktu! 🎉`
+            : `Presensi Pulang ${sessName} Berhasil! 🏠`,
           message: data.message || "Presensi kehadiran Anda telah diverifikasi oleh sistem.",
           time: scanType === "IN" ? data.attendance?.checkInTime : data.attendance?.checkOutTime,
           distance: data.distanceMeter,
@@ -274,9 +373,9 @@ export default function AbsensiTutorScanPage() {
           lateMinutes: data.lateMinutes ?? 0,
           isEarlyLeave,
           earlyMinutes: data.earlyMinutes ?? 0,
-          workStartTime: data.workStartTime || branchSchedule?.workStartTime || "08:00",
-          workEndTime: data.workEndTime || branchSchedule?.workEndTime || "17:00",
-          lateToleranceMinutes: data.lateToleranceMinutes ?? branchSchedule?.lateToleranceMinutes ?? 15,
+          workStartTime: data.workStartTime || currentSession?.startTime || branchSchedule?.workStartTime || "08:00",
+          workEndTime: data.workEndTime || currentSession?.endTime || branchSchedule?.workEndTime || "17:00",
+          lateToleranceMinutes: data.lateToleranceMinutes ?? currentSession?.lateTolerance ?? branchSchedule?.lateToleranceMinutes ?? 15,
         };
         setScanFeedback(fbData);
         setShowFeedbackModal(true);
@@ -372,8 +471,73 @@ export default function AbsensiTutorScanPage() {
         </div>
       </div>
 
-      {/* Branch Work Schedule Info Banner */}
-      {branchSchedule && (
+      {/* Branch Multi-Session Work Schedule Info & Session Selector */}
+      {todaySessions.length > 0 ? (
+        <div className="bg-white dark:bg-[#0f1a36] p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs space-y-3.5 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2 text-xs font-black text-slate-900 dark:text-white">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <span>Sesi Hari Ini (Cabang {allowedBranch || "Singkut"})</span>
+            </div>
+            <span className="text-[11px] font-bold text-slate-400">
+              Pilih sesi yang akan Anda hadiri sebelum memindai QR:
+            </span>
+          </div>
+
+          {/* Session Chips Selector */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {todaySessions.map((sess) => {
+              const isSelected = (currentSession?.id === sess.id);
+              const todayAttForSession = myHistory.find(
+                (r) =>
+                  r.date === new Date().toISOString().split("T")[0] &&
+                  (r.sessionName?.toLowerCase() === sess.name.toLowerCase() || r.sessionId === sess.id)
+              );
+
+              return (
+                <button
+                  key={sess.id}
+                  type="button"
+                  onClick={() => setSelectedSessionId(sess.id)}
+                  className={`px-3.5 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2.5 transition-all cursor-pointer shrink-0 border ${
+                    isSelected
+                      ? "bg-emerald-600 text-white border-emerald-700 shadow-xs ring-2 ring-emerald-500/20"
+                      : "bg-slate-50 dark:bg-[#0b1329] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  <span>{sess.name}</span>
+                  <span className={`text-[10px] font-medium opacity-80`}>
+                    ({sess.startTime} - {sess.endTime})
+                  </span>
+                  {todayAttForSession ? (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Sudah Presensi" />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Selected Session Details */}
+          {currentSession && (
+            <div className="p-3 bg-slate-50 dark:bg-[#0b1329] rounded-2xl border border-slate-200/70 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-600" />
+                <span className="font-bold text-slate-800 dark:text-slate-200">
+                  Target Sesi: <strong className="text-emerald-600 dark:text-emerald-400">{currentSession.name}</strong>
+                </span>
+                <span className="text-slate-400">•</span>
+                <span className="text-slate-600 dark:text-slate-400">
+                  Mulai <strong>{currentSession.startTime} WIB</strong> (Tepat waktu s/d <strong>{calculateTimePlus(currentSession.startTime, currentSession.lateTolerance)} WIB</strong>)
+                </span>
+              </div>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                Pulang mulai: <strong>{calculateTimeMinus(currentSession.endTime, currentSession.earlyLeaveTolerance)} WIB</strong>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : branchSchedule ? (
         <div className="bg-emerald-500/10 dark:bg-emerald-950/40 p-4 rounded-3xl border border-emerald-300/60 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in">
           <div className="flex items-center gap-2.5 text-emerald-950 dark:text-emerald-200">
             <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
@@ -381,26 +545,15 @@ export default function AbsensiTutorScanPage() {
             </div>
             <div>
               <span className="font-extrabold block text-slate-900 dark:text-white">
-                Jadwal Jam Kerja Cabang {allowedBranch || "Singkut"}
+                Jadwal Hari Ini Cabang {allowedBranch || "Singkut"}
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 Masuk: <strong className="text-emerald-600 dark:text-emerald-400">{branchSchedule.workStartTime} WIB</strong> • Pulang: <strong className="text-slate-700 dark:text-slate-300">{branchSchedule.workEndTime} WIB</strong>
               </span>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 flex-wrap text-[11px]">
-            <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
-              ⏱️ Toleransi Masuk: <span className="text-emerald-600 dark:text-emerald-400 font-black">{branchSchedule.lateToleranceMinutes} mnt</span>
-            </span>
-            {branchSchedule.earlyLeaveToleranceMinutes > 0 && (
-              <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                🏃 Toleransi Pulang: <span className="text-emerald-600 dark:text-emerald-400 font-black">{branchSchedule.earlyLeaveToleranceMinutes} mnt</span>
-              </span>
-            )}
-          </div>
         </div>
-      )}
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: QR Scanner & GPS Status */}
@@ -615,6 +768,11 @@ export default function AbsensiTutorScanPage() {
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>{rec.date}</span>
+                        {rec.sessionName && (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            {rec.sessionName}
+                          </span>
+                        )}
                         <span
                           className={`px-2 py-0.5 rounded-md text-[9px] font-black border ${
                             rec.status === "HADIR"
