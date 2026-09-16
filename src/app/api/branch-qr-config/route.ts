@@ -169,10 +169,6 @@ export async function PUT(req: Request) {
         ...(longitude !== undefined ? { longitude: Number(longitude) } : {}),
         ...(radiusMeters !== undefined ? { radiusMeters: Number(radiusMeters) } : {}),
         ...(newQrSecret ? { qrSecret: newQrSecret } : {}),
-        ...(workStartTime !== undefined ? { workStartTime: String(workStartTime) } : {}),
-        ...(workEndTime !== undefined ? { workEndTime: String(workEndTime) } : {}),
-        ...(lateToleranceMinutes !== undefined ? { lateToleranceMinutes: Number(lateToleranceMinutes) } : {}),
-        ...(earlyLeaveToleranceMinutes !== undefined ? { earlyLeaveToleranceMinutes: Number(earlyLeaveToleranceMinutes) } : {}),
       },
       create: {
         branchId: targetBranch.id,
@@ -180,12 +176,39 @@ export async function PUT(req: Request) {
         longitude: longitude ? Number(longitude) : 102.6847,
         radiusMeters: radiusMeters ? Number(radiusMeters) : 100,
         qrSecret: newQrSecret,
-        workStartTime: workStartTime ? String(workStartTime) : "08:00",
-        workEndTime: workEndTime ? String(workEndTime) : "17:00",
-        lateToleranceMinutes: lateToleranceMinutes !== undefined ? Number(lateToleranceMinutes) : 15,
-        earlyLeaveToleranceMinutes: earlyLeaveToleranceMinutes !== undefined ? Number(earlyLeaveToleranceMinutes) : 0,
       },
     });
+
+    // Update work hours and tolerances directly in PostgreSQL
+    if (
+      workStartTime !== undefined ||
+      workEndTime !== undefined ||
+      lateToleranceMinutes !== undefined ||
+      earlyLeaveToleranceMinutes !== undefined
+    ) {
+      try {
+        await prisma.$executeRawUnsafe(
+          `UPDATE "branch_settings"
+           SET "work_start_time" = COALESCE($1, "work_start_time"),
+               "work_end_time" = COALESCE($2, "work_end_time"),
+               "late_tolerance_minutes" = COALESCE($3, "late_tolerance_minutes"),
+               "early_leave_tolerance_minutes" = COALESCE($4, "early_leave_tolerance_minutes")
+           WHERE "branch_id" = $5`,
+          workStartTime !== undefined ? String(workStartTime) : null,
+          workEndTime !== undefined ? String(workEndTime) : null,
+          lateToleranceMinutes !== undefined ? Number(lateToleranceMinutes) : null,
+          earlyLeaveToleranceMinutes !== undefined ? Number(earlyLeaveToleranceMinutes) : null,
+          targetBranch.id
+        );
+      } catch (sqlErr) {
+        console.warn("Could not update work hours via raw SQL:", sqlErr);
+      }
+    }
+
+    const finalWorkStart = workStartTime ? String(workStartTime) : ((updatedSetting as any).workStartTime || "08:00");
+    const finalWorkEnd = workEndTime ? String(workEndTime) : ((updatedSetting as any).workEndTime || "17:00");
+    const finalLateTol = lateToleranceMinutes !== undefined ? Number(lateToleranceMinutes) : ((updatedSetting as any).lateToleranceMinutes ?? 15);
+    const finalEarlyTol = earlyLeaveToleranceMinutes !== undefined ? Number(earlyLeaveToleranceMinutes) : ((updatedSetting as any).earlyLeaveToleranceMinutes ?? 0);
 
     return NextResponse.json({
       success: true,
@@ -195,19 +218,19 @@ export async function PUT(req: Request) {
       longitude: updatedSetting.longitude,
       radiusMeters: updatedSetting.radiusMeters,
       qrSecret: updatedSetting.qrSecret,
-      workStartTime: updatedSetting.workStartTime,
-      workEndTime: updatedSetting.workEndTime,
-      lateToleranceMinutes: updatedSetting.lateToleranceMinutes,
-      earlyLeaveToleranceMinutes: updatedSetting.earlyLeaveToleranceMinutes,
+      workStartTime: finalWorkStart,
+      workEndTime: finalWorkEnd,
+      lateToleranceMinutes: finalLateTol,
+      earlyLeaveToleranceMinutes: finalEarlyTol,
       qrPayload: JSON.stringify({
         type: "MATHFINGERS_TUTOR_ATTENDANCE",
         branchId: targetBranch.id,
         branchCode: targetBranch.branchCode,
         branchName: targetBranch.branchName,
         secret: updatedSetting.qrSecret,
-        workStartTime: updatedSetting.workStartTime,
-        workEndTime: updatedSetting.workEndTime,
-        lateToleranceMinutes: updatedSetting.lateToleranceMinutes,
+        workStartTime: finalWorkStart,
+        workEndTime: finalWorkEnd,
+        lateToleranceMinutes: finalLateTol,
       }),
     });
   } catch (error: any) {
