@@ -205,7 +205,7 @@ interface AppStoreContextType {
   // Students
   students: StudentItem[];
   addStudent: (student: Omit<StudentItem, "id" | "index">) => Promise<StudentItem | null> | void;
-  updateStudent: (id: string, updated: Partial<StudentItem>) => void;
+  updateStudent: (id: string, updated: Partial<StudentItem>) => Promise<void> | void;
   deleteStudent: (id: string) => void;
 
   // Classes
@@ -1882,18 +1882,22 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     return newSt;
   };
 
-  const updateStudent = (id: string, updated: Partial<StudentItem>) => {
+  const updateStudent = async (id: string, updated: Partial<StudentItem>) => {
     setStudents((prev) => {
       const updatedList = prev.map((s) => (s.id === id ? { ...s, ...updated } : s));
       save("mf_students", updatedList);
       return updatedList;
     });
 
-    fetch("/api/students", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, ...updated }),
-    }).catch((err) => console.error("Error updating student in PostgreSQL:", err));
+    try {
+      await fetch("/api/students", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...updated }),
+      });
+    } catch (err) {
+      console.error("Error updating student in PostgreSQL:", err);
+    }
   };
 
   const deleteStudent = (id: string) => {

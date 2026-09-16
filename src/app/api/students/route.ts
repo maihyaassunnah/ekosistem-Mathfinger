@@ -238,7 +238,7 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, name, parentName, parentWhatsapp, gender, className, birthPlace, birthDate, address, gradeLevel, levelCurriculum, branch } = body;
+    const { id, name, parentName, parentWhatsapp, gender, className, birthPlace, birthDate, address, gradeLevel, levelCurriculum, branch, status } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 });
@@ -260,6 +260,18 @@ export async function PUT(req: Request) {
       if (l) currentLevelId = l.id;
     }
 
+    let mappedStatus: "ACTIVE" | "INACTIVE" | "GRADUATED" | undefined = undefined;
+    if (status !== undefined) {
+      const s = String(status).toUpperCase();
+      if (s === "INACTIVE" || s === "TIDAK AKTIF" || s === "NONAKTIF") {
+        mappedStatus = "INACTIVE";
+      } else if (s === "GRADUATED" || s === "LULUS" || s === "ALUMNI") {
+        mappedStatus = "GRADUATED";
+      } else if (s === "ACTIVE" || s === "AKTIF") {
+        mappedStatus = "ACTIVE";
+      }
+    }
+
     const updated = await prisma.student.update({
       where: { id },
       data: {
@@ -275,6 +287,7 @@ export async function PUT(req: Request) {
         ...(branchId ? { branchId } : {}),
         ...(currentLevelId ? { currentLevelId } : {}),
         ...(body.programType ? { programType: body.programType as any } : {}),
+        ...(mappedStatus ? { status: mappedStatus } : {}),
       },
       include: {
         branch: true,
@@ -302,6 +315,54 @@ export async function PUT(req: Request) {
     });
   } catch (error: any) {
     console.error("Error updating student:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// PATCH /api/students - Quick status or field toggle
+export async function PATCH(req: Request) {
+  try {
+    const { error } = await requireAuth();
+    if (error) return error;
+
+    const body = await req.json();
+    const { id, status } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 });
+    }
+
+    let mappedStatus: "ACTIVE" | "INACTIVE" | "GRADUATED" | undefined = undefined;
+    if (status !== undefined) {
+      const s = String(status).toUpperCase();
+      if (s === "INACTIVE" || s === "TIDAK AKTIF" || s === "NONAKTIF") {
+        mappedStatus = "INACTIVE";
+      } else if (s === "GRADUATED" || s === "LULUS" || s === "ALUMNI") {
+        mappedStatus = "GRADUATED";
+      } else if (s === "ACTIVE" || s === "AKTIF") {
+        mappedStatus = "ACTIVE";
+      }
+    }
+
+    const updated = await prisma.student.update({
+      where: { id },
+      data: {
+        ...(mappedStatus ? { status: mappedStatus } : {}),
+      },
+      include: {
+        branch: true,
+        currentLevel: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      id: updated.id,
+      status: updated.status,
+      name: updated.studentName,
+    });
+  } catch (error: any) {
+    console.error("Error patching student:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -154,6 +154,19 @@ function SiswaContent() {
     []
   );
 
+  // Status helpers
+  const isInactive = (stStatus?: string) => {
+    if (!stStatus) return false;
+    const s = stStatus.toUpperCase();
+    return s === "INACTIVE" || s === "TIDAK AKTIF" || s === "NONAKTIF";
+  };
+
+  const isGraduated = (stStatus?: string) => {
+    if (!stStatus) return false;
+    const s = stStatus.toUpperCase();
+    return s === "GRADUATED" || s === "LULUS" || s === "ALUMNI";
+  };
+
   // Form state
   const [form, setForm] = useState({
     name: "",
@@ -171,6 +184,7 @@ function SiswaContent() {
     levelCurriculum: "Level Dasar: Pengenalan Simbol Jari",
     registeredDate: new Date().toISOString().split("T")[0],
     programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
+    status: "ACTIVE",
   });
 
   const currentLevelOptions = useMemo(() => {
@@ -204,7 +218,16 @@ function SiswaContent() {
           ? (s as any).programType === "MEMBACA"
           : (s as any).programType !== "MEMBACA";
 
-      return matchSearch && matchBranch && matchClass && matchGender && matchProgram;
+      const matchStatus =
+        statusFilter === "ALL"
+          ? true
+          : statusFilter === "ACTIVE"
+          ? (!isInactive(s.status) && !isGraduated(s.status))
+          : statusFilter === "INACTIVE"
+          ? isInactive(s.status)
+          : isGraduated(s.status);
+
+      return matchSearch && matchBranch && matchClass && matchGender && matchProgram && matchStatus;
     })
     .sort((a, b) => {
       if (sortOrder === "A-Z") return a.name.localeCompare(b.name);
@@ -245,6 +268,7 @@ function SiswaContent() {
           : defaultMathLevel,
       registeredDate: new Date().toISOString().split("T")[0],
       programType: activeProgram,
+      status: "ACTIVE",
     });
     setIsAddOpen(true);
   };
@@ -267,7 +291,65 @@ function SiswaContent() {
       levelCurriculum: st.levelCurriculum,
       registeredDate: st.registeredDate,
       programType: ((st as any).programType || "MATEMATIKA") as "MATEMATIKA" | "MEMBACA",
+      status: st.status || "ACTIVE",
     });
+  };
+
+  // Handler for toggle student status (Active <-> Inactive)
+  const handleToggleStudentStatus = (st: StudentItem) => {
+    const currentlyInactive = isInactive(st.status);
+
+    if (currentlyInactive) {
+      setConfirmModalConfig({
+        isOpen: true,
+        title: "Konfirmasi Aktifkan Siswa Kembali",
+        message: (
+          <div className="space-y-2">
+            <p>
+              Apakah Anda yakin ingin mengaktifkan kembali siswa{" "}
+              <strong className="text-slate-900 dark:text-white">{st.name}</strong>?
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Status siswa akan diubah menjadi <strong>Aktif</strong> dan diperbarui langsung ke database.
+            </p>
+          </div>
+        ),
+        confirmText: "Ya, Aktifkan Kembali",
+        cancelText: "Batal",
+        variant: "success",
+        onConfirm: async () => {
+          setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+          await updateStudent(st.id, { status: "ACTIVE" });
+          setSyncToast(`Siswa "${st.name}" berhasil diaktifkan kembali!`);
+          setTimeout(() => setSyncToast(null), 3000);
+        },
+      });
+    } else {
+      setConfirmModalConfig({
+        isOpen: true,
+        title: "Konfirmasi Nonaktifkan Siswa",
+        message: (
+          <div className="space-y-2">
+            <p>
+              Apakah Anda yakin ingin menonaktifkan siswa{" "}
+              <strong className="text-slate-900 dark:text-white">{st.name}</strong>?
+            </p>
+            <p className="text-xs text-rose-500 font-semibold">
+              Siswa ini akan ditandai sebagai <strong>Tidak Aktif</strong> di data siswa dan database.
+            </p>
+          </div>
+        ),
+        confirmText: "Ya, Nonaktifkan",
+        cancelText: "Batal",
+        variant: "danger",
+        onConfirm: async () => {
+          setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
+          await updateStudent(st.id, { status: "INACTIVE" });
+          setSyncToast(`Siswa "${st.name}" berhasil dinonaktifkan.`);
+          setTimeout(() => setSyncToast(null), 3000);
+        },
+      });
+    }
   };
 
   // Core Submit Add
@@ -310,6 +392,7 @@ function SiswaContent() {
             : defaultMathLevel,
         registeredDate: new Date().toISOString().split("T")[0],
         programType: finalProgram,
+        status: "ACTIVE",
       });
     } catch (err) {
       console.error("Error adding student:", err);
@@ -655,8 +738,10 @@ function SiswaContent() {
             size="sm"
             className="w-full"
             options={[
-              { value: "ALL", label: "Aktif" },
-              { value: "Lulus", label: "Alumni" },
+              { value: "ALL", label: "Semua Status" },
+              { value: "ACTIVE", label: "Hanya Aktif" },
+              { value: "INACTIVE", label: "Tidak Aktif" },
+              { value: "GRADUATED", label: "Alumni (Lulus)" },
             ]}
           />
         </div>
@@ -892,12 +977,38 @@ function SiswaContent() {
                     {st.registeredDate}
                   </td>
 
-                  {/* Status */}
+                  {/* Status: Clickable Toggle */}
                   <td className="p-3.5 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white shadow-2xs">
-                      <Check className="w-3 h-3 text-white stroke-[3]" />
-                      Aktif
-                    </span>
+                    {isInactive(st.status) ? (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStudentStatus(st)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95"
+                        title="Klik untuk mengaktifkan siswa kembali"
+                      >
+                        <X className="w-3 h-3 text-white stroke-[3]" />
+                        <span>Tidak Aktif</span>
+                      </button>
+                    ) : isGraduated(st.status) ? (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStudentStatus(st)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95"
+                        title="Klik untuk mengubah status siswa"
+                      >
+                        <span>Alumni</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStudentStatus(st)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer transition-all hover:scale-105 active:scale-95"
+                        title="Klik untuk menonaktifkan siswa"
+                      >
+                        <Check className="w-3 h-3 text-white stroke-[3]" />
+                        <span>Aktif</span>
+                      </button>
+                    )}
                   </td>
 
                   {/* Action Icons: Prominent Eye (Detail) Button */}
@@ -1203,6 +1314,26 @@ function SiswaContent() {
                     ))}
                   </div>
                 </div>
+
+                {/* 8. Status Siswa (Hanya saat Edit) */}
+                {editingStudent && (
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs mb-1.5">
+                      Status Keaktifan Siswa
+                    </label>
+                    <CustomSelect
+                      value={form.status || "ACTIVE"}
+                      onChange={(val) => setForm({ ...form, status: val })}
+                      className="w-full"
+                      size="md"
+                      options={[
+                        { value: "ACTIVE", label: "Aktif (Mengikuti Les)" },
+                        { value: "INACTIVE", label: "Tidak Aktif (Cuti / Nonaktif)" },
+                        { value: "GRADUATED", label: "Alumni (Telah Lulus)" },
+                      ]}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Modal Footer */}
@@ -1281,9 +1412,19 @@ function SiswaContent() {
                 <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                   ★ {viewingDetail.className}
                 </span>
-                <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">
-                  ✓ Aktif
-                </span>
+                {isInactive(viewingDetail.status) ? (
+                  <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-600 text-white">
+                    ✗ Tidak Aktif
+                  </span>
+                ) : isGraduated(viewingDetail.status) ? (
+                  <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-blue-600 text-white">
+                    Alumni
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">
+                    ✓ Aktif
+                  </span>
+                )}
               </div>
             </div>
 
