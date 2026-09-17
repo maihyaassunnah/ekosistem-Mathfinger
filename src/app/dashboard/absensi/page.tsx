@@ -248,6 +248,21 @@ function AbsensiContent() {
     }
   }, [searchParams, students]);
 
+  // Helper: cek apakah siswa berstatus aktif (abaikan siswa nonaktif / alumni / lulus)
+  const isStudentActive = (stStatus?: string) => {
+    if (!stStatus) return true;
+    const s = stStatus.toUpperCase();
+    return (
+      s !== "INACTIVE" &&
+      s !== "NONAKTIF" &&
+      s !== "TIDAK AKTIF" &&
+      s !== "NON_AKTIF" &&
+      s !== "GRADUATED" &&
+      s !== "LULUS" &&
+      s !== "ALUMNI"
+    );
+  };
+
   // Helper: Get Day Name in Indonesian from YYYY-MM-DD
   const getDayNameIndonesian = (dateStr: string) => {
     const days = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -329,6 +344,14 @@ function AbsensiContent() {
       setScanResult({
         type: "NOT_FOUND",
         message: `Kartu QR dengan kode "${targetCode}" tidak ditemukan di database siswa.`,
+      });
+      return;
+    }
+
+    if (!isStudentActive(student.status)) {
+      setScanResult({
+        type: "NOT_FOUND",
+        message: `Presensi Ditolak: Siswa "${student.name}" berstatus Nonaktif / Tidak Aktif.`,
       });
       return;
     }
@@ -466,15 +489,17 @@ function AbsensiContent() {
   const currentProgram = searchParams?.get("program");
   const isMembacaProgram = currentProgram === "MEMBACA";
 
-  // Filter students for today list
+  // Filter students for today list (scoped by branch, program, and active status)
   const branchScopedStudents = (allowedBranch
     ? students.filter((s) => s.branch === allowedBranch)
     : students
-  ).filter((s) =>
-    isMembacaProgram
-      ? (s as any).programType === "MEMBACA"
-      : (s as any).programType !== "MEMBACA"
-  );
+  )
+    .filter((s) =>
+      isMembacaProgram
+        ? (s as any).programType === "MEMBACA"
+        : (s as any).programType !== "MEMBACA"
+    )
+    .filter((s) => isStudentActive(s.status));
   const branchScopedClasses = (allowedBranch
     ? classes.filter((c) => c.branch === allowedBranch)
     : classes
@@ -2322,7 +2347,7 @@ function AbsensiContent() {
                 Simulasi Cepat Scan Siswa:
               </span>
               <div className="flex flex-wrap gap-1.5">
-                {students.slice(0, 4).map((st) => (
+                {branchScopedStudents.slice(0, 4).map((st) => (
                   <button
                     key={st.id}
                     type="button"
