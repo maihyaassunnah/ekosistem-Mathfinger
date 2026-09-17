@@ -6,6 +6,7 @@ export function middleware(req: NextRequest) {
 
   // Protect /dashboard routes from unauthenticated access
   if (pathname.startsWith("/dashboard")) {
+    const rawCookie = req.headers.get("cookie") || "";
     const cookies = req.cookies.getAll();
 
     // Check if user has ANY session token cookie
@@ -13,11 +14,13 @@ export function middleware(req: NextRequest) {
     // - next-auth.session-token
     // - __Secure-next-auth.session-token
     // - Chunked cookies: next-auth.session-token.0, __Secure-next-auth.session-token.0, etc.
-    const hasSessionCookie = cookies.some(
-      (c) =>
-        c.name.includes("next-auth.session-token") &&
-        Boolean(c.value && c.value.trim().length > 0)
-    );
+    const hasSessionCookie =
+      rawCookie.includes("next-auth.session-token") ||
+      cookies.some(
+        (c) =>
+          c.name.includes("next-auth.session-token") &&
+          Boolean(c.value && c.value.trim().length > 0)
+      );
 
     const hasAuthHeader = Boolean(req.headers.get("authorization"));
 
