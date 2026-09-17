@@ -186,3 +186,35 @@ Sesuai permintaan: *"siswa yang non aktif jangan tampilkan di absensi"*.
 - **Docker Production VPS**: Container `mathfingers-app` telah berhasil di-rebuild dan restart (`Up`).
 - **Verifikasi Database**: Siswa nonaktif (seperti Kholid, Kristian Naibaho, Rumaysha Hanif Tauzy) berhasil disaring dan tidak lagi muncul di halaman absensi.
 
+---
+
+## 11. Perbaikan Bug Bouncing / Redirect ke Halaman Login saat Klik Presensi Hari Ini
+
+### Akar Masalah:
+1. Sebelumnya `src/middleware.ts` menggunakan pembungkus bawaan `withAuth` dari `next-auth/middleware`.
+2. Di lingkungan Next.js 16 (Turbopack standalone di Docker) dan reverse proxy Nginx / perangkat seluler (Android Chrome / iOS Safari), fungsi verifikasi JWT edge `getToken()` sering mengalami kegagalan dekripsi edge kriptografi atau tidak mengenali cookie terpecah (*chunked session cookies* seperti `__Secure-next-auth.session-token.0`).
+3. Akibatnya, saat pengguna yang sudah login mengklik menu **"Absensi Hari Ini"** (`/dashboard/absensi`), middleware salah mengira pengguna belum login dan mengirimkan respons HTTP **307 Redirect** ke `/login?callbackUrl=%2Fdashboard%2Fabsensi`.
+4. Selain itu, halaman `/login` sebelumnya selalu mengarahkan pengguna secara statis ke `/dashboard` tanpa memeriksa parameter `callbackUrl`.
+
+### Solusi & Perubahan yang Diterapkan:
+1. **Middleware Kustom Berbasis Cookie Session Infallible ([`src/middleware.ts`](file:///c:/Users/MAIAS/.antigravity-ide/Ekosistem%20Mathfingers/src/middleware.ts))**:
+   - Menghapus pembungkus `withAuth` yang rentan terhadap galat edge token.
+   - Menggunakan middleware native Next.js yang memeriksa keberadaan header cookie mentah (`rawCookie.includes("next-auth.session-token")`) maupun `req.cookies.getAll()`.
+   - Mendukung penuh seluruh format session token NextAuth:
+     - `next-auth.session-token` (HTTP / localhost)
+     - `__Secure-next-auth.session-token` (HTTPS / produksi)
+     - *Chunked cookies* (`__Secure-next-auth.session-token.0`, `1`, dst.)
+     - Header `Authorization: Bearer <token>`
+   - Pengguna yang sudah login diizinkan langsung masuk ke `/dashboard/absensi` tanpa false-positive redirect.
+   - Pengguna tanpa cookie session tetap dialihkan secara aman ke `/login`.
+2. **Dukungan Penuh `callbackUrl` pada Form Login ([`src/app/login/page.tsx`](file:///c:/Users/MAIAS/.antigravity-ide/Ekosistem%20Mathfingers/src/app/login/page.tsx))**:
+   - Membaca `searchParams.get("callbackUrl")` pada tombol login Credentials dan Google OAuth.
+   - Mengarahkan pengguna langsung ke halaman yang ingin mereka tuju setelah login sukses.
+
+### Hasil Pengujian Langsung di Server Produksi:
+- **Tanpa Login**: `GET /dashboard/absensi` -> **307 Redirect ke /login?callbackUrl=%2Fdashboard%2Fabsensi** (Aman).
+- **Dengan `next-auth.session-token`**: `GET /dashboard/absensi` -> **HTTP 200 OK** (Lancar).
+- **Dengan `__Secure-next-auth.session-token`**: `GET /dashboard/absensi` -> **HTTP 200 OK** (Lancar).
+- **Dengan *Chunked* Cookie Seluler (`.0`, `.1`)**: `GET /dashboard/absensi` -> **HTTP 200 OK** (Lancar, tidak lagi terpental ke login).
+
+
