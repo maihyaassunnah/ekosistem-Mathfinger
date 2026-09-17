@@ -103,8 +103,9 @@ function LoginForm() {
           setSuccessPhaseText("Sesi aman siap. Mengalihkan...");
         }, 800);
 
+        const targetUrl = searchParams.get("callbackUrl") || "/dashboard";
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push(targetUrl);
         }, 1250);
       }
     } catch {
@@ -274,7 +275,8 @@ function LoginForm() {
               disabled={isGoogleLoading || isLoading}
               onClick={() => {
                 setIsGoogleLoading(true);
-                signIn("google", { callbackUrl: "/dashboard" });
+                const targetUrl = searchParams.get("callbackUrl") || "/dashboard";
+                signIn("google", { callbackUrl: targetUrl });
               }}
               className="w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0b1329] hover:bg-slate-50 dark:hover:bg-[#132042] text-slate-900 dark:text-white border-2 border-slate-300 dark:border-slate-600 font-extrabold text-sm shadow-xs hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-75"
             >
@@ -412,7 +414,8 @@ function LoginForm() {
               disabled={isGoogleLoading || isLoading}
               onClick={() => {
                 setIsGoogleLoading(true);
-                signIn("google", { callbackUrl: "/dashboard" });
+                const targetUrl = searchParams.get("callbackUrl") || "/dashboard";
+                signIn("google", { callbackUrl: targetUrl });
               }}
               className="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-[#0b1329] hover:bg-slate-50 dark:hover:bg-[#132042] text-slate-800 dark:text-white border-2 border-slate-300 dark:border-slate-600 font-bold text-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-2xs disabled:opacity-75"
             >
