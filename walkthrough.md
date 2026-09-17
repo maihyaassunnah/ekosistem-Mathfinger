@@ -72,8 +72,117 @@ Tampilan dan logika pada modul **Presensi & Rekap Kehadiran Siswa** telah diperb
 
 ---
 
-## 2. Hasil Verifikasi Teknis
+### G. Perapian Layout Titik Koordinat & Radius GPS dan Pembaruan Branding
+- **Perapian Layout "Titik Koordinat & Radius GPS Cabang"**:
+  - **Toolbar Pintasan & Paste Link**: Menggabungkan tombol pintasan koordinat resmi cabang (`Cabang Singkut` / `Cabang Tabir Timur`) dan tombol `Paste Link/Koordinat G-Maps` ke dalam satu bar kontainer yang teratur (`p-2.5 rounded-2xl bg-slate-50`), mencegah tombol paste terlempar ke baris berikutnya secara asimetris.
+  - **Input Latitude & Longitude**: Menggunakan grid 2-kolom yang simetris dengan label tebal dan styling input modern.
+  - **Pengaturan Radius Presensi**:
+    - Menyediakan preset cepat jarak: `[50m]`, `[100m]`, `[200m]`.
+    - Input angka dilengkapi label unit `meter` di dalamnya.
+    - Teks penjelasan radius ditempatkan pada card responsif pendamping yang rapi.
+  - **Tombol Aksi Simetris**: Tombol `[Gunakan Lokasi GPS Saya Saat Ini]` dan `[Simpan Pengaturan Titik GPS]` kini berada dalam grid seimbang 50:50 dengan tinggi dan style yang harmonis.
+  - **Preview Google Maps**: Link tautan Google Maps dibuat dalam card interaktif dengan icon hover dan penunjuk arah eksternal.
+- **Pembaruan Identitas Branding (Sidebar & Header)**:
+  - **Judul Utama**: Diubah dari `Easy Learning` menjadi **`Easy Learning House`** (lengkap dengan badge `v3.3`).
+  - **Subjudul**: Diubah dari `House of Math Fingers` menjadi **`Lembaga Bimbingan Belajar Anak`**.
+  - Diperbarui juga pada header mobile dashboard (`src/app/dashboard/layout.tsx`).
 
-- **TypeScript Compilation**: Lolos 100% tanpa error (`npx tsc --noEmit` exit code 0).
-- **Build & Deploy**: Berhasil di-commit (`718f1e9`), di-push ke GitHub, dan dideploy ke VPS `ubuntu@43.173.12.46` via Docker Compose (`Container mathfingers-app Started`).
-- **HTTP Status**: Endpoint `/dashboard/kurikulum` terverifikasi aktif dan terproteksi di balik Cloudflare CDN.
+---
+
+### Walkthrough: Pembaruan Teks Splash Loader "Bimbel By Easy Learning House"
+
+Teks subjudul pada layar pembuka (splash loader) aplikasi telah diperbarui dari *"Bimbingan Belajar & Ekosistem Jaritmatika"* menjadi **"Bimbel By Easy Learning House"**.
+
+## Perubahan yang Diterapkan
+
+- **Komponen Splash Loader** ([src/components/ui/AppSplashLoader.tsx](file:///c:/Users/MAIAS/.antigravity-ide/Ekosistem%20Mathfingers/src/components/ui/AppSplashLoader.tsx#L85-L95)):
+  - Judul: `Easy Learning House`
+  - Subjudul: Diperbarui menjadi `Bimbel By Easy Learning House` sesuai instruksi.
+
+---
+
+## H. Fitur Nonaktifkan Siswa Interaktif & Sinkronisasi Database (`/dashboard/siswa`)
+- **Interaksi Toggle Status Langsung di Tabel Data Siswa** ([src/app/dashboard/siswa/page.tsx](file:///c:/Users/MAIAS/.antigravity-ide/Ekosistem%20Mathfingers/src/app/dashboard/siswa/page.tsx)):
+  - Kolom **STATUS** kini memiliki tombol interaktif:
+    - **`✓ Aktif`** (Badge hijau emerald): Menandakan siswa sedang aktif les. Ketika ditekan, muncul popup konfirmasi: *"Apakah Anda yakin ingin menonaktifkan siswa [Nama Siswa]? Status siswa akan diubah menjadi Tidak Aktif dan disimpan ke database."*
+    - **`✗ Tidak Aktif`** (Badge merah rose): Menandakan siswa nonaktif/cuti. Ketika ditekan, muncul popup konfirmasi untuk mengaktifkan kembali.
+    - **`Alumni`** (Badge biru): Untuk siswa yang telah lulus.
+  - Disertai efek hover, transisi skala halus, dan tooltip informatif.
+  - Modal Detail Siswa (`Lihat Detail Lengkap`) dan Modal Edit Siswa kini secara dinamis menampilkan dan dapat mengubah status siswa.
+- **Sinkronisasi Database PostgreSQL** ([src/app/api/students/route.ts](file:///c:/Users/MAIAS/.antigravity-ide/Ekosistem%20Mathfingers/src/app/api/students/route.ts)):
+  - Handler **`PUT /api/students`** dan **`PATCH /api/students`** kini memetakan status siswa (`ACTIVE` / `INACTIVE` / `GRADUATED`) dan menyimpannya langsung ke kolom `status` pada tabel `students` di database.
+  - Perubahan tersimpan secara instan di PostgreSQL dan dipertahankan saat halaman direfresh atau dimuat ulang.
+- **Filter Status yang Akurat**:
+  - Filter dropdown status di data siswa diperbarui dengan 4 opsi pilihan:
+    - **Semua Status**
+    - **Hanya Aktif**
+    - **Tidak Aktif**
+    - **Alumni (Lulus)**
+
+---
+
+## 8. Status Deployment Terkini
+
+- **Git Commit**: `acb61c5` (`feat: complete branch isolation, late popup modal, realtime attendance sync, and hardened role scoping`)
+- **Status Build**: ✅ **Berhasil (Exit Code 0)** — Image `ekosistem-mathfinger-app` & `ekosistem-mathfinger-prisma-studio` ter-build sukses dan container aktif (*Up*).
+- **Target URL Dashboard**: [https://mathfingers.my.id/dashboard/presensi-tutor](https://mathfingers.my.id/dashboard/presensi-tutor)
+- **Target URL Scanner Absensi**: [https://mathfingers.my.id/dashboard/absensi-tutor](https://mathfingers.my.id/dashboard/absensi-tutor)
+- **Database Studio**: [https://db.mathfingers.my.id](https://db.mathfingers.my.id)
+
+---
+
+## 9. Rangkuman Pengamanan Isolasi Cabang (Singkut & Tabir Timur)
+
+1. **Preset Koordinat GPS Mandiri**:
+   - Cabang **Singkut** hanya memiliki tombol `📍 Titik Koordinat Resmi Cabang Singkut` (`-2.312500, 102.684700`). Tidak ada opsi ataupun tombol preset Cabang Tabir Timur.
+   - Cabang **Tabir Timur** hanya memiliki tombol `📍 Titik Koordinat Resmi Cabang Tabir Timur` (`-2.071700, 102.265500`). Tidak ada opsi ataupun tombol preset Cabang Singkut.
+2. **Kunci Strict Branch di Frontend**:
+   - `fetchConfigs` strictly memfilter konfigurasi GPS dan QR berdasarkan nama & kode cabang aktif (`SKT` vs `BGK`), mencegah terjadinya kebocoran fallback antar cabang.
+   - Dropdown pemilihan cabang hanya muncul khusus untuk akun Super Admin (`Wahyudin Hafiz`). Admin Cabang Febrianti Dewi (Singkut) dan Dewi Safitri (Tabir Timur) dikunci secara permanen pada cabangnya masing-masing.
+3. **Proteksi Backend API Route**:
+   - `GET` & `PUT /api/branch-qr-config` memvalidasi role akun. Jika `BRANCH_ADMIN`, branch query dipaksa strictly sesuai cabang asalnya di database.
+   - `GET /api/tutor-attendance` memastikan rekapan presensi hanya memuat daftar kehadiran tutor yang bertugas di cabang yang bersangkutan.
+
+---
+
+## 10. Penyembunyian Siswa Nonaktif dari Presensi Siswa (`/dashboard/absensi`)
+
+Sesuai permintaan: *"siswa yang non aktif jangan tampilkan di absensi"*.
+
+### Perubahan yang Diterapkan:
+1. **Helper Validasi Status Siswa (`isStudentActive`)**:
+   - Menambahkan helper di [src/app/dashboard/absensi/page.tsx](file:///c:/Users/MAIAS/.antigravity-ide/Ekosistem%20Mathfingers/src/app/dashboard/absensi/page.tsx):
+     ```typescript
+     const isStudentActive = (stStatus?: string) => {
+       if (!stStatus) return true;
+       const s = stStatus.toUpperCase();
+       return (
+         s !== "INACTIVE" &&
+         s !== "NONAKTIF" &&
+         s !== "TIDAK AKTIF" &&
+         s !== "NON_AKTIF" &&
+         s !== "GRADUATED" &&
+         s !== "LULUS" &&
+         s !== "ALUMNI"
+       );
+     };
+     ```
+2. **Penyaringan Siswa Aktif pada `branchScopedStudents`**:
+   - Siswa berstatus `INACTIVE`, `NONAKTIF`, `TIDAK AKTIF`, `NON_AKTIF`, serta `GRADUATED` / `ALUMNI` disaring keluar secara otomatis.
+   - Dampak langsung:
+     - **Pill Filter Kelas** (`Semua Kelas`, `CLASS A`, `CLASS B`, dll): Angka badge jumlah siswa otomatis hanya menghitung siswa yang berstatus aktif.
+     - **Daftar Presensi Hari Ini**: Baris siswa nonaktif tidak ditampilkan lagi di kartu presensi.
+     - **Tally Centang Siswa**: Hitungan *"X dari Y Siswa Dicentang"* dan checkbox *"Pilih Semua"* / *"Batalkan Semua"* hanya menghitung siswa aktif.
+     - **Rekap Kehadiran Per Siswa**: Siswa nonaktif tidak dimunculkan dalam tabel rekap.
+     - **Dropdown Presensi Susulan / Manual**: Hanya menyajikan opsi siswa yang aktif.
+3. **Validasi Scanner Kartu QR**:
+   - Jika ada yang mencoba scan kartu QR milik siswa nonaktif, scanner akan menolak dengan notifikasi peringatan:
+     `Presensi Ditolak: Siswa "[Nama Siswa]" berstatus Nonaktif / Tidak Aktif.`
+4. **Simulasi Cepat Scan QR**:
+   - Tombol pintasan simulasi scan kini hanya menampilkan siswa aktif.
+
+### Deployment & Status Produksi:
+- **Git Commit**: `2c56cb3` (`fix(absensi): sembunyikan siswa nonaktif dan alumni dari daftar serta perhitungan absensi`)
+- **Docker Production VPS**: Container `mathfingers-app` telah berhasil di-rebuild dan restart (`Up`).
+- **Verifikasi Database**: Siswa nonaktif (seperti Kholid, Kristian Naibaho, Rumaysha Hanif Tauzy) berhasil disaring dan tidak lagi muncul di halaman absensi.
+
