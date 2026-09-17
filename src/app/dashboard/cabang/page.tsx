@@ -74,10 +74,14 @@ export default function CabangDanAdminPage() {
     email: "",
     password: "",
     phone: "",
-    branchName: "Singkut" as "Singkut" | "Bangko" | "Semua Cabang (Pusat)",
-    role: "Admin Cabang" as "Super Admin" | "Admin Cabang" | "Asisten Cabang",
+    branchName: "Singkut" as any,
+    role: "Admin Cabang" as any,
     status: "Aktif" as "Aktif" | "Nonaktif",
     avatarUrl: "",
+    ttl: "",
+    address: "",
+    lastEducation: "",
+    gender: "",
   });
 
   // Handle Branch CRUD
@@ -147,6 +151,10 @@ export default function CabangDanAdminPage() {
       role: "Admin Cabang",
       status: "Aktif",
       avatarUrl: "",
+      ttl: "",
+      address: "",
+      lastEducation: "",
+      gender: "",
     });
     setIsAddAdminOpen(true);
   };
@@ -162,6 +170,10 @@ export default function CabangDanAdminPage() {
       role: a.role,
       status: a.status,
       avatarUrl: a.avatarUrl || "",
+      ttl: a.ttl || "",
+      address: a.address || "",
+      lastEducation: a.lastEducation || "",
+      gender: a.gender || "",
     });
   };
 
@@ -177,6 +189,10 @@ export default function CabangDanAdminPage() {
         status: adminForm.status,
         password: adminForm.password,
         avatarUrl: adminForm.avatarUrl,
+        ttl: adminForm.ttl,
+        address: adminForm.address,
+        lastEducation: adminForm.lastEducation,
+        gender: adminForm.gender,
       });
       setEditingAdmin(null);
     } else {
@@ -189,6 +205,10 @@ export default function CabangDanAdminPage() {
         status: adminForm.status,
         password: adminForm.password,
         avatarUrl: adminForm.avatarUrl,
+        ttl: adminForm.ttl,
+        address: adminForm.address,
+        lastEducation: adminForm.lastEducation,
+        gender: adminForm.gender,
       });
       setIsAddAdminOpen(false);
     }
@@ -429,6 +449,28 @@ export default function CabangDanAdminPage() {
                       </span>
                     ) : (
                       <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">{adm.role}</div>
+                    )}
+                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                      {adm.gender && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                          {adm.gender === "Perempuan" ? "👩 P" : "👨 L"}
+                        </span>
+                      )}
+                      {adm.lastEducation && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-medium">
+                          🎓 {adm.lastEducation}
+                        </span>
+                      )}
+                    </div>
+                    {adm.ttl && (
+                      <div className="text-[10px] text-slate-400 mt-0.5">
+                        🎂 {adm.ttl}
+                      </div>
+                    )}
+                    {adm.address && (
+                      <div className="text-[10px] text-slate-400 truncate max-w-[220px]" title={adm.address}>
+                        📍 {adm.address}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -675,10 +717,10 @@ export default function CabangDanAdminPage() {
       {/* Modal Add / Edit Branch Admin Account */}
       {(isAddAdminOpen || editingAdmin) && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a] max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
               <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                {editingAdmin ? `Edit Akun: ${editingAdmin.fullName}` : "Tambah Akun Admin Cabang"}
+                {editingAdmin ? "Edit Akun Admin / Guru" : "Terbitkan Akun Admin / Guru Baru"}
               </h3>
               <button
                 type="button"
@@ -686,27 +728,29 @@ export default function CabangDanAdminPage() {
                   setIsAddAdminOpen(false);
                   setEditingAdmin(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSubmitAdmin} className="space-y-3.5 text-xs">
-              {/* Info Banner untuk Autentikasi Google & Password */}
-              <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-900 dark:text-emerald-200 flex items-start gap-2.5">
+              {/* Alert Info Akses Login Terintegrasi */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 flex items-start gap-3">
                 <span className="text-base leading-none">🔐</span>
-                <div className="leading-snug">
-                  <strong className="font-bold text-emerald-950 dark:text-emerald-100">Akses Login Terintegrasi:</strong>
-                  <p className="text-emerald-800 dark:text-emerald-300 text-[10.5px] mt-0.5">
-                    Akun yang Anda daftarkan di sini dapat masuk ke aplikasi menggunakan <strong>Email & Password</strong> ATAU menggunakan <strong>Akun Google</strong> (jika Anda mendaftarkan alamat Gmail). Akun yang belum terdaftar di sini tidak akan diizinkan login.
+                <div className="space-y-0.5">
+                  <span className="font-bold text-emerald-900 dark:text-emerald-200 text-xs block">
+                    Akses Login Terintegrasi:
+                  </span>
+                  <p className="text-[11px] text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed">
+                    Akun yang Anda daftarkan di sini dapat masuk ke aplikasi menggunakan <strong className="font-bold text-emerald-950 dark:text-emerald-100">Email & Password</strong> ATAU menggunakan <strong className="font-bold text-emerald-950 dark:text-emerald-100">Akun Google</strong> (jika Anda mendaftarkan alamat Gmail). Akun yang belum terdaftar di sini tidak akan diizinkan login.
                   </p>
                 </div>
               </div>
 
-              {/* Foto Profil dari Galeri */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-[#1d2d5a]/60 space-y-2">
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold text-xs">
+              {/* Avatar Upload / Gallery Picker */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-[#1d2d5a]">
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-2 text-xs">
                   Foto Profil Akun (Pilih dari Galeri)
                 </label>
                 <div className="flex items-center gap-3">
@@ -848,15 +892,94 @@ export default function CabangDanAdminPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nomor Telepon / WhatsApp</label>
+                  <input
+                    type="text"
+                    required
+                    value={adminForm.phone}
+                    onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
+                    placeholder="0812-..."
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Status Akun</label>
+                  <CustomSelect
+                    value={adminForm.status}
+                    onChange={(val) =>
+                      setAdminForm({ ...adminForm, status: val as "Aktif" | "Nonaktif" })
+                    }
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "Aktif", label: "🟢 Aktif (Dapat Login)" },
+                      { value: "Nonaktif", label: "🔴 Nonaktif (Akses Dikunci)" },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              {/* BARIS OPSIONAL: TTL & JENIS KELAMIN */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                    TTL (Tempat, Tgl Lahir) <span className="text-slate-400 font-normal text-[11px]">(Opsional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={adminForm.ttl}
+                    onChange={(e) => setAdminForm({ ...adminForm, ttl: e.target.value })}
+                    placeholder="Contoh: Jambi, 15 Januari 1995"
+                    className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                    Jenis Kelamin <span className="text-slate-400 font-normal text-[11px]">(Opsional)</span>
+                  </label>
+                  <CustomSelect
+                    value={adminForm.gender}
+                    onChange={(val) => setAdminForm({ ...adminForm, gender: val })}
+                    className="w-full"
+                    size="md"
+                    options={[
+                      { value: "", label: "-- Pilih Jenis Kelamin --" },
+                      { value: "Perempuan", label: "Perempuan (P)" },
+                      { value: "Laki-laki", label: "Laki-laki (L)" },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              {/* BARIS OPSIONAL: PENDIDIKAN TERAKHIR */}
               <div>
-                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">Nomor Telepon / WhatsApp</label>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                  Pendidikan Terakhir <span className="text-slate-400 font-normal text-[11px]">(Opsional)</span>
+                </label>
                 <input
                   type="text"
-                  required
-                  value={adminForm.phone}
-                  onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
-                  placeholder="0812-..."
-                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  value={adminForm.lastEducation}
+                  onChange={(e) => setAdminForm({ ...adminForm, lastEducation: e.target.value })}
+                  placeholder="Contoh: S1 Pendidikan Matematika / SMA"
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              {/* BARIS OPSIONAL: ALAMAT DOMISILI */}
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                  Alamat Domisili <span className="text-slate-400 font-normal text-[11px]">(Opsional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={adminForm.address}
+                  onChange={(e) => setAdminForm({ ...adminForm, address: e.target.value })}
+                  placeholder="Alamat jalan, kelurahan, kecamatan, kab/kota domisili saat ini..."
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 

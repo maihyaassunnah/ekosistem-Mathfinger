@@ -23,11 +23,15 @@ export interface BranchAdminItem {
   email: string;
   phone: string;
   branchName: "Singkut" | "Bangko" | "Semua Cabang (Pusat)";
-  role: "Super Admin" | "Admin Cabang" | "Asisten Cabang";
+  role: "Super Admin" | "Admin Cabang" | "Asisten Cabang" | "Tutor";
   status: "Aktif" | "Nonaktif";
   createdAt: string;
   password?: string;
   avatarUrl?: string;
+  ttl?: string;
+  address?: string;
+  lastEducation?: string;
+  gender?: string;
 }
 
 export interface BehaviorItem {

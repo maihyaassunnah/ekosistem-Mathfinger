@@ -141,6 +141,10 @@ model User {
   avatarUrl    String?      @map("avatar_url")
   role         Role         @default(TUTOR)
   status       CommonStatus @default(ACTIVE)
+  ttl          String?      @map("ttl")
+  address      String?      @db.Text @map("address")
+  lastEducation String?     @map("last_education")
+  gender       String?      @map("gender")
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
 

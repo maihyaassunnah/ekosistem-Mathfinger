@@ -30,6 +30,10 @@ export async function GET() {
           ? "Asisten Cabang"
           : "Tutor",
       status: u.status === "ACTIVE" ? "Aktif" : "Nonaktif",
+      ttl: (u as any).ttl || "",
+      address: (u as any).address || "",
+      lastEducation: (u as any).lastEducation || "",
+      gender: (u as any).gender || "",
       createdAt: u.createdAt.toISOString().split("T")[0],
     }));
 
@@ -47,7 +51,7 @@ export async function POST(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { fullName, email, password, branchName, role, status, phone } = body;
+    const { fullName, email, password, branchName, role, status, phone, ttl, address, lastEducation, gender } = body;
 
     if (!fullName || !email) {
       return NextResponse.json(
@@ -101,7 +105,11 @@ export async function POST(req: Request) {
         branchId,
         phone: phone || null,
         avatarUrl: body.avatarUrl || null,
-      },
+        ttl: ttl || null,
+        address: address || null,
+        lastEducation: lastEducation || null,
+        gender: gender || null,
+      } as any,
       include: { branch: true },
     });
 
@@ -122,6 +130,10 @@ export async function POST(req: Request) {
             ? "Asisten Cabang"
             : "Tutor",
         status: created.status === "ACTIVE" ? "Aktif" : "Nonaktif",
+        ttl: (created as any).ttl || "",
+        address: (created as any).address || "",
+        lastEducation: (created as any).lastEducation || "",
+        gender: (created as any).gender || "",
         createdAt: created.createdAt.toISOString().split("T")[0],
       },
       { status: 201 }
@@ -139,7 +151,7 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, fullName, email, password, branchName, role, status } = body;
+    const { id, fullName, email, password, branchName, role, status, ttl, address, lastEducation, gender } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID admin wajib disertakan" }, { status: 400 });
@@ -193,11 +205,15 @@ export async function PUT(req: Request) {
         ...(email ? { email: email.toLowerCase().trim() } : {}),
         ...(body.phone !== undefined ? { phone: body.phone } : {}),
         ...(body.avatarUrl !== undefined ? { avatarUrl: body.avatarUrl } : {}),
+        ...(ttl !== undefined ? { ttl } : {}),
+        ...(address !== undefined ? { address } : {}),
+        ...(lastEducation !== undefined ? { lastEducation } : {}),
+        ...(gender !== undefined ? { gender } : {}),
         ...(passwordHash ? { passwordHash } : {}),
         ...(dbRole ? { role: dbRole } : {}),
         ...(isSuperAdmin && status !== undefined ? { status: status === "Aktif" ? "ACTIVE" : "INACTIVE" } : {}),
         ...(branchId !== undefined ? { branchId } : {}),
-      },
+      } as any,
       include: { branch: true },
     });
 
@@ -217,6 +233,10 @@ export async function PUT(req: Request) {
           ? "Asisten Cabang"
           : "Tutor",
       status: updated.status === "ACTIVE" ? "Aktif" : "Nonaktif",
+      ttl: (updated as any).ttl || "",
+      address: (updated as any).address || "",
+      lastEducation: (updated as any).lastEducation || "",
+      gender: (updated as any).gender || "",
       createdAt: updated.createdAt.toISOString().split("T")[0],
     });
   } catch (error: any) {
