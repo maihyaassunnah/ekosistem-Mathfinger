@@ -400,21 +400,21 @@ export default function Home() {
       {/* 2. MAIN NAVBAR (Clean Single-Row Layout, No buttons crowding, Theme Toggle included) */}
       {/* ========================================================================= */}
       <header className="bg-white/95 dark:bg-[#0f1a36]/95 border-b border-slate-200/90 dark:border-[#1d2d5a] sticky top-0 z-40 shadow-xs backdrop-blur-md transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
-          {/* Brand Logo & Name (Clean single-line row) */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 p-1 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-2 sm:gap-4">
+          {/* Brand Logo & Name (Responsive, guaranteed not to overflow on mobile screens) */}
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 min-w-0 group">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 p-1 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
               <img
                 src="/logo.png"
                 alt="Easy Learning House - Math Fingers"
                 className="w-full h-full object-contain"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-slate-900 dark:text-white tracking-tight text-base sm:text-lg whitespace-nowrap">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0">
+              <span className="font-black text-slate-900 dark:text-white tracking-tight text-sm sm:text-base lg:text-lg whitespace-nowrap">
                 Easy Learning House
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 whitespace-nowrap">
+              <span className="self-start sm:self-auto px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-extrabold rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 whitespace-nowrap mt-0.5 sm:mt-0">
                 Math Fingers
               </span>
             </div>
@@ -483,12 +483,12 @@ export default function Home() {
           </nav>
 
           {/* Right Controls: Dark / Light Mode Toggle + Mobile Menu Trigger */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Dark / Light Mode Switcher */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0f1a36] text-slate-700 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-[#162244] transition-all cursor-pointer shadow-2xs flex items-center gap-1.5"
+              className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-50 dark:bg-[#0f1a36] text-slate-700 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-[#162244] transition-all cursor-pointer shadow-2xs flex items-center gap-1.5"
               title={theme === "dark" ? "Ganti ke Mode Terang (Light Mode)" : "Ganti ke Mode Gelap (Dark Mode)"}
               aria-label="Toggle Theme"
             >
@@ -505,48 +505,120 @@ export default function Home() {
               )}
             </button>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Hamburger Button */}
             <button
               type="button"
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              aria-label="Buka Menu"
+              onClick={() => setMobileNavOpen(true)}
+              className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center border border-slate-200 dark:border-[#1d2d5a] bg-slate-50/80 dark:bg-[#0f1a36]"
+              aria-label="Buka Menu Samping"
             >
-              {mobileNavOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Accordion Drawer */}
-        {mobileNavOpen && (
-          <div className="lg:hidden border-t border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] px-4 py-4 space-y-3 shadow-xl">
-            <div className="space-y-1">
+      {/* ========================================================================= */}
+      {/* MOBILE SIDE MENU DRAWER (Smooth Slide-In Animation from Right) */}
+      {/* ========================================================================= */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
+          mobileNavOpen ? "visible opacity-100 pointer-events-auto" : "invisible opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Backdrop Overlay with Blur */}
+        <div
+          className={`absolute inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 ${
+            mobileNavOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setMobileNavOpen(false)}
+        />
+
+        {/* Side Panel Drawer */}
+        <aside
+          className={`absolute top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-white dark:bg-[#0c152e] border-l border-slate-200 dark:border-[#1d2d5a] shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${
+            mobileNavOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          {/* Drawer Top Header */}
+          <div className="p-4 border-b border-slate-200 dark:border-[#1d2d5a] flex items-center justify-between gap-3 bg-slate-50/80 dark:bg-[#0f1a36]/80">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 p-0.5 flex items-center justify-center">
+                <img
+                  src="/logo.png"
+                  alt="Logo Easy Learning House"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div>
+                <div className="text-xs font-black text-slate-900 dark:text-white leading-none">
+                  Easy Learning House
+                </div>
+                <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  Math Fingers Indonesia
+                </div>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(false)}
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Drawer Scrollable Body */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+            {/* Quick Link: Beranda */}
+            <Link
+              href="/"
+              onClick={() => setMobileNavOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Beranda Utama</span>
+            </Link>
+
+            {/* Accordion Navigation Menus */}
+            <div className="space-y-1.5">
               {navMenus.map((menu) => {
                 const isAccordionOpen = mobileAccordion === menu.id;
                 return (
-                  <div key={menu.id} className="border-b border-slate-100 dark:border-[#1d2d5a]/60 pb-1">
+                  <div
+                    key={menu.id}
+                    className="border border-slate-200/80 dark:border-[#1d2d5a]/60 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-[#101c3d]/50"
+                  >
                     <button
                       type="button"
                       onClick={() => setMobileAccordion(isAccordionOpen ? null : menu.id)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#162244]"
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors cursor-pointer"
                     >
                       <span>{menu.label}</span>
                       <ChevronDown
-                        className={`w-4 h-4 text-slate-400 transition-transform ${
+                        className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
                           isAccordionOpen ? "rotate-180 text-emerald-600 dark:text-emerald-400" : ""
                         }`}
                       />
                     </button>
                     {isAccordionOpen && (
-                      <div className="pl-4 pr-1 py-1 space-y-1">
+                      <div className="px-3 pb-2.5 pt-1 space-y-1 border-t border-slate-100 dark:border-[#1d2d5a]/40 bg-white dark:bg-[#0c152e]">
                         {menu.items.map((sub, sIdx) => (
                           <a
                             key={sIdx}
                             href={sub.href}
                             onClick={() => setMobileNavOpen(false)}
-                            className="block py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                            className="block px-2 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50/60 dark:hover:bg-[#162244] transition-colors"
                           >
-                            {sub.title}
+                            <div className="font-semibold text-slate-800 dark:text-slate-100">
+                              {sub.title}
+                            </div>
+                            <div className="text-[11px] text-slate-400 dark:text-slate-400 leading-tight mt-0.5">
+                              {sub.desc}
+                            </div>
                           </a>
                         ))}
                       </div>
@@ -556,30 +628,59 @@ export default function Home() {
               })}
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-[#1d2d5a] space-y-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileNavOpen(false);
-                  handleOpenTrial();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-emerald-600 text-emerald-700 dark:text-emerald-300 font-extrabold text-xs"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Daftar Coba Kelas Gratis</span>
-              </button>
-              <Link
-                href="/login"
-                onClick={() => setMobileNavOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-xs"
-              >
-                <span>Masuk ke WebApp Siswa/Guru</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+            {/* Direct Hotline / Contacts Card */}
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 space-y-2">
+              <div className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Hotline & WhatsApp Cabang:</span>
+              </div>
+              <div className="text-[11px] space-y-1 text-slate-700 dark:text-slate-300">
+                <a
+                  href="https://wa.me/6281279498907"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between hover:text-emerald-600 dark:hover:text-emerald-400 font-medium"
+                >
+                  <span>Cabang Singkut:</span>
+                  <span className="font-bold">+62 812-7949-8907</span>
+                </a>
+                <a
+                  href="https://wa.me/6281379720841"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between hover:text-emerald-600 dark:hover:text-emerald-400 font-medium"
+                >
+                  <span>Cabang Bangko:</span>
+                  <span className="font-bold">+62 813-7972-0841</span>
+                </a>
+              </div>
             </div>
           </div>
-        )}
-      </header>
+
+          {/* Drawer Footer CTA Buttons */}
+          <div className="p-4 border-t border-slate-200 dark:border-[#1d2d5a] bg-slate-50/80 dark:bg-[#0f1a36]/80 space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileNavOpen(false);
+                handleOpenTrial();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md active:scale-98 transition-all cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <span>Daftar Coba Kelas Gratis (Trial)</span>
+            </button>
+            <Link
+              href="/login"
+              onClick={() => setMobileNavOpen(false)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0c152e] hover:bg-slate-100 dark:hover:bg-[#162244] text-slate-700 dark:text-slate-200 font-bold text-xs shadow-xs transition-colors"
+            >
+              <span>Masuk ke WebApp Siswa & Guru</span>
+              <ArrowRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </Link>
+          </div>
+        </aside>
+      </div>
 
       <main className="flex-1">
         {/* ========================================================================= */}
