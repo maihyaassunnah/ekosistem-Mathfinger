@@ -1,3 +1,39 @@
+# Walkthrough: Pembaruan Alur Input Jurnal Guru (`/dashboard/jurnal`)
+
+Alur dan tampilan modal **Buat Jurnal Harian Kelas** telah dirombak total sesuai dengan mockup desain:
+
+---
+
+## 1. Alur & Desain Baru Modal Input Jurnal Harian Kelas
+
+### A. Bagian Atas: Jurnal Umum Kelas (Default)
+- **Tanggal Pertemuan & Nama Pengajar**: Ditata 2 kolom sejajar (`TANGGAL PERTEMUAN *` dan `NAMA PENGAJAR`).
+- **Materi / Topik Pembahasan**: Input topik dengan placeholder contoh (`Misal: Penjumlahan Teman Kecil (+4, +3)`).
+- **Catatan Evaluasi Umum Kelas (Default)**: Area catatan umum kelas dengan keterangan petunjuk di bawahnya:
+  > *"Catatan ini akan dipakai untuk siswa terpilih yang kolom catatan khususnya dikosongkan."*
+
+### B. Bagian Bawah: Daftar Siswa & Catatan Khusus Per Anak
+- **Header Siswa Yang Terlibat**:
+  - Badge jumlah terpilih (contoh: `50 Terpilih`).
+  - Dropdown filter kelas (`Semua Kelas` / opsi kelas).
+  - Kolom pencarian nama siswa (`Cari nama...`).
+  - Tombol aksi `PILIH / BATAL SEMUA`.
+- **Daftar Kartu Siswa (Scrollable)**:
+  - Kotak centang (*checkbox*) untuk memilih/membatalkan siswa.
+  - Nama siswa, badge kelas (contoh: `CLASS B`), dan teks level kurikulum (`Level: Level Dasar: Pengenalan Simbol Jari`).
+  - **Kolom Catatan Khusus Per Siswa**:
+    - Placeholder: `Tulis catatan khusus untuk anak ini saja (Opsional)...`
+    - Mengetik pada kolom ini secara otomatis mencentang siswa jika sebelumnya belum dicentang.
+
+### C. Logika Penyimpanan Cerdas (Fallback Otomatis)
+- Saat menekan **Simpan Jurnal**:
+  - Untuk setiap siswa yang dicentang:
+    - **Jika kolom catatan khususnya diisi**: Sistem menyimpan catatan khusus anak tersebut ke jurnalnya.
+    - **Jika kolom catatan khususnya kosong**: Sistem secara otomatis menggunakan isi dari **Catatan Evaluasi Umum Kelas**.
+- Dilengkapi modal konfirmasi yang merincikan berapa siswa yang memakai catatan khusus dan berapa yang memakai catatan umum.
+
+---
+
 # Walkthrough: Pembaruan Modul Presensi & Rekap Kehadiran Siswa (`/dashboard/absensi`)
 
 Tampilan dan logika pada modul **Presensi & Rekap Kehadiran Siswa** telah diperbarui sesuai permintaan:
