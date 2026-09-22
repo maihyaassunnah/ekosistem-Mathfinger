@@ -98,8 +98,14 @@ export default function CustomSelect({
     lg: "px-4 py-2.5 text-sm font-semibold rounded-2xl",
   }[size];
 
+  const hasCustomDisplay = className.includes("block") || className.includes("flex");
+
   return (
-    <div ref={containerRef} className={`relative inline-block ${className}`} id={selectId}>
+    <div
+      ref={containerRef}
+      className={`relative ${hasCustomDisplay ? "" : "inline-block"} ${className}`}
+      id={selectId}
+    >
       {/* Trigger Button */}
       <button
         type="button"

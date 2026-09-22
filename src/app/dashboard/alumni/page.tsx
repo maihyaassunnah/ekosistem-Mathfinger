@@ -469,9 +469,9 @@ function AlumniContent() {
       </div>
 
       {/* Filter & Search Bar - 1 Baris Saja & Responsive di Mobile dan Tablet */}
-      <div className="bg-white dark:bg-[#0f1a36] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-row items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
+      <div className="bg-white dark:bg-[#0f1a36] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-row items-center gap-2.5 sm:gap-3 relative z-30">
         {/* Input Pencarian Nama */}
-        <div className="relative flex-1 min-w-[130px] sm:min-w-[180px] md:min-w-[220px]">
+        <div className="relative flex-1 min-w-[110px] sm:min-w-[160px]">
           <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -483,25 +483,24 @@ function AlumniContent() {
         </div>
 
         {/* Filter Kelas di samping pencarian nama */}
-        <div className="w-32 sm:w-40 md:w-48 shrink-0">
-          <CustomSelect
-            value={classFilter}
-            onChange={setClassFilter}
-            size="sm"
-            options={classOptions}
-          />
-        </div>
+        <CustomSelect
+          value={classFilter}
+          onChange={setClassFilter}
+          size="sm"
+          className="w-36 sm:w-44 md:w-48 shrink-0"
+          options={classOptions}
+        />
 
         {/* Filter Cabang (Super Admin) */}
         {isSuperAdmin && (
-          <div className="w-36 sm:w-48 md:w-60 shrink-0">
-            <CustomSelect
-              value={branchFilter}
-              onChange={setBranchFilter}
-              size="sm"
-              options={branchOptions}
-            />
-          </div>
+          <CustomSelect
+            value={branchFilter}
+            onChange={setBranchFilter}
+            size="sm"
+            align="right"
+            className="w-44 sm:w-56 md:w-64 shrink-0"
+            options={branchOptions}
+          />
         )}
       </div>
 
