@@ -9,7 +9,6 @@ import {
   Medal,
   Search,
   Printer,
-  Star,
   Users,
   Building2,
   CheckCircle2,
@@ -21,7 +20,7 @@ import CustomSelect from "@/components/ui/CustomSelect";
 
 function AlumniContent() {
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
-  const { students, grades, branches } = useAppStore();
+  const { students, grades, branches, classes } = useAppStore();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -56,7 +55,13 @@ function AlumniContent() {
 
   // Filter States
   const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
+  const [classFilter, setClassFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Reset class filter when branch changes
+  useEffect(() => {
+    setClassFilter("ALL");
+  }, [branchFilter]);
 
   // 1. Gather all alumni (real graduated students + curated alumni list)
   const allAlumni = useMemo(() => {
@@ -297,15 +302,16 @@ function AlumniContent() {
   const filteredRankings = useMemo(() => {
     return rankedActiveStudents.filter((item) => {
       const matchBranch = branchFilter === "ALL" ? true : item.branch === branchFilter;
+      const matchClass = classFilter === "ALL" ? true : item.className === classFilter;
       const matchSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.highestLevel.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.className.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchBranch && matchSearch;
+        (item.className && item.className.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchBranch && matchClass && matchSearch;
     });
-  }, [rankedActiveStudents, branchFilter, searchQuery]);
+  }, [rankedActiveStudents, branchFilter, classFilter, searchQuery]);
 
   // Top 3 Podium
   const topThree = useMemo(() => {
@@ -340,6 +346,43 @@ function AlumniContent() {
       return true;
     });
   }, [branches]);
+
+  const classOptions = useMemo(() => {
+    const list: { value: string; label: string }[] = [
+      { value: "ALL", label: "Semua Kelas" },
+    ];
+    const set = new Set<string>();
+
+    if (classes && classes.length > 0) {
+      classes
+        .filter((c) => {
+          if (branchFilter !== "ALL") {
+            const b = c.branch === "Bangko" ? "Tabir Timur" : c.branch;
+            return b === branchFilter;
+          }
+          return true;
+        })
+        .forEach((c) => {
+          if (c.name && c.name.trim()) set.add(c.name.trim());
+        });
+    }
+
+    activeStudents.forEach((s) => {
+      if (s.className && s.className.trim()) {
+        if (branchFilter === "ALL" || s.branch === branchFilter) {
+          set.add(s.className.trim());
+        }
+      }
+    });
+
+    Array.from(set)
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
+      .forEach((cls) => {
+        list.push({ value: cls, label: cls });
+      });
+
+    return list;
+  }, [classes, activeStudents, branchFilter]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1300px] mx-auto min-h-screen">
@@ -425,25 +468,37 @@ function AlumniContent() {
         </button>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="bg-white dark:bg-[#0f1a36] p-3.5 rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Filter & Search Bar - 1 Baris Saja & Responsive di Mobile dan Tablet */}
+      <div className="bg-white dark:bg-[#0f1a36] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs flex flex-row items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
+        {/* Input Pencarian Nama */}
+        <div className="relative flex-1 min-w-[130px] sm:min-w-[180px] md:min-w-[220px]">
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama siswa aktif, tingkat level, atau cabang..."
-            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+            placeholder="Cari nama siswa..."
+            className="w-full pl-8 sm:pl-9 pr-2.5 sm:pr-3 py-1.5 sm:py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
           />
         </div>
 
+        {/* Filter Kelas di samping pencarian nama */}
+        <div className="w-32 sm:w-40 md:w-48 shrink-0">
+          <CustomSelect
+            value={classFilter}
+            onChange={setClassFilter}
+            size="sm"
+            options={classOptions}
+          />
+        </div>
+
+        {/* Filter Cabang (Super Admin) */}
         {isSuperAdmin && (
-          <div className="w-full sm:w-64">
+          <div className="w-36 sm:w-48 md:w-60 shrink-0">
             <CustomSelect
               value={branchFilter}
               onChange={setBranchFilter}
-              size="md"
+              size="sm"
               options={branchOptions}
             />
           </div>
@@ -586,7 +641,7 @@ function AlumniContent() {
                         </div>
                       </div>
                       <span className="px-3 py-1 rounded-xl bg-amber-400/30 text-amber-900 dark:text-amber-200 font-black text-sm">
-                        ★ {topThree[0].averageScore}
+                        {topThree[0].averageScore}
                       </span>
                     </div>
 
@@ -623,7 +678,7 @@ function AlumniContent() {
                         </div>
                       </div>
                       <span className="px-3 py-1 rounded-xl bg-slate-300/40 text-slate-800 dark:text-slate-200 font-black text-sm">
-                        ★ {topThree[1].averageScore}
+                        {topThree[1].averageScore}
                       </span>
                     </div>
 
@@ -660,7 +715,7 @@ function AlumniContent() {
                         </div>
                       </div>
                       <span className="px-3 py-1 rounded-xl bg-orange-300/40 text-orange-900 dark:text-orange-200 font-black text-sm">
-                        ★ {topThree[2].averageScore}
+                        {topThree[2].averageScore}
                       </span>
                     </div>
 
@@ -771,7 +826,7 @@ function AlumniContent() {
                           {/* 4. NILAI RATA-RATA */}
                           <td className="py-3.5 px-4 text-center">
                             <span
-                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-black ${
+                              className={`inline-flex items-center justify-center px-3 py-1 rounded-xl text-xs font-black tabular-nums ${
                                 item.averageScore >= 95
                                   ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
                                   : item.averageScore >= 90
@@ -779,7 +834,6 @@ function AlumniContent() {
                                   : "bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800"
                               }`}
                             >
-                              <Star className="w-3 h-3 fill-current text-amber-500" />
                               {item.averageScore}
                             </span>
                           </td>
