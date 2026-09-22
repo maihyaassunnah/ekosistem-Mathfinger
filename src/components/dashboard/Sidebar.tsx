@@ -129,7 +129,6 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
   const handleTabClick = (tab: "UTAMA" | "MEMBACA" | "WEBSITE") => {
     setActiveTab(tab);
-    if (onCloseMobile) onCloseMobile();
     router.push(getTabHref(tab));
   };
 
@@ -787,7 +786,6 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                   href={href}
                   onClick={() => {
                     setActiveTab(tab);
-                    if (onCloseMobile) onCloseMobile();
                   }}
                   title={getTabTitle(tab)}
                   aria-label={getTabTitle(tab)}
@@ -825,7 +823,6 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                 <div key={iIdx} className="space-y-1">
                   <Link
                     href={item.href}
-                    onClick={onCloseMobile}
                     title={item.name}
                     {...((item as any).external
                       ? { target: "_blank", rel: "noopener noreferrer" }
@@ -886,7 +883,6 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                           <Link
                             key={sIdx}
                             href={sub.href}
-                            onClick={onCloseMobile}
                             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                               isSubActive
                                 ? "bg-emerald-600 text-white font-extrabold shadow-xs shadow-emerald-500/20"
