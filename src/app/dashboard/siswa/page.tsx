@@ -780,10 +780,10 @@ function SiswaContent() {
       )}
 
       {/* Database Table (Matches Image 2) */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-x-auto">
+      <div className="bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+            <tr className="bg-slate-50/80 dark:bg-[#0b1329] border-b border-slate-200 dark:border-[#1d2d5a] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
               {showCheckboxes && (
                 <th className="p-3.5 w-10 text-center">
                   <input
@@ -809,12 +809,12 @@ function SiswaContent() {
                       className="rounded text-emerald-600 cursor-pointer w-4 h-4 accent-emerald-600"
                     />
                   )}
-                  <span className="w-6 text-right font-bold text-slate-400">NO</span>
-                  <span className="w-40 sm:w-48 text-left font-bold text-slate-400 pl-1">NAMA SISWA</span>
-                  <span className="w-6 text-center font-bold text-slate-400">JK</span>
-                  <span className="w-8 text-center font-bold text-slate-400">LABEL</span>
-                  <span className="w-16 text-center font-bold text-slate-400">CABANG</span>
-                  <span className="w-20 text-center font-bold text-slate-400">KELAS</span>
+                  <span className="w-6 text-right font-bold text-slate-400 dark:text-slate-400">NO</span>
+                  <span className="w-40 sm:w-48 text-left font-bold text-slate-400 dark:text-slate-400 pl-1">NAMA SISWA</span>
+                  <span className="w-6 text-center font-bold text-slate-400 dark:text-slate-400">JK</span>
+                  <span className="w-8 text-center font-bold text-slate-400 dark:text-slate-400">LABEL</span>
+                  <span className="w-16 text-center font-bold text-slate-400 dark:text-slate-400">CABANG</span>
+                  <span className="w-20 text-center font-bold text-slate-400 dark:text-slate-400">KELAS</span>
                   {showCheckboxes && (
                     <button
                       type="button"
@@ -832,20 +832,20 @@ function SiswaContent() {
               </th>
               <th className="p-3.5 whitespace-nowrap">
                 <div className="flex items-center gap-2">
-                  <span className="w-28 sm:w-36 text-left font-bold text-slate-400">ORANG TUA</span>
-                  <span className="w-3 text-center font-bold text-slate-300">•</span>
-                  <span className="text-left font-bold text-slate-400">NO. WHATSAPP</span>
+                  <span className="w-28 sm:w-36 text-left font-bold text-slate-400 dark:text-slate-400">ORANG TUA</span>
+                  <span className="w-3 text-center font-bold text-slate-300 dark:text-slate-600">•</span>
+                  <span className="text-left font-bold text-slate-400 dark:text-slate-400">NO. WHATSAPP</span>
                 </div>
               </th>
-              <th className="p-3.5">LEVEL</th>
-              <th className="p-3.5">MATERI AKTIF</th>
-              <th className="p-3.5">GABUNG SEJAK</th>
-              <th className="p-3.5">STATUS</th>
-              <th className="p-3.5 text-center">AKSI</th>
+              <th className="p-3.5 text-slate-400 dark:text-slate-400">LEVEL</th>
+              <th className="p-3.5 text-slate-400 dark:text-slate-400">MATERI AKTIF</th>
+              <th className="p-3.5 text-slate-400 dark:text-slate-400">GABUNG SEJAK</th>
+              <th className="p-3.5 text-slate-400 dark:text-slate-400">STATUS</th>
+              <th className="p-3.5 text-center text-slate-400 dark:text-slate-400">AKSI</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 font-medium">
+          <tbody className="divide-y divide-slate-100 dark:divide-[#1d2d5a] font-medium bg-white dark:bg-[#0f1a36]">
             {filteredStudents.length === 0 ? (
               <tr>
                 <td colSpan={showCheckboxes ? 8 : 7} className="p-12 text-center text-slate-400">
@@ -872,7 +872,7 @@ function SiswaContent() {
               </tr>
             ) : (
               filteredStudents.map((st, idx) => (
-                <tr key={st.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                <tr key={st.id} className="hover:bg-slate-50/70 dark:hover:bg-[#152347] transition-colors">
                   {/* Checkbox (only visible when activated) */}
                   {showCheckboxes && (
                     <td className="p-3.5 text-center whitespace-nowrap">
@@ -889,7 +889,7 @@ function SiswaContent() {
                   <td className="p-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {/* No. Urut di samping nama */}
-                      <span className="w-6 text-right font-mono text-xs font-bold text-slate-400 dark:text-slate-500 shrink-0 select-none">
+                      <span className="w-6 text-right font-mono text-xs font-bold text-slate-400 dark:text-slate-400 shrink-0 select-none">
                         {idx + 1}.
                       </span>
 
@@ -928,9 +928,9 @@ function SiswaContent() {
                   {/* Ortu / HP: Single Line with Aligned WA Number */}
                   <td className="p-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-2 text-xs">
-                      {/* Nama Orang Tua (Fixed Width agar kolom WA sejajar lurus vertikal) */}
+                      {/* Nama Orang Tua */}
                       <span
-                        className="w-28 sm:w-36 truncate font-bold text-slate-800 dark:text-slate-200 shrink-0 pl-0.5"
+                        className="w-28 sm:w-36 truncate font-bold text-slate-800 dark:text-white shrink-0 pl-0.5"
                         title={st.parentName}
                       >
                         {st.parentName}
@@ -951,10 +951,10 @@ function SiswaContent() {
                   </td>
 
                   {/* Level: Single Line */}
-                  <td className="p-3.5 whitespace-nowrap text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <td className="p-3.5 whitespace-nowrap text-xs font-bold text-slate-800 dark:text-white">
                     <span className="text-emerald-700 dark:text-emerald-400">{st.levelCurriculum.split(":")[0]}</span>
                     {st.levelCurriculum.split(":")[1] ? (
-                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 ml-1">
+                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-300 ml-1">
                         - {st.levelCurriculum.split(":")[1].trim()}
                       </span>
                     ) : null}
@@ -965,7 +965,7 @@ function SiswaContent() {
                     <button
                       type="button"
                       onClick={() => setViewingGuide(st)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>Panduan</span>
@@ -973,7 +973,7 @@ function SiswaContent() {
                   </td>
 
                   {/* Gabung Sejak */}
-                  <td className="p-3.5 whitespace-nowrap text-slate-500 dark:text-slate-400 font-medium text-xs">
+                  <td className="p-3.5 whitespace-nowrap text-slate-500 dark:text-slate-300 font-medium text-xs">
                     {st.registeredDate}
                   </td>
 
