@@ -1592,17 +1592,29 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
         const enriched = branchesRes.map((b: any) => {
           const custom = financeMap[b.id] || financeMap[b.name] || {};
+          const bankName = b.bankName || custom.bankName || (b.name === "Singkut" ? "BCA" : "BRI");
+          const accountNumber = b.accountNumber || custom.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8");
+          const accountHolder = b.accountHolder || custom.accountHolder || `Math Fingers ${b.name}`;
+          const adminName = b.adminName || custom.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd");
+          const signatureUrl = b.signatureUrl || custom.signatureUrl || "";
+
+          financeMap[b.id] = { bankName, accountNumber, accountHolder, adminName, signatureUrl };
+          if (b.name) financeMap[b.name] = financeMap[b.id];
+
           return {
             ...b,
-            bankName: custom.bankName !== undefined ? custom.bankName : (b.bankName || (b.name === "Singkut" ? "BCA" : "BRI")),
-            accountNumber: custom.accountNumber !== undefined ? custom.accountNumber : (b.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8")),
-            accountHolder: custom.accountHolder !== undefined ? custom.accountHolder : (b.accountHolder || `Math Fingers ${b.name}`),
-            adminName: custom.adminName !== undefined ? custom.adminName : (b.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd")),
-            signatureUrl: custom.signatureUrl !== undefined ? custom.signatureUrl : (b.signatureUrl || ""),
+            bankName,
+            accountNumber,
+            accountHolder,
+            adminName,
+            signatureUrl,
           };
         });
         setBranches(enriched);
         save("mf_branches", enriched);
+        try {
+          localStorage.setItem("mf_branch_finance_settings", JSON.stringify(financeMap));
+        } catch {}
       }
       if (Array.isArray(adminsRes) && adminsRes.length > 0) {
         setBranchAdmins(adminsRes);
@@ -1729,11 +1741,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             const custom = financeMap[b.id] || financeMap[b.name] || {};
             return {
               ...b,
-              bankName: custom.bankName !== undefined ? custom.bankName : (b.bankName || (b.name === "Singkut" ? "BCA" : "BRI")),
-              accountNumber: custom.accountNumber !== undefined ? custom.accountNumber : (b.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8")),
-              accountHolder: custom.accountHolder !== undefined ? custom.accountHolder : (b.accountHolder || `Math Fingers ${b.name}`),
-              adminName: custom.adminName !== undefined ? custom.adminName : (b.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd")),
-              signatureUrl: custom.signatureUrl !== undefined ? custom.signatureUrl : (b.signatureUrl || ""),
+              bankName: b.bankName || custom.bankName || (b.name === "Singkut" ? "BCA" : "BRI"),
+              accountNumber: b.accountNumber || custom.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8"),
+              accountHolder: b.accountHolder || custom.accountHolder || `Math Fingers ${b.name}`,
+              adminName: b.adminName || custom.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd"),
+              signatureUrl: b.signatureUrl || custom.signatureUrl || "",
             };
           });
           setBranches(enriched);
@@ -2176,11 +2188,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const bName = updated.name || existing?.name || "";
         const entry = {
           ...(financeMap[id] || {}),
-          bankName: updated.bankName !== undefined ? updated.bankName : existing?.bankName,
-          accountNumber: updated.accountNumber !== undefined ? updated.accountNumber : existing?.accountNumber,
-          accountHolder: updated.accountHolder !== undefined ? updated.accountHolder : existing?.accountHolder,
-          adminName: updated.adminName !== undefined ? updated.adminName : existing?.adminName,
-          signatureUrl: updated.signatureUrl !== undefined ? updated.signatureUrl : existing?.signatureUrl,
+          bankName: updated.bankName !== undefined ? updated.bankName : (existing?.bankName || ""),
+          accountNumber: updated.accountNumber !== undefined ? updated.accountNumber : (existing?.accountNumber || ""),
+          accountHolder: updated.accountHolder !== undefined ? updated.accountHolder : (existing?.accountHolder || ""),
+          adminName: updated.adminName !== undefined ? updated.adminName : (existing?.adminName || ""),
+          signatureUrl: updated.signatureUrl !== undefined ? updated.signatureUrl : (existing?.signatureUrl || ""),
         };
         financeMap[id] = entry;
         if (bName) financeMap[bName] = entry;

@@ -158,6 +158,8 @@ export default function PresensiTutorAdminPage() {
   const [scheduleFeedback, setScheduleFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [copyTargetDays, setCopyTargetDays] = useState<string[]>([]);
+  const [hasUnsavedSchedule, setHasUnsavedSchedule] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<{ dayKey: string; index: number; name: string } | null>(null);
 
   // Work Hours & Tolerance Settings Form State (legacy fallback)
   const [workTimeForm, setWorkTimeForm] = useState({
@@ -493,6 +495,11 @@ export default function PresensiTutorAdminPage() {
       ...prev,
       [dayKey]: [...(prev[dayKey] || []), newSession],
     }));
+    setHasUnsavedSchedule(true);
+    setScheduleFeedback({
+      type: "success",
+      text: `Sesi "${defaultName}" ditambahkan ke Hari ${DAYS_LIST.find((d) => d.key === dayKey)?.label || ""}. Klik "Simpan Jadwal" untuk mengunci perubahan.`,
+    });
   };
 
   const handleUpdateSession = (dayKey: string, index: number, updated: Partial<WorkSession>) => {
@@ -502,23 +509,41 @@ export default function PresensiTutorAdminPage() {
       dayList[index] = { ...dayList[index], ...updated };
       return { ...prev, [dayKey]: dayList };
     });
+    setHasUnsavedSchedule(true);
   };
 
-  const handleDeleteSession = (dayKey: string, index: number) => {
-    setWeeklySchedule((prev) => {
-      const dayList = [...(prev[dayKey] || [])];
-      dayList.splice(index, 1);
-      return { ...prev, [dayKey]: dayList };
-    });
+  const handleDeleteSessionPrompt = (dayKey: string, index: number) => {
+    const sess = weeklySchedule[dayKey]?.[index];
+    if (!sess) return;
+    setSessionToDelete({ dayKey, index, name: sess.name || `Sesi ${index + 1}` });
   };
 
-  const handleSaveWeeklySchedule = async () => {
+  const handleConfirmDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    const { dayKey, index, name } = sessionToDelete;
+    const dayName = DAYS_LIST.find((d) => d.key === dayKey)?.label || `Hari ${dayKey}`;
+
+    const dayList = [...(weeklySchedule[dayKey] || [])];
+    dayList.splice(index, 1);
+    const updatedSchedule = { ...weeklySchedule, [dayKey]: dayList };
+    setWeeklySchedule(updatedSchedule);
+    setSessionToDelete(null);
+
+    // Langsung simpan permanen ke database agar tidak muncul lagi saat refresh!
+    await handleSaveWeeklySchedule(
+      updatedSchedule,
+      `Sesi "${name}" pada hari ${dayName} berhasil dihapus dan disimpan permanen ke database!`
+    );
+  };
+
+  const handleSaveWeeklySchedule = async (scheduleToSave?: WeeklySchedule, customSuccessMsg?: string) => {
+    const schedule = scheduleToSave || weeklySchedule;
     try {
       setIsSavingSchedule(true);
       setScheduleFeedback(null);
 
       // Also extract primary workStartTime / workEndTime from first session of selected day or Monday
-      const monSessions = weeklySchedule["1"] || [];
+      const monSessions = schedule["1"] || [];
       const primaryStart = monSessions[0]?.startTime || "08:00";
       const primaryEnd = monSessions[monSessions.length - 1]?.endTime || "17:00";
       const primaryLate = monSessions[0]?.lateTolerance ?? 15;
@@ -528,7 +553,7 @@ export default function PresensiTutorAdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           branchName: targetBranch,
-          weeklySchedule: weeklySchedule,
+          weeklySchedule: schedule,
           workStartTime: primaryStart,
           workEndTime: primaryEnd,
           lateToleranceMinutes: primaryLate,
@@ -545,8 +570,9 @@ export default function PresensiTutorAdminPage() {
         }
         setScheduleFeedback({
           type: "success",
-          text: `Jadwal fleksibel mingguan Cabang ${targetBranch} berhasil disimpan! Sistem otomatis mengenali sesi aktif per hari.`,
+          text: customSuccessMsg || `Jadwal fleksibel mingguan Cabang ${targetBranch} berhasil disimpan! Sistem otomatis mengenali sesi aktif per hari.`,
         });
+        setHasUnsavedSchedule(false);
         fetchConfigs();
       } else {
         const err = await res.json();
@@ -574,11 +600,12 @@ export default function PresensiTutorAdminPage() {
       return next;
     });
 
+    setHasUnsavedSchedule(true);
     const sourceDayName = DAYS_LIST.find((d) => d.key === selectedDayKey)?.label;
     const targetDayNames = copyTargetDays.map((k) => DAYS_LIST.find((d) => d.key === k)?.label).join(", ");
     setScheduleFeedback({
       type: "success",
-      text: `Jadwal dari hari ${sourceDayName} berhasil disalin ke: ${targetDayNames}. Jangan lupa klik "Simpan Jadwal Mingguan"!`,
+      text: `Jadwal dari hari ${sourceDayName} berhasil disalin ke: ${targetDayNames}. Jangan lupa klik "Simpan Jadwal"!`,
     });
     setIsCopyModalOpen(false);
     setCopyTargetDays([]);
@@ -1139,14 +1166,19 @@ export default function PresensiTutorAdminPage() {
                 <div className="space-y-4">
                   {/* Action Bar for Current Day */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-[#0b1329] p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-black text-slate-900 dark:text-white">
                         Sesi Kerja Hari {currentDayObj?.label}
                       </span>
                       <span className="text-xs text-slate-400">({sessions.length} sesi terdaftar)</span>
+                      {hasUnsavedSchedule && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-black border border-amber-300 dark:border-amber-800 animate-pulse">
+                          Ada Perubahan Belum Disimpan
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
                         onClick={() => {
@@ -1164,13 +1196,48 @@ export default function PresensiTutorAdminPage() {
                       <button
                         type="button"
                         onClick={() => handleAddSession(selectedDayKey)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                        className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Tambah Sesi</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSaveWeeklySchedule()}
+                        disabled={isSavingSchedule}
+                        className={`px-4 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                          hasUnsavedSchedule
+                            ? "bg-amber-500 hover:bg-amber-600 text-white animate-pulse"
+                            : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        }`}
+                        title="Simpan pengaturan sesi ke database"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{isSavingSchedule ? "Menyimpan..." : hasUnsavedSchedule ? "Simpan Jadwal *" : "Simpan Jadwal"}</span>
                       </button>
                     </div>
                   </div>
+
+                  {/* Warning banner when there are unsaved modifications */}
+                  {hasUnsavedSchedule && (
+                    <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-in fade-in">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>
+                          Perubahan susunan sesi belum disimpan ke server. Klik &ldquo;Simpan Jadwal&rdquo; agar tidak hilang saat refresh.
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleSaveWeeklySchedule()}
+                        disabled={isSavingSchedule}
+                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black shrink-0 cursor-pointer shadow-xs"
+                      >
+                        {isSavingSchedule ? "Menyimpan..." : "Simpan Sekarang"}
+                      </button>
+                    </div>
+                  )}
 
                   {/* Sessions List */}
                   {sessions.length === 0 ? (
@@ -1241,8 +1308,8 @@ export default function PresensiTutorAdminPage() {
 
                               <button
                                 type="button"
-                                onClick={() => handleDeleteSession(selectedDayKey, idx)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer transition-colors"
+                                onClick={() => handleDeleteSessionPrompt(selectedDayKey, idx)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer transition-colors"
                                 title="Hapus Sesi"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1372,12 +1439,22 @@ export default function PresensiTutorAdminPage() {
 
               <button
                 type="button"
-                onClick={handleSaveWeeklySchedule}
+                onClick={() => handleSaveWeeklySchedule()}
                 disabled={isSavingSchedule}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
+                  hasUnsavedSchedule
+                    ? "bg-amber-500 hover:bg-amber-600 animate-pulse"
+                    : "bg-emerald-600 hover:bg-emerald-700"
+                }`}
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>{isSavingSchedule ? "Menyimpan Jadwal..." : "Simpan Jadwal Fleksibel Mingguan"}</span>
+                <span>
+                  {isSavingSchedule
+                    ? "Menyimpan Jadwal..."
+                    : hasUnsavedSchedule
+                    ? "Simpan Jadwal Fleksibel Mingguan *"
+                    : "Simpan Jadwal Fleksibel Mingguan"}
+                </span>
               </button>
             </div>
           </div>
@@ -1852,6 +1929,21 @@ export default function PresensiTutorAdminPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Konfirmasi Hapus Sesi Kerja */}
+      <ConfirmModal
+        isOpen={!!sessionToDelete}
+        title="Hapus Sesi Kerja?"
+        message={`Apakah Anda yakin ingin menghapus "${sessionToDelete?.name}" pada hari ${
+          DAYS_LIST.find((d) => d.key === sessionToDelete?.dayKey)?.label || ""
+        }? Sesi ini akan langsung dihapus dan disimpan ke database secara permanen.`}
+        confirmText="Ya, Hapus & Simpan"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={isSavingSchedule}
+        onConfirm={handleConfirmDeleteSession}
+        onClose={() => setSessionToDelete(null)}
+      />
     </div>
   );
 }

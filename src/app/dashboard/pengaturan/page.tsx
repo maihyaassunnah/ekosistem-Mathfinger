@@ -91,7 +91,13 @@ export default function PengaturanPage() {
       setBranchSignatureUrl(activeBranch.signatureUrl || "");
       clearCanvas();
     }
-  }, [activeBranch?.id, branches]);
+  }, [activeBranch?.id]);
+
+  useEffect(() => {
+    if (activeBranch?.signatureUrl && !branchSignatureUrl) {
+      setBranchSignatureUrl(activeBranch.signatureUrl);
+    }
+  }, [activeBranch?.signatureUrl]);
 
   useEffect(() => {
     setFullName(currentUser.name || "");
@@ -177,29 +183,61 @@ export default function PengaturanPage() {
     setBranchSignatureUrl(dataUrl);
     setBranchAlert({
       type: "success",
-      message: "Tanda tangan kanvas berhasil diterapkan! Klik 'Simpan Pengaturan Cabang' untuk menyimpan permanen.",
+      message: "Tanda tangan kanvas berhasil diterapkan! Klik 'Simpan TTD' atau tombol simpan di bawah untuk menyimpan ke database.",
     });
   };
 
-  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const resizeSignatureImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxWidth = 600;
+          const scale = Math.min(1, maxWidth / img.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(e.target?.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) {
         setBranchAlert({
           type: "error",
-          message: "Ukuran file tanda tangan terlalu besar (maksimal 2 MB).",
+          message: "Ukuran file tanda tangan terlalu besar (maksimal 5 MB).",
         });
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBranchSignatureUrl(reader.result as string);
+      try {
+        const resizedDataUrl = await resizeSignatureImage(file);
+        setBranchSignatureUrl(resizedDataUrl);
         setBranchAlert({
           type: "success",
-          message: "Gambar tanda tangan berhasil dimuat! Klik 'Simpan Pengaturan Cabang' untuk menyimpan.",
+          message: "Gambar tanda tangan berhasil dimuat! Klik 'Simpan TTD' atau tombol simpan di bawah untuk menyimpan ke database.",
         });
-      };
-      reader.readAsDataURL(file);
+      } catch {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setBranchSignatureUrl(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -216,6 +254,7 @@ export default function PengaturanPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: activeBranch.id,
+          name: activeBranch.name,
           bankName: branchBankName,
           accountNumber: branchAccountNumber,
           accountHolder: branchAccountHolder,
@@ -230,6 +269,7 @@ export default function PengaturanPage() {
       }
 
       updateBranch(activeBranch.id, {
+        name: activeBranch.name,
         bankName: branchBankName,
         accountNumber: branchAccountNumber,
         accountHolder: branchAccountHolder,
@@ -764,7 +804,7 @@ export default function PengaturanPage() {
 
               {/* Signature Preview */}
               {branchSignatureUrl && (
-                <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between gap-3">
+                <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3">
                     <div className="w-24 h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center p-1 shrink-0 overflow-hidden">
                       <img
@@ -775,7 +815,7 @@ export default function PengaturanPage() {
                     </div>
                     <div>
                       <div className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider">
-                        ✓ TTD Digital Aktif
+                        ✓ TTD Digital Siap
                       </div>
                       <div className="text-xs font-black text-slate-900 mt-0.5">
                         {branchAdminName || "Nama Admin Cabang"}
@@ -786,14 +826,26 @@ export default function PengaturanPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setBranchSignatureUrl("")}
-                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
-                    title="Hapus Tanda Tangan"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => handleSaveBranchSettings(e as any)}
+                      disabled={isSavingBranch}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-xs shadow-emerald-500/20 cursor-pointer disabled:opacity-50 transition-all"
+                      title="Simpan langsung ke database server"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{isSavingBranch ? "Menyimpan..." : "Simpan TTD"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBranchSignatureUrl("")}
+                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer transition-colors"
+                      title="Hapus Tanda Tangan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

@@ -104,12 +104,10 @@ export async function GET(req: Request) {
       branches.map(async (b) => {
         let setting = b.setting;
 
-        // 1. Check tutor_attendance_qrs table
-        const qrRows = await prisma.$queryRawUnsafe<any[]>(
-          `SELECT * FROM "tutor_attendance_qrs" WHERE "branch_id" = $1 LIMIT 1`,
-          b.id
-        );
-        let qrData = qrRows[0];
+        // 1. Check tutor_attendance_qrs via Prisma
+        let qrData = await prisma.tutorAttendanceQr.findUnique({
+          where: { branchId: b.id },
+        });
 
         // If no QR row exists in tutor_attendance_qrs, create one with distinct secret
         if (!qrData) {
@@ -133,48 +131,34 @@ export async function GET(req: Request) {
             lateToleranceMinutes: lateTol,
           });
 
-          await prisma.$executeRawUnsafe(
-            `INSERT INTO "tutor_attendance_qrs"
-             ("id", "branch_id", "branch_name", "branch_code", "qr_secret", "qr_payload", "work_start_time", "work_end_time", "late_tolerance_minutes", "early_leave_tolerance_minutes", "latitude", "longitude", "radius_meters", "is_active", "updated_at")
-             VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, CURRENT_TIMESTAMP)`,
-            b.id,
-            b.branchName,
-            b.branchCode,
-            distinctSecret,
-            payload,
-            workStart,
-            workEnd,
-            lateTol,
-            earlyTol,
-            lat,
-            lon,
-            rad
-          );
-
-          qrData = {
-            branch_id: b.id,
-            branch_name: b.branchName,
-            branch_code: b.branchCode,
-            qr_secret: distinctSecret,
-            qr_payload: payload,
-            work_start_time: workStart,
-            work_end_time: workEnd,
-            late_tolerance_minutes: lateTol,
-            early_leave_tolerance_minutes: earlyTol,
-            latitude: lat,
-            longitude: lon,
-            radius_meters: rad,
-          };
+          qrData = await prisma.tutorAttendanceQr.create({
+            data: {
+              branchId: b.id,
+              branchName: b.branchName,
+              branchCode: b.branchCode,
+              qrSecret: distinctSecret,
+              qrPayload: payload,
+              workStartTime: workStart,
+              workEndTime: workEnd,
+              lateToleranceMinutes: lateTol,
+              earlyLeaveToleranceMinutes: earlyTol,
+              latitude: lat,
+              longitude: lon,
+              radiusMeters: rad,
+              weeklySchedule: DEFAULT_WEEKLY_SCHEDULE,
+              isActive: true,
+            },
+          });
         }
 
-        const workStart = qrData.work_start_time || "08:00";
-        const workEnd = qrData.work_end_time || "17:00";
-        const lateTol = qrData.late_tolerance_minutes ?? 15;
-        const earlyTol = qrData.early_leave_tolerance_minutes ?? 0;
-        const secret = qrData.qr_secret;
-        const weeklySchedule = qrData.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE;
+        const workStart = qrData.workStartTime || "08:00";
+        const workEnd = qrData.workEndTime || "17:00";
+        const lateTol = qrData.lateToleranceMinutes ?? 15;
+        const earlyTol = qrData.earlyLeaveToleranceMinutes ?? 0;
+        const secret = qrData.qrSecret;
+        const weeklySchedule = (qrData.weeklySchedule as any) || DEFAULT_WEEKLY_SCHEDULE;
 
-        const distinctPayload = qrData.qr_payload || JSON.stringify({
+        const distinctPayload = qrData.qrPayload || (qrData as any).qr_payload || JSON.stringify({
           type: "MATHFINGERS_TUTOR_ATTENDANCE",
           branchId: b.id,
           branchCode: b.branchCode,
@@ -192,7 +176,7 @@ export async function GET(req: Request) {
           address: b.address,
           latitude: qrData.latitude ?? setting?.latitude ?? -2.3125,
           longitude: qrData.longitude ?? setting?.longitude ?? 102.6847,
-          radiusMeters: qrData.radius_meters ?? setting?.radiusMeters ?? 100,
+          radiusMeters: qrData.radiusMeters ?? (qrData as any).radius_meters ?? setting?.radiusMeters ?? 100,
           qrSecret: secret,
           workStartTime: workStart,
           workEndTime: workEnd,
@@ -341,47 +325,46 @@ export async function PUT(req: Request) {
       lateToleranceMinutes: finalLateTol,
     });
 
-    const weeklyScheduleJson = weeklySchedule !== undefined ? JSON.stringify(weeklySchedule) : null;
-
-    // Save to dedicated tutor_attendance_qrs table
+    // Save to dedicated tutor_attendance_qrs via Prisma
+    let savedQr = null;
     try {
-      await prisma.$executeRawUnsafe(
-        `INSERT INTO "tutor_attendance_qrs"
-         ("id", "branch_id", "branch_name", "branch_code", "qr_secret", "qr_payload", "work_start_time", "work_end_time", "late_tolerance_minutes", "early_leave_tolerance_minutes", "latitude", "longitude", "radius_meters", "weekly_schedule", "is_active", "updated_at")
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, COALESCE($13::jsonb, '{}'::jsonb), true, CURRENT_TIMESTAMP)
-         ON CONFLICT ("branch_id") DO UPDATE SET
-           "branch_name" = EXCLUDED."branch_name",
-           "branch_code" = EXCLUDED."branch_code",
-           "qr_secret" = $4,
-           "qr_payload" = $5,
-           "work_start_time" = $6,
-           "work_end_time" = $7,
-           "late_tolerance_minutes" = $8,
-           "early_leave_tolerance_minutes" = $9,
-           "latitude" = $10,
-           "longitude" = $11,
-           "radius_meters" = $12,
-           "weekly_schedule" = COALESCE($13::jsonb, "tutor_attendance_qrs"."weekly_schedule"),
-           "updated_at" = CURRENT_TIMESTAMP`,
-        targetBranch.id,
-        targetBranch.branchName,
-        targetBranch.branchCode,
-        effectiveSecret,
-        distinctQrPayload,
-        finalWorkStart,
-        finalWorkEnd,
-        finalLateTol,
-        finalEarlyTol,
-        finalLat,
-        finalLon,
-        finalRad,
-        weeklyScheduleJson
-      );
+      savedQr = await prisma.tutorAttendanceQr.upsert({
+        where: { branchId: targetBranch.id },
+        update: {
+          branchName: targetBranch.branchName,
+          branchCode: targetBranch.branchCode,
+          qrSecret: effectiveSecret,
+          qrPayload: distinctQrPayload,
+          workStartTime: finalWorkStart,
+          workEndTime: finalWorkEnd,
+          lateToleranceMinutes: finalLateTol,
+          earlyLeaveToleranceMinutes: finalEarlyTol,
+          latitude: finalLat,
+          longitude: finalLon,
+          radiusMeters: finalRad,
+          ...(weeklySchedule !== undefined ? { weeklySchedule: weeklySchedule } : {}),
+        },
+        create: {
+          branchId: targetBranch.id,
+          branchName: targetBranch.branchName,
+          branchCode: targetBranch.branchCode,
+          qrSecret: effectiveSecret,
+          qrPayload: distinctQrPayload,
+          workStartTime: finalWorkStart,
+          workEndTime: finalWorkEnd,
+          lateToleranceMinutes: finalLateTol,
+          earlyLeaveToleranceMinutes: finalEarlyTol,
+          latitude: finalLat,
+          longitude: finalLon,
+          radiusMeters: finalRad,
+          weeklySchedule: weeklySchedule || DEFAULT_WEEKLY_SCHEDULE,
+        },
+      });
     } catch (qrErr) {
-      console.warn("Could not sync to tutor_attendance_qrs table:", qrErr);
+      console.warn("Could not sync to tutor_attendance_qrs via Prisma:", qrErr);
     }
 
-    const finalWeeklySchedule = weeklySchedule !== undefined ? weeklySchedule : (existingQr?.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE);
+    const finalWeeklySchedule = weeklySchedule !== undefined ? weeklySchedule : ((savedQr?.weeklySchedule as any) || DEFAULT_WEEKLY_SCHEDULE);
 
     return NextResponse.json({
       success: true,

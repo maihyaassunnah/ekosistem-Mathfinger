@@ -217,4 +217,36 @@ Sesuai permintaan: *"siswa yang non aktif jangan tampilkan di absensi"*.
 - **Dengan `__Secure-next-auth.session-token`**: `GET /dashboard/absensi` -> **HTTP 200 OK** (Lancar).
 - **Dengan *Chunked* Cookie Seluler (`.0`, `.1`)**: `GET /dashboard/absensi` -> **HTTP 200 OK** (Lancar, tidak lagi terpental ke login).
 
+---
+
+## 12. Sub Menu Peringkat: Klasemen Nilai Siswa Aktif per Cabang (`/dashboard/alumni?tab=peringkat`)
+
+Sesuai permintaan terbaru, data pada menu/tab **Peringkat** dikhususkan untuk **Siswa Aktif** di masing-masing cabang, dan **BUKAN** data alumni atau siswa yang sudah lulus.
+
+### Rincian Perubahan & Logika:
+1. **Pemisahan Sumber Data**:
+   - **Tab 1: Daftar Alumni (`/dashboard/alumni`)**: Tetap menampilkan direktori siswa yang berstatus `GRADUATED`, `LULUS`, atau `ALUMNI`.
+   - **Tab 2: Peringkat (`/dashboard/alumni?tab=peringkat`)**: Mengambil data siswa dari `students` yang berstatus **AKTIF** (mengecualikan siswa yang berstatus lulus/alumni maupun non-aktif).
+2. **Kalkulasi Nilai Rata-Rata**:
+   - Menghitung nilai rata-rata kumulatif dari sesi ujian siswa (`grades`) yang tersimpan di sistem.
+   - Mengurutkan secara descending dari nilai tertinggi ke terendah.
+3. **Peringkat di Masing-masing Cabang**:
+   - Sistem secara otomatis menghitung peringkat siswa di dalam cabangnya masing-masing (Cabang Singkut / Cabang Tabir Timur), misalnya:
+     - 🏆 `Juara 1 (Cabang Singkut)`
+     - 🥈 `Juara 2 (Cabang Tabir Timur)`
+     - `Peringkat 4 (Cabang Singkut)`
+4. **Kolom Tabel Ringkas & Lengkap**:
+   - `No` (dengan medali 🥇 1, 🥈 2, 🥉 3 untuk posisi teratas)
+   - `Nama Siswa` (menampilkan Nama Siswa, Kelas, Level Pembelajaran, dan NIS)
+   - `Cabang` (Cabang Singkut / Cabang Tabir Timur)
+   - `Nilai Rata-Rata` (badge skor bintang)
+   - `Peringkat di Masing-masing Cabang`
+   - `Status` (badge `🟢 Aktif`)
+5. **Podium Top 3 Nilai Tertinggi Siswa Aktif**:
+   - Menampilkan kartu podium emas, perak, dan perunggu khusus untuk siswa aktif dengan nilai tertinggi.
+6. **Filter Super Admin & Pencarian Real-time**:
+   - Super Admin dapat melihat peringkat seluruh cabang (`Semua Cabang`) maupun memfilter khusus cabang tertentu.
+   - Kotak pencarian responsif untuk mencari nama siswa, kelas, level, atau cabang.
+
+
 

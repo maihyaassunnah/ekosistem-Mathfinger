@@ -14,6 +14,7 @@ import {
   Search,
   ChevronDown,
   Download,
+  Printer,
   Share2,
   Trash2,
   Calendar,
@@ -30,6 +31,60 @@ import MultiStudentSelect from "@/components/ui/MultiStudentSelect";
 import { useAppStore, InvoiceItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+
+function angkaTerbilang(nilai: number): string {
+  const bilangan = [
+    "",
+    "Satu",
+    "Dua",
+    "Tiga",
+    "Empat",
+    "Lima",
+    "Enam",
+    "Tujuh",
+    "Delapan",
+    "Sembilan",
+    "Sepuluh",
+    "Sebelas",
+  ];
+
+  const n = Math.floor(Math.abs(nilai));
+  if (n < 12) return bilangan[n];
+  if (n < 20) return angkaTerbilang(n - 10) + " Belas";
+  if (n < 100)
+    return (
+      angkaTerbilang(Math.floor(n / 10)) +
+      " Puluh" +
+      (n % 10 !== 0 ? " " + angkaTerbilang(n % 10) : "")
+    );
+  if (n < 200)
+    return "Seratus" + (n - 100 !== 0 ? " " + angkaTerbilang(n - 100) : "");
+  if (n < 1000)
+    return (
+      angkaTerbilang(Math.floor(n / 100)) +
+      " Ratus" +
+      (n % 100 !== 0 ? " " + angkaTerbilang(n % 100) : "")
+    );
+  if (n < 2000)
+    return "Seribu" + (n - 1000 !== 0 ? " " + angkaTerbilang(n - 1000) : "");
+  if (n < 1000000)
+    return (
+      angkaTerbilang(Math.floor(n / 1000)) +
+      " Ribu" +
+      (n % 1000 !== 0 ? " " + angkaTerbilang(n % 1000) : "")
+    );
+  if (n < 1000000000)
+    return (
+      angkaTerbilang(Math.floor(n / 1000000)) +
+      " Juta" +
+      (n % 1000000 !== 0 ? " " + angkaTerbilang(n % 1000000) : "")
+    );
+  return (
+    angkaTerbilang(Math.floor(n / 1000000000)) +
+    " Miliar" +
+    (n % 1000000000 !== 0 ? " " + angkaTerbilang(n % 1000000000) : "")
+  );
+}
 
 function SppContent() {
   const { students, invoices, addInvoice, addInvoicesBulk, updateInvoiceStatus, deleteInvoice, branches } =
@@ -83,7 +138,29 @@ function SppContent() {
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [payingInvoice, setPayingInvoice] = useState<InvoiceItem | null>(null);
+  const [selectedReceiptInvoice, setSelectedReceiptInvoice] = useState<InvoiceItem | null>(null);
   const [isCustomTemplateOpen, setIsCustomTemplateOpen] = useState(false);
+
+  const receiptStudent = useMemo(() => {
+    if (!selectedReceiptInvoice) return null;
+    return (
+      students.find(
+        (s) =>
+          s.id === selectedReceiptInvoice.studentId ||
+          s.name?.trim().toLowerCase() === selectedReceiptInvoice.studentName?.trim().toLowerCase()
+      ) || null
+    );
+  }, [selectedReceiptInvoice, students]);
+
+  const receiptBranch = useMemo(() => {
+    if (!selectedReceiptInvoice) return null;
+    const targetBranch = receiptStudent?.branch || selectedReceiptInvoice.branch;
+    return (
+      branches.find(
+        (b) => b.name?.toLowerCase() === targetBranch?.toLowerCase()
+      ) || branches[0] || null
+    );
+  }, [selectedReceiptInvoice, receiptStudent, branches]);
   const [waTemplate, setWaTemplate] = useState(
     `Assalamu'alaikum warahmatullahi wabarakatuh. Ibu/Bapak *{nama_wali}*,
 
@@ -637,9 +714,9 @@ Salam Hangat,
 
                           <button
                             type="button"
-                            onClick={() => window.print()}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                            title="Unduh Kwitansi"
+                            onClick={() => setSelectedReceiptInvoice(inv)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 cursor-pointer transition-colors"
+                            title="Lihat & Unduh Kuitansi Resmi"
                           >
                             <Download className="w-3.5 h-3.5" />
                           </button>
@@ -932,6 +1009,249 @@ Salam Hangat,
           </div>
         </div>
       )}
+      {/* Modal: Tanda Terima Resmi Kuitansi SPP */}
+      {selectedReceiptInvoice && (
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Action Header (hidden during window.print) */}
+            <div className="no-print flex items-center justify-between border-b border-slate-100 dark:border-[#1d2d5a] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Kuitansi Resmi SPP Math Fingers
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Kuitansi otomatis untuk ananda {selectedReceiptInvoice.studentName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleSendSingleWA(selectedReceiptInvoice)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-xs font-bold text-emerald-700 dark:text-emerald-300 transition-colors cursor-pointer"
+                  title="Kirim ke WhatsApp Wali Siswa"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Kirim WA</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-extrabold transition-all cursor-pointer"
+                  title="Cetak atau Simpan sebagai PDF"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Cetak / Unduh PDF</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceiptInvoice(null)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Receipt Preview Canvas / Printable Container */}
+            <div className="overflow-x-auto p-1">
+              <div
+                id="printable-receipt"
+                className="min-w-[760px] max-w-[860px] mx-auto bg-white text-slate-900 rounded-3xl border-2 border-emerald-400/60 p-7 relative shadow-sm select-text overflow-hidden"
+                style={{ backgroundColor: "#ffffff" }}
+              >
+                {/* 4 Soft Mint Decorative Corner Circles matching user's design */}
+                <div className="absolute -top-3.5 -left-3.5 w-8 h-8 rounded-full bg-emerald-100/70 border border-emerald-200/50 pointer-events-none" />
+                <div className="absolute -top-3.5 -right-3.5 w-8 h-8 rounded-full bg-emerald-100/70 border border-emerald-200/50 pointer-events-none" />
+                <div className="absolute -bottom-3.5 -left-3.5 w-8 h-8 rounded-full bg-emerald-100/70 border border-emerald-200/50 pointer-events-none" />
+                <div className="absolute -bottom-3.5 -right-3.5 w-8 h-8 rounded-full bg-emerald-100/70 border border-emerald-200/50 pointer-events-none" />
+
+                {/* Inner Border Frame Lines */}
+                <div className="absolute top-3.5 left-7 right-7 h-[2px] bg-emerald-500/70 pointer-events-none" />
+                <div className="absolute bottom-3.5 left-7 right-7 h-[2px] bg-emerald-500/70 pointer-events-none" />
+                <div className="absolute top-7 bottom-7 left-3.5 w-[2px] bg-emerald-500/70 pointer-events-none" />
+                <div className="absolute top-7 bottom-7 right-3.5 w-[2px] bg-emerald-500/70 pointer-events-none" />
+
+                {/* Header Row */}
+                <div className="flex items-center justify-between gap-4 pt-1 pb-4">
+                  {/* Left: Brand Logo & Title */}
+                  <div className="flex items-center gap-3">
+                    <img
+                      src="/logo.png"
+                      alt="Math Fingers Logo"
+                      className="w-14 h-14 object-contain"
+                    />
+                    <div>
+                      <div className="text-[#059669] font-black text-xl tracking-wide leading-tight">
+                        MATH FINGERS
+                      </div>
+                      <div className="text-slate-500 text-xs font-semibold mt-0.5">
+                        Easy Learning House • Berhitung Cepat
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Center: Title KUITANSI */}
+                  <div className="text-center px-2">
+                    <h2 className="text-[#059669] font-black text-3xl tracking-wider leading-none">
+                      KUITANSI
+                    </h2>
+                    <p className="text-amber-500 font-extrabold text-[11px] tracking-widest uppercase mt-1.5">
+                      TANDA TERIMA RESMI SPP
+                    </p>
+                  </div>
+
+                  {/* Right: Invoice No & Date Box */}
+                  <div className="border border-slate-200 bg-slate-50/80 rounded-2xl px-4 py-2.5 text-xs text-slate-700 min-w-[210px] shadow-2xs">
+                    <div className="flex items-center justify-between gap-2 py-0.5">
+                      <span className="text-slate-500 font-medium">No. Kuitansi</span>
+                      <span className="font-extrabold text-slate-900">: {selectedReceiptInvoice.invoiceNo}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 py-0.5">
+                      <span className="text-slate-500 font-medium">Tanggal</span>
+                      <span className="font-extrabold text-slate-900">
+                        : {selectedReceiptInvoice.paidDate || selectedReceiptInvoice.dueDate || new Date().toISOString().split("T")[0]}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider Line */}
+                <div className="border-b border-slate-200 my-3" />
+
+                {/* Content Rows */}
+                <div className="space-y-3.5 my-5 text-sm">
+                  {/* Row 1: Telah Diterima Dari */}
+                  <div className="flex items-baseline">
+                    <span className="w-44 text-slate-500 font-medium shrink-0">
+                      Telah Diterima Dari
+                    </span>
+                    <span className="w-5 text-slate-400 font-bold shrink-0">:</span>
+                    <span className="text-slate-900 font-black text-sm">
+                      Ibu / Bapak {receiptStudent?.parentName || "Wali Siswa"}
+                    </span>
+                  </div>
+
+                  {/* Row 2: Untuk Nama Siswa */}
+                  <div className="flex items-baseline">
+                    <span className="w-44 text-slate-500 font-medium shrink-0">
+                      Untuk Nama Siswa
+                    </span>
+                    <span className="w-5 text-slate-400 font-bold shrink-0">:</span>
+                    <span className="text-slate-900 font-bold text-sm">
+                      <span className="font-black text-slate-950">
+                        {selectedReceiptInvoice.studentName}
+                      </span>
+                      {receiptStudent?.gender ? ` (${receiptStudent.gender})` : ""}{" "}
+                      • {receiptStudent?.className || "Paket Reguler"} •{" "}
+                      <span className="font-semibold text-slate-700">
+                        {receiptStudent?.levelCurriculum || "Level Dasar: Pengenalan Simbol Jari"}
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* Row 3: Guna Membayar */}
+                  <div className="flex items-baseline">
+                    <span className="w-44 text-slate-500 font-medium shrink-0">
+                      Guna Membayar
+                    </span>
+                    <span className="w-5 text-slate-400 font-bold shrink-0">:</span>
+                    <span className="text-[#059669] font-black text-sm">
+                      Iuran Bulanan (SPP) Periode {selectedReceiptInvoice.period}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Uang Sejumlah Bar (Soft Mint Green) */}
+                <div className="bg-[#e6f7f2] border border-emerald-200/50 rounded-2xl px-6 py-3.5 my-6 flex items-center">
+                  <span className="w-44 text-[#059669] font-black text-sm shrink-0">
+                    Uang Sejumlah
+                  </span>
+                  <span className="w-5 text-[#059669] font-bold shrink-0">:</span>
+                  <span className="text-[#047857] font-black italic text-base tracking-wide">
+                    ### {angkaTerbilang(selectedReceiptInvoice.amount)} Rupiah ###
+                  </span>
+                </div>
+
+                {/* Footer Row */}
+                <div className="flex items-end justify-between pt-2">
+                  {/* Left: Amount Badge & Payment Method */}
+                  <div>
+                    <div className="bg-[#059669] text-white text-2xl font-black px-7 py-3 rounded-2xl shadow-sm tracking-wide inline-block">
+                      Rp {selectedReceiptInvoice.amount.toLocaleString("id-ID")},-
+                    </div>
+                    <div className="text-slate-500 text-xs mt-2 font-medium">
+                      Metode Pembayaran: {selectedReceiptInvoice.paidMethod || "Tunai"}
+                    </div>
+                  </div>
+
+                  {/* Center: Slogan Quote */}
+                  <div className="text-center px-4">
+                    <p className="text-slate-400 italic text-xs font-medium tracking-wide">
+                      &ldquo;Berhitung Cepat &amp; Akurat Tanpa Alat&rdquo;
+                    </p>
+                  </div>
+
+                  {/* Right: Signature Box */}
+                  <div className="text-center min-w-[170px]">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Penerima,</p>
+                    <div className="h-16 flex items-center justify-center">
+                      {receiptBranch?.signatureUrl ? (
+                        <img
+                          src={receiptBranch.signatureUrl}
+                          alt="Tanda Tangan Penerima"
+                          className="max-h-14 max-w-[140px] object-contain"
+                        />
+                      ) : (
+                        <svg
+                          className="w-32 h-12 text-slate-800"
+                          viewBox="0 0 160 60"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            d="M15 38 C 25 15, 35 10, 42 28 C 46 38, 48 45, 53 22 C 57 8, 62 48, 65 32 C 68 22, 75 18, 82 30 C 88 40, 94 44, 102 33 C 110 24, 122 28, 135 34 M40 32 Q 95 30 145 35"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <circle cx="148" cy="35" r="1.5" fill="currentColor" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="w-36 mx-auto border-b border-slate-300 mt-1 mb-1.5" />
+                    <p className="text-slate-900 font-black text-sm tracking-wide">
+                      Math Fingers
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Bottom Buttons (no-print) */}
+            <div className="no-print flex items-center justify-between pt-2 text-xs">
+              <span className="text-slate-500 dark:text-slate-400">
+                💡 Tekan <span className="font-bold text-slate-700 dark:text-slate-200">Cetak / Unduh PDF</span> lalu pilih <span className="font-bold text-emerald-600 dark:text-emerald-400">Save as PDF</span> untuk menyimpan file kuitansi.
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptInvoice(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={confirmModalConfig.isOpen}
