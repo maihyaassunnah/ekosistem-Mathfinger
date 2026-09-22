@@ -14,86 +14,44 @@ import {
   Star,
   HelpCircle,
   ChevronDown,
-  ChevronUp,
   Users,
   Award,
   ShieldCheck,
   X,
-  CheckCircle2,
-  QrCode,
   CreditCard,
   GraduationCap,
-  Sun,
-  Moon,
-  Menu,
-  Heart,
-  Brain,
-  Smile,
-  Zap,
-  Building2,
-  Navigation,
-  ExternalLink,
+  Play,
+  Calendar,
   Layers,
-  BadgeCheck,
+  Building2,
+  ExternalLink,
+  Zap,
+  Brain,
+  Menu,
+  CheckCircle2,
+  Smile,
 } from "lucide-react";
-import { useTheme } from "@/lib/theme";
-import { useAppStore, LandingProgramItem } from "@/lib/store";
-import CustomSelect from "@/components/ui/CustomSelect";
-
-const TEACHERS = [
-  {
-    name: "Ustadzah Sri Wahyuni, S.Pd.I",
-    role: "Master Trainer Jaritmatika & Kurikulum",
-    branch: "Singkut & Bangko",
-    experience: "7+ Tahun Pengalaman",
-    specialty: "Formasi Jari & Sinkronisasi Otak Kiri-Kanan",
-    avatarColor: "from-emerald-600 to-teal-500",
-  },
-  {
-    name: "Febrianti Dewi, S.Pd",
-    role: "Senior Tutor Jaritmatika",
-    branch: "Cabang Singkut",
-    experience: "4+ Tahun Pengalaman",
-    specialty: "Level Pra-Dasar & Motorik Halus Usia Dini",
-    avatarColor: "from-emerald-600 to-teal-500",
-  },
-  {
-    name: "Bapak Faisal Rahman, S.Kom",
-    role: "Instruktur & Koordinator Cabang",
-    branch: "Cabang Bangko",
-    experience: "5+ Tahun Pengalaman",
-    specialty: "Level Dasar, Perkalian Cepat & Disiplin Hitung",
-    avatarColor: "from-emerald-600 to-teal-500",
-  },
-  {
-    name: "Dewi Safitri, S.H",
-    role: "Tutor Jaritmatika Terampil",
-    branch: "Cabang Bangko",
-    experience: "3+ Tahun Pengalaman",
-    specialty: "Level Terampil & Persiapan Uji Kecepatan",
-    avatarColor: "from-emerald-600 to-teal-500",
-  },
-];
+import { useAppStore } from "@/lib/store";
 
 export default function Home() {
-  const { theme, toggleTheme } = useTheme();
   const {
     landingHero,
     landingPrograms,
     landingTestimonials,
     addLandingLead,
-    landingPartners,
     students,
-    branches,
   } = useAppStore();
 
-  // Dropdown Submenus & Mobile Accordion States
+  // Dropdown Submenus & Mobile Drawer States
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
 
-  // Active Branch on Interactive Map
-  const [activeMapBranch, setActiveMapBranch] = useState<"Singkut" | "Bangko">("Singkut");
+  // Active Story Tab State (Student Stories section)
+  const [activeStoryIdx, setActiveStoryIdx] = useState(0);
+
+  // Video Tour Modal State
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   // Trial Registration Modal State
   const [showTrialModal, setShowTrialModal] = useState(false);
@@ -107,11 +65,7 @@ export default function Home() {
     notes: "",
   });
 
-  // Selected program when clicking "Daftar Level Ini"
-  const [selectedProgramTitle, setSelectedProgramTitle] = useState<string>("");
-
   const handleOpenTrial = (programTitle: string = "") => {
-    setSelectedProgramTitle(programTitle);
     setTrialForm((prev) => ({
       ...prev,
       notes: programTitle ? `Berminat pada program: ${programTitle}` : "",
@@ -141,116 +95,156 @@ export default function Home() {
       trialForm.branch === "Singkut" ? "6281279498907" : "6281379720841";
 
     const message = encodeURIComponent(
-      `Halo Admin Math Fingers Cabang ${trialForm.branch},\n\nSaya (${trialForm.parentName}) baru saja mendaftar Coba Kelas Gratis (Trial Class) untuk anak saya:\n- Nama Anak: ${trialForm.studentName}\n- Usia/Kelas: ${trialForm.studentAge}\n- No. WA: ${trialForm.phone}\n${
+      `Halo Admin Math Fingers Cabang ${trialForm.branch},\n\nSaya (${trialForm.parentName}) ingin mendaftar Coba Kelas Gratis (Trial Class) untuk anak saya:\n- Nama Anak: ${trialForm.studentName}\n- Usia/Kelas: ${trialForm.studentAge}\n- No. WA: ${trialForm.phone}\n${
         trialForm.notes ? `- Catatan: ${trialForm.notes}\n` : ""
-      }\nMohon info jadwal trial terdekat ya. Terima kasih!`
+      }\nMohon info jadwal kelas trial terdekat ya. Terima kasih!`
     );
 
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, "_blank");
     setShowTrialModal(false);
   };
 
-  // FAQ Accordion State
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  const faqs = [
+  // Student Stories Data
+  const studentStories = [
     {
-      q: "Apa perbedaan metode Jaritmatika Math Fingers dengan sempoa biasa?",
-      a: "Sempoa memerlukan alat fisik yang rentan tertinggal atau hilang. Di Math Fingers, anak diajarkan memaksimalkan 10 jari tangannya sendiri sebagai kalkulator alami yang selalu melekat. Selain itu, formasi jari tangan Math Fingers melatih sinkronisasi otak kiri (logika hitung) dan otak kanan (imajinasi visual), sehingga anak berhitung cepat secara intuitif.",
+      id: "01",
+      title: "Dari Takut Matematika, Kini Jadi Juara Berhitung di Sekolah",
+      author: "Ananda Farhan (Usia 8 Th)",
+      role: "Siswa Jaritmatika Level 3 - Cabang Singkut",
+      quote:
+        "Dulu Farhan sering menangis kalau ada PR matematika. Setelah 4 bulan belajar formasi 10 jari di Math Fingers, dia sekarang paling cepat menghitung di kelas dan selalu dapat nilai 100!",
+      parent: "Bunda Rina Hartati (Wali Murid)",
     },
     {
-      q: "Mulai usia berapa anak bisa mendaftar di Math Fingers?",
-      a: "Anak dapat mulai belajar sejak usia 4 tahun (jenjang TK/PAUD) di Level Pra-Dasar. Pada usia dini, materi disampaikan melalui pendekatan bermain, kartu flashcard simbol, dan senam jari ceria untuk mengasah motorik halus sebelum masuk ke penjumlahan angka.",
+      id: "02",
+      title: "Metode Jari Tangan Praktis, Ujian Sekolah Tanpa Alat Bantu",
+      author: "Kayla Az-Zahra (Usia 7 Th)",
+      role: "Siswa Jaritmatika Level 2 - Cabang Bangko",
+      quote:
+        "Sangat bersyukur kenal metode Math Fingers. Anak saya tidak perlu bawa sempoa fisik atau sembunyi kalkulator. 10 jari tangannya sendiri sudah jadi kalkulator alami yang selalu siap saat ujian.",
+      parent: "Bapak Hendra, S.Pd (Wali Murid)",
     },
     {
-      q: "Apakah ada kelas percobaan gratis (Trial Class) sebelum mendaftar?",
-      a: "Ya, betul sekali! Kami menyediakan 1 sesi Kelas Percobaan Gratis (Free Trial Class) di Cabang Singkut maupun Cabang Bangko. Orang tua dan ananda dapat mencoba langsung suasana belajar dan melihat bagaimana konsep jari tangan diajarkan sebelum memutuskan mendaftar.",
-    },
-    {
-      q: "Bagaimana jadwal belajar dan fleksibilitas kelasnya?",
-      a: "Setiap kelas berlangsung 2x seminggu dengan durasi 60-90 menit per sesi. Tersedia pilihan jadwal hari kerja (Senin & Rabu, Selasa & Kamis) atau kelas akhir pekan (Sabtu & Ahad) pada sesi siang maupun sore.",
-    },
-    {
-      q: "Bagaimana orang tua memantau perkembangan belajar anak?",
-      a: "Math Fingers menerapkan sistem presensi berbasis QR Code digital kartu siswa. Setiap perkembangan materi dicatat pada Jurnal Guru dan diuji melalui Uji Kecepatan Bulanan dengan Rapor Digital yang dibagikan berkala ke WhatsApp orang tua.",
+      id: "03",
+      title: "Belajar Membaca Menyenangkan, 3 Bulan Langsung Lancar Tanpa Mengeja",
+      author: "Rayyan Al-Fatih (Usia 5 Th)",
+      role: "Siswa Program Les Membaca Fonik",
+      quote:
+        "Metode fonik di Math Fingers sangat ceria dan ramah anak. Rayyan yang awalnya sulit fokus, kini sudah bisa membaca buku cerita sendiri dengan lancar tanpa terbata-bata.",
+      parent: "Ibu Desi Ratnasari (Wali Murid)",
     },
   ];
 
-  interface NavSubItem {
-    title: string;
-    desc: string;
-    href?: string;
-    action?: () => void;
-    icon: React.ComponentType<{ className?: string }>;
-    color: string;
-    external?: boolean;
-  }
+  // News & Activities (What's Happening @ Math Fingers)
+  const newsItems = [
+    {
+      title: "Serunya Latihan Formasi 10 Jari Tangan & Senam Otak di Cabang Singkut",
+      category: "KELAS JARITMATIKA",
+      date: "20 Sep 2026",
+      author: "Febrianti Dewi, S.Pd",
+      image: "/images/landing/hero-kids.jpg",
+      summary: "Mengasah ketangkasan jari tangan anak melalui senam ritmis dan simulasi hitung cepat ratusan tanpa kertas corat-coret.",
+    },
+    {
+      title: "Ujian Kenaikan Level Semester: Puluhan Siswa Raih Nilai Sempurna",
+      category: "PRESTASI & SERTIFIKASI",
+      date: "15 Sep 2026",
+      author: "Tim Akademik Math Fingers",
+      image: "/images/landing/student-story.jpg",
+      summary: "Pemberian piagam penghargaan resmi dan evaluasi rapor kompetensi digital bagi siswa yang menuntaskan level dasar.",
+    },
+    {
+      title: "Tips Efektif Mendampingi Anak Belajar Matematika di Rumah Tanpa Stres",
+      category: "EDUKASI ORANG TUA",
+      date: "10 Sep 2026",
+      author: "Ustadzah Sri Wahyuni, S.Pd.I",
+      image: "/images/landing/about-teacher.jpg",
+      summary: "Pendekatan positif agar anak tidak trauma angka: gunakan permainan visual dan apresiasi proses belajar jari tangan.",
+    },
+    {
+      title: "Inovasi Kartu QR Digital: Orang Tua Pantau Absensi & Nilai Siswa Real-time",
+      category: "TEKNOLOGI EDUKASI",
+      date: "05 Sep 2026",
+      author: "Manajemen Sistem",
+      image: "/images/landing/programs-bg.jpg",
+      summary: "Kemudahan integrasi notifikasi presensi otomatis dan riwayat jurnal perkembangan belajar langsung ke WhatsApp wali murid.",
+    },
+  ];
 
-  interface NavMenuItem {
-    id: string;
-    label: string;
-    items: NavSubItem[];
-  }
+  // Upcoming Events
+  const events = [
+    {
+      day: "25",
+      month: "SEP",
+      title: "Trial Class Gratis Serentak Akhir Pekan",
+      time: "14:00 – 16:00 WIB",
+      location: "Cabang Singkut & Cabang Bangko",
+      desc: "Sesi terbuka bagi orang tua dan ananda untuk mencoba langsung metode jari tangan dan konsultasi kurikulum.",
+    },
+    {
+      day: "01",
+      month: "OKT",
+      title: "Pembukaan Pendaftaran Gelombang Baru (Diskon 50%)",
+      time: "08:00 – 17:00 WIB",
+      location: "Pendaftaran Online & Kantor Cabang",
+      desc: "Dapatkan potongan uang pendaftaran 50% dan bonus modul belajar lengkap serta kartu digital siswa.",
+    },
+    {
+      day: "18",
+      month: "OKT",
+      title: "Lomba Hitung Cepat 10 Jari Antar Siswa Math Fingers",
+      time: "09:00 – 12:00 WIB",
+      location: "Gedung Serbaguna Cabang Singkut",
+      desc: "Ajang uji kecepatan, ketelitian, dan sportivitas berhitung jaritmatika dengan piala serta beasiswa belajar.",
+    },
+  ];
 
-  const navMenus: NavMenuItem[] = [
+  // Navigation Menus Configuration
+  const navMenus = [
     {
       id: "tentang",
       label: "Tentang Kami",
       items: [
         {
-          title: "Keunggulan Metode",
-          desc: "Formasi 10 jari cerdas tanpa alat sempoa fisik",
-          href: "#keunggulan",
-          icon: Zap,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Metode 10 Jari Alami",
+          desc: "Optimalisasi otak kiri & kanan tanpa sempoa",
+          href: "#tentang",
         },
         {
           title: "Guru & Tutor Pengajar",
-          desc: "8+ Pendidik tersertifikasi nasional & ramah anak",
-          href: "#guru",
-          icon: Users,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          desc: "Pendidik tersertifikasi nasional & ramah anak",
+          href: "#tentang",
         },
         {
-          title: "Mitra Kerja Sama",
-          desc: "Sekolah dasar, TK/PAUD & yayasan rekanan",
-          href: "#partner",
-          icon: Building2,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
-        },
-        {
-          title: "Keseimbangan Otak",
-          desc: "Sinkronisasi kerja otak kiri dan kanan anak",
-          href: "#keunggulan",
-          icon: Brain,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Mitra & Kerjasama",
+          desc: "Kolaborasi dengan TK/PAUD & Sekolah Dasar",
+          href: "#mitra",
         },
       ],
     },
     {
       id: "program",
-      label: "Program & Biaya",
+      label: "Program Belajar",
       items: [
         {
-          title: "Level Belajar",
-          desc: "Pra-Dasar, Dasar, Terampil, hingga Mahir",
+          title: "Jaritmatika Pra-Dasar (TK/PAUD)",
+          desc: "Pengenalan formasi jari & simbol angka ceria",
           href: "#program",
-          icon: Layers,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
         },
         {
-          title: "Biaya & Paket Les",
-          desc: "Biaya SPP bulanan terjangkau & transparan",
-          href: "#biaya",
-          icon: CreditCard,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Jaritmatika Dasar & Terampil (SD)",
+          desc: "Hitung cepat tambah, kurang, kali, bagi",
+          href: "#program",
         },
         {
-          title: "Coba Kelas Gratis (Trial)",
-          desc: "1x Sesi percobaan tanpa dipungut biaya",
-          action: () => handleOpenTrial(),
-          icon: Sparkles,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Les Membaca Fonik Cepat",
+          desc: "Metode membaca lancar menyenangkan tanpa mengeja",
+          href: "#program",
+        },
+        {
+          title: "Kelas Privat Intensif",
+          desc: "Bimbingan one-on-one persiapan akademik",
+          href: "#program",
         },
       ],
     },
@@ -259,110 +253,163 @@ export default function Home() {
       label: "Cabang & Lokasi",
       items: [
         {
-          title: "Cabang Singkut",
-          desc: "Jl. Lintas Sumatera Km. 1, Sarolangun",
+          title: "Cabang Singkut (Pusat)",
+          desc: "Gedung ber-AC, parkir luas, fasilitas lengkap",
           href: "#cabang",
-          icon: MapPin,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
         },
         {
-          title: "Cabang Bangko",
-          desc: "Jl. Jenderal Sudirman No. 45, Merangin",
+          title: "Cabang Bangko / Tabir Timur",
+          desc: "Ruang kelas nyaman & akses mudah dijangkau",
           href: "#cabang",
-          icon: MapPin,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
-        },
-        {
-          title: "Peta Google Maps",
-          desc: "Peta rute interaktif & petunjuk jalan",
-          href: "#maps",
-          icon: Navigation,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
         },
       ],
     },
     {
-      id: "bantuan",
-      label: "Pusat Bantuan",
+      id: "cerita",
+      label: "Prestasi & Cerita",
       items: [
         {
-          title: "Testimoni Wali Murid",
-          desc: "Ulasan nyata orang tua siswa berprestasi",
-          href: "#testimoni",
-          icon: Star,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Cerita Prestasi Siswa",
+          desc: "Kisah inspiratif anak dari berbagai level",
+          href: "#cerita",
         },
         {
-          title: "Tanya Jawab (FAQ)",
-          desc: "Jawaban pertanyaan umum seputar les",
-          href: "#faq",
-          icon: HelpCircle,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Kabar & Kegiatan",
+          desc: "Dokumentasi kelas & event belajar terkini",
+          href: "#kabar",
         },
         {
-          title: "Konsultasi WhatsApp",
-          desc: "Tanya jadwal & konsultasi langsung ke admin",
-          href: `https://wa.me/${landingHero.whatsappNumber}?text=${encodeURIComponent(
-            landingHero.whatsappGreeting
-          )}`,
-          external: true,
-          icon: MessageCircle,
-          color: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/80 dark:border-emerald-900/60",
+          title: "Agenda Mendatang",
+          desc: "Jadwal trial class gratis & kompetisi",
+          href: "#agenda",
         },
       ],
     },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#F8FAFC] dark:bg-[#070d1e] text-[#0F172A] dark:text-[#f8fafc] transition-colors duration-200 selection:bg-emerald-600 selection:text-white">
-      {/* 1. TOP PROMO ANNOUNCEMENT BAR */}
-      {landingHero.promoActive && (
-        <div className="bg-gradient-to-r from-[#0041a8] via-[#0062ff] to-[#0052d4] text-white text-xs font-semibold py-2.5 px-4 text-center shadow-xs relative z-50">
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
-            <span className="inline-block px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px] tracking-wider uppercase">
-              {landingHero.targetDiscount || "PROMO"}
-            </span>
-            <span>{landingHero.promoBanner}</span>
+    <div className="min-h-screen flex flex-col justify-between bg-white text-slate-900 font-sans selection:bg-emerald-600 selection:text-white">
+      {/* ========================================================================= */}
+      {/* 1. TOP UTILITY BAR (Deep Emerald Green Accent) */}
+      {/* ========================================================================= */}
+      <div className="bg-[#047857] text-white text-[11px] font-medium py-2 px-4 sm:px-6 lg:px-8 border-b border-emerald-800">
+        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
+          {/* Socials & Hotline */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-emerald-200 transition-colors p-0.5"
+                title="Facebook"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-emerald-200 transition-colors p-0.5"
+                title="Instagram"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-emerald-200 transition-colors p-0.5"
+                title="YouTube"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+              <a
+                href="https://wa.me/6281279498907"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-emerald-200 transition-colors p-0.5"
+                title="WhatsApp"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+              </a>
+            </div>
+            <span className="hidden sm:inline-block text-emerald-300/60">•</span>
+            <div className="hidden sm:flex items-center gap-1.5 text-emerald-100">
+              <Phone className="w-3 h-3 text-emerald-300" />
+              <span>Hotline Singkut: +62 812-7949-8907 | Bangko: +62 813-7972-0841</span>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="flex items-center gap-3 sm:gap-4 text-[11px] font-semibold text-emerald-100">
+            <Link href="/login" className="hover:text-white transition-colors">
+              Portal Siswa
+            </Link>
+            <span className="text-emerald-400/50">|</span>
+            <Link href="/login" className="hover:text-white transition-colors">
+              Portal Guru
+            </Link>
+            <span className="text-emerald-400/50">|</span>
+            <a href="#cabang" className="hover:text-white transition-colors">
+              Cabang Resmi
+            </a>
+            <span className="text-emerald-400/50">|</span>
             <button
               type="button"
               onClick={() => handleOpenTrial()}
-              className="underline underline-offset-2 hover:text-amber-200 font-bold ml-1 cursor-pointer transition-colors"
+              className="text-amber-300 hover:text-white transition-colors font-bold cursor-pointer"
             >
-              Klaim Sekarang ➜
+              ★ Coba Gratis
             </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* 2. TOP STICKY NAVBAR */}
-      <header className="border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0f1a36]/95 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Brand Logo with Easy Learning House */}
+      {/* ========================================================================= */}
+      {/* 2. MAIN NAVIGATION BAR (Crisp White with Emerald Accents) */}
+      {/* ========================================================================= */}
+      <header className="bg-white border-b border-slate-200/90 sticky top-0 z-40 shadow-xs backdrop-blur-md bg-white/95">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Brand Logo & Title */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-white border border-emerald-100 p-1 shadow-xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 p-1.5 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
               <img
                 src="/logo.png"
-                alt="Easy Learning House"
+                alt="Easy Learning House - Math Fingers"
                 className="w-full h-full object-contain"
               />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-slate-900 dark:text-slate-100 tracking-tight text-lg">
+                <span className="font-black text-slate-900 tracking-tight text-lg sm:text-xl">
                   Easy Learning House
                 </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
                   Math Fingers
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
-                Bimbel Berhitung Cepat Jaritmatika
+              <p className="text-xs text-slate-500 font-medium hidden sm:block">
+                Bimbel Berhitung Cepat Jaritmatika & Les Membaca
               </p>
             </div>
           </Link>
 
-          {/* Desktop Navigation with Dropdown Submenus */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+            <Link
+              href="/"
+              className="px-3.5 py-2 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50/80 transition-colors"
+            >
+              Beranda
+            </Link>
+
             {navMenus.map((menu) => {
               const isOpen = activeDropdown === menu.id;
               return (
@@ -375,10 +422,10 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setActiveDropdown(isOpen ? null : menu.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       isOpen
-                        ? "bg-slate-100 dark:bg-[#162244] text-emerald-600 dark:text-emerald-300"
-                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#11231c] hover:text-emerald-600 dark:hover:text-emerald-400"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "text-slate-700 hover:text-emerald-700 hover:bg-slate-50"
                     }`}
                   >
                     <span>{menu.label}</span>
@@ -389,61 +436,25 @@ export default function Home() {
                     />
                   </button>
 
-                  {/* Dropdown Menu Popover */}
+                  {/* Dropdown Popover */}
                   {isOpen && (
-                    <div className="absolute top-full left-0 pt-1.5 z-50 animate-in fade-in slide-in-from-top-1.5 duration-150">
-                      <div className="w-72 p-2 rounded-2xl bg-white/95 dark:bg-[#0c1813]/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl space-y-1">
-                        {menu.items.map((sub, sIdx) => {
-                          const SubIcon = sub.icon;
-                          if (sub.action) {
-                            return (
-                              <button
-                                key={sIdx}
-                                type="button"
-                                onClick={() => {
-                                  setActiveDropdown(null);
-                                  sub.action?.();
-                                }}
-                                className="w-full flex items-start gap-3 p-2.5 rounded-xl text-left hover:bg-emerald-50/70 dark:hover:bg-[#162244] transition-all group cursor-pointer"
-                              >
-                                <div className={`p-2 rounded-xl shrink-0 ${sub.color}`}>
-                                  <SubIcon className="w-4 h-4" />
-                                </div>
-                                <div>
-                                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 flex items-center gap-1">
-                                    {sub.title}
-                                    <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-300" />
-                                  </div>
-                                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-                                    {sub.desc}
-                                  </div>
-                                </div>
-                              </button>
-                            );
-                          }
-                          return (
-                            <a
-                              key={sIdx}
-                              href={sub.href}
-                              target={sub.external ? "_blank" : undefined}
-                              rel={sub.external ? "noopener noreferrer" : undefined}
-                              onClick={() => setActiveDropdown(null)}
-                              className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-[#162244] transition-all group cursor-pointer"
-                            >
-                              <div className={`p-2 rounded-xl shrink-0 ${sub.color}`}>
-                                <SubIcon className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <div className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                                  {sub.title}
-                                </div>
-                                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-                                  {sub.desc}
-                                </div>
-                              </div>
-                            </a>
-                          );
-                        })}
+                    <div className="absolute top-full left-0 pt-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="w-72 p-2 rounded-xl bg-white border border-slate-200 shadow-xl space-y-1">
+                        {menu.items.map((sub, sIdx) => (
+                          <a
+                            key={sIdx}
+                            href={sub.href}
+                            onClick={() => setActiveDropdown(null)}
+                            className="block p-2.5 rounded-lg hover:bg-emerald-50/80 transition-all group"
+                          >
+                            <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">
+                              {sub.title}
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              {sub.desc}
+                            </div>
+                          </a>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -452,114 +463,69 @@ export default function Home() {
             })}
           </nav>
 
-          {/* Action CTAs */}
-          <div className="flex items-center gap-2">
-            {/* Dark/Light Toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title={theme === "dark" ? "Mode Terang" : "Mode Gelap"}
-            >
-              {theme === "dark" ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Trial CTA Button */}
+          {/* Right Action Buttons */}
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={() => handleOpenTrial()}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-xs font-extrabold transition-all cursor-pointer shadow-2xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-slate-900 fill-slate-900" />
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>Coba Gratis</span>
             </button>
 
-            {/* Portal Login WebApp Button */}
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0062ff] hover:bg-[#0052d4] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-emerald-600/20 hover:-translate-y-0.5"
             >
               <span>Masuk WebApp</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile Menu Button */}
             <button
               type="button"
               onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-              aria-label="Menu Navigasi"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
+              aria-label="Buka Menu"
             >
-              {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileNavOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Accordion Drawer */}
         {mobileNavOpen && (
-          <div className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1a36] px-4 py-4 space-y-3 shadow-xl animate-in fade-in">
+          <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3 shadow-xl">
             <div className="space-y-1">
               {navMenus.map((menu) => {
                 const isAccordionOpen = mobileAccordion === menu.id;
                 return (
-                  <div key={menu.id} className="border-b border-slate-100 dark:border-slate-800/80 pb-1">
+                  <div key={menu.id} className="border-b border-slate-100 pb-1">
                     <button
                       type="button"
                       onClick={() => setMobileAccordion(isAccordionOpen ? null : menu.id)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#162244]"
+                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold text-slate-800 hover:bg-slate-50"
                     >
-                      <span className="flex items-center gap-2">
-                        <span>{menu.label}</span>
-                      </span>
+                      <span>{menu.label}</span>
                       <ChevronDown
-                        className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                        className={`w-4 h-4 text-slate-400 transition-transform ${
                           isAccordionOpen ? "rotate-180 text-emerald-600" : ""
                         }`}
                       />
                     </button>
-
                     {isAccordionOpen && (
-                      <div className="pl-3 pr-1 py-1 space-y-1 animate-in fade-in duration-150">
-                        {menu.items.map((sub, sIdx) => {
-                          const SubIcon = sub.icon;
-                          if (sub.action) {
-                            return (
-                              <button
-                                key={sIdx}
-                                type="button"
-                                onClick={() => {
-                                  setMobileNavOpen(false);
-                                  sub.action?.();
-                                }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 text-left"
-                              >
-                                <div className={`p-1.5 rounded-lg shrink-0 ${sub.color}`}>
-                                  <SubIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <span className="font-semibold">{sub.title}</span>
-                              </button>
-                            );
-                          }
-                          return (
-                            <a
-                              key={sIdx}
-                              href={sub.href}
-                              target={sub.external ? "_blank" : undefined}
-                              rel={sub.external ? "noopener noreferrer" : undefined}
-                              onClick={() => setMobileNavOpen(false)}
-                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#162244] hover:text-emerald-600"
-                            >
-                              <div className={`p-1.5 rounded-lg shrink-0 ${sub.color}`}>
-                                <SubIcon className="w-3.5 h-3.5" />
-                              </div>
-                              <span className="font-semibold">{sub.title}</span>
-                            </a>
-                          );
-                        })}
+                      <div className="pl-4 pr-1 py-1 space-y-1">
+                        {menu.items.map((sub, sIdx) => (
+                          <a
+                            key={sIdx}
+                            href={sub.href}
+                            onClick={() => setMobileNavOpen(false)}
+                            className="block py-2 text-xs font-medium text-slate-600 hover:text-emerald-700"
+                          >
+                            {sub.title}
+                          </a>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -567,22 +533,22 @@ export default function Home() {
               })}
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <div className="pt-3 border-t border-slate-100 space-y-2">
               <button
                 type="button"
                 onClick={() => {
                   setMobileNavOpen(false);
                   handleOpenTrial();
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-400 text-slate-950 text-xs font-extrabold shadow-xs"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-emerald-600 text-emerald-700 font-extrabold text-xs"
               >
-                <Sparkles className="w-4 h-4 text-slate-950 fill-slate-950" />
+                <Sparkles className="w-4 h-4" />
                 <span>Daftar Coba Kelas Gratis</span>
               </button>
               <Link
                 href="/login"
                 onClick={() => setMobileNavOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0062ff] text-white text-xs font-bold shadow-xs"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-xs"
               >
                 <span>Masuk ke WebApp Siswa/Guru</span>
                 <ArrowRight className="w-4 h-4" />
@@ -593,37 +559,57 @@ export default function Home() {
       </header>
 
       <main className="flex-1">
-        {/* 3. HERO PROMOTIONAL SECTION */}
-        <section className="relative overflow-hidden py-14 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          {/* Background Decorative Blur Orbs */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-400/10 dark:bg-emerald-600/5 blur-3xl rounded-full pointer-events-none -z-10" />
+        {/* ========================================================================= */}
+        {/* 3. HERO BANNER SECTION (Image 2 style: Full Width Photo + Play Video + Bold Headline) */}
+        {/* ========================================================================= */}
+        <section className="relative overflow-hidden min-h-[580px] lg:min-h-[660px] flex items-center justify-center text-white">
+          {/* Background Image with Dark Emerald/Slate Overlay */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-20 scale-105 transition-transform duration-1000"
+            style={{ backgroundImage: `url('/images/landing/hero-kids.jpg')` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-emerald-950/75 to-slate-950/50 -z-10" />
 
-          <div className="text-center max-w-3xl mx-auto space-y-6">
-            {/* Tagline Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-              <span>{landingHero.tagline}</span>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center space-y-6">
+            {/* Play Video Trigger Circle (Image 2 style) */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowVideoModal(true)}
+                className="group relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 shadow-2xl transition-all hover:scale-110 cursor-pointer"
+                title="Tonton Video Pengenalan Metode Math Fingers"
+              >
+                <span className="absolute -inset-1 rounded-full bg-emerald-400/30 animate-ping opacity-75 pointer-events-none" />
+                <Play className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white ml-1 group-hover:scale-110 transition-transform" />
+              </button>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.15]">
-              {landingHero.headline}
+            {/* Tagline / Sub-badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 backdrop-blur-xs">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Bimbel Berhitung Cepat Jaritmatika No. 1 di Sarolangun & Merangin</span>
+            </div>
+
+            {/* Main Headline (Image 2 style bold uppercase serif/sans) */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-white drop-shadow-md">
+              SELAMAT DATANG DI <br />
+              <span className="text-emerald-300">MATH FINGERS</span> INDONESIA
             </h1>
 
-            {/* Subheadline Description */}
-            <p className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              {landingHero.subheadline}
+            {/* Subheadline Paragraph */}
+            <p className="text-sm sm:text-base md:text-lg text-slate-200 leading-relaxed max-w-3xl mx-auto drop-shadow-sm font-normal">
+              Mengoptimalkan potensi kecerdasan otak kanan dan kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, berhitung cepat akurat, dan percaya diri!
             </p>
 
-            {/* Dual CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+            {/* Dual CTAs in Emerald & Glass White */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
               <button
                 type="button"
                 onClick={() => handleOpenTrial()}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl bg-[#0062ff] hover:bg-[#0052d4] text-white font-extrabold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-emerald-200" />
-                <span>Daftar Coba Kelas Gratis (Trial)</span>
+                <span>Daftar Kelas Percobaan (Trial Gratis)</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -633,1228 +619,1067 @@ export default function Home() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm hover:bg-slate-50 dark:hover:bg-[#162244] transition-all shadow-xs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/30 backdrop-blur-md font-bold text-sm transition-all shadow-xs"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
+                <MessageCircle className="w-4 h-4 text-emerald-300" />
                 <span>Konsultasi WhatsApp</span>
               </a>
             </div>
-
-            {/* Dynamic Realtime Stats Proof Bar (Siswa & Guru) */}
-            <div className="pt-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
-              {/* Stat 1: Siswa Aktif */}
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500/50 transition-colors">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60">
-                    <Users className="w-4 h-4" />
-                  </span>
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    Realtime
-                  </span>
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                  {students?.length || 52}+
-                </div>
-                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                  Siswa Aktif Terbimbing
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                  Presensi digital kartu QR & jurnal guru berkala
-                </div>
-              </div>
-
-              {/* Stat 2: Guru & Tutor */}
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500/50 transition-colors">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60">
-                    <Award className="w-4 h-4" />
-                  </span>
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    Bersertifikat
-                  </span>
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                  8+
-                </div>
-                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                  Guru & Tutor Jaritmatika
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                  Standarisasi metode hitung cepat & ramah anak
-                </div>
-              </div>
-
-              {/* Stat 3: Cabang Belajar */}
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500/50 transition-colors">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60">
-                    <Building2 className="w-4 h-4" />
-                  </span>
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    Resmi
-                  </span>
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                  2 Cabang
-                </div>
-                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                  Singkut & Bangko
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                  Gedung ber-AC, parkir aman, & ruang tunggu
-                </div>
-              </div>
-
-              {/* Stat 4: Kepuasan Wali Murid */}
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500/50 transition-colors">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60">
-                    <Star className="w-4 h-4 fill-amber-400 dark:fill-amber-400 text-emerald-600 dark:text-emerald-300" />
-                  </span>
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    Rating 4.9
-                  </span>
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                  98.8%
-                </div>
-                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                  Kepuasan Wali Murid
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                  Peningkatan nyata fokus & ketangkasan berhitung
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* Global Keyframes Style for Marquee Animation */}
-        <style>{`
-          @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
-          }
-          .animate-marquee {
-            display: flex;
-            width: max-content;
-            animation: marquee 30s linear infinite;
-          }
-          .animate-marquee:hover {
-            animation-play-state: paused;
-          }
-        `}</style>
-
-        {/* MITRA & PARTNER KERJA SAMA (ROLLING LOGO MARQUEE) SECTION */}
-        <section
-          id="partner"
-          className="py-10 bg-slate-100/70 dark:bg-[#07130e] border-y border-slate-200/80 dark:border-slate-800/80 overflow-hidden"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 text-center space-y-1.5">
-            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest flex items-center justify-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5" />
-              Mitra & Jaringan Kerja Sama
-            </span>
-            <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-              Dipercaya Oleh Berbagai Sekolah & Lembaga Pendidikan
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-              Logo mitra binaan resmi yang bekerja sama dengan Math Fingers dalam pembelajaran Jaritmatika.
-            </p>
-          </div>
-
-          {/* Infinite Rolling Logos Track */}
-          <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-            <div className="flex gap-4 animate-marquee py-2 w-max">
-              {[
-                ...landingPartners.filter((p) => p.active),
-                ...landingPartners.filter((p) => p.active),
-              ].map((partner, idx) => (
-                <div
-                  key={`${partner.id}-${idx}`}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:border-emerald-500 transition-all shrink-0 select-none group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-400 text-white font-black text-xs flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                    {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
+        {/* ========================================================================= */}
+        {/* 4. ABOUT & METODE UNGGULAN (Image 2 style: UniCamp College of Business) */}
+        {/* ========================================================================= */}
+        <section id="tentang" className="py-20 lg:py-28 bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              {/* Left Column: Photo */}
+              <div className="lg:col-span-6 relative">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
+                  <img
+                    src="/images/landing/about-teacher.jpg"
+                    alt="Pembelajaran Jaritmatika Math Fingers"
+                    className="w-full h-auto object-cover hover:scale-102 transition-transform duration-500"
+                  />
+                </div>
+                {/* Decorative Badge Overlay */}
+                <div className="absolute -bottom-6 -right-4 sm:bottom-6 sm:-right-6 bg-white p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-200/80 flex items-center gap-3.5 max-w-xs">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <Award className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 whitespace-nowrap group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                      {partner.name}
-                    </div>
-                    <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
-                      {partner.category}
-                    </div>
+                    <div className="text-sm font-black text-slate-900">8+ Tutor Pengajar</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Tersertifikasi Nasional & Ramah Anak</div>
                   </div>
-                  {partner.website && (
-                    <a
-                      href={partner.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-slate-400 hover:text-emerald-600 ml-1 p-1"
-                      title="Buka Tautan"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Partnership WA Link */}
-          <div className="mt-5 text-center">
-            <a
-              href={`https://wa.me/${landingHero.whatsappNumber}?text=${encodeURIComponent(
-                "Halo Admin Math Fingers, sekolah/lembaga kami tertarik menjalin kerja sama kemitraan program les Jaritmatika."
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline"
-            >
-              <span>Tertarik Bermitra dengan Sekolah / Instansi Anda? Ajukan Kerja Sama Kemitraan</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </section>
-
-        {/* 4. KEUNGGULAN METODE JARITMATIKA SECTION */}
-        <section
-          id="keunggulan"
-          className="py-16 sm:py-20 bg-white dark:bg-[#0f1a36] border-y border-slate-200/80 dark:border-slate-800"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest">
-                Mengapa Memilih Math Fingers?
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                Metode Hitung Alami yang Melatih Kecepatan & Kecerdasan Otak
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                Tanpa sempoa, tanpa menghafal rumus mati. Math Fingers mengubah 10 jari anak menjadi instrumen berhitung super cepat, presisi, dan menyenangkan.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Pillar 1 */}
-              <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-800 space-y-3.5 hover:border-emerald-500 transition-colors shadow-2xs">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold shadow-2xs">
-                  <Zap className="w-6 h-6" />
+              {/* Right Column: Narrative Content */}
+              <div className="lg:col-span-6 space-y-6">
+                <div>
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    Metode Unggulan Jaritmatika
+                  </span>
+                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-3 leading-tight">
+                    Metode 10 Jari Alami: <br />
+                    Kalkulator Pintar yang Selalu Melekat
+                  </h2>
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Alat Hitung Selalu Melekat
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  10 jari tangan anak adalah anugerah terhebat. Tidak perlu cemas alat sempoa tertinggal atau baterai kalkulator habis saat ulangan.
+
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                  Math Fingers hadir memberikan solusi belajar berhitung yang membahagiakan. Melalui formasi 10 jari tangan yang terstandarisasi, anak diajarkan mengolah logika matematika tanpa memerlukan alat bantu sempoa fisik atau kalkulator.
                 </p>
-              </div>
 
-              {/* Pillar 2 */}
-              <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-800 space-y-3.5 hover:border-emerald-500 transition-colors shadow-2xs">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold shadow-2xs">
-                  <Brain className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Seimbangkan Otak Kiri & Kanan
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Gerakan motorik formasi jari tangan menstimulasi otak kanan (daya ingat spasial visual) bersamaan dengan logika angka di otak kiri.
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                  Metode ini secara aktif melatih sinkronisasi otak kiri (daya logika dan rumus hitung) dengan otak kanan (imajinasi visual gerak jari). Anak tidak lagi menghafal rumus secara mekanis, melainkan memahami konsep angka dengan cepat, tepat, dan gembira.
                 </p>
-              </div>
 
-              {/* Pillar 3 */}
-              <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-800 space-y-3.5 hover:border-emerald-500 transition-colors shadow-2xs">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold shadow-2xs">
-                  <Smile className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Belajar Ceria Bebas Stres
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Konsep belajar ramah anak dipadukan dengan senam jari, kartu kuis interaktif, dan tutor yang penuh empati dan kesabaran.
-                </p>
-              </div>
-
-              {/* Pillar 4 */}
-              <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-800 space-y-3.5 hover:border-emerald-500 transition-colors shadow-2xs">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold shadow-2xs">
-                  <QrCode className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Monitoring Rapor & Presensi QR
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Presensi digital instan via scan QR kartu murid, jurnal catatan guru tiap pertemuan, dan laporan rapor digital yang transparan.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* TIM PENGAJAR & GURU JARITMATIKA TERSERTIFIKASI SECTION */}
-        <section
-          id="guru"
-          className="py-16 sm:py-20 bg-white dark:bg-[#0f1a36] border-b border-slate-200/80 dark:border-slate-800"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest flex items-center justify-center gap-1.5">
-                <Award className="w-4 h-4" />
-                Tenaga Pendidik Berdedikasi
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                Belajar Langsung dari Guru Jaritmatika Tersertifikasi
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                Seluruh tutor Math Fingers telah mengantongi sertifikasi pengajaran Jaritmatika resmi, berjiwa sabar, dan memiliki pendekatan ramah anak yang membuat matematika jadi menyenangkan.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {TEACHERS.map((teacher, idx) => (
-                <div
-                  key={idx}
-                  className="p-5 rounded-3xl bg-slate-50 dark:bg-[#0a1711] border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/60 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-4 group"
-                >
-                  <div className="space-y-3.5">
-                    {/* Avatar with initials & branch badge */}
-                    <div className="flex items-center justify-between">
-                      <div
-                        className={`w-13 h-13 rounded-2xl bg-gradient-to-tr ${teacher.avatarColor} text-white font-black text-sm flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}
-                      >
-                        {teacher.name
-                          .split(" ")
-                          .slice(0, 2)
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                        {teacher.branch}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                        {teacher.name}
-                      </h3>
-                      <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 mt-0.5">
-                        {teacher.role}
-                      </p>
-                    </div>
-
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Fokus: <strong className="text-slate-700 dark:text-slate-300">{teacher.specialty}</strong>
-                    </p>
+                {/* Key Benefits List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span className="text-xs font-bold text-slate-800">Tanpa Sempoa Fisik (Alat Tidak Akan Hilang/Tertinggal)</span>
                   </div>
-
-                  <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-300" />
-                      {teacher.experience}
-                    </span>
-                    <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-300">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Tutor Aktif
-                    </span>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span className="text-xs font-bold text-slate-800">Menumbuhkan Rasa Percaya Diri di Sekolah</span>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom info badge */}
-            <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-[#0c2017] border border-emerald-200 dark:border-emerald-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#0062ff] text-white flex items-center justify-center shrink-0">
-                  <BadgeCheck className="w-5 h-5" />
-                </div>
-                <div className="text-slate-700 dark:text-slate-300">
-                  Setiap guru mencatat <strong>Jurnal Pembelajaran</strong> tiap sesi pertemuan yang dipantau langsung oleh kepala cabang dan wali murid.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleOpenTrial()}
-                className="px-4 py-2 rounded-xl bg-[#0062ff] hover:bg-[#0052d4] text-white font-bold text-xs whitespace-nowrap shadow-xs cursor-pointer shrink-0"
-              >
-                Coba Kelas Belajar Bersama Guru Kami ➜
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. PROGRAM BELAJAR & JENJANG LEVEL SECTION */}
-        <section id="program" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest">
-              Jenjang Belajar Terstruktur
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              Pilihan Program & Level Sesuai Usia Anak
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              Disusun secara bertahap mulai dari pengenalan simbol jari usia dini hingga trik perkalian dan pembagian cepat kompetisi.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {landingPrograms.map((prog) => (
-              <div
-                key={prog.id}
-                className={`rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 bg-white dark:bg-[#0f1a36] ${
-                  prog.popular
-                    ? "border-2 border-[#0062ff] shadow-xl ring-2 ring-emerald-500/20 relative"
-                    : "border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md"
-                }`}
-              >
-                {prog.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#0062ff] text-white text-[11px] font-extrabold uppercase tracking-wider shadow-sm">
-                    Paling Diminati
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span className="text-xs font-bold text-slate-800">Hitung Tambah, Kurang, Kali, Bagi Kilat</span>
                   </div>
-                )}
-
-                <div className="space-y-4">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 flex items-center justify-center font-bold">
-                    <GraduationCap className="w-5 h-5" />
-                  </div>
-
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-lg">
-                      {prog.levelTitle}
-                    </h3>
-                    <div className="text-xs font-bold text-emerald-600 dark:text-emerald-300 mt-0.5">
-                      {prog.targetAge}
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {prog.description}
-                  </p>
-
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                      Rp {prog.monthlyFee.toLocaleString("id-ID")}
-                      <span className="text-xs font-medium text-slate-400"> /bulan</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Biaya Registrasi: Rp {prog.registrationFee.toLocaleString("id-ID")}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2">
-                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                      Yang Didapatkan Siswa:
-                    </div>
-                    {prog.benefits.map((benefit, bIdx) => (
-                      <div
-                        key={bIdx}
-                        className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300"
-                      >
-                        <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
-                        <span>{benefit}</span>
-                      </div>
-                    ))}
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span className="text-xs font-bold text-slate-800">Rapor & Kartu Presensi Digital QR Real-time</span>
                   </div>
                 </div>
 
-                <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+                <div className="pt-4">
                   <button
                     type="button"
-                    onClick={() => handleOpenTrial(prog.levelTitle)}
-                    className={`w-full py-2.5 rounded-xl text-xs font-extrabold transition-all shadow-xs cursor-pointer ${
-                      prog.popular
-                        ? "bg-[#0062ff] hover:bg-[#0052d4] text-white"
-                        : "bg-slate-100 dark:bg-[#162244] hover:bg-slate-200 dark:hover:bg-[#1a382c] text-slate-800 dark:text-slate-200"
-                    }`}
+                    onClick={() => handleOpenTrial()}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
                   >
-                    Daftar Coba Level Ini ➜
+                    <span>Daftar Trial Class & Konsultasi</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
-        {/* 6. BIAYA & PAKET LES TRANSPARAN SECTION */}
-        <section
-          id="biaya"
-          className="py-16 sm:py-20 bg-slate-100/60 dark:bg-[#0b1812] border-y border-slate-200/80 dark:border-slate-800"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest">
-                Investasi Pendidikan Terjangkau
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                Paket Fasilitas Lengkap Tanpa Biaya Tersembunyi
+        {/* ========================================================================= */}
+        {/* 5. ACTION STRIP "Mulai Langkah Prestasi" (Image 2 style: "Let's Get Started") */}
+        {/* ========================================================================= */}
+        <section className="bg-[#047857] py-14 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+          {/* Subtle Geometric Background */}
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff15_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-50" />
+
+          <div className="max-w-7xl mx-auto relative z-10 text-center space-y-8">
+            <div>
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight">
+                Mulai Langkah Prestasi Si Kecil Hari Ini
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                Semua siswa baru langsung mendapatkan starter pack belajar eksklusif untuk mendukung latihan di kelas dan di rumah.
+              <p className="text-emerald-100 text-sm sm:text-base mt-2 max-w-2xl mx-auto">
+                Temukan program belajar terbaik dan jadwalkan sesi percobaan gratis untuk ananda sekarang juga.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Item 1 */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold">
-                  <BookOpen className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Buku Modul & Flashcard Eksklusif
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Modul bergambar bertahap yang didesain khusus agar anak mudah mengulang gerakan jari bersama ayah bunda di rumah.
-                </p>
-              </div>
-
-              {/* Item 2 */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold">
-                  <QrCode className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Kartu ID QR Code Absensi
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Kartu pelajar resmi dengan QR Code unik. Menumbuhkan kedisiplinan dan absensi cepat tercatat di dashboard orang tua.
-                </p>
-              </div>
-
-              {/* Item 3 */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-300 border border-emerald-100/80 dark:border-emerald-900/60 flex items-center justify-center font-bold">
-                  <Award className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                  Sertifikat Kelulusan Resmi
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Sertifikat resmi setiap kenaikan level yang menjadi bukti kompetensi berhitung cepat dan apresiasi atas prestasi anak.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. CABANG & JADWAL KELAS SECTION */}
-        <section id="cabang" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest">
-              Pusat Kegiatan Belajar
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              2 Cabang Resmi Math Fingers di Jambi
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Kunjungi cabang terdekat atau hubungi admin masing-masing cabang untuk jadwal kelas percobaan gratis.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Cabang Singkut */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  Cabang 1: Sarolangun
-                </span>
-                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  Kelas Buka
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                  Math Fingers Cabang Singkut
-                </h3>
-                <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>
-                    Jl. Lintas Sumatera Km. 1, Singkut, Kec. Singkut, Kab. Sarolangun, Jambi 37482
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-                  <span>
-                    Jadwal: <strong>Sabtu & Ahad (14:00 - 15:30 WIB)</strong>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-                  <span>
-                    Admin Cabang: <strong>Ibu Rina Marlina, S.Pd</strong>
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-3 flex flex-col sm:flex-row gap-2">
-                <a
-                  href="https://wa.me/6281279498907?text=Halo%20Admin%20Math%20Fingers%20Singkut,%20saya%20ingin%20info%20pendaftaran%20les"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Chat WA Cabang Singkut</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTrialForm((prev) => ({ ...prev, branch: "Singkut" }));
-                    handleOpenTrial("Cabang Singkut");
-                  }}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#162244]"
-                >
-                  Daftar Trial
-                </button>
-              </div>
-            </div>
-
-            {/* Cabang Bangko */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  Cabang 2: Merangin
-                </span>
-                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  Kelas Buka
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                  Math Fingers Cabang Bangko
-                </h3>
-                <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>
-                    Jl. Jenderal Sudirman No. 45, Pematang Kandis, Kec. Bangko, Kab. Merangin, Jambi 37314
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-                  <span>
-                    Jadwal: <strong>Senin s/d Ahad (Sesi Siang & Sore)</strong>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-                  <span>
-                    Admin Cabang: <strong>Bapak Faisal Rahman, S.Kom</strong>
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-3 flex flex-col sm:flex-row gap-2">
-                <a
-                  href="https://wa.me/6281379720841?text=Halo%20Admin%20Math%20Fingers%20Bangko,%20saya%20ingin%20info%20pendaftaran%20les"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Chat WA Cabang Bangko</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTrialForm((prev) => ({ ...prev, branch: "Bangko" }));
-                    handleOpenTrial("Cabang Bangko");
-                  }}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#162244]"
-                >
-                  Daftar Trial
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* PETA LOKASI & NAVIGASI GOOGLE MAPS SECTION */}
-        <section
-          id="maps"
-          className="py-16 sm:py-20 bg-slate-50 dark:bg-[#07130e] border-y border-slate-200/80 dark:border-slate-800"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest flex items-center justify-center gap-1.5">
-                <Navigation className="w-4 h-4" />
-                Peta Lokasi & Denah Google Maps
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                Kunjungi Bimbel Math Fingers Terdekat
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                Pilih cabang untuk melihat denah lokasi interaktif Google Maps, fasilitas gedung, dan langsung dapatkan rute arah perjalanan.
-              </p>
-            </div>
-
-            {/* Branch Selector Tabs */}
-            <div className="flex justify-center">
-              <div className="inline-flex p-1.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setActiveMapBranch("Singkut")}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    activeMapBranch === "Singkut"
-                      ? "bg-[#0062ff] text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span>Cabang 1: Singkut (Sarolangun)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveMapBranch("Bangko")}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    activeMapBranch === "Bangko"
-                      ? "bg-[#0062ff] text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span>Cabang 2: Bangko (Merangin)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Maps & Details Card Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              {/* Map Embed Container */}
-              <div className="lg:col-span-8 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md bg-slate-200 dark:bg-slate-800 min-h-[380px] sm:min-h-[440px] relative">
-                <iframe
-                  title={`Google Maps ${activeMapBranch}`}
-                  src={
-                    activeMapBranch === "Singkut"
-                      ? "https://maps.google.com/maps?q=Singkut,+Sarolangun,+Jambi&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                      : "https://maps.google.com/maps?q=Bangko,+Merangin,+Jambi&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                  }
-                  className="w-full h-full min-h-[380px] sm:min-h-[440px] border-0"
-                  loading="lazy"
-                  allowFullScreen
-                />
-                <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#0f1a36]/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-md border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 pointer-events-none">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                  <span>Lokasi Aktif: Cabang {activeMapBranch}</span>
-                </div>
-              </div>
-
-              {/* Branch Info & Action Card */}
-              <div className="lg:col-span-4 p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                      {activeMapBranch === "Singkut" ? "Kabupaten Sarolangun" : "Kabupaten Merangin"}
-                    </span>
-                    <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Buka Setiap Hari
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">
-                      Math Fingers Cabang {activeMapBranch}
-                    </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>
-                        {activeMapBranch === "Singkut"
-                          ? "Jl. Lintas Sumatera Km. 1, Singkut, Kec. Singkut, Kab. Sarolangun, Jambi 37482"
-                          : "Jl. Jenderal Sudirman No. 45, Pematang Kandis, Kec. Bangko, Kab. Merangin, Jambi 37314"}
-                      </span>
-                    </p>
-                  </div>
-
-                  <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-                      <span>
-                        Jadwal:{" "}
-                        <strong>
-                          {activeMapBranch === "Singkut"
-                            ? "Sabtu & Ahad (14:00 - 15:30 WIB)"
-                            : "Senin s/d Ahad (Sesi Siang & Sore)"}
-                        </strong>
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
-                      <span>
-                        Admin Cabang:{" "}
-                        <strong>
-                          {activeMapBranch === "Singkut"
-                            ? "Ibu Rina Marlina, S.Pd"
-                            : "Bapak Faisal Rahman, S.Kom"}
-                        </strong>
-                      </span>
-                    </div>
-
-                    <div className="flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
-                      <span>
-                        Fasilitas:{" "}
-                        <strong>Ruang Ber-AC, Ruang Tunggu Wali Murid, WiFi, & Parkir Aman</strong>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  {/* Direct Google Maps Direction Link */}
-                  <a
-                    href={
-                      activeMapBranch === "Singkut"
-                        ? "https://maps.google.com/?q=Singkut+Sarolangun+Jambi"
-                        : "https://maps.google.com/?q=Bangko+Merangin+Jambi"
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 font-bold text-xs transition-colors shadow-xs"
-                  >
-                    <Navigation className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
-                    <span>Petunjuk Arah Google Maps ↗</span>
-                  </a>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <a
-                      href={
-                        activeMapBranch === "Singkut"
-                          ? "https://wa.me/6281279498907?text=Halo%20Admin%20Math%20Fingers%20Singkut,%20saya%20ingin%20info%20pendaftaran%20les"
-                          : "https://wa.me/6281379720841?text=Halo%20Admin%20Math%20Fingers%20Bangko,%20saya%20ingin%20info%20pendaftaran%20les"
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>Chat WA</span>
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTrialForm((prev) => ({ ...prev, branch: activeMapBranch }));
-                        handleOpenTrial(`Cabang ${activeMapBranch}`);
-                      }}
-                      className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-xs transition-colors cursor-pointer"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-                      <span>Coba Gratis</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 8. TESTIMONI WALI MURID SECTION */}
-        <section
-          id="testimoni"
-          className="py-16 sm:py-24 bg-white dark:bg-[#0f1a36] border-y border-slate-200/80 dark:border-slate-800"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest">
-                Cerita Sukses Siswa
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                Apa Kata Orang Tua Murid Math Fingers?
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                Peningkatan rasa percaya diri dan ketangkasan berhitung anak adalah kebahagiaan terbesar kami.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {landingTestimonials.map((testi) => (
-                <div
-                  key={testi.id}
-                  className="p-6 rounded-3xl bg-slate-50 dark:bg-[#0b1812] border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-4 shadow-2xs hover:shadow-xs transition-shadow"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-300">
-                      {Array.from({ length: testi.rating }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 dark:fill-amber-400" />
-                      ))}
-                    </div>
-
-                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed">
-                      &quot;{testi.comment}&quot;
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
-                    <div>
-                      <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">
-                        {testi.parentName}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Wali dari {testi.studentName}
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                      {testi.branch}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 9. FAQ ACCORDION SECTION */}
-        <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-10">
-          <div className="text-center space-y-3">
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 uppercase tracking-widest">
-              Pertanyaan yang Sering Diajukan
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-              Tanya Jawab Seputar Les Jaritmatika
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1a36] overflow-hidden transition-colors"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:text-emerald-600 transition-colors cursor-pointer"
-                  >
-                    <span>{faq.q}</span>
-                    {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 ml-2" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-emerald-600/70 dark:text-emerald-300/70 shrink-0 ml-2" />
-                    )}
-                  </button>
-
-                  {isOpen && (
-                    <div className="px-4 sm:px-5 pb-5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/80 pt-3">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* 10. FINAL CONVERSION BANNER */}
-        <section className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="rounded-3xl bg-gradient-to-r from-[#0041a8] via-[#0062ff] to-[#0052d4] text-white p-8 sm:p-12 md:p-16 text-center space-y-6 shadow-2xl relative overflow-hidden">
-            <div className="max-w-2xl mx-auto space-y-3">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider">
-                Kelas Percobaan Terbatas
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-                Beri Hadiah Kepercayaan Diri Seumur Hidup Lewat Jaritmatika!
-              </h2>
-              <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
-                Daftarkan si kecil untuk mengikuti 1 sesi Free Trial Class sekarang juga. Lihat sendiri betapa cerianya ia saat menemukan cara berhitung cepat dengan jarinya!
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => handleOpenTrial()}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-emerald-950 font-extrabold text-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
+            {/* 3 White Action Cards (Image 2 style) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+              <a
+                href="#program"
+                className="p-5 rounded-xl bg-white hover:bg-emerald-50 text-slate-900 transition-all font-black text-sm shadow-md hover:-translate-y-1 flex items-center justify-center text-center border border-emerald-100 group"
               >
-                Daftar Coba Kelas Gratis ➜
-              </button>
+                <span className="group-hover:text-emerald-700 transition-colors">
+                  1. Pilih Program Belajar Ananda ➔
+                </span>
+              </a>
+
               <a
                 href={`https://wa.me/${landingHero.whatsappNumber}?text=${encodeURIComponent(
-                  "Halo Admin Math Fingers, saya ingin konsultasi pendaftaran les jaritmatika untuk anak saya."
+                  "Halo Admin Math Fingers, saya ingin informasi mengenai biaya SPP dan pilihan jadwal kelas yang tersedia."
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-950/40 hover:bg-emerald-950/60 border border-emerald-300/30 text-white font-bold text-sm transition-all"
+                className="p-5 rounded-xl bg-white hover:bg-emerald-50 text-slate-900 transition-all font-black text-sm shadow-md hover:-translate-y-1 flex items-center justify-center text-center border border-emerald-100 group"
               >
-                Chat WhatsApp Admin
+                <span className="group-hover:text-emerald-700 transition-colors">
+                  2. Info Biaya SPP & Jadwal Kelas ➔
+                </span>
               </a>
+
+              <button
+                type="button"
+                onClick={() => handleOpenTrial()}
+                className="p-5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 transition-all font-black text-sm shadow-md hover:-translate-y-1 flex items-center justify-center text-center cursor-pointer"
+              >
+                <span>3. Daftar Kelas Percobaan (Trial Gratis) ★</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 6. STUDENT STORIES & TESTIMONIALS (Image 2 style: "Student Stories") */}
+        {/* ========================================================================= */}
+        <section id="cerita" className="py-20 lg:py-28 bg-slate-50 border-b border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Header with Title and Right Action Button */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-12 border-b border-slate-200 pb-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-1 bg-emerald-600 rounded-full" />
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-700">
+                    Cerita Wali Murid & Prestasi
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-2">
+                  Kisah Nyata Siswa Math Fingers
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleOpenTrial()}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                Daftarkan Ananda Sekarang ➔
+              </button>
+            </div>
+
+            {/* Split Content: Photo on Left + Numbered List on Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left: Featured Student Photo */}
+              <div className="lg:col-span-5 relative">
+                <div className="rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-white">
+                  <img
+                    src="/images/landing/student-story.jpg"
+                    alt="Siswa Berprestasi Math Fingers"
+                    className="w-full h-[420px] object-cover"
+                  />
+                  <div className="p-4 bg-white border-t border-slate-100">
+                    <div className="flex items-center gap-1 text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-amber-400" />
+                      ))}
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 mt-2 italic">
+                      &quot;{studentStories[activeStoryIdx].quote}&quot;
+                    </p>
+                    <div className="text-[11px] font-bold text-emerald-700 mt-1">
+                      {studentStories[activeStoryIdx].parent}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Numbered Stories List (01, 02, 03) */}
+              <div className="lg:col-span-7 space-y-4">
+                {studentStories.map((story, idx) => {
+                  const isActive = activeStoryIdx === idx;
+                  return (
+                    <div
+                      key={story.id}
+                      onClick={() => setActiveStoryIdx(idx)}
+                      className={`p-6 rounded-2xl transition-all cursor-pointer border ${
+                        isActive
+                          ? "bg-white border-emerald-500 shadow-lg scale-101"
+                          : "bg-white/70 hover:bg-white border-slate-200/90 shadow-2xs"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <span
+                          className={`text-2xl sm:text-3xl font-black font-mono shrink-0 ${
+                            isActive ? "text-emerald-600" : "text-slate-300"
+                          }`}
+                        >
+                          {story.id}
+                        </span>
+                        <div className="space-y-1.5 flex-1">
+                          <h3
+                            className={`text-base sm:text-lg font-black transition-colors ${
+                              isActive ? "text-slate-900" : "text-slate-700"
+                            }`}
+                          >
+                            {story.title}
+                          </h3>
+                          <div className="text-xs text-slate-500 font-medium">
+                            <span className="font-bold text-emerald-700">{story.author}</span> • {story.role}
+                          </div>
+                          {isActive && (
+                            <p className="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-100 mt-2">
+                              {story.quote}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 7. EXPLORE PROGRAMS & CURRICULUM (Image 2 style: "Explore Majors & Programs") */}
+        {/* ========================================================================= */}
+        <section id="program" className="relative py-20 lg:py-28 overflow-hidden text-white">
+          {/* Background Image with Deep Emerald Overlay */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-20 scale-105"
+            style={{ backgroundImage: `url('/images/landing/programs-bg.jpg')` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-slate-950/90 to-emerald-950/85 -z-10" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Left Column: Heading & Description */}
+              <div className="lg:col-span-6 space-y-6">
+                <div>
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-300 bg-emerald-900/60 px-3 py-1 rounded-full border border-emerald-700/60">
+                    Kurikulum Terstruktur & Bertahap
+                  </span>
+                  <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white mt-4 leading-tight">
+                    Eksplorasi Program <br />
+                    Unggulan Math Fingers
+                  </h2>
+                </div>
+
+                <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
+                  Setiap anak memiliki ritme belajar unik. Kami menyusun kurikulum berjenjang dari usia 4 hingga 12 tahun yang diuji secara berkala dengan Rapor Kompetensi Digital dan Sertifikat Resmi.
+                </p>
+
+                {/* Proof Metrics */}
+                <div className="grid grid-cols-3 gap-3 pt-2 text-left">
+                  <div className="p-3 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15">
+                    <div className="text-xl sm:text-2xl font-black text-emerald-300">4 Level</div>
+                    <div className="text-[11px] text-slate-300 mt-0.5">Jaritmatika Lengkap</div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15">
+                    <div className="text-xl sm:text-2xl font-black text-emerald-300">Bulanan</div>
+                    <div className="text-[11px] text-slate-300 mt-0.5">Uji Kecepatan</div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15">
+                    <div className="text-xl sm:text-2xl font-black text-emerald-300">QR Code</div>
+                    <div className="text-[11px] text-slate-300 mt-0.5">Presensi Kartu Digital</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Stacked Program Buttons (Image 2 style) */}
+              <div className="lg:col-span-6 space-y-3.5">
+                <button
+                  type="button"
+                  onClick={() => handleOpenTrial("Jaritmatika Pra-Dasar (Usia 4-6 Th)")}
+                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                      Jaritmatika Pra-Dasar (TK / PAUD - Usia 4–6 Th)
+                    </div>
+                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                      Pengenalan formasi jari, simbol angka ceria, dan motorik halus
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenTrial("Jaritmatika Dasar & Terampil (SD)")}
+                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                      Jaritmatika Dasar & Terampil (SD Kelas 1–6)
+                    </div>
+                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                      Penjumlahan & pengurangan cepat belasan hingga ratusan tanpa corat-coret
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenTrial("Jaritmatika Mahir (Perkalian & Pembagian)")}
+                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                      Jaritmatika Mahir: Perkalian & Pembagian Jari
+                    </div>
+                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                      Hitung kilat perkalian 6–99 dan pembagian bersisa tanpa menghafal tabel rumit
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenTrial("Program Les Membaca Fonik Cepat")}
+                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                      Program Les Membaca Fonik Cepat Lancar
+                    </div>
+                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                      Metode suku kata ceria tanpa mengeja, 3 bulan lancar membaca buku cerita
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 8. WHAT'S HAPPENING / NEWS & ACTIVITIES (Image 2 style: 4 Cards Grid) */}
+        {/* ========================================================================= */}
+        <section id="kabar" className="py-20 lg:py-28 bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Section Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-12 border-b border-slate-200 pb-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-1 bg-emerald-600 rounded-full" />
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-700">
+                    Kabar & Dokumentasi
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-2">
+                  Kegiatan Terkini di Math Fingers
+                </h2>
+              </div>
+
+              <a
+                href="#agenda"
+                className="px-5 py-2.5 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-xs font-bold transition-all"
+              >
+                Lihat Agenda Mendatang ➔
+              </a>
+            </div>
+
+            {/* 4 Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newsItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Image */}
+                    <div className="h-44 overflow-hidden bg-slate-100 relative">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-md shadow-xs">
+                        {item.category}
+                      </span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 space-y-2">
+                      <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-2">
+                        <span>{item.date}</span>
+                        <span>•</span>
+                        <span>{item.author}</span>
+                      </div>
+                      <h3 className="text-sm font-black text-slate-900 leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                        {item.summary}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 pt-0">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTrial()}
+                      className="text-xs font-extrabold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1 group-hover:gap-1.5 transition-all cursor-pointer"
+                    >
+                      <span>Ikuti Kegiatan Ini</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 9. UPCOMING EVENTS (Image 2 style: 3 Cards Grid with Big Date Badge) */}
+        {/* ========================================================================= */}
+        <section id="agenda" className="py-20 lg:py-28 bg-slate-50 border-b border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Section Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-12 border-b border-slate-200 pb-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-1 bg-emerald-600 rounded-full" />
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-700">
+                    Agenda Belajar & Kompetisi
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-2">
+                  Agenda Kegiatan Mendatang
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleOpenTrial()}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                Daftar Semua Agenda ➔
+              </button>
+            </div>
+
+            {/* 3 Events Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {events.map((ev, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between"
+                >
+                  <div className="space-y-4">
+                    {/* Big Date Badge (Image 2 style) */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-50 border-2 border-emerald-600 flex flex-col items-center justify-center shrink-0">
+                        <span className="text-lg font-black text-emerald-800 leading-none">
+                          {ev.day}
+                        </span>
+                        <span className="text-[10px] font-black uppercase text-emerald-600 mt-0.5">
+                          {ev.month}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{ev.time}</span>
+                        </div>
+                        <div className="text-xs font-bold text-emerald-700 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{ev.location}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 className="text-base font-black text-slate-900 leading-snug hover:text-emerald-700 transition-colors">
+                      {ev.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {ev.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-5 border-t border-slate-100 mt-5">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTrial(ev.title)}
+                      className="w-full py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-xs font-bold transition-all text-center cursor-pointer"
+                    >
+                      Daftar Sesi Agenda Ini ➔
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 10. CABANG & FASILITAS SECTION */}
+        {/* ========================================================================= */}
+        <section id="cabang" className="py-20 lg:py-28 bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                Lokasi Cabang Resmi
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                Pilih Cabang Terdekat di Kota Anda
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600">
+                Gedung belajar representatif, ruang kelas ber-AC, area parkir aman, dan ruang tunggu wali murid yang nyaman.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* Cabang Singkut */}
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 border-2 border-emerald-500 shadow-md space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black">
+                      SKT
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900">Cabang Singkut</h3>
+                      <span className="text-[11px] font-bold text-emerald-700">Pusat Bimbingan</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                    Aktif
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>Jl. Lintas Sumatera, Kec. Singkut, Kab. Sarolangun, Jambi</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>+62 812-7949-8907 (Admin Febrianti Dewi)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Senin – Sabtu (08.00 – 17.00 WIB)</span>
+                  </div>
+                </div>
+
+                <a
+                  href="https://wa.me/6281279498907?text=Halo%20Admin%20Math%20Fingers%20Singkut,%20saya%20ingin%20konsultasi%20pendaftaran%20les."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Hubungi Admin Cabang Singkut</span>
+                </a>
+              </div>
+
+              {/* Cabang Bangko */}
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 border border-slate-200 shadow-md space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-slate-700 text-white flex items-center justify-center font-black">
+                      BGK
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900">Cabang Bangko</h3>
+                      <span className="text-[11px] font-bold text-slate-600">Tabir Timur & Bangko Kota</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                    Aktif
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>Jl. Mayor H. Syamsuddin Uban, Bangko, Kab. Merangin, Jambi</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>+62 813-7972-0841 (Admin Cabang Bangko)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Senin – Sabtu (08.00 – 17.00 WIB)</span>
+                  </div>
+                </div>
+
+                <a
+                  href="https://wa.me/6281379720841?text=Halo%20Admin%20Math%20Fingers%20Bangko,%20saya%20ingin%20konsultasi%20pendaftaran%20les."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-all shadow-xs"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Hubungi Admin Cabang Bangko</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 11. PARTNER STRIP (Image 2 style: Clean Logo Showcase) */}
+        {/* ========================================================================= */}
+        <section id="mitra" className="py-12 bg-slate-50 border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">
+              Dipercaya Oleh Berbagai Mitra Sekolah & Yayasan Pendidikan di Jambi
+            </p>
+            <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap opacity-75 grayscale hover:grayscale-0 transition-all">
+              <div className="flex items-center gap-2 font-black text-slate-700 text-sm">
+                <Building2 className="w-5 h-5 text-emerald-600" />
+                <span>TK / PAUD Terpadu</span>
+              </div>
+              <div className="flex items-center gap-2 font-black text-slate-700 text-sm">
+                <GraduationCap className="w-5 h-5 text-emerald-600" />
+                <span>SD IT Al-Madani</span>
+              </div>
+              <div className="flex items-center gap-2 font-black text-slate-700 text-sm">
+                <BookOpen className="w-5 h-5 text-emerald-600" />
+                <span>Yayasan Bina Prestasi</span>
+              </div>
+              <div className="flex items-center gap-2 font-black text-slate-700 text-sm">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                <span>Koperasi Pendidikan Sarolangun</span>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
-      {/* 11. FOOTER */}
-      <footer className="border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#0f1a36] py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 text-xs">
-          <div className="space-y-3 md:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 dark:border-emerald-800 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
-                <img
-                  src="/logo.png"
-                  alt="Easy Learning House"
-                  className="w-full h-full object-contain"
-                />
+      {/* ========================================================================= */}
+      {/* 12. FOOTER (Image 2 style: Deep Dark Charcoal/Slate + 4 Columns) */}
+      {/* ========================================================================= */}
+      <footer className="bg-[#0b1329] text-slate-300 pt-16 pb-12 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
+            {/* Col 1 & 2: Brand Profile */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-xs">
+                  <img
+                    src="/logo.png"
+                    alt="Logo Math Fingers"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-white font-black text-lg tracking-tight">
+                    Easy Learning House
+                  </h3>
+                  <p className="text-xs text-emerald-400 font-bold">
+                    Bimbel Jaritmatika Math Fingers
+                  </p>
+                </div>
               </div>
-              <div>
-                <span className="font-black text-slate-900 dark:text-slate-100 text-base tracking-tight">
-                  Easy Learning House
-                </span>
-                <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
-                  Math Fingers Jaritmatika Indonesia
-                </p>
+
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                Bimbingan belajar berhitung cepat metode 10 jari tangan tanpa sempoa dan tanpa kalkulator. Memaksimalkan keseimbangan otak kiri dan kanan anak usia 4 hingga 12 tahun.
+              </p>
+
+              <div className="pt-2 text-xs text-slate-400 space-y-1.5">
+                <div><strong>Cabang Singkut:</strong> Jl. Lintas Sumatera, Sarolangun</div>
+                <div><strong>Cabang Bangko:</strong> Tabir Timur, Merangin, Jambi</div>
+                <div><strong>Hotline WhatsApp:</strong> +62 812-7949-8907</div>
               </div>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
-              Bimbingan belajar Jaritmatika terpadu di Sarolangun dan Merangin. Mengembangkan keterampilan berhitung cepat, konsentrasi, dan daya ingat anak melalui formasi 10 jari tangan alami.
-            </p>
+
+            {/* Col 3: Program Belajar */}
+            <div className="space-y-3">
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">
+                Program Belajar
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li>
+                  <a href="#program" className="hover:text-emerald-400 transition-colors">
+                    Jaritmatika Pra-Dasar (TK)
+                  </a>
+                </li>
+                <li>
+                  <a href="#program" className="hover:text-emerald-400 transition-colors">
+                    Jaritmatika Dasar (SD)
+                  </a>
+                </li>
+                <li>
+                  <a href="#program" className="hover:text-emerald-400 transition-colors">
+                    Jaritmatika Mahir (Perkalian)
+                  </a>
+                </li>
+                <li>
+                  <a href="#program" className="hover:text-emerald-400 transition-colors">
+                    Program Les Membaca Fonik
+                  </a>
+                </li>
+                <li>
+                  <a href="#program" className="hover:text-emerald-400 transition-colors">
+                    Kelas Privat & Intensif
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: Informasi & Fitur */}
+            <div className="space-y-3">
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">
+                Informasi
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li>
+                  <a href="#tentang" className="hover:text-emerald-400 transition-colors">
+                    Tentang Kami & Metode
+                  </a>
+                </li>
+                <li>
+                  <a href="#cerita" className="hover:text-emerald-400 transition-colors">
+                    Cerita Prestasi Siswa
+                  </a>
+                </li>
+                <li>
+                  <a href="#kabar" className="hover:text-emerald-400 transition-colors">
+                    Kabar & Dokumentasi
+                  </a>
+                </li>
+                <li>
+                  <a href="#agenda" className="hover:text-emerald-400 transition-colors">
+                    Agenda & Trial Class
+                  </a>
+                </li>
+                <li>
+                  <a href="#cabang" className="hover:text-emerald-400 transition-colors">
+                    Lokasi & Fasilitas Cabang
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 5: Tautan WebApp */}
+            <div className="space-y-3">
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">
+                Akses WebApp
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li>
+                  <Link href="/login" className="hover:text-emerald-400 transition-colors">
+                    Login Siswa & Wali Murid
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="hover:text-emerald-400 transition-colors">
+                    Login Guru & Tutor
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="hover:text-emerald-400 transition-colors">
+                    Login Admin Cabang
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenTrial()}
+                    className="text-amber-400 hover:text-amber-300 font-bold transition-colors cursor-pointer text-left"
+                  >
+                    ★ Daftar Coba Kelas Gratis
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="font-bold text-slate-900 dark:text-slate-100 uppercase text-[11px] tracking-wider">
-              Lokasi Cabang
+          {/* Bottom Copyright Bar */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>
+              © 2026 Easy Learning House - Math Fingers. Seluruh hak cipta dilindungi.
             </div>
-            <div className="text-slate-600 dark:text-slate-400 space-y-1">
-              <div>📍 Cabang 1: Singkut, Sarolangun</div>
-              <div>📍 Cabang 2: Bangko, Merangin</div>
-              <div>💬 WA: 0812-7949-8907</div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="font-bold text-slate-900 dark:text-slate-100 uppercase text-[11px] tracking-wider">
-              Akses Sistem
-            </div>
-            <div className="space-y-1.5">
-              <Link
-                href="/login"
-                className="inline-block text-emerald-600 dark:text-emerald-300 hover:underline font-bold"
-              >
-                Portal Masuk WebApp (Siswa/Guru) ➜
+            <div className="flex items-center gap-6">
+              <a href="#tentang" className="hover:text-slate-400">
+                Syarat & Ketentuan
+              </a>
+              <a href="#tentang" className="hover:text-slate-400">
+                Kebijakan Privasi
+              </a>
+              <Link href="/login" className="text-emerald-400 font-bold hover:underline">
+                Masuk WebApp ➔
               </Link>
-              <div>
-                <Link
-                  href="/dashboard"
-                  className="text-slate-500 dark:text-slate-400 hover:underline"
-                >
-                  Dashboard WebApp
-                </Link>
-              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <div>
-            © {new Date().getFullYear()} Bimbel Math Fingers. Seluruh hak cipta dilindungi undang-undang.
-          </div>
-          <div className="flex items-center gap-2">
-            <span>Metode Jaritmatika Indonesia</span>
-            <span>•</span>
-            <span>Singkut & Bangko</span>
           </div>
         </div>
       </footer>
 
-      {/* 12. INTERACTIVE TRIAL CLASS REGISTRATION MODAL */}
+      {/* ========================================================================= */}
+      {/* MODAL: FREE TRIAL CLASS REGISTRATION (Connected to PostgreSQL Leads) */}
+      {/* ========================================================================= */}
       {showTrialModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl relative max-h-[95vh] overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => setShowTrialModal(false)}
-              className="absolute top-5 right-5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {!trialSuccess ? (
-              <form onSubmit={handleSubmitTrial} className="space-y-4">
-                <div className="space-y-1.5">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
-                    <Sparkles className="w-3 h-3" />
-                    <span>Free Trial Class • Tanpa Komitmen</span>
-                  </div>
-                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                    Daftar Coba Kelas Gratis
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Isi formulir singkat di bawah ini. Admin cabang kami akan segera menghubungi Anda via WhatsApp untuk mengatur jadwal sesi coba jaritmatika ananda.
-                  </p>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="bg-[#047857] text-white px-6 py-5 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-black uppercase tracking-wider text-emerald-200">
+                  Formulir Pendaftaran
                 </div>
+                <h3 className="text-lg font-black mt-0.5">
+                  Coba Kelas Gratis (Trial Class)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTrialModal(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
 
-                <div className="space-y-3 pt-1">
+            {/* Modal Body */}
+            <div className="p-6">
+              {trialSuccess ? (
+                <div className="text-center py-6 space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Nama Calon Siswa (Ananda) *
+                    <h4 className="text-lg font-black text-slate-900">
+                      Pendaftaran Berhasil Terkirim!
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
+                      Terima kasih Ayah/Bunda. Data Ananda <strong>{trialForm.studentName}</strong> sudah masuk ke sistem Math Fingers.
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={handleDirectWhatsAppFromModal}
+                      className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Konfirmasi Langsung ke WhatsApp Admin</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowTrialModal(false)}
+                      className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 cursor-pointer"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitTrial} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Nama Calon Siswa (Anak) *
                     </label>
                     <input
                       type="text"
                       required
+                      placeholder="Contoh: Muhammad Farhan"
                       value={trialForm.studentName}
                       onChange={(e) =>
                         setTrialForm({ ...trialForm, studentName: e.target.value })
                       }
-                      placeholder="Contoh: Kenzo Alvaro"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Usia / Kelas Sekolah *
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Usia / Kelas *
                       </label>
                       <input
                         type="text"
-                        required
+                        placeholder="Contoh: 7 Tahun / Kelas 1 SD"
                         value={trialForm.studentAge}
                         onChange={(e) =>
                           setTrialForm({ ...trialForm, studentAge: e.target.value })
                         }
-                        placeholder="Contoh: 7 Thn / Kelas 2 SD"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
                         Pilihan Cabang *
                       </label>
-                      <CustomSelect
+                      <select
                         value={trialForm.branch}
-                        onChange={(val) =>
+                        onChange={(e) =>
                           setTrialForm({
                             ...trialForm,
-                            branch: val as any,
+                            branch: e.target.value as "Singkut" | "Bangko",
                           })
                         }
-                        className="w-full"
-                        size="md"
-                        options={
-                          branches && branches.length > 0
-                            ? branches.map((b) => ({
-                                value: b.name,
-                                label: `Cabang: ${b.name}`,
-                              }))
-                            : [
-                                { value: "Singkut", label: "Cabang: Singkut" },
-                                { value: "Bangko", label: "Cabang: Bangko" },
-                              ]
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="Singkut">Cabang Singkut</option>
+                        <option value="Bangko">Cabang Bangko</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Nama Orang Tua / Wali *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Contoh: Bunda Rina"
+                        value={trialForm.parentName}
+                        onChange={(e) =>
+                          setTrialForm({ ...trialForm, parentName: e.target.value })
                         }
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Nomor WhatsApp *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="0812xxxxxxxx"
+                        value={trialForm.phone}
+                        onChange={(e) =>
+                          setTrialForm({ ...trialForm, phone: e.target.value })
+                        }
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Nama Orang Tua / Wali *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={trialForm.parentName}
-                      onChange={(e) =>
-                        setTrialForm({ ...trialForm, parentName: e.target.value })
-                      }
-                      placeholder="Contoh: Bunda Maya"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Nomor WhatsApp Aktif *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={trialForm.phone}
-                      onChange={(e) =>
-                        setTrialForm({ ...trialForm, phone: e.target.value })
-                      }
-                      placeholder="Contoh: 081234567890"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
                       Catatan Tambahan (Opsional)
                     </label>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={2}
+                      placeholder="Contoh: Belum pernah les sebelumnya, ingin coba hari Sabtu"
                       value={trialForm.notes}
                       onChange={(e) =>
                         setTrialForm({ ...trialForm, notes: e.target.value })
                       }
-                      placeholder="Contoh: Ingin trial hari Sabtu sore"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
-                </div>
 
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-[#0062ff] hover:bg-[#0052d4] text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-emerald-200" />
-                    <span>Ajukan Coba Kelas Gratis Sekarang</span>
-                  </button>
-                </div>
-              </form>
-            ) : (
-              /* Success State */
-              <div className="py-4 text-center space-y-4">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
+                  <div className="pt-2 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowTrialModal(false)}
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md cursor-pointer transition-all"
+                    >
+                      Kirim Pendaftaran Trial ➔
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-                <div className="space-y-1">
-                  <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">
-                    Alhamdulillah, Pendaftaran Terkirim!
-                  </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
-                    Data ananda <strong>{trialForm.studentName}</strong> sudah tersimpan di sistem Math Fingers Cabang {trialForm.branch}.
-                  </p>
-                </div>
+      {/* ========================================================================= */}
+      {/* MODAL: VIDEO TOUR / PENGENALAN METODE JARI */}
+      {/* ========================================================================= */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-[#047857] text-white px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-black">
+                  Video Pengenalan Metode Math Fingers
+                </h3>
+                <p className="text-xs text-emerald-200">
+                  Formasi 10 Jari Pintar Sebagai Kalkulator Alami Anak
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowVideoModal(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
 
-                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-[#162244] text-left text-xs space-y-1 text-slate-700 dark:text-slate-300 border border-emerald-100 dark:border-emerald-900">
-                  <div>• Calon Siswa: <strong>{trialForm.studentName}</strong> ({trialForm.studentAge})</div>
-                  <div>• Orang Tua: <strong>{trialForm.parentName}</strong></div>
-                  <div>• Cabang Tujuan: <strong>Cabang {trialForm.branch}</strong></div>
-                </div>
-
-                <div className="space-y-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleDirectWhatsAppFromModal}
-                    className="w-full py-3 rounded-xl bg-[#0062ff] hover:bg-[#0052d4] text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Lanjutkan Konfirmasi via WhatsApp Cabang</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowTrialModal(false)}
-                    className="w-full py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  >
-                    Tutup Jendela Ini
-                  </button>
+            <div className="p-6 space-y-4">
+              <div className="aspect-video rounded-2xl bg-slate-900 overflow-hidden relative shadow-inner flex items-center justify-center">
+                <img
+                  src="/images/landing/hero-kids.jpg"
+                  alt="Video Preview"
+                  className="w-full h-full object-cover opacity-80"
+                />
+                <div className="absolute inset-0 bg-slate-950/50 flex flex-col items-center justify-center text-center p-6 text-white space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-emerald-600/90 text-white flex items-center justify-center shadow-lg">
+                    <Play className="w-7 h-7 fill-white ml-0.5" />
+                  </div>
+                  <div className="max-w-md">
+                    <div className="text-sm font-black">
+                      Demonstrasi Hitung Cepat 10 Jari Tangan
+                    </div>
+                    <div className="text-xs text-slate-300 mt-1">
+                      Kunjungi kanal resmi atau hadiri sesi kelas percobaan langsung untuk melihat ananda mempraktikkan formasi jari.
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <div className="text-xs text-slate-500 font-medium">
+                  Ingin melihat langsung di ruang kelas bersama guru?
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowVideoModal(false);
+                    handleOpenTrial();
+                  }}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  Daftar Trial Class Gratis ➔
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
