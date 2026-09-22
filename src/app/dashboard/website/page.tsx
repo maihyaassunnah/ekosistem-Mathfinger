@@ -14,34 +14,29 @@ import {
   Trash2,
   Edit2,
   Check,
-  Phone,
-  MessageCircle,
-  Save,
-  RotateCcw,
-  Star,
   CheckCircle2,
   Calendar,
-  Layers,
-  Award,
-  DollarSign,
-  AlertCircle,
-  Megaphone,
   Building2,
-  Handshake,
   Link as LinkIcon,
   Eye,
   EyeOff,
   X,
+  Newspaper,
+  CalendarDays,
+  Image as ImageIcon,
+  MessageCircle,
 } from "lucide-react";
 import {
   useAppStore,
-  LandingHeroConfig,
   LandingProgramItem,
-  LandingTestimonialItem,
   LandingLeadItem,
   LandingPartnerItem,
 } from "@/lib/store";
 import CustomSelect from "@/components/ui/CustomSelect";
+import WebsiteMediaHeroTab from "@/components/dashboard/website/WebsiteMediaHeroTab";
+import WebsiteTestimonialsTab from "@/components/dashboard/website/WebsiteTestimonialsTab";
+import WebsiteNewsTab from "@/components/dashboard/website/WebsiteNewsTab";
+import WebsiteEventsTab from "@/components/dashboard/website/WebsiteEventsTab";
 
 function WebsiteManagementContent() {
   const searchParams = useSearchParams();
@@ -49,14 +44,13 @@ function WebsiteManagementContent() {
 
   const {
     landingHero,
-    updateLandingHero,
     landingPrograms,
     addLandingProgram,
     updateLandingProgram,
     deleteLandingProgram,
     landingTestimonials,
-    addLandingTestimonial,
-    deleteLandingTestimonial,
+    landingNews,
+    landingEvents,
     landingLeads,
     updateLandingLeadStatus,
     deleteLandingLead,
@@ -70,25 +64,16 @@ function WebsiteManagementContent() {
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [saveAlert, setSaveAlert] = useState<string | null>(null);
 
+  const notify = (msg: string) => {
+    setSaveAlert(msg);
+    setTimeout(() => setSaveAlert(null), 3500);
+  };
+
   // Sync activeTab when query param changes
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam) setActiveTab(tabParam);
   }, [searchParams]);
-
-  // Form states for Hero
-  const [heroForm, setHeroForm] = useState<LandingHeroConfig>(landingHero);
-
-  useEffect(() => {
-    setHeroForm(landingHero);
-  }, [landingHero]);
-
-  const handleSaveHero = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateLandingHero(heroForm);
-    setSaveAlert("Pengaturan Beranda & Promo berhasil disimpan!");
-    setTimeout(() => setSaveAlert(null), 3500);
-  };
 
   // Program modal state
   const [showProgramModal, setShowProgramModal] = useState(false);
@@ -148,31 +133,6 @@ function WebsiteManagementContent() {
       setSaveAlert("Program baru berhasil ditambahkan!");
     }
     setShowProgramModal(false);
-    setTimeout(() => setSaveAlert(null), 3500);
-  };
-
-  // Testimonial modal state
-  const [showTestiModal, setShowTestiModal] = useState(false);
-  const [testiForm, setTestiForm] = useState<Omit<LandingTestimonialItem, "id">>({
-    parentName: "",
-    studentName: "",
-    branch: "Cabang Singkut",
-    rating: 5,
-    comment: "",
-  });
-
-  const handleSaveTesti = (e: React.FormEvent) => {
-    e.preventDefault();
-    addLandingTestimonial(testiForm);
-    setShowTestiModal(false);
-    setTestiForm({
-      parentName: "",
-      studentName: "",
-      branch: "Cabang Singkut",
-      rating: 5,
-      comment: "",
-    });
-    setSaveAlert("Testimoni baru berhasil ditambahkan!");
     setTimeout(() => setSaveAlert(null), 3500);
   };
 
@@ -303,7 +263,7 @@ function WebsiteManagementContent() {
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          <span>Beranda & Banner Promo</span>
+          <span>Beranda & Media Foto</span>
         </button>
 
         <button
@@ -332,9 +292,41 @@ function WebsiteManagementContent() {
           }`}
         >
           <HeartHandshake className="w-4 h-4" />
-          <span>Testimoni Wali Murid</span>
+          <span>Cerita Siswa / Testimoni</span>
           <span className="px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-800 text-[10px]">
             {landingTestimonials.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("news")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
+            activeTab === "news"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+          }`}
+        >
+          <Newspaper className="w-4 h-4" />
+          <span>Berita Terkini</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-800 text-[10px]">
+            {landingNews.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("events")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
+            activeTab === "events"
+              ? "border-emerald-600 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+          }`}
+        >
+          <CalendarDays className="w-4 h-4" />
+          <span>Agenda Kegiatan</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-800 text-[10px]">
+            {landingEvents.length}
           </span>
         </button>
 
@@ -373,218 +365,8 @@ function WebsiteManagementContent() {
         </button>
       </div>
 
-      {/* TAB 1: HERO & PROMO CONFIGURATION */}
-      {activeTab === "hero" && (
-        <form onSubmit={handleSaveHero} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left 2 Cols: Form */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Promo Banner Card */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Megaphone className="w-4 h-4 text-amber-500" />
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                      Banner Pengumuman & Diskon Promo (Top Bar)
-                    </h3>
-                  </div>
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    <input
-                      type="checkbox"
-                      checked={heroForm.promoActive}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, promoActive: e.target.checked })
-                      }
-                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span>Tampilkan Banner</span>
-                  </label>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Teks Pengumuman Promo
-                    </label>
-                    <input
-                      type="text"
-                      value={heroForm.promoBanner}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, promoBanner: e.target.value })
-                      }
-                      placeholder="Contoh: 🎉 PROMO SPESIAL: GRATIS Kelas Percobaan & Diskon 50%!"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Label Badge Diskon (Contoh: &quot;50% OFF&quot; atau &quot;PROMO SPESIAL&quot;)
-                    </label>
-                    <input
-                      type="text"
-                      value={heroForm.targetDiscount}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, targetDiscount: e.target.value })
-                      }
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Headline & Subtitle Card */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4 shadow-xs">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                    Headline & Deskripsi Utama Beranda
-                  </h3>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Tagline / Badge Atas
-                    </label>
-                    <input
-                      type="text"
-                      value={heroForm.tagline}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, tagline: e.target.value })
-                      }
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Judul Utama (Headline Promosi)
-                    </label>
-                    <input
-                      type="text"
-                      value={heroForm.headline}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, headline: e.target.value })
-                      }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Subjudul / Penjelasan Manfaat Metode Jaritmatika
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={heroForm.subheadline}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, subheadline: e.target.value })
-                      }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 leading-relaxed"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* WhatsApp Contact Configuration */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4 shadow-xs">
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-emerald-600" />
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                    Kontak WhatsApp Konsultasi Cepat
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Nomor WhatsApp Tujuan (Awali dengan 62)
-                    </label>
-                    <input
-                      type="text"
-                      value={heroForm.whatsappNumber}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, whatsappNumber: e.target.value })
-                      }
-                      placeholder="6281279498907"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Pesan Awal WhatsApp Saat Diklik
-                    </label>
-                    <input
-                      type="text"
-                      value={heroForm.whatsappGreeting}
-                      onChange={(e) =>
-                        setHeroForm({ ...heroForm, whatsappGreeting: e.target.value })
-                      }
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit Buttons */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Simpan Perubahan Beranda</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Col: Live Card Preview */}
-            <div className="space-y-4">
-              <div className="p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#1d2d5a]">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Live Preview Beranda
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    Real-time
-                  </span>
-                </div>
-
-                {heroForm.promoActive && (
-                  <div className="p-2.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold text-center leading-tight">
-                    {heroForm.promoBanner}
-                  </div>
-                )}
-
-                <div className="space-y-3 pt-2 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-slate-200 dark:border-[#1d2d5a]">
-                    {heroForm.tagline}
-                  </span>
-
-                  <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
-                    {heroForm.headline}
-                  </h2>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {heroForm.subheadline}
-                  </p>
-
-                  <div className="pt-2 flex flex-col gap-2">
-                    <div className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">
-                      Daftar Coba Gratis (Trial)
-                    </div>
-                    <div className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Konsultasi WhatsApp Cabang
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      )}
+      {/* TAB 1: HERO & MEDIA FOTO */}
+      {activeTab === "hero" && <WebsiteMediaHeroTab onNotify={notify} />}
 
       {/* TAB 2: PROGRAM & BIAYA LES */}
       {activeTab === "programs" && (
@@ -848,203 +630,14 @@ function WebsiteManagementContent() {
         </div>
       )}
 
-      {/* TAB 3: TESTIMONI WALI MURID */}
-      {activeTab === "testimonials" && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Ulasan & Testimoni Orang Tua Murid
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Testimoni ini membangun kepercayaan calon wali murid saat berkunjung ke website bimbel.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowTestiModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Testimoni</span>
-            </button>
-          </div>
+      {/* TAB 3: CERITA SISWA / TESTIMONI */}
+      {activeTab === "testimonials" && <WebsiteTestimonialsTab onNotify={notify} />}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {landingTestimonials.map((testi) => (
-              <div
-                key={testi.id}
-                className="p-5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] flex flex-col justify-between space-y-4 shadow-xs"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-amber-400">
-                      {Array.from({ length: testi.rating }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400" />
-                      ))}
-                    </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                      {testi.branch}
-                    </span>
-                  </div>
+      {/* TAB 4: BERITA TERKINI & DOKUMENTASI */}
+      {activeTab === "news" && <WebsiteNewsTab onNotify={notify} />}
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 italic leading-relaxed">
-                    &quot;{testi.comment}&quot;
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-[#1d2d5a]">
-                  <div>
-                    <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                      {testi.parentName}
-                    </div>
-                    <div className="text-[11px] text-slate-400">
-                      Orang tua dari {testi.studentName}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm("Hapus testimoni ini?")) {
-                        deleteLandingTestimonial(testi.id);
-                      }
-                    }}
-                    className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#132042]"
-                    title="Hapus"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Modal Add Testimonial */}
-          {showTestiModal && (
-            <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                    Tambah Testimoni Wali Murid
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setShowTestiModal(false)}
-                    className="text-slate-400 hover:text-slate-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <form onSubmit={handleSaveTesti} className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Nama Orang Tua / Wali
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={testiForm.parentName}
-                      onChange={(e) =>
-                        setTestiForm({ ...testiForm, parentName: e.target.value })
-                      }
-                      placeholder="Contoh: Bunda Rini Astuti"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Nama Anak (Usia/Level)
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={testiForm.studentName}
-                      onChange={(e) =>
-                        setTestiForm({ ...testiForm, studentName: e.target.value })
-                      }
-                      placeholder="Contoh: Aishwa (7 thn)"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                        Cabang
-                      </label>
-                      <CustomSelect
-                        value={testiForm.branch}
-                        onChange={(val) =>
-                          setTestiForm({ ...testiForm, branch: val })
-                        }
-                        className="w-full"
-                        size="md"
-                        options={branches.map((b) => ({
-                          value: `Cabang ${b.name}`,
-                          label: `Cabang: ${b.name}`,
-                        }))}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                        Rating Bintang
-                      </label>
-                      <CustomSelect
-                        value={String(testiForm.rating)}
-                        onChange={(val) =>
-                          setTestiForm({ ...testiForm, rating: Number(val) })
-                        }
-                        className="w-full"
-                        size="md"
-                        options={[
-                          { value: "5", label: "⭐⭐⭐⭐⭐ (5 Bintang)" },
-                          { value: "4", label: "⭐⭐⭐⭐ (4 Bintang)" },
-                          { value: "3", label: "⭐⭐⭐ (3 Bintang)" },
-                        ]}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Ulasan / Testimoni
-                    </label>
-                    <textarea
-                      rows={3}
-                      required
-                      value={testiForm.comment}
-                      onChange={(e) =>
-                        setTestiForm({ ...testiForm, comment: e.target.value })
-                      }
-                      placeholder="Ceritakan pengalaman dan peningkatan nilai berhitung anak..."
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-[#1d2d5a]">
-                    <button
-                      type="button"
-                      onClick={() => setShowTestiModal(false)}
-                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] text-slate-700 dark:text-slate-300 text-xs font-bold"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-xs hover:bg-emerald-700"
-                    >
-                      Simpan Testimoni
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* TAB 5: AGENDA & ACARA KEGIATAN */}
+      {activeTab === "events" && <WebsiteEventsTab onNotify={notify} />}
 
       {/* TAB 4: DATA PENDAFTAR TRIAL CLASS (LEADS) */}
       {activeTab === "leads" && (

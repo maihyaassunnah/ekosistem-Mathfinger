@@ -535,6 +535,18 @@ model WebsiteHero {
   whatsappNumber   String   @map("whatsapp_number")
   whatsappGreeting String   @map("whatsapp_greeting") @db.Text
   targetDiscount   String?  @map("target_discount")
+  // Media & Section Fields
+  heroImage        String?  @default("/images/landing/hero-kids.jpg") @map("hero_image")
+  videoUrl         String?  @default("https://www.youtube.com/embed/dQw4w9WgXcQ") @map("video_url")
+  aboutTitle       String?  @default("Metode 10 Jari Alami: Kalkulator Pintar yang Selalu Melekat") @map("about_title")
+  aboutDesc1       String?  @db.Text @map("about_desc_1")
+  aboutDesc2       String?  @db.Text @map("about_desc_2")
+  aboutImage       String?  @default("/images/landing/about-teacher.jpg") @map("about_image")
+  teacherBadgeText String?  @default("8+ Tutor Pengajar") @map("teacher_badge_text")
+  teacherBadgeDesc String?  @default("Tersertifikasi Nasional & Ramah Anak") @map("teacher_badge_desc")
+  programsBgImage  String?  @default("/images/landing/programs-bg.jpg") @map("programs_bg_image")
+  curriculumTitle  String?  @default("Eksplorasi Program Unggulan Math Fingers") @map("curriculum_title")
+  curriculumDesc   String?  @db.Text @map("curriculum_desc")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
@@ -565,11 +577,47 @@ model WebsiteTestimonial {
   rating      Int      @default(5)
   comment     String   @db.Text
   avatarUrl   String?  @map("avatar_url")
+  title       String?  @map("title")
+  role        String?  @map("role")
+  storyNumber String?  @map("story_number")
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("website_testimonials")
+}
+
+model WebsiteNews {
+  id         String   @id @default(uuid())
+  title      String
+  category   String
+  date       String
+  author     String
+  image      String
+  summary    String   @db.Text
+  content    String?  @db.Text
+  orderIndex Int      @default(1) @map("order_index")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("website_news")
+}
+
+model WebsiteEvent {
+  id         String   @id @default(uuid())
+  day        String
+  month      String
+  title      String
+  time       String
+  location   String
+  desc       String   @db.Text
+  orderIndex Int      @default(1) @map("order_index")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("website_events")
 }
 
 model WebsitePartner {

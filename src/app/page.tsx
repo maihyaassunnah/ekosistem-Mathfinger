@@ -32,7 +32,15 @@ import { useTheme } from "@/lib/theme";
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
-  const { landingHero, addLandingLead } = useAppStore();
+  const {
+    landingHero,
+    landingPrograms,
+    landingTestimonials,
+    landingNews,
+    landingEvents,
+    landingPartners,
+    addLandingLead,
+  } = useAppStore();
 
   // Dropdown Submenus & Mobile Drawer States
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -96,100 +104,128 @@ export default function Home() {
     setShowTrialModal(false);
   };
 
-  // Student Stories Data
-  const studentStories = [
-    {
-      id: "01",
-      title: "Dari Takut Matematika, Kini Jadi Juara Berhitung di Sekolah",
-      author: "Ananda Farhan (Usia 8 Th)",
-      role: "Siswa Jaritmatika Level 3 - Cabang Singkut",
-      quote:
-        "Dulu Farhan sering menangis kalau ada PR matematika. Setelah 4 bulan belajar formasi 10 jari di Math Fingers, dia sekarang paling cepat menghitung di kelas dan selalu dapat nilai 100!",
-      parent: "Bunda Rina Hartati (Wali Murid)",
-    },
-    {
-      id: "02",
-      title: "Metode Jari Tangan Praktis, Ujian Sekolah Tanpa Alat Bantu",
-      author: "Kayla Az-Zahra (Usia 7 Th)",
-      role: "Siswa Jaritmatika Level 2 - Cabang Bangko",
-      quote:
-        "Sangat bersyukur kenal metode Math Fingers. Anak saya tidak perlu bawa sempoa fisik atau sembunyi kalkulator. 10 jari tangannya sendiri sudah jadi kalkulator alami yang selalu siap saat ujian.",
-      parent: "Bapak Hendra, S.Pd (Wali Murid)",
-    },
-    {
-      id: "03",
-      title: "Belajar Membaca Menyenangkan, 3 Bulan Langsung Lancar Tanpa Mengeja",
-      author: "Rayyan Al-Fatih (Usia 5 Th)",
-      role: "Siswa Program Les Membaca Fonik",
-      quote:
-        "Metode fonik di Math Fingers sangat ceria dan ramah anak. Rayyan yang awalnya sulit fokus, kini sudah bisa membaca buku cerita sendiri dengan lancar tanpa terbata-bata.",
-      parent: "Ibu Desi Ratnasari (Wali Murid)",
-    },
-  ];
+  // Student Stories Data from Store (with fallback)
+  const storiesList = (landingTestimonials && landingTestimonials.length > 0)
+    ? landingTestimonials
+    : [
+        {
+          id: "1",
+          storyNumber: "01",
+          title: "Dari Takut Matematika, Kini Jadi Juara Berhitung di Sekolah",
+          studentName: "Ananda Farhan (Usia 8 Th)",
+          parentName: "Bunda Rina Hartati (Wali Murid)",
+          branch: "Singkut",
+          role: "Siswa Jaritmatika Level 3 - Cabang Singkut",
+          rating: 5,
+          comment:
+            "Dulu Farhan sering menangis kalau ada PR matematika. Setelah 4 bulan belajar formasi 10 jari di Math Fingers, dia sekarang paling cepat menghitung di kelas dan selalu dapat nilai 100!",
+          avatarUrl: "/images/landing/student-story.jpg",
+        },
+        {
+          id: "2",
+          storyNumber: "02",
+          title: "Metode Jari Tangan Praktis, Ujian Sekolah Tanpa Alat Bantu",
+          studentName: "Kayla Az-Zahra (Usia 7 Th)",
+          parentName: "Bapak Hendra, S.Pd (Wali Murid)",
+          branch: "Bangko",
+          role: "Siswa Jaritmatika Level 2 - Cabang Bangko",
+          rating: 5,
+          comment:
+            "Sangat bersyukur kenal metode Math Fingers. Anak saya tidak perlu bawa sempoa fisik atau sembunyi kalkulator. 10 jari tangannya sendiri sudah jadi kalkulator alami yang selalu siap saat ujian.",
+          avatarUrl: "/images/landing/student-story.jpg",
+        },
+        {
+          id: "3",
+          storyNumber: "03",
+          title: "Belajar Membaca Menyenangkan, 3 Bulan Langsung Lancar Tanpa Mengeja",
+          studentName: "Rayyan Al-Fatih (Usia 5 Th)",
+          parentName: "Ibu Desi Ratnasari (Wali Murid)",
+          branch: "Singkut",
+          role: "Siswa Program Les Membaca Fonik",
+          rating: 5,
+          comment:
+            "Metode fonik di Math Fingers sangat ceria dan ramah anak. Rayyan yang awalnya sulit fokus, kini sudah bisa membaca buku cerita sendiri dengan lancar tanpa terbata-bata.",
+          avatarUrl: "/images/landing/student-story.jpg",
+        },
+      ];
 
-  // News & Activities (What's Happening @ Math Fingers)
-  const newsItems = [
-    {
-      title: "Serunya Latihan Formasi 10 Jari Tangan & Senam Otak di Cabang Singkut",
-      category: "KELAS JARITMATIKA",
-      date: "20 Sep 2026",
-      author: "Febrianti Dewi, S.Pd",
-      image: "/images/landing/hero-kids.jpg",
-      summary: "Mengasah ketangkasan jari tangan anak melalui senam ritmis dan simulasi hitung cepat ratusan tanpa kertas corat-coret.",
-    },
-    {
-      title: "Ujian Kenaikan Level Semester: Puluhan Siswa Raih Nilai Sempurna",
-      category: "PRESTASI & SERTIFIKASI",
-      date: "15 Sep 2026",
-      author: "Tim Akademik Math Fingers",
-      image: "/images/landing/student-story.jpg",
-      summary: "Pemberian piagam penghargaan resmi dan evaluasi rapor kompetensi digital bagi siswa yang menuntaskan level dasar.",
-    },
-    {
-      title: "Tips Efektif Mendampingi Anak Belajar Matematika di Rumah Tanpa Stres",
-      category: "EDUKASI ORANG TUA",
-      date: "10 Sep 2026",
-      author: "Ustadzah Sri Wahyuni, S.Pd.I",
-      image: "/images/landing/about-teacher.jpg",
-      summary: "Pendekatan positif agar anak tidak trauma angka: gunakan permainan visual dan apresiasi proses belajar jari tangan.",
-    },
-    {
-      title: "Inovasi Kartu QR Digital: Orang Tua Pantau Absensi & Nilai Siswa Real-time",
-      category: "TEKNOLOGI EDUKASI",
-      date: "05 Sep 2026",
-      author: "Manajemen Sistem",
-      image: "/images/landing/programs-bg.jpg",
-      summary: "Kemudahan integrasi notifikasi presensi otomatis dan riwayat jurnal perkembangan belajar langsung ke WhatsApp wali murid.",
-    },
-  ];
+  const safeStoryIdx = activeStoryIdx >= storiesList.length ? 0 : activeStoryIdx;
+  const currentStory = storiesList[safeStoryIdx];
 
-  // Upcoming Events
-  const events = [
-    {
-      day: "25",
-      month: "SEP",
-      title: "Trial Class Gratis Serentak Akhir Pekan",
-      time: "14:00 – 16:00 WIB",
-      location: "Cabang Singkut & Cabang Bangko",
-      desc: "Sesi terbuka bagi orang tua dan ananda untuk mencoba langsung metode jari tangan dan konsultasi kurikulum.",
-    },
-    {
-      day: "01",
-      month: "OKT",
-      title: "Pembukaan Pendaftaran Gelombang Baru (Diskon 50%)",
-      time: "08:00 – 17:00 WIB",
-      location: "Pendaftaran Online & Kantor Cabang",
-      desc: "Dapatkan potongan uang pendaftaran 50% dan bonus modul belajar lengkap serta kartu digital siswa.",
-    },
-    {
-      day: "18",
-      month: "OKT",
-      title: "Lomba Hitung Cepat 10 Jari Antar Siswa Math Fingers",
-      time: "09:00 – 12:00 WIB",
-      location: "Gedung Serbaguna Cabang Singkut",
-      desc: "Ajang uji kecepatan, ketelitian, dan sportivitas berhitung jaritmatika dengan piala serta beasiswa belajar.",
-    },
-  ];
+  // News & Activities from Store
+  const newsItems = (landingNews && landingNews.length > 0)
+    ? landingNews.filter((n) => n.isActive !== false)
+    : [
+        {
+          id: "1",
+          title: "Serunya Latihan Formasi 10 Jari Tangan & Senam Otak di Cabang Singkut",
+          category: "KELAS JARITMATIKA",
+          date: "20 Sep 2026",
+          author: "Febrianti Dewi, S.Pd",
+          image: "/images/landing/hero-kids.jpg",
+          summary: "Mengasah ketangkasan jari tangan anak melalui senam ritmis dan simulasi hitung cepat ratusan tanpa kertas corat-coret.",
+        },
+        {
+          id: "2",
+          title: "Ujian Kenaikan Level Semester: Puluhan Siswa Raih Nilai Sempurna",
+          category: "PRESTASI & SERTIFIKASI",
+          date: "15 Sep 2026",
+          author: "Tim Akademik Math Fingers",
+          image: "/images/landing/student-story.jpg",
+          summary: "Pemberian piagam penghargaan resmi dan evaluasi rapor kompetensi digital bagi siswa yang menuntaskan level dasar.",
+        },
+        {
+          id: "3",
+          title: "Tips Efektif Mendampingi Anak Belajar Matematika di Rumah Tanpa Stres",
+          category: "EDUKASI ORANG TUA",
+          date: "10 Sep 2026",
+          author: "Ustadzah Sri Wahyuni, S.Pd.I",
+          image: "/images/landing/about-teacher.jpg",
+          summary: "Pendekatan positif agar anak tidak trauma angka: gunakan permainan visual dan apresiasi proses belajar jari tangan.",
+        },
+        {
+          id: "4",
+          title: "Inovasi Kartu QR Digital: Orang Tua Pantau Absensi & Nilai Siswa Real-time",
+          category: "TEKNOLOGI EDUKASI",
+          date: "05 Sep 2026",
+          author: "Manajemen Sistem",
+          image: "/images/landing/programs-bg.jpg",
+          summary: "Kemudahan integrasi notifikasi presensi otomatis dan riwayat jurnal perkembangan belajar langsung ke WhatsApp wali murid.",
+        },
+      ];
+
+  // Upcoming Events from Store
+  const events = (landingEvents && landingEvents.length > 0)
+    ? landingEvents.filter((e) => e.isActive !== false)
+    : [
+        {
+          id: "1",
+          day: "25",
+          month: "SEP",
+          title: "Trial Class Gratis Serentak Akhir Pekan",
+          time: "14:00 – 16:00 WIB",
+          location: "Cabang Singkut & Cabang Bangko",
+          desc: "Sesi terbuka bagi orang tua dan ananda untuk mencoba langsung metode jari tangan dan konsultasi kurikulum.",
+        },
+        {
+          id: "2",
+          day: "01",
+          month: "OKT",
+          title: "Pembukaan Pendaftaran Gelombang Baru (Diskon 50%)",
+          time: "08:00 – 17:00 WIB",
+          location: "Pendaftaran Online & Kantor Cabang",
+          desc: "Dapatkan potongan uang pendaftaran 50% dan bonus modul belajar lengkap serta kartu digital siswa.",
+        },
+        {
+          id: "3",
+          day: "18",
+          month: "OKT",
+          title: "Lomba Hitung Cepat 10 Jari Antar Siswa Math Fingers",
+          time: "09:00 – 12:00 WIB",
+          location: "Gedung Serbaguna Cabang Singkut",
+          desc: "Ajang uji kecepatan, ketelitian, dan sportivitas berhitung jaritmatika dengan piala serta beasiswa belajar.",
+        },
+      ];
 
   // Navigation Menus Configuration
   const navMenus = [
@@ -553,7 +589,7 @@ export default function Home() {
           {/* Background Image & Rich Dark Emerald Overlay (Guaranteed High Contrast) */}
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/landing/hero-kids.jpg"
+              src={landingHero.heroImage || "/images/landing/hero-kids.jpg"}
               alt="Anak-anak belajar jaritmatika Math Fingers"
               className="w-full h-full object-cover object-center opacity-35"
             />
@@ -577,18 +613,17 @@ export default function Home() {
             {/* Tagline / Sub-badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/25 border border-emerald-400/50 text-emerald-200 backdrop-blur-xs">
               <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Bimbel Berhitung Cepat Jaritmatika No. 1 di Sarolangun & Merangin</span>
+              <span>{landingHero.tagline || "Bimbel Berhitung Cepat Jaritmatika No. 1 di Sarolangun & Merangin"}</span>
             </div>
 
             {/* Main Headline (Razor Sharp Contrast: White on Dark Backdrop) */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-white drop-shadow-md">
-              SELAMAT DATANG DI <br />
-              <span className="text-emerald-300">MATH FINGERS</span> INDONESIA
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-white drop-shadow-md whitespace-pre-line">
+              {landingHero.headline || "SELAMAT DATANG DI \nMATH FINGERS INDONESIA"}
             </h1>
 
             {/* Subheadline Paragraph */}
             <p className="text-sm sm:text-base md:text-lg text-slate-200 leading-relaxed max-w-3xl mx-auto drop-shadow-sm font-normal">
-              Mengoptimalkan potensi kecerdasan otak kanan dan kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, berhitung cepat akurat, dan percaya diri!
+              {landingHero.subheadline || "Mengoptimalkan potensi kecerdasan otak kanan dan kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, berhitung cepat akurat, dan percaya diri!"}
             </p>
 
             {/* Dual CTAs with Razor Sharp Contrast */}
@@ -628,7 +663,7 @@ export default function Home() {
               <div className="lg:col-span-6 relative">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-[#1d2d5a] bg-slate-100 dark:bg-[#0f1a36]">
                   <img
-                    src="/images/landing/about-teacher.jpg"
+                    src={landingHero.aboutImage || "/images/landing/about-teacher.jpg"}
                     alt="Pembelajaran Jaritmatika Math Fingers"
                     className="w-full h-auto object-cover hover:scale-102 transition-transform duration-500"
                   />
@@ -639,8 +674,12 @@ export default function Home() {
                     <Award className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="text-sm font-black text-slate-900 dark:text-white">8+ Tutor Pengajar</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tersertifikasi Nasional & Ramah Anak</div>
+                    <div className="text-sm font-black text-slate-900 dark:text-white">
+                      {landingHero.teacherBadgeText || "8+ Tutor Pengajar"}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {landingHero.teacherBadgeDesc || "Tersertifikasi Nasional & Ramah Anak"}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -651,18 +690,17 @@ export default function Home() {
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                     Metode Unggulan Jaritmatika
                   </span>
-                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mt-3 leading-tight">
-                    Metode 10 Jari Alami: <br />
-                    Kalkulator Pintar yang Selalu Melekat
+                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mt-3 leading-tight whitespace-pre-line">
+                    {landingHero.aboutTitle || "Metode 10 Jari Alami: \nKalkulator Pintar yang Selalu Melekat"}
                   </h2>
                 </div>
 
                 <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Math Fingers hadir memberikan solusi belajar berhitung yang membahagiakan. Melalui formasi 10 jari tangan yang terstandarisasi, anak diajarkan mengolah logika matematika tanpa memerlukan alat bantu sempoa fisik atau kalkulator.
+                  {landingHero.aboutDesc1 || "Math Fingers hadir memberikan solusi belajar berhitung yang membahagiakan. Melalui formasi 10 jari tangan yang terstandarisasi, anak diajarkan mengolah logika matematika tanpa memerlukan alat bantu sempoa fisik atau kalkulator."}
                 </p>
 
                 <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Metode ini secara aktif melatih sinkronisasi otak kiri (daya logika dan rumus hitung) dengan otak kanan (imajinasi visual gerak jari). Anak tidak lagi menghafal rumus secara mekanis, melainkan memahami konsep angka dengan cepat, tepat, dan gembira.
+                  {landingHero.aboutDesc2 || "Metode ini secara aktif melatih sinkronisasi otak kiri (daya logika dan rumus hitung) dengan otak kanan (imajinasi visual gerak jari). Anak tidak lagi menghafal rumus secara mekanis, melainkan memahami konsep angka dengan cepat, tepat, dan gembira."}
                 </p>
 
                 {/* Key Benefits List */}
@@ -785,21 +823,21 @@ export default function Home() {
               <div className="lg:col-span-5 relative">
                 <div className="rounded-2xl overflow-hidden shadow-xl border-4 border-white dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36]">
                   <img
-                    src="/images/landing/student-story.jpg"
-                    alt="Siswa Berprestasi Math Fingers"
+                    src={currentStory.avatarUrl || "/images/landing/student-story.jpg"}
+                    alt={currentStory.title || "Siswa Berprestasi Math Fingers"}
                     className="w-full h-[420px] object-cover"
                   />
                   <div className="p-4 bg-white dark:bg-[#0f1a36] border-t border-slate-100 dark:border-[#1d2d5a]">
                     <div className="flex items-center gap-1 text-amber-400">
-                      {[...Array(5)].map((_, i) => (
+                      {[...Array(currentStory.rating || 5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-amber-400" />
                       ))}
                     </div>
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-2 italic">
-                      &quot;{studentStories[activeStoryIdx].quote}&quot;
+                      &quot;{currentStory.comment}&quot;
                     </p>
                     <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 mt-1">
-                      {studentStories[activeStoryIdx].parent}
+                      {currentStory.parentName || currentStory.studentName}
                     </div>
                   </div>
                 </div>
@@ -807,8 +845,8 @@ export default function Home() {
 
               {/* Right: Numbered Stories List (01, 02, 03) */}
               <div className="lg:col-span-7 space-y-4">
-                {studentStories.map((story, idx) => {
-                  const isActive = activeStoryIdx === idx;
+                {storiesList.map((story, idx) => {
+                  const isActive = safeStoryIdx === idx;
                   return (
                     <div
                       key={story.id}
@@ -825,7 +863,7 @@ export default function Home() {
                             isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-300 dark:text-slate-600"
                           }`}
                         >
-                          {story.id}
+                          {story.storyNumber || (idx + 1).toString().padStart(2, "0")}
                         </span>
                         <div className="space-y-1.5 flex-1">
                           <h3
@@ -833,14 +871,14 @@ export default function Home() {
                               isActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"
                             }`}
                           >
-                            {story.title}
+                            {story.title || `Cerita Ananda ${story.studentName}`}
                           </h3>
                           <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                            <span className="font-bold text-emerald-700 dark:text-emerald-300">{story.author}</span> • {story.role}
+                            <span className="font-bold text-emerald-700 dark:text-emerald-300">{story.studentName}</span> • {story.role || `Cabang ${story.branch}`}
                           </div>
                           {isActive && (
                             <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed pt-2 border-t border-slate-100 dark:border-[#1d2d5a] mt-2">
-                              {story.quote}
+                              {story.comment}
                             </p>
                           )}
                         </div>
@@ -860,7 +898,7 @@ export default function Home() {
           {/* Background Image with Solid Dark Overlay (Ensures text is never white on white) */}
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/landing/programs-bg.jpg"
+              src={landingHero.programsBgImage || "/images/landing/programs-bg.jpg"}
               alt="Program Belajar Math Fingers"
               className="w-full h-full object-cover object-center opacity-30"
             />
@@ -875,14 +913,13 @@ export default function Home() {
                   <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-300 bg-emerald-900/80 px-3.5 py-1 rounded-full border border-emerald-700">
                     Kurikulum Terstruktur & Bertahap
                   </span>
-                  <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white mt-4 leading-tight">
-                    Eksplorasi Program <br />
-                    Unggulan Math Fingers
+                  <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white mt-4 leading-tight whitespace-pre-line">
+                    {landingHero.curriculumTitle || "Eksplorasi Program \nUnggulan Math Fingers"}
                   </h2>
                 </div>
 
                 <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
-                  Setiap anak memiliki ritme belajar unik. Kami menyusun kurikulum berjenjang dari usia 4 hingga 12 tahun yang diuji secara berkala dengan Rapor Kompetensi Digital dan Sertifikat Resmi.
+                  {landingHero.curriculumDesc || "Setiap anak memiliki ritme belajar unik. Kami menyusun kurikulum berjenjang dari usia 4 hingga 12 tahun yang diuji secara berkala dengan Rapor Kompetensi Digital dan Sertifikat Resmi."}
                 </p>
 
                 {/* Proof Metrics */}
@@ -904,69 +941,97 @@ export default function Home() {
 
               {/* Right Column: Stacked Program Buttons (Image 2 style) */}
               <div className="lg:col-span-6 space-y-3.5">
-                <button
-                  type="button"
-                  onClick={() => handleOpenTrial("Jaritmatika Pra-Dasar (Usia 4-6 Th)")}
-                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
-                >
-                  <div>
-                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
-                      Jaritmatika Pra-Dasar (TK / PAUD - Usia 4–6 Th)
-                    </div>
-                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
-                      Pengenalan formasi jari, simbol angka ceria, dan motorik halus
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
-                </button>
+                {(landingPrograms && landingPrograms.length > 0) ? (
+                  landingPrograms.map((prog) => (
+                    <button
+                      key={prog.id}
+                      type="button"
+                      onClick={() => handleOpenTrial(`${prog.levelTitle} (${prog.targetAge})`)}
+                      className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                    >
+                      <div>
+                        <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors flex items-center gap-2">
+                          <span>{prog.levelTitle}</span>
+                          {prog.popular && (
+                            <span className="text-[10px] font-extrabold uppercase bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
+                              Favorit
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-emerald-100 mt-0.5 font-medium line-clamp-1">
+                          {prog.targetAge} • {prog.description}
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  ))
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTrial("Jaritmatika Pra-Dasar (Usia 4-6 Th)")}
+                      className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                    >
+                      <div>
+                        <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                          Jaritmatika Pra-Dasar (TK / PAUD - Usia 4–6 Th)
+                        </div>
+                        <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                          Pengenalan formasi jari, simbol angka ceria, dan motorik halus
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleOpenTrial("Jaritmatika Dasar & Terampil (SD)")}
-                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
-                >
-                  <div>
-                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
-                      Jaritmatika Dasar & Terampil (SD Kelas 1–6)
-                    </div>
-                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
-                      Penjumlahan & pengurangan cepat belasan hingga ratusan tanpa corat-coret
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTrial("Jaritmatika Dasar & Terampil (SD)")}
+                      className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                    >
+                      <div>
+                        <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                          Jaritmatika Dasar & Terampil (SD Kelas 1–6)
+                        </div>
+                        <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                          Penjumlahan & pengurangan cepat belasan hingga ratusan tanpa corat-coret
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleOpenTrial("Jaritmatika Mahir (Perkalian & Pembagian)")}
-                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
-                >
-                  <div>
-                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
-                      Jaritmatika Mahir: Perkalian & Pembagian Jari
-                    </div>
-                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
-                      Hitung kilat perkalian 6–99 dan pembagian bersisa tanpa menghafal tabel rumit
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTrial("Jaritmatika Mahir (Perkalian & Pembagian)")}
+                      className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                    >
+                      <div>
+                        <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                          Jaritmatika Mahir: Perkalian & Pembagian Jari
+                        </div>
+                        <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                          Hitung kilat perkalian 6–99 dan pembagian bersisa tanpa menghafal tabel rumit
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleOpenTrial("Program Les Membaca Fonik Cepat")}
-                  className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
-                >
-                  <div>
-                    <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
-                      Program Les Membaca Fonik Cepat Lancar
-                    </div>
-                    <div className="text-xs text-emerald-100 mt-0.5 font-medium">
-                      Metode suku kata ceria tanpa mengeja, 3 bulan lancar membaca buku cerita
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTrial("Program Les Membaca Fonik Cepat")}
+                      className="w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-between text-left cursor-pointer group"
+                    >
+                      <div>
+                        <div className="text-sm sm:text-base font-black group-hover:text-emerald-100 transition-colors">
+                          Program Les Membaca Fonik Cepat Lancar
+                        </div>
+                        <div className="text-xs text-emerald-100 mt-0.5 font-medium">
+                          Metode suku kata ceria tanpa mengeja, 3 bulan lancar membaca buku cerita
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 shrink-0 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1247,23 +1312,41 @@ export default function Home() {
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6">
               Dipercaya Oleh Berbagai Mitra Sekolah & Yayasan Pendidikan di Jambi
             </p>
-            <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap opacity-80 dark:opacity-90">
-              <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span>TK / PAUD Terpadu</span>
-              </div>
-              <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                <GraduationCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span>SD IT Al-Madani</span>
-              </div>
-              <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span>Yayasan Bina Prestasi</span>
-              </div>
-              <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span>Koperasi Pendidikan Sarolangun</span>
-              </div>
+            <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap opacity-90">
+              {(landingPartners && landingPartners.filter((p) => p.active !== false).length > 0) ? (
+                landingPartners
+                  .filter((p) => p.active !== false)
+                  .map((partner) => (
+                    <div
+                      key={partner.id}
+                      className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-2xs font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center">
+                        {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
+                      </div>
+                      <span>{partner.name}</span>
+                    </div>
+                  ))
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
+                    <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>TK / PAUD Terpadu</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
+                    <GraduationCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>SD IT Al-Madani</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
+                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Yayasan Bina Prestasi</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Koperasi Pendidikan Sarolangun</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -1636,24 +1719,49 @@ export default function Home() {
 
             <div className="p-6 space-y-4">
               <div className="aspect-video rounded-2xl bg-slate-900 overflow-hidden relative shadow-inner flex items-center justify-center">
-                <img
-                  src="/images/landing/hero-kids.jpg"
-                  alt="Video Preview"
-                  className="w-full h-full object-cover opacity-80"
-                />
-                <div className="absolute inset-0 bg-slate-950/50 flex flex-col items-center justify-center text-center p-6 text-white space-y-3">
-                  <div className="w-16 h-16 rounded-full bg-emerald-600/90 text-white flex items-center justify-center shadow-lg">
-                    <Play className="w-7 h-7 fill-white ml-0.5" />
-                  </div>
-                  <div className="max-w-md">
-                    <div className="text-sm font-black">
-                      Demonstrasi Hitung Cepat 10 Jari Tangan
+                {landingHero.videoUrl && (landingHero.videoUrl.includes("youtube.com") || landingHero.videoUrl.includes("youtu.be")) ? (
+                  <iframe
+                    src={
+                      landingHero.videoUrl.includes("watch?v=")
+                        ? landingHero.videoUrl.replace("watch?v=", "embed/").split("&")[0]
+                        : landingHero.videoUrl.includes("youtu.be/")
+                        ? landingHero.videoUrl.replace("youtu.be/", "www.youtube.com/embed/")
+                        : landingHero.videoUrl
+                    }
+                    title="Video Pengenalan Math Fingers"
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : landingHero.videoUrl && (landingHero.videoUrl.startsWith("http") || landingHero.videoUrl.startsWith("/")) && !landingHero.videoUrl.includes("youtube") ? (
+                  <video
+                    src={landingHero.videoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <>
+                    <img
+                      src={landingHero.heroImage || "/images/landing/hero-kids.jpg"}
+                      alt="Video Preview"
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/50 flex flex-col items-center justify-center text-center p-6 text-white space-y-3">
+                      <div className="w-16 h-16 rounded-full bg-emerald-600/90 text-white flex items-center justify-center shadow-lg">
+                        <Play className="w-7 h-7 fill-white ml-0.5" />
+                      </div>
+                      <div className="max-w-md">
+                        <div className="text-sm font-black">
+                          Demonstrasi Hitung Cepat 10 Jari Tangan
+                        </div>
+                        <div className="text-xs text-slate-300 mt-1">
+                          Kunjungi kanal resmi atau hadiri sesi kelas percobaan langsung untuk melihat ananda mempraktikkan formasi jari.
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-300 mt-1">
-                      Kunjungi kanal resmi atau hadiri sesi kelas percobaan langsung untuk melihat ananda mempraktikkan formasi jari.
-                    </div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">

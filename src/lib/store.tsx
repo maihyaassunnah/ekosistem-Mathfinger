@@ -145,6 +145,18 @@ export interface LandingHeroConfig {
   whatsappNumber: string;
   whatsappGreeting: string;
   targetDiscount: string;
+  // Media & Section Fields
+  heroImage?: string;
+  videoUrl?: string;
+  aboutTitle?: string;
+  aboutDesc1?: string;
+  aboutDesc2?: string;
+  aboutImage?: string;
+  teacherBadgeText?: string;
+  teacherBadgeDesc?: string;
+  programsBgImage?: string;
+  curriculumTitle?: string;
+  curriculumDesc?: string;
 }
 
 export interface LandingProgramItem {
@@ -165,6 +177,35 @@ export interface LandingTestimonialItem {
   branch: string;
   rating: number;
   comment: string;
+  avatarUrl?: string;
+  title?: string;
+  role?: string;
+  storyNumber?: string;
+}
+
+export interface LandingNewsItem {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  author: string;
+  image: string;
+  summary: string;
+  content?: string;
+  orderIndex?: number;
+  isActive?: boolean;
+}
+
+export interface LandingEventItem {
+  id: string;
+  day: string;
+  month: string;
+  title: string;
+  time: string;
+  location: string;
+  desc: string;
+  orderIndex?: number;
+  isActive?: boolean;
 }
 
 export interface LandingLeadItem {
@@ -326,7 +367,16 @@ interface AppStoreContextType {
   deleteLandingProgram: (id: string) => void;
   landingTestimonials: LandingTestimonialItem[];
   addLandingTestimonial: (testi: Omit<LandingTestimonialItem, "id">) => void;
+  updateLandingTestimonial: (id: string, testi: Partial<LandingTestimonialItem>) => void;
   deleteLandingTestimonial: (id: string) => void;
+  landingNews: LandingNewsItem[];
+  addLandingNews: (item: Omit<LandingNewsItem, "id">) => void;
+  updateLandingNews: (id: string, item: Partial<LandingNewsItem>) => void;
+  deleteLandingNews: (id: string) => void;
+  landingEvents: LandingEventItem[];
+  addLandingEvent: (item: Omit<LandingEventItem, "id">) => void;
+  updateLandingEvent: (id: string, item: Partial<LandingEventItem>) => void;
+  deleteLandingEvent: (id: string) => void;
   landingLeads: LandingLeadItem[];
   addLandingLead: (lead: Omit<LandingLeadItem, "id" | "createdAt" | "status">) => void;
   updateLandingLeadStatus: (id: string, status: LandingLeadItem["status"]) => void;
@@ -1025,15 +1075,29 @@ const INITIAL_TRANSACTIONS: CashTransactionItem[] = [
 ];
 
 const INITIAL_LANDING_HERO: LandingHeroConfig = {
-  tagline: "Bimbingan Belajar Jaritmatika No. 1 di Sarolangun & Merangin",
-  headline: "Bimbel Berhitung Cepat Jaritmatika Math Fingers",
+  tagline: "Bimbel Berhitung Cepat Jaritmatika No. 1 di Sarolangun & Merangin",
+  headline: "SELAMAT DATANG DI MATH FINGERS INDONESIA",
   subheadline:
-    "Mengoptimalkan potensi kecerdasan otak kanan & kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, cepat, berhitung akurat, dan percaya diri!",
-  promoBanner: "🎉 PROMO SPESIAL: GRATIS Kelas Percobaan (Trial Class) & Diskon Pendaftaran 50% Bulan Ini!",
+    "Mengoptimalkan potensi kecerdasan otak kanan dan kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, berhitung cepat akurat, dan percaya diri!",
+  promoBanner: "🎉 PROMO SPESIAL GELOMBANG BARU: Diskon Biaya Pendaftaran 50% + Modul Belajar & Kartu Digital!",
   promoActive: true,
   whatsappNumber: "6281279498907",
-  whatsappGreeting: "Halo Admin Math Fingers, saya ingin info pendaftaran les Jaritmatika dan jadwal Trial Class gratis untuk anak saya.",
+  whatsappGreeting: "Halo Math Fingers, saya ingin info pendaftaran les Jaritmatika dan jadwal Trial Class gratis untuk anak saya.",
   targetDiscount: "50% OFF",
+  heroImage: "/images/landing/hero-kids.jpg",
+  videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  aboutTitle: "Metode 10 Jari Alami: Kalkulator Pintar yang Selalu Melekat",
+  aboutDesc1:
+    "Math Fingers hadir memberikan solusi belajar berhitung yang membahagiakan. Melalui formasi 10 jari tangan yang terstandarisasi, anak diajarkan mengolah logika matematika tanpa memerlukan alat bantu sempoa fisik atau kalkulator.",
+  aboutDesc2:
+    "Metode ini secara aktif melatih sinkronisasi otak kiri (daya logika dan rumus hitung) dengan otak kanan (imajinasi visual gerak jari). Anak tidak lagi menghafal rumus secara mekanis, melainkan memahami konsep angka dengan cepat, tepat, dan gembira.",
+  aboutImage: "/images/landing/about-teacher.jpg",
+  teacherBadgeText: "8+ Tutor Pengajar",
+  teacherBadgeDesc: "Tersertifikasi Nasional & Ramah Anak",
+  programsBgImage: "/images/landing/programs-bg.jpg",
+  curriculumTitle: "Eksplorasi Program Unggulan Math Fingers",
+  curriculumDesc:
+    "Setiap anak memiliki ritme belajar unik. Kami menyusun kurikulum berjenjang dari usia 4 hingga 12 tahun yang diuji secara berkala dengan Rapor Kompetensi Digital dan Sertifikat Resmi.",
 };
 
 const INITIAL_LANDING_PROGRAMS: LandingProgramItem[] = [
@@ -1102,30 +1166,129 @@ const INITIAL_LANDING_PROGRAMS: LandingProgramItem[] = [
 const INITIAL_LANDING_TESTIMONIALS: LandingTestimonialItem[] = [
   {
     id: "testi-1",
-    parentName: "Bunda Rini Astuti",
-    studentName: "Aishwa (7 thn)",
+    storyNumber: "01",
+    title: "Dari Takut Matematika, Kini Jadi Juara Berhitung di Sekolah",
+    parentName: "Bunda Rasyid",
+    studentName: "M. Rasyid Al-Fatih",
+    role: "Siswa SD IT Al-Madani (Level Dasar)",
     branch: "Cabang Singkut",
     rating: 5,
     comment:
-      "Alhamdulillah setelah les di Math Fingers, Aishwa sekarang berhitung tambah kurang cepat sekali tanpa perlu pensil & kertas. Nilai ulangan matematika di sekolah melonjak drastis dan jadi percaya diri!",
+      "Awalnya Rasyid selalu cemas tiap PR berhitung. Setelah 4 bulan di Math Fingers Singkut, jarinya bergerak lincah dan nilai matematikanya naik drastis jadi 95!",
+    avatarUrl: "/images/landing/student-story.jpg",
   },
   {
     id: "testi-2",
-    parentName: "Ayah Hendra Wijaya",
-    studentName: "Abizar (8 thn)",
+    storyNumber: "02",
+    title: "Metode Jari Tangan Praktis, Ujian Sekolah Tanpa Alat Bantu",
+    parentName: "Ayahanda Kayla",
+    studentName: "Kayla Putri Azzahra",
+    role: "Alumni Level Mahir (SDN 02 Bangko)",
     branch: "Cabang Bangko",
     rating: 5,
     comment:
-      "Tutor di Math Fingers sangat sabar dan metodenya menyenangkan untuk anak. Anak saya jadi tidak takut lagi sama pelajaran matematika, malah selalu antusias waktu hari les tiba.",
+      "Sangat puas dengan metode Math Fingers. Waktu ujian di sekolah kan dilarang bawa kalkulator atau sempoa, jari tangan Kayla langsung jadi kalkulator kilat yang selalu siap.",
+    avatarUrl: "/images/landing/about-teacher.jpg",
   },
   {
     id: "testi-3",
-    parentName: "Bunda Dewi Sartika",
-    studentName: "Haris (6 thn)",
+    storyNumber: "03",
+    title: "Belajar Membaca Menyenangkan, 3 Bulan Langsung Lancar Tanpa Mengeja",
+    parentName: "Mama Rayyan",
+    studentName: "Rayyan Danendra (5 Tahun)",
+    role: "Kelas Les Membaca Cepat Fonik",
     branch: "Cabang Singkut",
     rating: 5,
     comment:
-      "Sangat terbantu dengan sistem presensi QR dan laporan perkembangan berkala di WhatsApp. Orang tua jadi tahu persis sudah sampai level mana penguasaan jari anak.",
+      "Tutornya luar biasa sabar dan penuh kasih. Rayyan yang tadinya sulit fokus sekarang antusias membaca buku cerita sendiri setiap malam sebelum tidur.",
+    avatarUrl: "/images/landing/hero-kids.jpg",
+  },
+];
+
+const INITIAL_LANDING_NEWS: LandingNewsItem[] = [
+  {
+    id: "news-1",
+    title: "Ujian Kenaikan Level Semester: Puluhan Siswa Raih Nilai Sempurna",
+    category: "PRESTASI & SERTIFIKASI",
+    date: "15 Sep 2026",
+    author: "Tim Akademik Math Fingers",
+    image: "/images/landing/student-story.jpg",
+    summary:
+      "Pemberian piagam penghargaan resmi dan evaluasi rapor kompetensi digital bagi siswa yang menuntaskan level dasar.",
+    orderIndex: 1,
+    isActive: true,
+  },
+  {
+    id: "news-2",
+    title: "Tips Efektif Mendampingi Anak Belajar Matematika di Rumah Tanpa Stres",
+    category: "EDUKASI ORANG TUA",
+    date: "10 Sep 2026",
+    author: "Ustadzah Sri Wahyuni, S.Pd.I",
+    image: "/images/landing/about-teacher.jpg",
+    summary:
+      "Pendekatan positif agar anak tidak trauma angka: gunakan permainan visual dan apresiasi proses belajar jari tangan.",
+    orderIndex: 2,
+    isActive: true,
+  },
+  {
+    id: "news-3",
+    title: "Inovasi Kartu QR Digital: Orang Tua Pantau Absensi & Nilai Siswa Real-time",
+    category: "TEKNOLOGI EDUKASI",
+    date: "05 Sep 2026",
+    author: "Manajemen Sistem",
+    image: "/images/landing/programs-bg.jpg",
+    summary:
+      "Kemudahan integrasi notifikasi presensi otomatis dan riwayat jurnal perkembangan belajar langsung ke WhatsApp wali murid.",
+    orderIndex: 3,
+    isActive: true,
+  },
+  {
+    id: "news-4",
+    title: "Gebyar Milad Math Fingers: Lomba Hitung Cepat dan Pentas Bakat Siswa",
+    category: "KEGIATAN & EVENT",
+    date: "28 Agu 2026",
+    author: "Panitia Milad",
+    image: "/images/landing/hero-kids.jpg",
+    summary:
+      "Kemeriahan lomba ketangkasan 10 jari diikuti oleh ratusan siswa dari Cabang Singkut dan Cabang Bangko.",
+    orderIndex: 4,
+    isActive: true,
+  },
+];
+
+const INITIAL_LANDING_EVENTS: LandingEventItem[] = [
+  {
+    id: "ev-1",
+    day: "25",
+    month: "SEP",
+    title: "Trial Class Gratis Serentak Akhir Pekan",
+    time: "14:00 – 16:00 WIB",
+    location: "Cabang Singkut & Cabang Bangko",
+    desc: "Sesi terbuka bagi orang tua dan ananda untuk mencoba langsung metode jari tangan dan konsultasi kurikulum.",
+    orderIndex: 1,
+    isActive: true,
+  },
+  {
+    id: "ev-2",
+    day: "01",
+    month: "OKT",
+    title: "Pembukaan Pendaftaran Gelombang Baru (Diskon 50%)",
+    time: "08:00 – 17:00 WIB",
+    location: "Pendaftaran Online & Kantor Cabang",
+    desc: "Dapatkan potongan uang pendaftaran 50% dan bonus modul belajar lengkap serta kartu digital siswa.",
+    orderIndex: 2,
+    isActive: true,
+  },
+  {
+    id: "ev-3",
+    day: "18",
+    month: "OKT",
+    title: "Lomba Hitung Cepat 10 Jari Antar Siswa Math Fingers",
+    time: "09:00 – 12:00 WIB",
+    location: "Gedung Serbaguna Cabang Singkut",
+    desc: "Ajang uji kecepatan, ketelitian, dan sportivitas berhitung jaritmatika dengan piala serta beasiswa belajar.",
+    orderIndex: 3,
+    isActive: true,
   },
 ];
 
@@ -1514,6 +1677,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [landingHero, setLandingHero] = useState<LandingHeroConfig>(INITIAL_LANDING_HERO);
   const [landingPrograms, setLandingPrograms] = useState<LandingProgramItem[]>(INITIAL_LANDING_PROGRAMS);
   const [landingTestimonials, setLandingTestimonials] = useState<LandingTestimonialItem[]>(INITIAL_LANDING_TESTIMONIALS);
+  const [landingNews, setLandingNews] = useState<LandingNewsItem[]>(INITIAL_LANDING_NEWS);
+  const [landingEvents, setLandingEvents] = useState<LandingEventItem[]>(INITIAL_LANDING_EVENTS);
   const [landingLeads, setLandingLeads] = useState<LandingLeadItem[]>(INITIAL_LANDING_LEADS);
   const [landingPartners, setLandingPartners] = useState<LandingPartnerItem[]>(INITIAL_LANDING_PARTNERS);
   const [levelColumns, setLevelColumns] = useState<LevelProgressionConfig[]>(INITIAL_LEVEL_COLUMNS);
@@ -1558,7 +1723,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           fetch("/api/website/programs", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
           fetch("/api/website/testimonials", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
           fetch("/api/website/leads", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-          fetch("/api/website/partners", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null))
+          fetch("/api/website/partners", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+          fetch("/api/website/news", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+          fetch("/api/website/events", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null))
         );
       }
 
@@ -1586,6 +1753,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       const testimonialsRes = shouldFetchWebsite ? values[15] : null;
       const leadsRes = shouldFetchWebsite ? values[16] : null;
       const partnersRes = shouldFetchWebsite ? values[17] : null;
+      const newsRes = shouldFetchWebsite ? values[18] : null;
+      const eventsRes = shouldFetchWebsite ? values[19] : null;
 
       if (Array.isArray(studentsRes) && studentsRes.length > 0) {
         setStudents((prev) => {
@@ -1708,6 +1877,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (Array.isArray(partnersRes) && partnersRes.length > 0) {
         setLandingPartners(partnersRes);
         save("mf_landing_partners", partnersRes);
+      }
+      if (Array.isArray(newsRes) && newsRes.length > 0) {
+        setLandingNews(newsRes);
+        save("mf_landing_news", newsRes);
+      }
+      if (Array.isArray(eventsRes) && eventsRes.length > 0) {
+        setLandingEvents(eventsRes);
+        save("mf_landing_events", eventsRes);
       }
       if (levelProgressRes) {
         if (Array.isArray(levelProgressRes.columns) && levelProgressRes.columns.length > 0) {
@@ -1834,6 +2011,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
       const savedLandingPartners = localStorage.getItem("mf_landing_partners");
       if (savedLandingPartners) setLandingPartners(JSON.parse(savedLandingPartners));
+
+      const savedLandingNews = localStorage.getItem("mf_landing_news");
+      if (savedLandingNews) setLandingNews(JSON.parse(savedLandingNews));
+
+      const savedLandingEvents = localStorage.getItem("mf_landing_events");
+      if (savedLandingEvents) setLandingEvents(JSON.parse(savedLandingEvents));
     } catch {
       // ignore
     }
@@ -3365,6 +3548,20 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error deleting website testimonial from PostgreSQL:", err));
   };
 
+  const updateLandingTestimonial = (id: string, testi: Partial<LandingTestimonialItem>) => {
+    setLandingTestimonials((prev) => {
+      const updated = prev.map((t) => (t.id === id ? { ...t, ...testi } : t));
+      save("mf_landing_testi", updated);
+      return updated;
+    });
+
+    fetch("/api/website/testimonials", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...testi }),
+    }).catch((err) => console.error("Error updating website testimonial in PostgreSQL:", err));
+  };
+
   // Landing Leads
   const addLandingLead = (lead: Omit<LandingLeadItem, "id" | "createdAt" | "status">) => {
     const tempId = `lead-${Date.now()}`;
@@ -3479,6 +3676,120 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     fetch(`/api/website/partners?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     }).catch((err) => console.error("Error deleting website partner from PostgreSQL:", err));
+  };
+
+  // Landing News CRUD
+  const addLandingNews = (item: Omit<LandingNewsItem, "id">) => {
+    const tempId = `news-${Date.now()}`;
+    const newItem: LandingNewsItem = {
+      ...item,
+      id: tempId,
+    };
+    setLandingNews((prev) => {
+      const updated = [newItem, ...prev];
+      save("mf_landing_news", updated);
+      return updated;
+    });
+
+    fetch("/api/website/news", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setLandingNews((prev) => {
+            const list = prev.map((n) => (n.id === tempId ? { ...n, id: created.id } : n));
+            save("mf_landing_news", list);
+            return list;
+          });
+        }
+      })
+      .catch((err) => console.error("Error saving website news to PostgreSQL:", err));
+  };
+
+  const updateLandingNews = (id: string, item: Partial<LandingNewsItem>) => {
+    setLandingNews((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, ...item } : n));
+      save("mf_landing_news", updated);
+      return updated;
+    });
+
+    fetch("/api/website/news", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...item }),
+    }).catch((err) => console.error("Error updating website news in PostgreSQL:", err));
+  };
+
+  const deleteLandingNews = (id: string) => {
+    setLandingNews((prev) => {
+      const filtered = prev.filter((n) => n.id !== id);
+      save("mf_landing_news", filtered);
+      return filtered;
+    });
+
+    fetch(`/api/website/news?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting website news from PostgreSQL:", err));
+  };
+
+  // Landing Events CRUD
+  const addLandingEvent = (item: Omit<LandingEventItem, "id">) => {
+    const tempId = `ev-${Date.now()}`;
+    const newItem: LandingEventItem = {
+      ...item,
+      id: tempId,
+    };
+    setLandingEvents((prev) => {
+      const updated = [...prev, newItem];
+      save("mf_landing_events", updated);
+      return updated;
+    });
+
+    fetch("/api/website/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created && created.id) {
+          setLandingEvents((prev) => {
+            const list = prev.map((e) => (e.id === tempId ? { ...e, id: created.id } : e));
+            save("mf_landing_events", list);
+            return list;
+          });
+        }
+      })
+      .catch((err) => console.error("Error saving website event to PostgreSQL:", err));
+  };
+
+  const updateLandingEvent = (id: string, item: Partial<LandingEventItem>) => {
+    setLandingEvents((prev) => {
+      const updated = prev.map((e) => (e.id === id ? { ...e, ...item } : e));
+      save("mf_landing_events", updated);
+      return updated;
+    });
+
+    fetch("/api/website/events", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...item }),
+    }).catch((err) => console.error("Error updating website event in PostgreSQL:", err));
+  };
+
+  const deleteLandingEvent = (id: string) => {
+    setLandingEvents((prev) => {
+      const filtered = prev.filter((e) => e.id !== id);
+      save("mf_landing_events", filtered);
+      return filtered;
+    });
+
+    fetch(`/api/website/events?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Error deleting website event from PostgreSQL:", err));
   };
 
   // Level Progression Matrix Handlers (Kenaikan Level)
@@ -3691,7 +4002,16 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         deleteLandingProgram,
         landingTestimonials,
         addLandingTestimonial,
+        updateLandingTestimonial,
         deleteLandingTestimonial,
+        landingNews,
+        addLandingNews,
+        updateLandingNews,
+        deleteLandingNews,
+        landingEvents,
+        addLandingEvent,
+        updateLandingEvent,
+        deleteLandingEvent,
         landingLeads,
         addLandingLead,
         updateLandingLeadStatus,
