@@ -1528,10 +1528,15 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Realtime Data Fetcher from PostgreSQL
-  const fetchAllLiveData = useCallback(async () => {
+  // Realtime Data Fetcher from PostgreSQL (optimized with conditional website loading)
+  const fetchAllLiveData = useCallback(async (includeWebsite = false) => {
     try {
-      const results = await Promise.allSettled([
+      const isWebsiteRoute =
+        typeof window !== "undefined" &&
+        (window.location.pathname === "/" || window.location.pathname.startsWith("/dashboard/website"));
+      const shouldFetchWebsite = includeWebsite || isWebsiteRoute;
+
+      const fetchPromises: Promise<any>[] = [
         fetch("/api/students", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/branches", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/admins", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
@@ -1544,13 +1549,21 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         fetch("/api/mutations", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/attendances", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/transactions", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-        fetch("/api/website/hero", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-        fetch("/api/website/programs", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-        fetch("/api/website/testimonials", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-        fetch("/api/website/leads", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-        fetch("/api/website/partners", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
         fetch("/api/level-progress", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
-      ]);
+      ];
+
+      if (shouldFetchWebsite) {
+        fetchPromises.push(
+          fetch("/api/website/hero", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+          fetch("/api/website/programs", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+          fetch("/api/website/testimonials", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+          fetch("/api/website/leads", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+          fetch("/api/website/partners", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null))
+        );
+      }
+
+      const results = await Promise.allSettled(fetchPromises);
+      const values = results.map((res) => (res.status === "fulfilled" ? res.value : null));
 
       const [
         studentsRes,
@@ -1565,13 +1578,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         mutationsRes,
         attendancesRes,
         transactionsRes,
-        heroRes,
-        programsRes,
-        testimonialsRes,
-        leadsRes,
-        partnersRes,
         levelProgressRes,
-      ] = results.map((res) => (res.status === "fulfilled" ? res.value : null));
+      ] = values;
+
+      const heroRes = shouldFetchWebsite ? values[13] : null;
+      const programsRes = shouldFetchWebsite ? values[14] : null;
+      const testimonialsRes = shouldFetchWebsite ? values[15] : null;
+      const leadsRes = shouldFetchWebsite ? values[16] : null;
+      const partnersRes = shouldFetchWebsite ? values[17] : null;
 
       if (Array.isArray(studentsRes) && studentsRes.length > 0) {
         setStudents((prev) => {
@@ -1824,22 +1838,27 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
 
-    // 1. Fetch live data immediately from PostgreSQL
-    fetchAllLiveData();
+    // 1. Fetch live data immediately from PostgreSQL (including website on initial load)
+    fetchAllLiveData(true);
 
-    // 2. Re-fetch live data whenever window / tab gains focus
+    // 2. Re-fetch live data whenever window / tab gains focus (throttled to at most once per 15s)
+    let lastRefocusSync = Date.now();
     const handleRevalidate = () => {
-      fetchAllLiveData();
+      const now = Date.now();
+      if (now - lastRefocusSync > 15000 && document.visibilityState === "visible") {
+        lastRefocusSync = now;
+        fetchAllLiveData(false);
+      }
     };
     window.addEventListener("focus", handleRevalidate);
     document.addEventListener("visibilitychange", handleRevalidate);
 
-    // 3. Real-time background sync every 12 seconds
+    // 3. Real-time background sync every 45 seconds (optimized from 12s)
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
-        fetchAllLiveData();
+        fetchAllLiveData(false);
       }
-    }, 12000);
+    }, 45000);
 
     return () => {
       window.removeEventListener("focus", handleRevalidate);
