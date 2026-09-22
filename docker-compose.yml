@@ -16,6 +16,8 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     ports:
       - "3000:3000"
+    volumes:
+      - uploads_data:/app/public/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -75,6 +77,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  uploads_data:
     driver: local
 
 networks:
