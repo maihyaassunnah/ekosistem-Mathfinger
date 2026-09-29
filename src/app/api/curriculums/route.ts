@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 
-// GET /api/curriculums - Fetch all curriculum levels
-export async function GET() {
+// GET /api/curriculums - Fetch curriculum levels isolated by branch
+export async function GET(req: Request) {
   try {
     const { error } = await requireAuth();
     if (error) return error;
+
+    const { searchParams } = new URL(req.url);
+    const branchParam = searchParams.get("branch");
 
     const levels = await prisma.level.findMany({
       orderBy: { orderIndex: "asc" },
@@ -24,6 +27,22 @@ export async function GET() {
         parsedIndicators = l.indicators ? [String(l.indicators)] : [];
       }
 
+      let itemBranch = "Singkut";
+      if (l.description) {
+        try {
+          if (l.description.trim().startsWith("{")) {
+            const meta = JSON.parse(l.description);
+            if (meta.branch) itemBranch = meta.branch;
+          } else if (l.description.startsWith("branch:")) {
+            itemBranch = l.description.replace("branch:", "").trim();
+          } else {
+            itemBranch = l.description.trim();
+          }
+        } catch {
+          itemBranch = l.description.trim();
+        }
+      }
+
       return {
         id: l.id,
         orderIndex: l.orderIndex,
@@ -33,8 +52,22 @@ export async function GET() {
         competencies: l.competencies || "",
         learningMaterials: l.learningMaterials || "",
         indicators: parsedIndicators,
+        branch: itemBranch,
       };
     });
+
+    // If branch filter specified, filter results
+    if (branchParam && branchParam !== "ALL") {
+      const lower = branchParam.toLowerCase().trim();
+      const filtered = formatted.filter((item) => {
+        const itemLower = (item.branch || "Singkut").toLowerCase().trim();
+        if (lower === "bangko" || lower.includes("tabir")) {
+          return itemLower === "bangko" || itemLower.includes("tabir");
+        }
+        return itemLower === lower;
+      });
+      return NextResponse.json(filtered);
+    }
 
     return NextResponse.json(formatted);
   } catch (error: any) {
@@ -50,7 +83,18 @@ export async function POST(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { levelTitle, shortDesc, learningGoals, competencies, learningMaterials, indicators } = body;
+    const {
+      levelTitle,
+      shortDesc,
+      learningGoals,
+      competencies,
+      learningMaterials,
+      indicators,
+      branch,
+    } = body;
+
+    const targetBranch = branch || "Singkut";
+    const branchMeta = JSON.stringify({ branch: targetBranch });
 
     const count = await prisma.level.count();
 
@@ -58,6 +102,7 @@ export async function POST(req: Request) {
       data: {
         levelName: levelTitle || "Level Baru",
         shortDesc: shortDesc || "",
+        description: branchMeta,
         learningGoals: learningGoals || "",
         competencies: competencies || "",
         learningMaterials: learningMaterials || "",
@@ -85,6 +130,7 @@ export async function POST(req: Request) {
         competencies: created.competencies || "",
         learningMaterials: created.learningMaterials || "",
         indicators: parsedIndicators,
+        branch: targetBranch,
       },
       { status: 201 }
     );
@@ -101,7 +147,16 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, levelTitle, shortDesc, learningGoals, competencies, learningMaterials, indicators } = body;
+    const {
+      id,
+      levelTitle,
+      shortDesc,
+      learningGoals,
+      competencies,
+      learningMaterials,
+      indicators,
+      branch,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID modul kurikulum diperlukan" }, { status: 400 });
@@ -126,6 +181,8 @@ export async function PUT(req: Request) {
       }
     }
 
+    const branchMeta = branch ? JSON.stringify({ branch }) : undefined;
+
     // If still not found, create a new record
     if (!target) {
       const count = await prisma.level.count();
@@ -133,6 +190,7 @@ export async function PUT(req: Request) {
         data: {
           levelName: levelTitle || "Level Baru",
           shortDesc: shortDesc || "",
+          description: branchMeta || JSON.stringify({ branch: "Singkut" }),
           learningGoals: learningGoals || "",
           competencies: competencies || "",
           learningMaterials: learningMaterials || "",
@@ -150,6 +208,7 @@ export async function PUT(req: Request) {
         competencies: created.competencies || "",
         learningMaterials: created.learningMaterials || "",
         indicators: indicators || [],
+        branch: branch || "Singkut",
       });
     }
 
@@ -158,6 +217,7 @@ export async function PUT(req: Request) {
       data: {
         ...(levelTitle ? { levelName: levelTitle } : {}),
         ...(shortDesc !== undefined ? { shortDesc } : {}),
+        ...(branchMeta !== undefined ? { description: branchMeta } : {}),
         ...(learningGoals !== undefined ? { learningGoals } : {}),
         ...(competencies !== undefined ? { competencies } : {}),
         ...(learningMaterials !== undefined ? { learningMaterials } : {}),
@@ -174,6 +234,14 @@ export async function PUT(req: Request) {
       parsedIndicators = [];
     }
 
+    let itemBranch = branch || "Singkut";
+    if (!branch && updated.description) {
+      try {
+        const meta = JSON.parse(updated.description);
+        if (meta.branch) itemBranch = meta.branch;
+      } catch {}
+    }
+
     return NextResponse.json({
       id: updated.id,
       orderIndex: updated.orderIndex,
@@ -183,6 +251,7 @@ export async function PUT(req: Request) {
       competencies: updated.competencies || "",
       learningMaterials: updated.learningMaterials || "",
       indicators: parsedIndicators,
+      branch: itemBranch,
     });
   } catch (error: any) {
     console.error("Error updating curriculum:", error);
@@ -198,28 +267,37 @@ export async function DELETE(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const branch = searchParams.get("branch");
     const isResetAll = searchParams.get("all") === "true" || id === "all";
 
-    // Handle Reset All ("Kosongkan Kurikulum")
+    // Handle Reset All ("Kosongkan Kurikulum") - Scoped by branch
     if (isResetAll) {
-      const studentCount = await prisma.student.count();
-      if (studentCount > 0) {
-        // Create baseline level so students are not orphaned
-        const baseLevel = await prisma.level.create({
-          data: {
-            levelName: "Level Dasar: Pengenalan Simbol Jari",
-            shortDesc: "Level awal pembelajaran",
-            orderIndex: 1,
+      if (branch && branch !== "ALL") {
+        await prisma.level.deleteMany({
+          where: {
+            description: { contains: branch, mode: "insensitive" },
           },
         });
-        await prisma.student.updateMany({
-          data: { currentLevelId: baseLevel.id },
-        });
-        await prisma.level.deleteMany({
-          where: { id: { not: baseLevel.id } },
-        });
       } else {
-        await prisma.level.deleteMany({});
+        const studentCount = await prisma.student.count();
+        if (studentCount > 0) {
+          const baseLevel = await prisma.level.create({
+            data: {
+              levelName: "Level Dasar: Pengenalan Simbol Jari",
+              shortDesc: "Level awal pembelajaran",
+              description: JSON.stringify({ branch: "Singkut" }),
+              orderIndex: 1,
+            },
+          });
+          await prisma.student.updateMany({
+            data: { currentLevelId: baseLevel.id },
+          });
+          await prisma.level.deleteMany({
+            where: { id: { not: baseLevel.id } },
+          });
+        } else {
+          await prisma.level.deleteMany({});
+        }
       }
       return NextResponse.json({ success: true, reset: true });
     }
@@ -239,7 +317,6 @@ export async function DELETE(req: Request) {
     }
 
     if (!target) {
-      // If it doesn't exist in DB at all, consider it successfully deleted
       return NextResponse.json({ success: true, notFoundInDb: true });
     }
 
@@ -249,7 +326,6 @@ export async function DELETE(req: Request) {
     });
 
     if (studentsUsingLevel > 0) {
-      // Reassign students to another level if available
       const fallbackLevel = await prisma.level.findFirst({
         where: { id: { not: target.id } },
         orderBy: { orderIndex: "asc" },

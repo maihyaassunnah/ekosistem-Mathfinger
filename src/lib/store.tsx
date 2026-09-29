@@ -38,6 +38,7 @@ export interface BehaviorItem {
   id: string;
   studentId: string;
   studentName: string;
+  branch?: string;
   date: string;
   sessionTopic: string;
   focus: string;
@@ -48,6 +49,7 @@ export interface BehaviorItem {
 
 export interface JournalItem {
   id: string;
+  studentId?: string;
   studentName: string;
   className: string;
   branch: "Singkut" | "Bangko";
@@ -79,12 +81,32 @@ export interface GradeItem {
   studentId: string;
   studentName: string;
   className: string;
+  branch?: string;
+  branchId?: string;
   topic: string;
   examDate: string;
   score: number;
   note: string;
   isJoined: boolean;
+  programType?: "MATEMATIKA" | "MEMBACA";
 }
+
+export const normalizeBranchName = (b?: string | null): string => {
+  if (!b) return "";
+  const lower = b.toLowerCase().trim();
+  if (lower === "bangko" || lower.includes("tabir")) return "Tabir Timur";
+  if (lower.includes("singkut")) return "Singkut";
+  return b.trim();
+};
+
+export const isBranchMatch = (
+  studentOrItemBranch?: string | null,
+  targetBranch?: string | null
+): boolean => {
+  if (!targetBranch || targetBranch === "ALL") return true;
+  if (!studentOrItemBranch) return false;
+  return normalizeBranchName(studentOrItemBranch) === normalizeBranchName(targetBranch);
+};
 
 export interface CurriculumModule {
   id: string;
@@ -95,6 +117,8 @@ export interface CurriculumModule {
   competencies: string;
   learningMaterials: string;
   indicators: string[];
+  branch?: string;
+  branchId?: string;
 }
 
 export interface InvoiceItem {
@@ -309,14 +333,16 @@ interface AppStoreContextType {
     studentId: string;
     studentName?: string;
     className?: string;
+    branch?: string;
     topic: string;
     examDate: string;
     score: number;
     note?: string;
     isJoined?: boolean;
+    programType?: "MATEMATIKA" | "MEMBACA";
   }) => Promise<void>;
-  deleteGradeSession: (topic: string, examDate: string) => Promise<void>;
-  renameGradeSession: (oldTopic: string, oldExamDate: string, newTopic: string, newExamDate: string) => Promise<void>;
+  deleteGradeSession: (topic: string, examDate: string, branch?: string) => Promise<void>;
+  renameGradeSession: (oldTopic: string, oldExamDate: string, newTopic: string, newExamDate: string, branch?: string) => Promise<void>;
   deleteSingleGrade: (id: string) => Promise<void>;
 
   // Behavior / Sikap & Keaktifan
@@ -339,8 +365,8 @@ interface AppStoreContextType {
   curriculumModules: CurriculumModule[];
   addCurriculumModule: (mod: Omit<CurriculumModule, "id" | "orderIndex">) => void;
   updateCurriculumModule: (id: string, mod: Partial<CurriculumModule>) => void;
-  deleteCurriculumModule: (id: string) => void;
-  resetCurriculumModules: () => void;
+  deleteCurriculumModule: (id: string, branch?: string) => void;
+  resetCurriculumModules: (branch?: string) => void;
 
   // Invoices & SPP
   invoices: InvoiceItem[];
@@ -510,6 +536,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-1",
     studentName: "Aishwa Rahma Annida",
     className: "Kelas A",
+    branch: "Singkut",
     topic: "Level 1 hlm 1-2",
     examDate: "2026-08-22",
     score: 95,
@@ -521,6 +548,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-1",
     studentName: "Aishwa Rahma Annida",
     className: "Kelas A",
+    branch: "Singkut",
     topic: "Menulis angka puluhan berdasarkan simbol 2",
     examDate: "2026-08-16",
     score: 90,
@@ -532,6 +560,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-1",
     studentName: "Aishwa Rahma Annida",
     className: "Kelas A",
+    branch: "Singkut",
     topic: "Hitung dan tulis",
     examDate: "2026-08-16",
     score: 88,
@@ -543,6 +572,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-1",
     studentName: "Aishwa Rahma Annida",
     className: "Kelas A",
+    branch: "Singkut",
     topic: "Menulis angka puluhan berdasarkan simbol 1",
     examDate: "2026-08-15",
     score: 92,
@@ -555,6 +585,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-3",
     studentName: "Alesha Rafani Marta",
     className: "Kelas A2",
+    branch: "Singkut",
     topic: "Level 1 hlm 1-2",
     examDate: "2026-08-22",
     score: 85,
@@ -566,6 +597,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-3",
     studentName: "Alesha Rafani Marta",
     className: "Kelas A2",
+    branch: "Singkut",
     topic: "Hitung dan tulis",
     examDate: "2026-08-16",
     score: 82,
@@ -578,6 +610,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-4",
     studentName: "Anandira Dyah Asmara Wati",
     className: "CLASS C",
+    branch: "Singkut",
     topic: "Level 1 hlm 1-2",
     examDate: "2026-08-22",
     score: 100,
@@ -589,6 +622,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-4",
     studentName: "Anandira Dyah Asmara Wati",
     className: "CLASS C",
+    branch: "Singkut",
     topic: "Hitung dan tulis",
     examDate: "2026-08-16",
     score: 96,
@@ -601,10 +635,36 @@ export const INITIAL_GRADES: GradeItem[] = [
     studentId: "s-8",
     studentName: "Bagas Pratama Putra",
     className: "Kelas B",
+    branch: "Singkut",
     topic: "Level 1 hlm 1-2",
     examDate: "2026-08-22",
     score: 80,
     note: "Meningkat",
+    isJoined: true,
+  },
+  // Tabir Timur Students Initial Grades
+  {
+    id: "g-aqila-1",
+    studentId: "20eed15b-521e-4c18-9d25-9516aa280359",
+    studentName: "Aqila Fahmida",
+    className: "CLASS A1",
+    branch: "Tabir Timur",
+    topic: "Pengurangan Kombinasi 5 (-4, -3)",
+    examDate: "2026-09-06",
+    score: 92,
+    note: "Gerakan jari cepat dan tepat",
+    isJoined: true,
+  },
+  {
+    id: "g-aida-1",
+    studentId: "6d9b1b42-c176-4029-b9c8-91de17dfddf3",
+    studentName: "Aida Syafira N.A",
+    className: "CLASS A1",
+    branch: "Tabir Timur",
+    topic: "Pengurangan Kombinasi 5 (-4, -3)",
+    examDate: "2026-09-06",
+    score: 88,
+    note: "Fokus dan teliti",
     isJoined: true,
   },
 ];
@@ -2803,8 +2863,16 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Grades / Nilai
   const saveGrades = (newGrades: GradeItem[]) => {
     setGrades((prev) => {
-      const filtered = prev.filter((g) => !newGrades.some((ng) => ng.id === g.id));
-      const updated = [...newGrades, ...filtered];
+      const enriched = newGrades.map((ng) => {
+        const st = students.find((s) => s.id === ng.studentId);
+        return {
+          ...ng,
+          branch: ng.branch || st?.branch || "Singkut",
+          programType: ng.programType || (st as any)?.programType || "MATEMATIKA",
+        };
+      });
+      const filtered = prev.filter((g) => !enriched.some((ng) => ng.id === g.id));
+      const updated = [...enriched, ...filtered];
       save("mf_grades", updated);
       return updated;
     });
@@ -2821,13 +2889,18 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     studentId: string;
     studentName?: string;
     className?: string;
+    branch?: string;
     topic: string;
     examDate: string;
     score: number;
     note?: string;
     isJoined?: boolean;
+    programType?: "MATEMATIKA" | "MEMBACA";
   }) => {
     setGrades((prev) => {
+      const st = students.find((s) => s.id === grade.studentId);
+      const branch = grade.branch || st?.branch || "Singkut";
+      const programType = grade.programType || (st as any)?.programType || "MATEMATIKA";
       const idx = prev.findIndex(
         (g) =>
           (grade.id && g.id === grade.id) ||
@@ -2835,20 +2908,28 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       );
       let updated: GradeItem[];
       if (idx >= 0) {
-        const item = { ...prev[idx], ...grade, score: Number(grade.score) };
+        const item = {
+          ...prev[idx],
+          ...grade,
+          branch: grade.branch || prev[idx].branch || branch,
+          programType: grade.programType || prev[idx].programType || programType,
+          score: Number(grade.score),
+        };
         updated = [...prev];
         updated[idx] = item;
       } else {
         const newG: GradeItem = {
           id: grade.id || `gr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           studentId: grade.studentId,
-          studentName: grade.studentName || "Siswa",
-          className: grade.className || "Kelas Reguler",
+          studentName: grade.studentName || st?.name || "Siswa",
+          className: grade.className || st?.className || "Kelas Reguler",
+          branch,
           topic: grade.topic,
           examDate: grade.examDate,
           score: Number(grade.score),
           note: grade.note || "",
           isJoined: grade.isJoined !== undefined ? grade.isJoined : true,
+          programType,
         };
         updated = [newG, ...prev];
       }
@@ -2882,17 +2963,31 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const deleteGradeSession = async (topic: string, examDate: string) => {
+  const deleteGradeSession = async (topic: string, examDate: string, branch?: string) => {
     setGrades((prev) => {
-      const filtered = prev.filter((g) => !(g.topic === topic && g.examDate === examDate));
+      const filtered = prev.filter((g) => {
+        const matches = g.topic === topic && g.examDate === examDate;
+        if (!matches) return true;
+        if (branch && branch !== "ALL") {
+          const st = students.find((s) => s.id === g.studentId);
+          const gBranch = g.branch || st?.branch;
+          const normG = gBranch?.toLowerCase().includes("bangko") || gBranch?.toLowerCase().includes("tabir") ? "Tabir Timur" : gBranch;
+          const normB = branch?.toLowerCase().includes("bangko") || branch?.toLowerCase().includes("tabir") ? "Tabir Timur" : branch;
+          if (normG && normB && normG.toLowerCase() !== normB.toLowerCase()) {
+            return true; // Keep because it's from another branch!
+          }
+        }
+        return false;
+      });
       save("mf_grades", filtered);
       return filtered;
     });
 
     try {
-      await fetch(`/api/grades?topic=${encodeURIComponent(topic)}&examDate=${encodeURIComponent(examDate)}`, {
-        method: "DELETE",
-      });
+      const url = branch && branch !== "ALL"
+        ? `/api/grades?topic=${encodeURIComponent(topic)}&examDate=${encodeURIComponent(examDate)}&branch=${encodeURIComponent(branch)}`
+        : `/api/grades?topic=${encodeURIComponent(topic)}&examDate=${encodeURIComponent(examDate)}`;
+      await fetch(url, { method: "DELETE" });
     } catch (err) {
       console.error("Error deleting grade session:", err);
     }
@@ -2902,14 +2997,24 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     oldTopic: string,
     oldExamDate: string,
     newTopic: string,
-    newExamDate: string
+    newExamDate: string,
+    branch?: string
   ) => {
     setGrades((prev) => {
-      const updated = prev.map((g) =>
-        g.topic === oldTopic && g.examDate === oldExamDate
-          ? { ...g, topic: newTopic, examDate: newExamDate }
-          : g
-      );
+      const updated = prev.map((g) => {
+        const matches = g.topic === oldTopic && g.examDate === oldExamDate;
+        if (!matches) return g;
+        if (branch && branch !== "ALL") {
+          const st = students.find((s) => s.id === g.studentId);
+          const gBranch = g.branch || st?.branch;
+          const normG = gBranch?.toLowerCase().includes("bangko") || gBranch?.toLowerCase().includes("tabir") ? "Tabir Timur" : gBranch;
+          const normB = branch?.toLowerCase().includes("bangko") || branch?.toLowerCase().includes("tabir") ? "Tabir Timur" : branch;
+          if (normG && normB && normG.toLowerCase() !== normB.toLowerCase()) {
+            return g; // Keep unchanged because it's another branch!
+          }
+        }
+        return { ...g, topic: newTopic, examDate: newExamDate };
+      });
       save("mf_grades", updated);
       return updated;
     });
@@ -2918,10 +3023,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       await fetch("/api/grades", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ oldTopic, oldExamDate, newTopic, newExamDate }),
+        body: JSON.stringify({ oldTopic, oldExamDate, newTopic, newExamDate, branch }),
       });
     } catch (err) {
-      console.error("Error renaming grade session:", err);
+      console.error("Error renaming grade session in PostgreSQL:", err);
     }
   };
 
@@ -3040,13 +3145,15 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Curriculum Modules
+  // Curriculum Modules (Branch-isolated)
   const addCurriculumModule = (mod: Omit<CurriculumModule, "id" | "orderIndex">) => {
     const tempId = `cur-${Date.now()}`;
+    const branch = mod.branch || "Singkut";
     const newMod: CurriculumModule = {
       ...mod,
+      branch,
       id: tempId,
-      orderIndex: curriculumModules.length + 1,
+      orderIndex: curriculumModules.filter((m) => isBranchMatch(m.branch, branch)).length + 1,
     };
     setCurriculumModules((prev) => {
       const updated = [...prev, newMod];
@@ -3057,13 +3164,15 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/curriculums", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(mod),
+      body: JSON.stringify(newMod),
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((created) => {
         if (created && created.id) {
           setCurriculumModules((prev) => {
-            const updated = prev.map((c) => (c.id === tempId ? { ...c, ...created } : c));
+            const updated = prev.map((c) =>
+              c.id === tempId ? { ...c, ...created, branch: c.branch || branch } : c
+            );
             save("mf_curriculum", updated);
             return updated;
           });
@@ -3090,7 +3199,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           if (updatedServer && updatedServer.id) {
             setCurriculumModules((prev) => {
               const updated = prev.map((m) =>
-                m.id === id || m.id === updatedServer.id ? { ...m, ...updatedServer } : m
+                m.id === id || m.id === updatedServer.id
+                  ? { ...m, ...updatedServer, branch: m.branch || updatedServer.branch }
+                  : m
               );
               save("mf_curriculum", updated);
               return updated;
@@ -3098,46 +3209,43 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           }
         } else {
           console.error("Gagal memperbarui kurikulum di PostgreSQL");
-          fetchAllLiveData();
         }
       })
       .catch((err) => {
         console.error("Error updating curriculum in PostgreSQL:", err);
-        fetchAllLiveData();
       });
   };
 
-  const deleteCurriculumModule = (id: string) => {
+  const deleteCurriculumModule = (id: string, branch?: string) => {
     setCurriculumModules((prev) => {
       const filtered = prev.filter((m) => m.id !== id);
       save("mf_curriculum", filtered);
       return filtered;
     });
 
-    fetch(`/api/curriculums?id=${encodeURIComponent(id)}`, {
+    const query = branch
+      ? `?id=${encodeURIComponent(id)}&branch=${encodeURIComponent(branch)}`
+      : `?id=${encodeURIComponent(id)}`;
+    fetch(`/api/curriculums${query}`, {
       method: "DELETE",
-    })
-      .then((res) => {
-        if (!res.ok) {
-          console.error("Gagal menghapus kurikulum dari PostgreSQL");
-          fetchAllLiveData();
-        }
-      })
-      .catch((err) => {
-        console.error("Error deleting curriculum from PostgreSQL:", err);
-        fetchAllLiveData();
-      });
+    }).catch((err) => {
+      console.error("Error deleting curriculum from PostgreSQL:", err);
+    });
   };
 
-  const resetCurriculumModules = () => {
-    setCurriculumModules([]);
-    save("mf_curriculum", []);
+  const resetCurriculumModules = (branch?: string) => {
+    setCurriculumModules((prev) => {
+      const filtered = branch ? prev.filter((m) => !isBranchMatch(m.branch, branch)) : [];
+      save("mf_curriculum", filtered);
+      return filtered;
+    });
 
-    fetch("/api/curriculums?all=true", {
+    const query = branch
+      ? `/api/curriculums?all=true&branch=${encodeURIComponent(branch)}`
+      : "/api/curriculums?all=true";
+    fetch(query, {
       method: "DELETE",
-    })
-      .then(() => fetchAllLiveData())
-      .catch((err) => console.error("Error resetting curriculum in PostgreSQL:", err));
+    }).catch((err) => console.error("Error resetting curriculum in PostgreSQL:", err));
   };
 
   // Invoices & SPP

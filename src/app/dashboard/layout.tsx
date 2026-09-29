@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { AppStoreProvider } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { Menu, BookOpen, Sun, Moon, Home, Users, CheckSquare, Award, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Menu, QrCode, BookOpen, Sun, Moon, Home, Users, CheckSquare, Award, ShieldAlert, ArrowLeft } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
 export default function DashboardLayout({
@@ -18,6 +18,11 @@ export default function DashboardLayout({
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const currentUser = useCurrentUser();
+  const isTutorOrAssistant =
+    currentUser.isBranchAssistant ||
+    currentUser.isTutor ||
+    currentUser.role === "Tutor" ||
+    currentUser.role === "Asisten Cabang";
   const hasAccess = currentUser.canAccess(pathname);
   const isDashboardHome = pathname === "/dashboard";
 
@@ -153,51 +158,99 @@ export default function DashboardLayout({
               </span>
             </Link>
 
-            {/* 2. Siswa */}
-            <Link
-              href="/dashboard/siswa"
-              className="flex flex-col items-center py-1 group cursor-pointer"
-            >
-              <Users
-                className={`w-5 h-5 ${
-                  pathname.startsWith("/dashboard/siswa")
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-slate-500 dark:text-slate-400"
-                }`}
-              />
-              <span
-                className={`text-[10px] font-semibold mt-0.5 ${
-                  pathname.startsWith("/dashboard/siswa")
-                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                    : "text-slate-500 dark:text-slate-400"
-                }`}
+            {/* 2. Siswa / Absensi Siswa */}
+            {isTutorOrAssistant ? (
+              <Link
+                href="/dashboard/absensi"
+                className="flex flex-col items-center py-1 group cursor-pointer"
               >
-                Siswa
-              </span>
-            </Link>
+                <CheckSquare
+                  className={`w-5 h-5 ${
+                    pathname.startsWith("/dashboard/absensi")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-semibold mt-0.5 ${
+                    pathname.startsWith("/dashboard/absensi")
+                      ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  Absensi
+                </span>
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/siswa"
+                className="flex flex-col items-center py-1 group cursor-pointer"
+              >
+                <Users
+                  className={`w-5 h-5 ${
+                    pathname.startsWith("/dashboard/siswa")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-semibold mt-0.5 ${
+                    pathname.startsWith("/dashboard/siswa")
+                      ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  Siswa
+                </span>
+              </Link>
+            )}
 
-            {/* 3. Absensi */}
-            <Link
-              href="/dashboard/absensi"
-              className="flex flex-col items-center py-1 group cursor-pointer"
-            >
-              <CheckSquare
-                className={`w-5 h-5 ${
-                  pathname.startsWith("/dashboard/absensi")
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-slate-500 dark:text-slate-400"
-                }`}
-              />
-              <span
-                className={`text-[10px] font-semibold mt-0.5 ${
-                  pathname.startsWith("/dashboard/absensi")
-                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                    : "text-slate-500 dark:text-slate-400"
-                }`}
+            {/* 3. Absensi / Scan QR Tutor */}
+            {isTutorOrAssistant ? (
+              <Link
+                href="/dashboard/absensi-tutor"
+                className="flex flex-col items-center py-1 group cursor-pointer"
               >
-                Absensi
-              </span>
-            </Link>
+                <QrCode
+                  className={`w-5 h-5 ${
+                    pathname.startsWith("/dashboard/absensi-tutor")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-semibold mt-0.5 ${
+                    pathname.startsWith("/dashboard/absensi-tutor")
+                      ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  Scan QR
+                </span>
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/absensi"
+                className="flex flex-col items-center py-1 group cursor-pointer"
+              >
+                <CheckSquare
+                  className={`w-5 h-5 ${
+                    pathname.startsWith("/dashboard/absensi")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-semibold mt-0.5 ${
+                    pathname.startsWith("/dashboard/absensi")
+                      ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  Absensi
+                </span>
+              </Link>
+            )}
 
             {/* 4. Nilai */}
             <Link
@@ -206,14 +259,14 @@ export default function DashboardLayout({
             >
               <Award
                 className={`w-5 h-5 ${
-                  pathname.startsWith("/dashboard/input-nilai") || pathname.startsWith("/dashboard/rapor")
+                  pathname.startsWith("/dashboard/input-nilai")
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold mt-0.5 ${
-                  pathname.startsWith("/dashboard/input-nilai") || pathname.startsWith("/dashboard/rapor")
+                  pathname.startsWith("/dashboard/input-nilai")
                     ? "text-emerald-600 dark:text-emerald-400 font-bold"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
@@ -222,22 +275,46 @@ export default function DashboardLayout({
               </span>
             </Link>
 
-            {/* 5. Lainnya (with blue badge 14, triggers sidebar drawer) */}
-            <button
-              type="button"
-              onClick={() => setMobileOpen(true)}
-              className="flex flex-col items-center py-1 group cursor-pointer relative"
-            >
-              <div className="relative">
-                <Menu className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[15px] h-3.5 rounded-full bg-emerald-600 text-white text-[8px] font-black flex items-center justify-center shadow-xs">
-                  14
+            {/* 5. Jurnal / Lainnya */}
+            {isTutorOrAssistant ? (
+              <Link
+                href="/dashboard/jurnal"
+                className="flex flex-col items-center py-1 group cursor-pointer"
+              >
+                <BookOpen
+                  className={`w-5 h-5 ${
+                    pathname.startsWith("/dashboard/jurnal")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-semibold mt-0.5 ${
+                    pathname.startsWith("/dashboard/jurnal")
+                      ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  Jurnal
                 </span>
-              </div>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                Lainnya
-              </span>
-            </button>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                className="flex flex-col items-center py-1 group cursor-pointer relative"
+              >
+                <div className="relative">
+                  <Menu className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                  <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[15px] h-3.5 rounded-full bg-emerald-600 text-white text-[8px] font-black flex items-center justify-center shadow-xs">
+                    14
+                  </span>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                  Lainnya
+                </span>
+              </button>
+            )}
           </div>
 
           {/* iOS Bottom Indicator Bar */}

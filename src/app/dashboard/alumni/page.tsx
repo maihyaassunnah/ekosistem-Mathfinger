@@ -19,10 +19,26 @@ import { useAppStore } from "@/lib/store";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 function AlumniContent() {
-  const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const router = useRouter();
+  const currentUser = useCurrentUser();
+  const { isSuperAdmin, allowedBranch } = currentUser;
+  const isTutorOrAssistant =
+    currentUser.isBranchAssistant ||
+    currentUser.isTutor ||
+    currentUser.role === "Tutor" ||
+    currentUser.role === "Asisten Cabang" ||
+    currentUser.role?.toLowerCase()?.includes("tutor") ||
+    currentUser.role?.toLowerCase()?.includes("asisten") ||
+    currentUser.role?.toLowerCase()?.includes("assistant");
+
+  useEffect(() => {
+    if (isTutorOrAssistant) {
+      router.replace("/dashboard");
+    }
+  }, [isTutorOrAssistant, router]);
+
   const { students, grades, branches, classes } = useAppStore();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const paramProgram = searchParams?.get("program");
   const isMembaca = paramProgram === "MEMBACA";

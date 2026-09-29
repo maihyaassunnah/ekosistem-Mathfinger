@@ -12,6 +12,7 @@ import {
   Award,
   CheckCircle2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -58,7 +59,24 @@ const SKILL_COLOR: Record<string, string> = {
 };
 
 export default function RaporMembacaPage() {
-  const { isSuperAdmin, allowedBranch } = useCurrentUser();
+  const router = useRouter();
+  const currentUser = useCurrentUser();
+  const { isSuperAdmin, allowedBranch } = currentUser;
+  const isTutorOrAssistant =
+    currentUser.isBranchAssistant ||
+    currentUser.isTutor ||
+    currentUser.role === "Tutor" ||
+    currentUser.role === "Asisten Cabang" ||
+    currentUser.role?.toLowerCase()?.includes("tutor") ||
+    currentUser.role?.toLowerCase()?.includes("asisten") ||
+    currentUser.role?.toLowerCase()?.includes("assistant");
+
+  useEffect(() => {
+    if (isTutorOrAssistant) {
+      router.replace("/dashboard");
+    }
+  }, [isTutorOrAssistant, router]);
+
   const [students, setStudents] = useState<Student[]>([]);
   const [readingLevels, setReadingLevels] = useState<ReadingLevel[]>([]);
   const [readingGrades, setReadingGrades] = useState<ReadingGrade[]>([]);
@@ -111,7 +129,7 @@ export default function RaporMembacaPage() {
   const membacaStudents = useMemo(() =>
     students.filter((s) => {
       const branchMatch = selectedBranch ? s.branchId === selectedBranch : true;
-      const programMatch = !s.programType || s.programType === "MEMBACA";
+      const programMatch = s.programType === "MEMBACA";
       return branchMatch && programMatch;
     }), [students, selectedBranch]);
 

@@ -58,6 +58,11 @@ function DashboardContent() {
   const { theme, toggleTheme } = useTheme();
   const currentUser = useCurrentUser();
   const { isSuperAdmin, allowedBranch } = currentUser;
+  const isTutorOrAssistant =
+    currentUser.isBranchAssistant ||
+    currentUser.isTutor ||
+    currentUser.role === "Tutor" ||
+    currentUser.role === "Asisten Cabang";
 
   const displayName = currentUser.name || (isSuperAdmin ? "Wahyudin Hafiz, S.Pd" : "Ustadzah Febri");
   const pathname = usePathname();
@@ -684,7 +689,7 @@ function DashboardContent() {
 
           {showQuickServices && (
             <div className="grid grid-cols-4 md:grid-cols-8 gap-2.5 sm:gap-3 md:gap-3.5 animate-in fade-in duration-200">
-              {popularServices.map((service, idx) => {
+              {popularServices.filter((service) => currentUser.canAccess(service.href)).map((service, idx) => {
                 const IconComponent = service.icon;
                 return (
                   <Link
@@ -961,131 +966,227 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Section: Pusat Kendali Cepat Super Admin (6 Quick Action Cards) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <span className="text-emerald-600">✨</span>
-            <span>PUSAT KENDALI CEPAT SUPER ADMIN</span>
-          </h2>
-          <span className="text-[11px] text-slate-400">Akses langsung fitur esensial</span>
+      {/* Section: Pusat Kendali Cepat Super Admin / Admin Cabang */}
+      {!isTutorOrAssistant && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-emerald-600">✨</span>
+              <span>{isSuperAdmin ? "PUSAT KENDALI CEPAT SUPER ADMIN" : "PUSAT KENDALI ADMIN CABANG"}</span>
+            </h2>
+            <span className="text-[11px] text-slate-400">Akses langsung fitur esensial</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            {/* Card 1 */}
+            <Link
+              href="/dashboard/cabang"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  Cabang & Admin
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Tambah & atur cabang</div>
+              </div>
+            </Link>
+
+            {/* Card 2 */}
+            <Link
+              href="/dashboard/siswa"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  Data Siswa
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Semua data siswa</div>
+              </div>
+            </Link>
+
+            {/* Card 3 */}
+            <Link
+              href="/dashboard/spp"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-amber-300 dark:hover:border-amber-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition-colors">
+                  Rekap SPP Global
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Arus kas & tunggakan</div>
+              </div>
+            </Link>
+
+            {/* Card 4 - Database */}
+            <Link
+              href="/dashboard/database"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  Database Cloud
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Editor cloud database</div>
+              </div>
+            </Link>
+
+            {/* Card 5 - Website CMS */}
+            <Link
+              href="/dashboard/website"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                  Kelola Website
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Landing page & promo</div>
+              </div>
+            </Link>
+
+            {/* Card 6 */}
+            <Link
+              href="/dashboard/rapor"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-purple-300 dark:hover:border-purple-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">
+                  Rapor & Nilai
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Evaluasi & cetak PDF</div>
+              </div>
+            </Link>
+
+            {/* Card 7 */}
+            <Link
+              href="/dashboard/pengaturan"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-pink-300 dark:hover:border-pink-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-pink-600 transition-colors">
+                  Pengaturan
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Biaya SPP & kurikulum</div>
+              </div>
+            </Link>
+          </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-          {/* Card 1 */}
-          <Link
-            href="/dashboard/cabang"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
-                Cabang & Admin
-              </div>
-              <div className="text-[10px] text-slate-400 truncate">Tambah & atur cabang</div>
-            </div>
-          </Link>
+      {/* Section: Menu Cepat Tutor & Asisten Cabang */}
+      {isTutorOrAssistant && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-emerald-600">✨</span>
+              <span>MENU CEPAT TUTOR & ASISTEN CABANG</span>
+            </h2>
+            <span className="text-[11px] text-slate-400">Akses langsung tugas operasional Anda</span>
+          </div>
 
-          {/* Card 2 */}
-          <Link
-            href="/dashboard/siswa"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
-                Data Siswa
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {/* 1. Absensi Siswa */}
+            <Link
+              href="/dashboard/absensi"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <CheckSquare className="w-5 h-5" />
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Semua data siswa</div>
-            </div>
-          </Link>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  Absensi Siswa
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Presensi harian siswa</div>
+              </div>
+            </Link>
 
-          {/* Card 3 */}
-          <Link
-            href="/dashboard/spp"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-amber-300 dark:hover:border-amber-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <CreditCard className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition-colors">
-                Rekap SPP Global
+            {/* 2. Absensi Tutor / Scan QR */}
+            <Link
+              href="/dashboard/absensi-tutor"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <QrCode className="w-5 h-5" />
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Arus kas & tunggakan</div>
-            </div>
-          </Link>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  Absensi Tutor / Scan QR
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Scan presensi tutor via GPS</div>
+              </div>
+            </Link>
 
-          {/* Card 4 - Database */}
-          <Link
-            href="/dashboard/database"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-emerald-300 dark:hover:border-emerald-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Database className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
-                Database Cloud
+            {/* 3. Jurnal Guru */}
+            <Link
+              href="/dashboard/jurnal"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-purple-300 dark:hover:border-purple-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <BookOpen className="w-5 h-5" />
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Editor cloud database</div>
-            </div>
-          </Link>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">
+                  Jurnal Guru
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Catat materi pembelajaran</div>
+              </div>
+            </Link>
 
-          {/* Card 5 - Website CMS */}
-          <Link
-            href="/dashboard/website"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-blue-300 dark:hover:border-blue-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Globe className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                Kelola Website
+            {/* 4. Riwayat Jurnal */}
+            <Link
+              href="/dashboard/riwayat-jurnal"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-cyan-300 dark:hover:border-cyan-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Clock className="w-5 h-5" />
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Landing page & promo</div>
-            </div>
-          </Link>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 transition-colors">
+                  Riwayat Jurnal
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Rekap catatan pertemuan</div>
+              </div>
+            </Link>
 
-          {/* Card 5 */}
-          <Link
-            href="/dashboard/rapor"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-purple-300 dark:hover:border-purple-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">
-                Rapor & Nilai
+            {/* 5. Input Nilai */}
+            <Link
+              href="/dashboard/input-nilai"
+              className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-amber-300 dark:hover:border-amber-900 hover:shadow-md transition-all group space-y-2"
+            >
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Award className="w-5 h-5" />
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Evaluasi & cetak PDF</div>
-            </div>
-          </Link>
-
-          {/* Card 6 */}
-          <Link
-            href="/dashboard/pengaturan"
-            className="bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] hover:border-pink-300 dark:hover:border-pink-900 hover:shadow-md transition-all group space-y-2"
-          >
-            <div className="w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Settings className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-pink-600 transition-colors">
-                Pengaturan
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition-colors">
+                  Input Nilai
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Penilaian hitung jari siswa</div>
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Biaya SPP & kurikulum</div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         </div>
-      </div>
-
+      )}
       {/* 4 Metric Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Cabang Terdaftar */}

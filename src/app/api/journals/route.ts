@@ -17,7 +17,17 @@ export async function GET(req: Request) {
       whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     }
     if (branch && branch !== "ALL") {
-      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+      const lower = branch.toLowerCase().trim();
+      if (lower === "bangko" || lower.includes("tabir")) {
+        whereClause.branch = {
+          OR: [
+            { branchName: { contains: "Bangko", mode: "insensitive" } },
+            { branchName: { contains: "Tabir", mode: "insensitive" } },
+          ],
+        };
+      } else {
+        whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+      }
     }
 
     const journals = await prisma.teacherJournal.findMany({

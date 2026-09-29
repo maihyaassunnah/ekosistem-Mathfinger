@@ -96,20 +96,24 @@ function KelasContent() {
     return splitNames.includes(clsName.toLowerCase().trim());
   };
 
-  // Helpers to get live enrolled students and candidates for a class
+  // Helpers to get live enrolled students and candidates for a class (strictly program isolated!)
   const getEnrolledStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
+    const prog = classProgType || activeProgram;
     return students.filter((s) => {
       const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
       const classMatch = isStudentEnrolled(s, clsName, clsId);
-      return branchMatch && classMatch;
+      return branchMatch && programMatch && classMatch;
     });
   };
 
   const getCandidateStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
+    const prog = classProgType || activeProgram;
     return students.filter((s) => {
       const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
       const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId);
-      return branchMatch && !alreadyInThisClass;
+      return branchMatch && programMatch && !alreadyInThisClass;
     });
   };
 

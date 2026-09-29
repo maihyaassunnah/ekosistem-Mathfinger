@@ -1174,9 +1174,15 @@ function SiswaContent() {
                             value: c.name,
                             label: `${c.name} (${c.branch})`,
                           })),
-                        { value: "Kelas A", label: "Kelas A" },
-                        { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
-                        { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
+                        ...(form.programType === "MEMBACA"
+                          ? [
+                              { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
+                              { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
+                            ]
+                          : [
+                              { value: "Kelas A", label: "Kelas A" },
+                              { value: "Kelas B", label: "Kelas B" },
+                            ]),
                       ]}
                     />
                   </div>

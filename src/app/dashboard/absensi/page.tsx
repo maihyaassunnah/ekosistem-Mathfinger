@@ -33,9 +33,10 @@ import {
   TrendingUp,
   Layers,
   BookOpen,
+  Building2,
 } from "lucide-react";
 import jsQR from "jsqr";
-import { useAppStore, AttendanceItem } from "@/lib/store";
+import { useAppStore, AttendanceItem, isBranchMatch } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -489,25 +490,46 @@ function AbsensiContent() {
   const currentProgram = searchParams?.get("program");
   const isMembacaProgram = currentProgram === "MEMBACA";
 
+  // Branch isolation state
+  const [selectedBranch, setSelectedBranch] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mf_selected_branch");
+      if (saved) return saved;
+    }
+    return allowedBranch || "Singkut";
+  });
+
+  const activeBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
+
+  useEffect(() => {
+    if (!isSuperAdmin && allowedBranch) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [isSuperAdmin, allowedBranch]);
+
+  const handleBranchChange = (branch: string) => {
+    setSelectedBranch(branch);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("mf_selected_branch", branch);
+    }
+  };
+
   // Filter students for today list (scoped by branch, program, and active status)
-  const branchScopedStudents = (allowedBranch
-    ? students.filter((s) => s.branch === allowedBranch)
-    : students
-  )
+  const branchScopedStudents = students
+    .filter((s) => isBranchMatch(s.branch, activeBranch))
     .filter((s) =>
       isMembacaProgram
         ? (s as any).programType === "MEMBACA"
         : (s as any).programType !== "MEMBACA"
     )
     .filter((s) => isStudentActive(s.status));
-  const branchScopedClasses = (allowedBranch
-    ? classes.filter((c) => c.branch === allowedBranch)
-    : classes
-  ).filter((c) =>
-    isMembacaProgram
-      ? (c as any).programType === "MEMBACA"
-      : (c as any).programType !== "MEMBACA"
-  );
+  const branchScopedClasses = classes
+    .filter((c) => isBranchMatch(c.branch, activeBranch))
+    .filter((c) =>
+      isMembacaProgram
+        ? (c as any).programType === "MEMBACA"
+        : (c as any).programType !== "MEMBACA"
+    );
 
   const classList = [
     { name: "Semua Kelas", count: branchScopedStudents.length, value: "ALL" },
@@ -795,8 +817,7 @@ function AbsensiContent() {
         : (st as any)?.programType !== "MEMBACA";
     })
     .filter((item) => {
-      if (allowedBranch && item.branch !== allowedBranch) return false;
-      return true;
+      return isBranchMatch(item.branch, activeBranch);
     });
 
   // Scoped Rekap Records by Class Filter
@@ -1013,6 +1034,44 @@ function AbsensiContent() {
           </div>
         </div>
       </div>
+
+      {/* Super Admin Branch Switcher Banner */}
+      {isSuperAdmin && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Building2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Pilih Cabang Absensi:</span>
+            <div className="flex items-center gap-1.5">
+              {["Singkut", "Tabir Timur"].map((b) => {
+                const isActive = activeBranch.toLowerCase().includes(b.toLowerCase().split(" ")[0]);
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => handleBranchChange(b)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    Cabang {b}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+            🔒 Menampilkan {branchScopedStudents.length} siswa dan riwayat presensi Cabang {activeBranch}.
+          </span>
+        </div>
+      )}
+      {!isSuperAdmin && allowedBranch && (
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Absensi Siswa Cabang {allowedBranch}</span>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* TAB 1: PENCATATAN HARI INI */}

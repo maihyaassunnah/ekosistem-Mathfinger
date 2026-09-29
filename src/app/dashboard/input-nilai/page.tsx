@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Edit3,
   Sparkles,
@@ -33,6 +34,9 @@ import {
   Printer,
   CheckSquare,
   Square,
+  Building2,
+  MapPin,
+  BookText,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -40,7 +44,48 @@ import { useAppStore, GradeItem } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function InputNilaiPage() {
+// Helpers for branch normalization and matching
+const normalizeBranchName = (b?: string | null) => {
+  if (!b) return "";
+  const lower = b.trim().toLowerCase();
+  if (lower.includes("bangko") || lower.includes("tabir")) return "Tabir Timur";
+  if (lower.includes("singkut")) return "Singkut";
+  return b.trim();
+};
+
+const isBranchMatch = (studentOrItemBranch?: string | null, targetBranch?: string | null) => {
+  if (!targetBranch || targetBranch === "ALL") return true;
+  return normalizeBranchName(studentOrItemBranch) === normalizeBranchName(targetBranch);
+};
+
+const readingTopicsPreset = [
+  "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)",
+  "Level 2: Merangkai Suku Kata Sederhana (ba, bi, bu...)",
+  "Level 3: Merangkai Kata 2 Suku Kata (buku, bola...)",
+  "Level 4: Merangkai Kata Bervokal & Konsonan Ganda (ny, ng, kh...)",
+  "Level 5: Membaca Kalimat Sederhana",
+  "Level 6: Membaca Paragraf Pendek & Cerita",
+  "Level 7: Lancar Membaca & Pemahaman Teks",
+];
+
+function InputNilaiContent() {
+  const searchParams = useSearchParams();
+  const paramProgram = searchParams?.get("program");
+
+  const [activeProgram, setActiveProgram] = useState<"MATEMATIKA" | "MEMBACA">(
+    paramProgram === "MEMBACA" ? "MEMBACA" : "MATEMATIKA"
+  );
+
+  useEffect(() => {
+    if (paramProgram === "MEMBACA") {
+      setActiveProgram("MEMBACA");
+    } else if (paramProgram === "MATEMATIKA") {
+      setActiveProgram("MATEMATIKA");
+    }
+  }, [paramProgram]);
+
+  const isMembaca = activeProgram === "MEMBACA";
+
   const {
     students,
     classes,
@@ -53,28 +98,134 @@ export default function InputNilaiPage() {
     behaviors,
     saveStudentKeaktifan,
     deleteBehavior,
+    branches,
   } = useAppStore();
 
   const currentUser = useCurrentUser();
   const { isSuperAdmin, allowedBranch } = currentUser;
 
+  // Branch filter state for Super Admin (defaults to Singkut or saved preference)
+  const [selectedBranch, setSelectedBranch] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mf_input_nilai_selected_branch");
+      if (saved) return saved;
+    }
+    return allowedBranch || "Singkut";
+  });
+
+  const activeBranch = useMemo(() => {
+    if (!isSuperAdmin && allowedBranch) return allowedBranch;
+    return selectedBranch;
+  }, [isSuperAdmin, allowedBranch, selectedBranch]);
+
+  const handleBranchChange = (newBranch: string) => {
+    setSelectedBranch(newBranch);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("mf_input_nilai_selected_branch", newBranch);
+    }
+  };
+
+  const branchKey = normalizeBranchName(activeBranch);
+
+  const getDefaultTopic = (branch: string, prog: "MATEMATIKA" | "MEMBACA") => {
+    if (prog === "MEMBACA") return "Level 1: Pra-Membaca & Pengenalan Huruf (A-Z)";
+    const norm = normalizeBranchName(branch);
+    if (norm === "Tabir Timur") return "Pengurangan Kombinasi 5 (-4, -3)";
+    return "Penjumlahan Kombinasi 5 (+4, +3)";
+  };
+
+  // Branch-scoped and program-scoped students, classes, and grades
   const scopedStudents = useMemo(() => {
-    const list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
-    return list.filter((s) => (s as any).programType !== "MEMBACA");
-  }, [students, allowedBranch]);
+    let list = students;
+    if (activeBranch && activeBranch !== "ALL") {
+      list = list.filter((s) => isBranchMatch(s.branch, activeBranch));
+    }
+    return list.filter((s) =>
+      isMembaca
+        ? (s as any).programType === "MEMBACA"
+        : (s as any).programType !== "MEMBACA"
+    );
+  }, [students, activeBranch, isMembaca]);
 
   const scopedClasses = useMemo(() => {
-    const list = allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
-    return list.filter((c) => (c as any).programType !== "MEMBACA");
-  }, [classes, allowedBranch]);
+    let list = classes;
+    if (activeBranch && activeBranch !== "ALL") {
+      list = list.filter((c) => isBranchMatch(c.branch, activeBranch));
+    }
+    return list.filter((c) =>
+      isMembaca
+        ? (c as any).programType === "MEMBACA"
+        : (c as any).programType !== "MEMBACA"
+    );
+  }, [classes, activeBranch, isMembaca]);
+
+  const scopedGrades = useMemo(() => {
+    let list = grades;
+    if (activeBranch && activeBranch !== "ALL") {
+      list = list.filter((g) => {
+        const st = students.find((s) => s.id === g.studentId);
+        const gBranch = g.branch || st?.branch;
+        return isBranchMatch(gBranch, activeBranch);
+      });
+    }
+    return list.filter((g) => {
+      const st = students.find((s) => s.id === g.studentId);
+      const gProg = (g as any).programType || (st as any)?.programType || "MATEMATIKA";
+      return isMembaca ? gProg === "MEMBACA" : gProg !== "MEMBACA";
+    });
+  }, [grades, activeBranch, students, isMembaca]);
+
+  // Overall student counts per program in active branch
+  const branchStudentsAll = useMemo(() => {
+    if (!activeBranch || activeBranch === "ALL") return students;
+    return students.filter((s) => isBranchMatch(s.branch, activeBranch));
+  }, [students, activeBranch]);
+  const mathCount = branchStudentsAll.filter((s) => (s as any).programType !== "MEMBACA").length;
+  const readingCount = branchStudentsAll.filter((s) => (s as any).programType === "MEMBACA").length;
+
+  // Existing tested topics in this branch and program for autocomplete/quick-pick
+  const branchExistingTopics = useMemo(() => {
+    const set = new Set<string>();
+    if (isMembaca) {
+      readingTopicsPreset.forEach((t) => set.add(t));
+    }
+    scopedGrades.forEach((g) => {
+      if (g.topic && g.topic.trim()) set.add(g.topic.trim());
+    });
+    return Array.from(set);
+  }, [scopedGrades, isMembaca]);
 
   const [activeSubTab, setActiveSubTab] = useState<
     "input" | "keaktifan" | "leger"
   >("input");
 
-  // Form Inputs (Tab 1)
-  const [topic, setTopic] = useState("Penjumlahan Kombinasi 5 (+4, +3)");
-  const [examDate, setExamDate] = useState("2026-09-06");
+  // Form Inputs (Tab 1) - Persisted per branch and program so Tabir Timur & Singkut or Matematika & Membaca do NOT overwrite each other!
+  const [topic, setTopic] = useState<string>(() => getDefaultTopic(activeBranch, activeProgram));
+  const [examDate, setExamDate] = useState<string>("2026-09-06");
+
+  // Load branch and program specific topic and date
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTopic = localStorage.getItem(`mf_input_nilai_topic_${branchKey}_${activeProgram}`);
+      const savedDate = localStorage.getItem(`mf_input_nilai_date_${branchKey}_${activeProgram}`);
+      setTopic(savedTopic || getDefaultTopic(activeBranch, activeProgram));
+      if (savedDate) setExamDate(savedDate);
+    }
+  }, [branchKey, activeBranch, activeProgram]);
+
+  const handleTopicChange = (newTopic: string) => {
+    setTopic(newTopic);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`mf_input_nilai_topic_${branchKey}_${activeProgram}`, newTopic);
+    }
+  };
+
+  const handleExamDateChange = (newDate: string) => {
+    setExamDate(newDate);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`mf_input_nilai_date_${branchKey}_${activeProgram}`, newDate);
+    }
+  };
 
   // Filters (Tab 1)
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,22 +234,40 @@ export default function InputNilaiPage() {
   // Row entries state: studentId -> { isJoined, score, note }
   const [entries, setEntries] = useState<
     Record<string, { isJoined: boolean; score: number | ""; note: string }>
-  >(() => {
-    const initial: Record<
+  >({});
+
+  // Auto-sync entries with scopedGrades whenever scopedStudents, scopedGrades, topic, or examDate changes
+  useEffect(() => {
+    const nextEntries: Record<
       string,
       { isJoined: boolean; score: number | ""; note: string }
     > = {};
-    (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students)
-      .filter((s) => (s as any).programType !== "MEMBACA")
-      .forEach((s) => {
-        initial[s.id] = {
+
+    scopedStudents.forEach((s) => {
+      const existingGrade = scopedGrades.find(
+        (g) =>
+          g.studentId === s.id &&
+          g.topic.trim().toLowerCase() === topic.trim().toLowerCase() &&
+          g.examDate === examDate
+      );
+
+      if (existingGrade) {
+        nextEntries[s.id] = {
+          isJoined: existingGrade.isJoined !== undefined ? existingGrade.isJoined : true,
+          score: existingGrade.score !== undefined ? existingGrade.score : "",
+          note: existingGrade.note || (isMembaca ? "Lancar membaca & lafal jelas" : "Sangat cepat / fokus tinggi"),
+        };
+      } else {
+        nextEntries[s.id] = {
           isJoined: false,
           score: "",
-          note: "Sangat cepat / fokus tinggi",
+          note: isMembaca ? "Lancar membaca & lafal jelas" : "Sangat cepat / fokus tinggi",
         };
-      });
-    return initial;
-  });
+      }
+    });
+
+    setEntries(nextEntries);
+  }, [scopedStudents, scopedGrades, topic, examDate, isMembaca]);
 
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -392,27 +561,27 @@ export default function InputNilaiPage() {
 
   const [legerToast, setLegerToast] = useState<string | null>(null);
 
-  // Unique evaluations ordered chronologically
+  // Unique evaluations ordered chronologically (isolated by branch)
   const evaluationColumns = useMemo(() => {
     const map = new Map<string, { key: string; topic: string; examDate: string }>();
-    grades.forEach((g) => {
+    scopedGrades.forEach((g) => {
       const key = `${g.examDate}___${g.topic}`;
       if (!map.has(key)) {
         map.set(key, { key, topic: g.topic, examDate: g.examDate });
       }
     });
     return Array.from(map.values()).sort((a, b) => a.examDate.localeCompare(b.examDate));
-  }, [grades]);
+  }, [scopedGrades]);
 
   // Fast score lookup: studentId___examDate___topic -> GradeItem
   const gradeMap = useMemo(() => {
     const map = new Map<string, GradeItem>();
-    grades.forEach((g) => {
+    scopedGrades.forEach((g) => {
       const key = `${g.studentId}___${g.examDate}___${g.topic}`;
       map.set(key, g);
     });
     return map;
-  }, [grades]);
+  }, [scopedGrades]);
 
   // Filtered students for Leger Matrix
   const filteredLegerStudents = useMemo(() => {
@@ -444,11 +613,13 @@ export default function InputNilaiPage() {
       studentId: s.id,
       studentName: s.name,
       className: s.className,
+      branch: s.branch || activeBranch,
       topic: newSessionForm.topic.trim(),
       examDate: newSessionForm.examDate,
       score: Number(newSessionForm.defaultScore) || 80,
       note: "Sesi uji dibuat via Leger",
       isJoined: true,
+      programType: activeProgram,
     }));
 
     saveGrades(newGradesToCreate);
@@ -476,7 +647,8 @@ export default function InputNilaiPage() {
       editingSession.oldTopic,
       editingSession.oldExamDate,
       editingSession.newTopic.trim(),
-      editingSession.newExamDate
+      editingSession.newExamDate,
+      activeBranch
     );
     setLegerToast(`Sesi ujian berhasil diperbarui menjadi "${editingSession.newTopic}"!`);
     setTimeout(() => setLegerToast(null), 3500);
@@ -486,7 +658,7 @@ export default function InputNilaiPage() {
   // Handle Delete Session Column
   const handleDeleteSession = async () => {
     if (!deletingSession) return;
-    await deleteGradeSession(deletingSession.topic, deletingSession.examDate);
+    await deleteGradeSession(deletingSession.topic, deletingSession.examDate, activeBranch);
     setLegerToast(`Sesi ujian "${deletingSession.topic}" berhasil dihapus.`);
     setTimeout(() => setLegerToast(null), 3500);
     setDeletingSession(null);
@@ -516,11 +688,13 @@ export default function InputNilaiPage() {
       studentId: editingCell.student.id,
       studentName: editingCell.student.name,
       className: editingCell.student.className,
+      branch: editingCell.student.branch || activeBranch,
       topic: editingCell.col.topic,
       examDate: editingCell.col.examDate,
       score: Number(editingCell.score) || 0,
       note: editingCell.note,
       isJoined: editingCell.isJoined,
+      programType: activeProgram,
     });
     setLegerToast(
       `Nilai ${editingCell.student.name} berhasil disimpan (${editingCell.score})!`
@@ -669,11 +843,12 @@ export default function InputNilaiPage() {
     const itemsToSave: GradeItem[] = filteredStudents
       .filter((s) => entries[s.id]?.isJoined)
       .map((s) => ({
-        id: `grade-${s.id}-${examDate}-${topic.replace(/\s+/g, "-")}`,
+        id: `grade-${s.id}-${examDate}-${topic.trim().replace(/\s+/g, "-")}`,
         studentId: s.id,
         studentName: s.name,
         className: s.className,
-        topic,
+        branch: s.branch || activeBranch,
+        topic: topic.trim(),
         examDate,
         score:
           typeof entries[s.id]?.score === "number"
@@ -683,6 +858,7 @@ export default function InputNilaiPage() {
             : 0,
         note: entries[s.id]?.note || "",
         isJoined: true,
+        programType: activeProgram,
       }));
 
     saveGrades(itemsToSave);
@@ -695,24 +871,122 @@ export default function InputNilaiPage() {
       {/* Top Status Bar with Supabase Live */}
       <TopStatusBar title="Input Nilai & Evaluasi" />
 
-      {/* Main Title Banner */}
+      {/* Main Title Banner & Program Switcher Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-            Input Nilai & Uji Kecepatan
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+              {isMembaca ? "Input Nilai & Evaluasi Membaca" : "Input Nilai & Uji Kecepatan"}
+            </h1>
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                isMembaca
+                  ? "bg-teal-100 text-teal-800 dark:bg-teal-950/80 dark:text-teal-300"
+                  : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300"
+              }`}
+            >
+              {isMembaca ? "📖 Les Membaca" : "🔢 Les Matematika"}
+            </span>
+          </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Rekam akurasi jawaban, kecepatan buka-tutup jari Jaritmatika, dan kelola Leger Matriks lengkap.
+            {isMembaca
+              ? "Penilaian level membaca (Level 1 s/d Level 7), kelancaran pelafalan, dan riwayat Leger khusus siswa membaca."
+              : "Rekam akurasi jawaban, kecepatan buka-tutup jari Jaritmatika, dan kelola Leger Matriks lengkap."}
           </p>
         </div>
 
-        {/* Global Action feedback toast */}
-        {(keaktifanToast || legerToast) && (
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in shadow-xs self-start sm:self-auto">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>{keaktifanToast || legerToast}</span>
+        {/* Right Controls: Program Toggle Pill + Feedback */}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          {/* Program Toggle Pill */}
+          <div className="flex items-center p-1 bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setActiveProgram("MATEMATIKA")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                !isMembaca
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <span>Matematika</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                !isMembaca ? "bg-white/20 text-white" : "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+              }`}>
+                {mathCount}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveProgram("MEMBACA")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                isMembaca
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <span>Membaca</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                isMembaca ? "bg-white/25 text-white" : "bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300"
+              }`}>
+                {readingCount}
+              </span>
+            </button>
           </div>
-        )}
+
+          {(keaktifanToast || legerToast) && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold animate-in fade-in shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{keaktifanToast || legerToast}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Super Admin Branch Switcher / Branch Admin Badge Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0f1a36] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <span>Filter Cabang Input Nilai</span>
+              {isSuperAdmin && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  SUPER ADMIN
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Materi/bab dan nilai ujian siswa dipisahkan per cabang agar tidak saling menghapus atau menimpa.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto w-full sm:w-auto">
+          {isSuperAdmin ? (
+            <div className="w-full sm:w-60">
+              <CustomSelect
+                value={selectedBranch}
+                onChange={handleBranchChange}
+                size="sm"
+                className="w-full"
+                options={[
+                  { value: "Singkut", label: "Cabang Singkut" },
+                  { value: "Tabir Timur", label: "Cabang Tabir Timur" },
+                  ...branches
+                    .filter((b) => b.name !== "Singkut" && b.name !== "Bangko" && b.name !== "Tabir Timur")
+                    .map((b) => ({ value: b.name, label: `Cabang ${b.name}` })),
+                ]}
+              />
+            </div>
+          ) : (
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Cabang: {activeBranch}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 3 Sub-tabs Centered Pill Switcher (Sesuai Gambar 2 dengan Background Hijau & Inactive Slate) */}
@@ -779,8 +1053,20 @@ export default function InputNilaiPage() {
               </div>
             )}
 
-            {/* Form Input Fields: Materi & Tanggal (Dua Baris Saja: Baris 1 Label, Baris 2 Input) */}
+            {/* Form Input Fields: Materi & Tanggal (Per Cabang) */}
             <div className="p-3.5 sm:p-5 bg-slate-50/50 dark:bg-[#09130f] border-b border-slate-100 dark:border-[#1d2d5a]">
+              <div className="max-w-xl mx-auto flex items-center justify-between gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Cabang Aktif: <strong>{activeBranch}</strong></span>
+                </span>
+                {branchExistingTopics.length > 0 && (
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                    {branchExistingTopics.length} Bab Pernah Diuji
+                  </span>
+                )}
+              </div>
+
               <div className="max-w-xl mx-auto grid grid-cols-2 gap-2.5 sm:gap-4">
                 <div className="space-y-1 text-center">
                   <label className="text-[10.5px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block text-center truncate">
@@ -788,11 +1074,17 @@ export default function InputNilaiPage() {
                   </label>
                   <input
                     type="text"
+                    list="branch-existing-topics"
                     value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
+                    onChange={(e) => handleTopicChange(e.target.value)}
                     placeholder="Misal: Penjumlahan 5"
                     className="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-center text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs"
                   />
+                  <datalist id="branch-existing-topics">
+                    {branchExistingTopics.map((t) => (
+                      <option key={t} value={t} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="space-y-1 text-center">
@@ -802,22 +1094,22 @@ export default function InputNilaiPage() {
                   <input
                     type="date"
                     value={examDate}
-                    onChange={(e) => setExamDate(e.target.value)}
+                    onChange={(e) => handleExamDateChange(e.target.value)}
                     className="w-full px-2 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs font-bold text-center text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Saring Berdasarkan Nama & Kelas (1 Baris) */}
+            {/* Saring Berdasarkan Nama, Cabang & Kelas */}
             <div className="p-3 sm:p-5 space-y-2 border-b border-slate-100 dark:border-[#1d2d5a]">
               <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                Saring Berdasarkan Nama & Kelas
+                Saring Berdasarkan Nama {isSuperAdmin ? ", Cabang " : ""} & Kelas
               </div>
 
               <div className="grid grid-cols-12 gap-2">
                 {/* Search Bar */}
-                <div className="relative col-span-7 sm:col-span-8">
+                <div className={`relative ${isSuperAdmin ? "col-span-12 sm:col-span-5" : "col-span-7 sm:col-span-8"}`}>
                   <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
@@ -828,8 +1120,27 @@ export default function InputNilaiPage() {
                   />
                 </div>
 
+                {/* Cabang Filter for Super Admin */}
+                {isSuperAdmin && (
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomSelect
+                      value={selectedBranch}
+                      onChange={handleBranchChange}
+                      className="w-full"
+                      size="sm"
+                      options={[
+                        { value: "Singkut", label: "Cabang Singkut" },
+                        { value: "Tabir Timur", label: "Cabang Tabir Timur" },
+                        ...branches
+                          .filter((b) => b.name !== "Singkut" && b.name !== "Bangko" && b.name !== "Tabir Timur")
+                          .map((b) => ({ value: b.name, label: `Cabang ${b.name}` })),
+                      ]}
+                    />
+                  </div>
+                )}
+
                 {/* Class Select */}
-                <div className="col-span-5 sm:col-span-4">
+                <div className={`${isSuperAdmin ? "col-span-6 sm:col-span-4" : "col-span-5 sm:col-span-4"}`}>
                   <CustomSelect
                     value={selectedClass}
                     onChange={setSelectedClass}
@@ -1295,8 +1606,8 @@ export default function InputNilaiPage() {
 
               {/* Filter & Batch Actions Toolbar */}
               <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-[#1d2d5a] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                {/* Search & Class Filter */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 max-w-xl">
+                {/* Search, Branch & Class Filter */}
+                <div className={`grid grid-cols-1 ${isSuperAdmin ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-2.5 flex-1 max-w-2xl`}>
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
@@ -1307,6 +1618,21 @@ export default function InputNilaiPage() {
                       className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
+                  {isSuperAdmin && (
+                    <CustomSelect
+                      value={selectedBranch}
+                      onChange={handleBranchChange}
+                      className="w-full"
+                      size="sm"
+                      options={[
+                        { value: "Singkut", label: "Cabang Singkut" },
+                        { value: "Tabir Timur", label: "Cabang Tabir Timur" },
+                        ...branches
+                          .filter((b) => b.name !== "Singkut" && b.name !== "Bangko" && b.name !== "Tabir Timur")
+                          .map((b) => ({ value: b.name, label: `Cabang ${b.name}` })),
+                      ]}
+                    />
+                  )}
                   <CustomSelect
                     value={keaktifanClassFilter}
                     onChange={setKeaktifanClassFilter}
@@ -1751,6 +2077,23 @@ export default function InputNilaiPage() {
             </div>
 
             <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Branch Filter for Super Admin */}
+              {isSuperAdmin && (
+                <CustomSelect
+                  value={selectedBranch}
+                  onChange={handleBranchChange}
+                  className="min-w-[170px]"
+                  size="sm"
+                  options={[
+                    { value: "Singkut", label: "Cabang Singkut" },
+                    { value: "Tabir Timur", label: "Cabang Tabir Timur" },
+                    ...branches
+                      .filter((b) => b.name !== "Singkut" && b.name !== "Bangko" && b.name !== "Tabir Timur")
+                      .map((b) => ({ value: b.name, label: `Cabang ${b.name}` })),
+                  ]}
+                />
+              )}
+
               {/* Class Filter */}
               <CustomSelect
                 value={legerClassFilter}
@@ -2305,5 +2648,19 @@ export default function InputNilaiPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function InputNilaiPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-xs text-slate-500 font-semibold">
+          Memuat data input nilai...
+        </div>
+      }
+    >
+      <InputNilaiContent />
+    </Suspense>
   );
 }

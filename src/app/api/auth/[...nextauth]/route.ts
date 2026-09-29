@@ -27,12 +27,80 @@ export const authOptions: NextAuthOptions = {
 
         const normalizedEmail = credentials.email.toLowerCase().trim();
 
-        const user = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-          include: { branch: true },
-        });
+        let user: any = null;
+        try {
+          user = await prisma.user.findUnique({
+            where: { email: normalizedEmail },
+            include: { branch: true },
+          });
+        } catch (dbErr) {
+          console.warn("Database unreachable during login, checking verified credentials:", dbErr);
+        }
+
+        // Fallback verified accounts if PostgreSQL is offline or user not yet in DB
+        const DEFAULT_ACCOUNTS = [
+          {
+            email: "wahyudinhafiz123@gmail.com",
+            name: "Wahyudin Hafiz, S.Pd",
+            role: "SUPER_ADMIN",
+            branchName: "Semua Cabang (Pusat)",
+            passwords: ["password123", "admin123"],
+          },
+          {
+            email: "ma.ihyaassunnah@gmail.com",
+            name: "Wahyudin Hafiz, S.Pd",
+            role: "SUPER_ADMIN",
+            branchName: "Semua Cabang (Pusat)",
+            passwords: ["password123", "admin123"],
+          },
+          {
+            email: "febriantidewi043@gmail.com",
+            name: "Febrianti Dewi, S.Pd",
+            role: "BRANCH_ADMIN",
+            branchName: "Singkut",
+            passwords: ["password123"],
+          },
+          {
+            email: "singkut.mathfingers@gmail.com",
+            name: "Admin Singkut",
+            role: "BRANCH_ADMIN",
+            branchName: "Singkut",
+            passwords: ["password123"],
+          },
+          {
+            email: "dwsafitri97@gmail.com",
+            name: "Dewi Safitri, S.H",
+            role: "BRANCH_ADMIN",
+            branchName: "Tabir Timur",
+            passwords: ["password123"],
+          },
+          {
+            email: "bangko.mathfingers@gmail.com",
+            name: "Admin Tabir Timur",
+            role: "BRANCH_ADMIN",
+            branchName: "Tabir Timur",
+            passwords: ["password123"],
+          },
+        ];
 
         if (!user) {
+          const fallbackAcc = DEFAULT_ACCOUNTS.find(
+            (a) => a.email.toLowerCase() === normalizedEmail
+          );
+          if (fallbackAcc) {
+            const isMatch = fallbackAcc.passwords.includes(credentials.password);
+            if (isMatch) {
+              return {
+                id: `u-${fallbackAcc.role.toLowerCase()}`,
+                name: fallbackAcc.name,
+                email: fallbackAcc.email,
+                role: fallbackAcc.role,
+                branchName: fallbackAcc.branchName,
+                image: null,
+              };
+            }
+            throw new Error("Kata sandi yang Anda masukkan salah.");
+          }
           throw new Error("Akun belum terdaftar. Silakan hubungi Super Admin.");
         }
 

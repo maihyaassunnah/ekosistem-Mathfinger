@@ -2,13 +2,44 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 
+// Helper: Resolve branchId from branch name / code
+async function resolveBranchId(branchParam?: string | null): Promise<string | null> {
+  if (!branchParam || branchParam === "ALL") return null;
+  const normalized = branchParam === "Bangko" ? "Tabir Timur" : branchParam;
+  try {
+    const b = await prisma.branch.findFirst({
+      where: {
+        OR: [
+          { id: branchParam },
+          { branchName: { equals: normalized, mode: "insensitive" } },
+          { branchName: { equals: branchParam, mode: "insensitive" } },
+          { branchCode: { equals: branchParam, mode: "insensitive" } },
+        ],
+      },
+    });
+    return b?.id || null;
+  } catch {
+    return null;
+  }
+}
+
 // GET /api/grades - Fetch all student grades
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const { error } = await requireAuth();
     if (error) return error;
 
+    const { searchParams } = new URL(req.url);
+    const branchParam = searchParams.get("branch") || searchParams.get("branchId");
+    const targetBranchId = await resolveBranchId(branchParam);
+
+    const whereClause: any = {};
+    if (targetBranchId) {
+      whereClause.branchId = targetBranchId;
+    }
+
     const grades = await prisma.studentGrade.findMany({
+      where: whereClause,
       include: {
         student: true,
         branch: true,
@@ -21,6 +52,8 @@ export async function GET() {
       studentId: g.studentId,
       studentName: g.student?.studentName || "Siswa",
       className: g.className || "Kelas Reguler",
+      branch: g.branch?.branchName || "Singkut",
+      branchId: g.branchId,
       topic: g.topic,
       examDate: g.examDate.toISOString().split("T")[0],
       score: Number(g.score),
@@ -134,7 +167,7 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, studentId, topic, examDate, score, note, isJoined, oldTopic, oldExamDate, newTopic, newExamDate } = body;
+    const { id, studentId, topic, examDate, score, note, isJoined, oldTopic, oldExamDate, newTopic, newExamDate, branch, branchId } = body;
 
     // Case A: Batch rename a test session column (topic and/or examDate)
     if (oldTopic && oldExamDate) {
@@ -143,11 +176,17 @@ export async function PUT(req: Request) {
       if (newTopic) updateData.topic = newTopic;
       if (newExamDate) updateData.examDate = new Date(newExamDate);
 
+      const whereClause: any = {
+        topic: oldTopic,
+        examDate: oldDateObj,
+      };
+      const targetBranchId = await resolveBranchId(branchId || branch);
+      if (targetBranchId) {
+        whereClause.branchId = targetBranchId;
+      }
+
       const updatedBatch = await prisma.studentGrade.updateMany({
-        where: {
-          topic: oldTopic,
-          examDate: oldDateObj,
-        },
+        where: whereClause,
         data: updateData,
       });
 
@@ -264,15 +303,23 @@ export async function DELETE(req: Request) {
     const id = searchParams.get("id");
     const topic = searchParams.get("topic");
     const examDate = searchParams.get("examDate");
+    const branch = searchParams.get("branch");
+    const branchId = searchParams.get("branchId");
 
     // Case A: Delete entire session column
     if (topic && examDate) {
       const dateObj = new Date(examDate);
+      const whereClause: any = {
+        topic,
+        examDate: dateObj,
+      };
+      const targetBranchId = await resolveBranchId(branchId || branch);
+      if (targetBranchId) {
+        whereClause.branchId = targetBranchId;
+      }
+
       const deletedBatch = await prisma.studentGrade.deleteMany({
-        where: {
-          topic,
-          examDate: dateObj,
-        },
+        where: whereClause,
       });
 
       return NextResponse.json({ success: true, count: deletedBatch.count });

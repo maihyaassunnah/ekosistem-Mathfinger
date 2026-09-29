@@ -57,6 +57,14 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
   const currentUser = useCurrentUser();
   const { isSuperAdmin, isBranchAdmin, isBranchAssistant, allowedBranch } = currentUser;
+  const isTutorOrAssistant =
+    isBranchAssistant ||
+    currentUser.isTutor ||
+    currentUser.role === "Tutor" ||
+    currentUser.role === "Asisten Cabang" ||
+    currentUser.role?.toLowerCase()?.includes("tutor") ||
+    currentUser.role?.toLowerCase()?.includes("asisten") ||
+    currentUser.role?.toLowerCase()?.includes("assistant");
   const { theme, toggleTheme } = useTheme();
   const {
     students,
@@ -173,7 +181,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   // 1. TAB UTAMA (Les Matematika)
   const menuSections = [
     {
-      group: "UTAMA (MATEMATIKA)",
+      group: isTutorOrAssistant ? "MENU UTAMA" : "UTAMA (MATEMATIKA)",
       items: [
         {
           name: "Dashboard",
@@ -181,20 +189,24 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           icon: Home,
           badge: null,
         },
-        {
-          name: "Siswa",
-          href: "/dashboard/siswa",
-          icon: Users,
-          badge: `${mathStudentCount}`,
-          badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-extrabold",
-        },
-        {
-          name: "Kelas",
-          href: "/dashboard/kelas",
-          icon: LayoutGrid,
-          badge: mathClassCount > 0 ? `${mathClassCount}` : null,
-          badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-emerald-300 font-bold",
-        },
+        ...(!isTutorOrAssistant
+          ? [
+              {
+                name: "Siswa",
+                href: "/dashboard/siswa",
+                icon: Users,
+                badge: `${mathStudentCount}`,
+                badgeColor: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-extrabold",
+              },
+              {
+                name: "Kelas",
+                href: "/dashboard/kelas",
+                icon: LayoutGrid,
+                badge: mathClassCount > 0 ? `${mathClassCount}` : null,
+                badgeColor: "bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-emerald-300 font-bold",
+              },
+            ]
+          : []),
         ...(isSuperAdmin
           ? [
               {
@@ -211,7 +223,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       group: "AKADEMIK & PRESENSI",
       items: [
         {
-          name: "Absensi Hari Ini",
+          name: isTutorOrAssistant ? "Absensi Siswa" : "Absensi Hari Ini",
           href: "/dashboard/absensi",
           icon: CheckSquare,
           badge: null,
@@ -245,7 +257,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             ]
           : [
               {
-                name: "Scan Presensi Saya",
+                name: "Absensi Tutor / Scan QR",
                 href: "/dashboard/absensi-tutor",
                 icon: QrCode,
                 badge: "GPS",
@@ -270,7 +282,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           icon: Edit3,
           badge: null,
         },
-        ...(isSuperAdmin || isBranchAdmin || (!isBranchAssistant && !currentUser.isTutor)
+        ...(!isTutorOrAssistant && (isSuperAdmin || isBranchAdmin)
           ? [
               {
                 name: "Kenaikan Level",
@@ -281,21 +293,25 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               },
             ]
           : []),
-        {
-          name: "Kurikulum & Panduan",
-          href: "/dashboard/kurikulum",
-          icon: BookMarked,
-          badge: null,
-        },
-        {
-          name: "Rapor Siswa",
-          href: "/dashboard/rapor",
-          icon: FileText,
-          badge: null,
-        },
+        ...(!isTutorOrAssistant
+          ? [
+              {
+                name: "Kurikulum & Panduan",
+                href: "/dashboard/kurikulum",
+                icon: BookMarked,
+                badge: null,
+              },
+              {
+                name: "Rapor Siswa",
+                href: "/dashboard/rapor",
+                icon: FileText,
+                badge: null,
+              },
+            ]
+          : []),
       ],
     },
-    ...(!isBranchAssistant && !currentUser.isTutor
+    ...(!isTutorOrAssistant
       ? [
           {
             group: "KEUANGAN",
@@ -323,50 +339,54 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           },
         ]
       : []),
-    {
-      group: "AKUN & SISTEM",
-      items: [
-        {
-          name: "Alumni / Lulus",
-          href: "/dashboard/alumni",
-          icon: GraduationCap,
-          badge: null,
-          subItems: [
-            { name: "Daftar Alumni", href: "/dashboard/alumni" },
-            { name: "Peringkat", href: "/dashboard/alumni?tab=peringkat" },
-          ],
-        },
-        ...(isSuperAdmin
-          ? [
+    ...(!isTutorOrAssistant
+      ? [
+          {
+            group: "AKUN & SISTEM",
+            items: [
               {
-                name: "Cabang & Admin",
-                href: "/dashboard/cabang",
-                icon: Building2,
+                name: "Alumni / Lulus",
+                href: "/dashboard/alumni",
+                icon: GraduationCap,
                 badge: null,
+                subItems: [
+                  { name: "Daftar Alumni", href: "/dashboard/alumni" },
+                  { name: "Peringkat", href: "/dashboard/alumni?tab=peringkat" },
+                ],
               },
-              {
-                name: "Database Cloud",
-                href: "/dashboard/database",
-                icon: Database,
-                badge: "17",
-                badgeColor: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold",
-              },
-              {
-                name: "Pengaturan",
-                href: "/dashboard/pengaturan",
-                icon: Settings,
-                badge: null,
-              },
-            ]
-          : []),
-      ],
-    },
+              ...(isSuperAdmin
+                ? [
+                    {
+                      name: "Cabang & Admin",
+                      href: "/dashboard/cabang",
+                      icon: Building2,
+                      badge: null,
+                    },
+                    {
+                      name: "Database Cloud",
+                      href: "/dashboard/database",
+                      icon: Database,
+                      badge: "17",
+                      badgeColor: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold",
+                    },
+                    {
+                      name: "Pengaturan",
+                      href: "/dashboard/pengaturan",
+                      icon: Settings,
+                      badge: null,
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
   ];
 
   // 2. TAB MEMBACA (Les Membaca)
   const membacaSections = [
     {
-      group: "LES MEMBACA",
+      group: isTutorOrAssistant ? "MENU UTAMA" : "LES MEMBACA",
       items: [
         {
           name: "Dashboard",
@@ -374,20 +394,24 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           icon: Home,
           badge: null,
         },
-        {
-          name: "Siswa",
-          href: "/dashboard/siswa?program=MEMBACA",
-          icon: Users,
-          badge: `${readingStudentCount}`,
-          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-extrabold",
-        },
-        {
-          name: "Kelas",
-          href: "/dashboard/kelas?program=MEMBACA",
-          icon: LayoutGrid,
-          badge: readingClassCount > 0 ? `${readingClassCount}` : null,
-          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
-        },
+        ...(!isTutorOrAssistant
+          ? [
+              {
+                name: "Siswa",
+                href: "/dashboard/siswa?program=MEMBACA",
+                icon: Users,
+                badge: `${readingStudentCount}`,
+                badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-extrabold",
+              },
+              {
+                name: "Kelas",
+                href: "/dashboard/kelas?program=MEMBACA",
+                icon: LayoutGrid,
+                badge: readingClassCount > 0 ? `${readingClassCount}` : null,
+                badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
+              },
+            ]
+          : []),
         ...(isSuperAdmin
           ? [
               {
@@ -404,7 +428,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       group: "AKADEMIK & EVALUASI",
       items: [
         {
-          name: "Absensi Hari Ini",
+          name: isTutorOrAssistant ? "Absensi Siswa" : "Absensi Hari Ini",
           href: "/dashboard/absensi?program=MEMBACA",
           icon: CheckSquare,
           badge: null,
@@ -438,7 +462,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             ]
           : [
               {
-                name: "Scan Presensi Saya",
+                name: "Absensi Tutor / Scan QR",
                 href: "/dashboard/absensi-tutor",
                 icon: QrCode,
                 badge: "GPS",
@@ -458,13 +482,23 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           badge: null,
         },
         {
-          name: "Rapor Membaca",
-          href: "/dashboard/rapor-membaca",
-          icon: BookText,
-          badge: "Level 1-7",
-          badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
+          name: "Input Nilai",
+          href: "/dashboard/input-nilai?program=MEMBACA",
+          icon: Edit3,
+          badge: null,
         },
-        ...(isSuperAdmin || isBranchAdmin || (!isBranchAssistant && !currentUser.isTutor)
+        ...(!isTutorOrAssistant
+          ? [
+              {
+                name: "Rapor Membaca",
+                href: "/dashboard/rapor-membaca",
+                icon: BookText,
+                badge: "Level 1-7",
+                badgeColor: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold",
+              },
+            ]
+          : []),
+        ...(!isTutorOrAssistant && (isSuperAdmin || isBranchAdmin)
           ? [
               {
                 name: "Kenaikan Level",
@@ -476,7 +510,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           : []),
       ],
     },
-    ...(!isBranchAssistant && !currentUser.isTutor
+    ...(!isTutorOrAssistant
       ? [
           {
             group: "KEUANGAN",
@@ -504,44 +538,48 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           },
         ]
       : []),
-    {
-      group: "AKUN & SISTEM",
-      items: [
-        {
-          name: "Alumni / Lulus",
-          href: "/dashboard/alumni?program=MEMBACA",
-          icon: GraduationCap,
-          badge: null,
-          subItems: [
-            { name: "Daftar Alumni", href: "/dashboard/alumni?program=MEMBACA" },
-            { name: "Peringkat", href: "/dashboard/alumni?program=MEMBACA&tab=peringkat" },
-          ],
-        },
-        ...(isSuperAdmin
-          ? [
+    ...(!isTutorOrAssistant
+      ? [
+          {
+            group: "AKUN & SISTEM",
+            items: [
               {
-                name: "Cabang & Admin",
-                href: "/dashboard/cabang",
-                icon: Building2,
+                name: "Alumni / Lulus",
+                href: "/dashboard/alumni?program=MEMBACA",
+                icon: GraduationCap,
                 badge: null,
+                subItems: [
+                  { name: "Daftar Alumni", href: "/dashboard/alumni?program=MEMBACA" },
+                  { name: "Peringkat", href: "/dashboard/alumni?program=MEMBACA&tab=peringkat" },
+                ],
               },
-              {
-                name: "Database Cloud",
-                href: "/dashboard/database",
-                icon: Database,
-                badge: "17",
-                badgeColor: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold",
-              },
-              {
-                name: "Pengaturan",
-                href: "/dashboard/pengaturan",
-                icon: Settings,
-                badge: null,
-              },
-            ]
-          : []),
-      ],
-    },
+              ...(isSuperAdmin
+                ? [
+                    {
+                      name: "Cabang & Admin",
+                      href: "/dashboard/cabang",
+                      icon: Building2,
+                      badge: null,
+                    },
+                    {
+                      name: "Database Cloud",
+                      href: "/dashboard/database",
+                      icon: Database,
+                      badge: "17",
+                      badgeColor: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold",
+                    },
+                    {
+                      name: "Pengaturan",
+                      href: "/dashboard/pengaturan",
+                      icon: Settings,
+                      badge: null,
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
   ];
 
   // 3. TAB WEBSITE (Landing Page CMS - Super Admin Only)
@@ -805,7 +843,7 @@ function SidebarInner({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
       {/* Navigation Menus (Scrollable) */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
-        {currentSections.map((section, sIdx) => (
+        {currentSections.filter((section) => section.items && section.items.length > 0).map((section, sIdx) => (
           <div key={sIdx} className="space-y-1">
             {!collapsed && (
               <div className="px-3 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-1">

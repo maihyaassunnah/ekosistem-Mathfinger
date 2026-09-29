@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   BookOpen,
@@ -13,8 +13,9 @@ import {
   Check,
   X,
   BookText,
+  Building2,
 } from "lucide-react";
-import { useAppStore, JournalItem } from "@/lib/store";
+import { useAppStore, JournalItem, isBranchMatch } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -25,6 +26,30 @@ function JurnalGuruContent() {
   const searchParams = useSearchParams();
   const paramProgram = searchParams?.get("program");
   const isMembaca = paramProgram === "MEMBACA";
+
+  // Branch isolation state
+  const [selectedBranch, setSelectedBranch] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mf_selected_branch");
+      if (saved) return saved;
+    }
+    return allowedBranch || "Singkut";
+  });
+
+  const activeBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
+
+  useEffect(() => {
+    if (!isSuperAdmin && allowedBranch) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [isSuperAdmin, allowedBranch]);
+
+  const handleBranchChange = (branch: string) => {
+    setSelectedBranch(branch);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("mf_selected_branch", branch);
+    }
+  };
 
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("ALL");
@@ -54,12 +79,21 @@ function JurnalGuruContent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const scopedStudents = (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students).filter((s) =>
-    isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
-  );
-  const scopedClasses = (allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes).filter((c) =>
-    isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA"
-  );
+  const scopedStudents = useMemo(() => {
+    return students
+      .filter((s) => isBranchMatch(s.branch, activeBranch))
+      .filter((s) =>
+        isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
+      );
+  }, [students, activeBranch, isMembaca]);
+
+  const scopedClasses = useMemo(() => {
+    return classes
+      .filter((c) => isBranchMatch(c.branch, activeBranch))
+      .filter((c) =>
+        isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA"
+      );
+  }, [classes, activeBranch, isMembaca]);
 
   // Form & Modal state
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
@@ -69,7 +103,7 @@ function JurnalGuruContent() {
 
   const [form, setForm] = useState({
     className: scopedClasses[0]?.name || "Kelas A",
-    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
+    branch: (activeBranch || "Singkut") as "Singkut" | "Bangko",
     topic: "",
     content: "",
     teacher: currentUserName || "Kak Guru",
@@ -77,14 +111,14 @@ function JurnalGuruContent() {
   });
 
   const handleOpenAddModal = () => {
-    // Select all scoped active students by default (e.g. 50 Terpilih)
+    // Select all scoped active students by default
     setSelectedStudentIds(scopedStudents.map((s) => s.id));
     setCustomStudentNotes({});
     setModalClassFilter("ALL");
     setModalSearch("");
     setForm({
       className: scopedClasses[0]?.name || "Kelas A",
-      branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
+      branch: (activeBranch || "Singkut") as "Singkut" | "Bangko",
       topic: "",
       content: "",
       teacher: currentUserName || "Kak Guru",
@@ -132,7 +166,7 @@ function JurnalGuruContent() {
   };
 
   const filteredJournals = journals.filter((j) => {
-    const matchBranch = allowedBranch ? j.branch === allowedBranch : true;
+    const matchBranch = isBranchMatch(j.branch, activeBranch);
     const matchSearch =
       j.topic.toLowerCase().includes(search.toLowerCase()) ||
       j.content.toLowerCase().includes(search.toLowerCase()) ||
@@ -169,7 +203,7 @@ function JurnalGuruContent() {
         studentId: st.id,
         studentName: st.name,
         className: st.className || form.className || "Kelas A",
-        branch: (st.branch || form.branch) as "Singkut" | "Bangko",
+        branch: (st.branch || activeBranch) as "Singkut" | "Bangko",
         topic: form.topic.trim(),
         content: finalContent,
         teacher: form.teacher.trim() || currentUserName || "Kak Guru",
@@ -278,9 +312,47 @@ function JurnalGuruContent() {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
-          + Buat Jurnal Harian Kelas
+          + Buat Jurnal Harian ({activeBranch})
         </button>
       </div>
+
+      {/* Super Admin Branch Switcher Banner */}
+      {isSuperAdmin && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Building2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Pilih Cabang Jurnal:</span>
+            <div className="flex items-center gap-1.5">
+              {["Singkut", "Tabir Timur"].map((b) => {
+                const isActive = activeBranch.toLowerCase().includes(b.toLowerCase().split(" ")[0]);
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => handleBranchChange(b)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    Cabang {b}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+            🔒 Menampilkan jurnal dan siswa khusus Cabang {activeBranch}.
+          </span>
+        </div>
+      )}
+      {!isSuperAdmin && allowedBranch && (
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Jurnal Cabang {allowedBranch}</span>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (
