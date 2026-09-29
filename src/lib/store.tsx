@@ -753,6 +753,7 @@ const INITIAL_JOURNALS: JournalItem[] = [
 ];
 
 const INITIAL_CURRICULUM: CurriculumModule[] = [
+  // Cabang Singkut
   {
     id: "2407c1b7-5974-486d-a395-71a0acb4b805",
     orderIndex: 1,
@@ -769,6 +770,7 @@ const INITIAL_CURRICULUM: CurriculumModule[] = [
       "Membaca simbol puluhan tangan kiri",
       "Membentuk formasi angka acak dalam 3 detik",
     ],
+    branch: "Singkut",
   },
   {
     id: "dd20d512-95ff-47a1-9a4c-781e38dea8c2",
@@ -786,6 +788,7 @@ const INITIAL_CURRICULUM: CurriculumModule[] = [
       "Pengurangan tanpa ragu < 3 detik",
       "Akurasi kuis 100%",
     ],
+    branch: "Singkut",
   },
   {
     id: "2db83a59-35f1-4430-85b7-059a86adf521",
@@ -802,22 +805,62 @@ const INITIAL_CURRICULUM: CurriculumModule[] = [
       "Menyebut pasangan teman kecil spontan",
       "Mengoperasikan rumus tanpa jeda",
     ],
+    branch: "Singkut",
+  },
+
+  // Cabang Tabir Timur
+  {
+    id: "tabir-lvl-dasar-init",
+    orderIndex: 1,
+    levelTitle: "Level Dasar: Pengenalan Simbol Jari",
+    shortDesc: "Pengenalan simbol jari bilangan satuan dan puluhan (0-99)",
+    learningGoals:
+      "Peserta didik mampu mengenal, membaca, dan membentuk simbol jari bilangan 0-99 menggunakan tangan kanan dan kiri.",
+    competencies:
+      "KD D.1 Menguasai simbol jari 0-9. KD D.2 Menguasai puluhan 10-90. KD D.3 Membaca 0-99.",
+    learningMaterials:
+      "1. Pengenalan simbol 0-9 tangan kanan\n2. Puluhan tangan kiri\n3. Flashcard simbol\n4. Senam motorik jari",
+    indicators: [
+      "Mempraktikkan simbol jari satuan 0-9",
+      "Membaca simbol puluhan tangan kiri",
+      "Membentuk formasi angka acak dalam 3 detik",
+    ],
+    branch: "Tabir Timur",
   },
   {
-    id: "b79e3ade-3270-4796-b526-b373792414c8",
-    orderIndex: 4,
-    levelTitle: "Level 3: Mahir & Olimpiade",
-    shortDesc: "Perkalian dan pembagian cepat jari serta operasi campuran",
+    id: "tabir-lvl-1-init",
+    orderIndex: 2,
+    levelTitle: "Level 1: Penjumlahan dan Pengurangan Dasar",
+    shortDesc: "Gerak motorik buka tutup jari langsung tanpa rumus",
     learningGoals:
-      "Menguasai perkalian dan pembagian jari tangan refleks serta persiapan olimpiade matematika.",
+      "Melakukan operasi penjumlahan dan pengurangan satuan secara reflek dan cepat.",
     competencies:
-      "KD 3.1 Perkalian jari 6-10. KD 3.2 Pembagian jari cepat. KD 3.3 Hitung berantai 5 baris.",
+      "KD 1.1 Penjumlahan satuan langsung. KD 1.2 Pengurangan satuan langsung. KD 1.3 Berhitung cepat berantai 3 baris.",
     learningMaterials:
-      "1. Rumus perkalian formasi jari\n2. Pembagian cepat\n3. Latihan olimpiade",
+      "1. Aturan jari naik (+)\n2. Aturan jari turun (-)\n3. Mencongak refleks\n4. Kuis 1 menit 10 soal",
     indicators: [
-      "Perkalian 1-100 tanpa kertas cakar",
-      "Kecepatan mencongak < 2 detik",
+      "Operasi jari jempol (nilai 5) refleks",
+      "Pengurangan tanpa ragu < 3 detik",
+      "Akurasi kuis 100%",
     ],
+    branch: "Tabir Timur",
+  },
+  {
+    id: "tabir-lvl-2-init",
+    orderIndex: 3,
+    levelTitle: "Level 2: Kunci Jempol",
+    shortDesc: "Formula teman kecil (angka 5) dan kombinasi puluhan",
+    learningGoals:
+      "Memahami konsep teman kecil dan menyelesaikan penjumlahan/pengurangan ketika jari tidak mencukupi.",
+    competencies:
+      "KD 2.1 Teman kecil tambah (+4=+5-1, dst). KD 2.2 Teman kecil kurang (-4=-5+1, dst).",
+    learningMaterials:
+      "1. Pasangan teman kecil (1&4, 2&3)\n2. Gerakan kombinasi jempol dan telunjuk\n3. Soal cerita kontekstual",
+    indicators: [
+      "Menyebut pasangan teman kecil spontan",
+      "Mengoperasikan rumus tanpa jeda",
+    ],
+    branch: "Tabir Timur",
   },
 ];
 
@@ -2030,7 +2073,19 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }
 
       const savedCurriculum = localStorage.getItem("mf_curriculum");
-      if (savedCurriculum) setCurriculumModules(JSON.parse(savedCurriculum));
+      if (savedCurriculum) {
+        try {
+          const parsed = JSON.parse(savedCurriculum);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const cleanList = parsed.filter(
+              (m: any) => !m.id || (!String(m.id).endsWith("-Tabir Timur") && !String(m.id).endsWith("-Singkut"))
+            );
+            setCurriculumModules(cleanList.length > 0 ? cleanList : INITIAL_CURRICULUM);
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       const savedInvoices = localStorage.getItem("mf_invoices");
       if (savedInvoices) setInvoices(JSON.parse(savedInvoices));

@@ -72,16 +72,9 @@ export default function KurikulumPage() {
     }
   };
 
-  // Branch-scoped curriculum modules
+  // Branch-scoped curriculum modules (Strictly isolated per branch)
   const scopedModules = useMemo(() => {
-    const list = curriculumModules.filter((m) => isBranchMatch(m.branch || "Singkut", activeBranch));
-    // If no custom modules for this branch yet, clone from general curriculum tagged for this branch
-    if (list.length === 0 && curriculumModules.length > 0) {
-      return curriculumModules
-        .filter((m) => !m.branch || isBranchMatch(m.branch, "Singkut"))
-        .map((m) => ({ ...m, id: `${m.id}-${activeBranch}`, branch: activeBranch }));
-    }
-    return list;
+    return curriculumModules.filter((m) => isBranchMatch(m.branch || "Singkut", activeBranch));
   }, [curriculumModules, activeBranch]);
 
   const [selectedModuleId, setSelectedModuleId] = useState<string>("");

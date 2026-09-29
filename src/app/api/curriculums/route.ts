@@ -29,17 +29,23 @@ export async function GET(req: Request) {
 
       let itemBranch = "Singkut";
       if (l.description) {
-        try {
-          if (l.description.trim().startsWith("{")) {
-            const meta = JSON.parse(l.description);
+        const raw = l.description.trim();
+        if (raw.startsWith("{")) {
+          try {
+            const meta = JSON.parse(raw);
             if (meta.branch) itemBranch = meta.branch;
-          } else if (l.description.startsWith("branch:")) {
-            itemBranch = l.description.replace("branch:", "").trim();
-          } else {
-            itemBranch = l.description.trim();
+          } catch {
+            itemBranch = "Singkut";
           }
-        } catch {
-          itemBranch = l.description.trim();
+        } else if (raw.startsWith("branch:")) {
+          itemBranch = raw.replace("branch:", "").trim();
+        } else {
+          const lower = raw.toLowerCase();
+          if (lower.includes("tabir") || lower.includes("bangko")) {
+            itemBranch = "Tabir Timur";
+          } else {
+            itemBranch = "Singkut";
+          }
         }
       }
 
