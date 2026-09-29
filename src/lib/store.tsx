@@ -259,6 +259,7 @@ export interface LevelProgressionConfig {
   levelNumber: number;
   name: string;
   description?: string;
+  branch?: string;
 }
 
 export interface StudentLevelRecord {
@@ -415,8 +416,8 @@ interface AppStoreContextType {
   // Level Progression Matrix (Kenaikan Level)
   levelColumns: LevelProgressionConfig[];
   studentLevelRecords: StudentLevelRecord[];
-  addLevelColumn: (name: string, description?: string) => void;
-  updateLevelColumn: (id: string, name: string, description?: string) => void;
+  addLevelColumn: (name: string, description?: string, branch?: string) => void;
+  updateLevelColumn: (id: string, name: string, description?: string, branch?: string) => void;
   deleteLevelColumn: (id: string) => void;
   setStudentLevelRecord: (studentId: string, levelId: string, passedDate: string, notes?: string) => Promise<void>;
   deleteStudentLevelRecord: (studentId: string, levelId: string) => Promise<void>;
@@ -865,9 +866,15 @@ const INITIAL_CURRICULUM: CurriculumModule[] = [
 ];
 
 const INITIAL_LEVEL_COLUMNS: LevelProgressionConfig[] = [
-  { id: "lvl-1", levelNumber: 1, name: "Level 1", description: "Penjumlahan & Pengurangan Satuan Langsung" },
-  { id: "lvl-2", levelNumber: 2, name: "Level 2", description: "Kombinasi Rumus Teman Kecil (Basis 5)" },
-  { id: "lvl-3", levelNumber: 3, name: "Level 3", description: "Kombinasi Rumus Teman Besar & Campuran" },
+  // Cabang Singkut
+  { id: "lvl-1", levelNumber: 1, name: "Level 1", description: "Penjumlahan & Pengurangan Satuan Langsung", branch: "Singkut" },
+  { id: "lvl-2", levelNumber: 2, name: "Level 2", description: "Kombinasi Rumus Teman Kecil (Basis 5)", branch: "Singkut" },
+  { id: "lvl-3", levelNumber: 3, name: "Level 3", description: "Kombinasi Rumus Teman Besar & Campuran", branch: "Singkut" },
+
+  // Cabang Tabir Timur
+  { id: "tabir-lvlprog-1", levelNumber: 1, name: "Level 1", description: "Penjumlahan & Pengurangan Satuan Langsung", branch: "Tabir Timur" },
+  { id: "tabir-lvlprog-2", levelNumber: 2, name: "Level 2", description: "Kombinasi Rumus Teman Kecil (Basis 5)", branch: "Tabir Timur" },
+  { id: "tabir-lvlprog-3", levelNumber: 3, name: "Level 3", description: "Kombinasi Rumus Teman Besar & Campuran", branch: "Tabir Timur" },
 ];
 
 const INITIAL_STUDENT_LEVEL_RECORDS: StudentLevelRecord[] = [
@@ -2094,7 +2101,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (savedLevelCols) {
         try {
           const parsed = JSON.parse(savedLevelCols);
-          if (Array.isArray(parsed) && parsed.length > 0) setLevelColumns(parsed);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const hasBranch = parsed.some((c: any) => c.branch);
+            if (hasBranch) {
+              setLevelColumns(parsed);
+            } else {
+              setLevelColumns(INITIAL_LEVEL_COLUMNS);
+            }
+          }
         } catch {}
       }
 
@@ -3955,15 +3969,18 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error deleting website event from PostgreSQL:", err));
   };
 
-  // Level Progression Matrix Handlers (Kenaikan Level)
-  const addLevelColumn = useCallback((name: string, description?: string) => {
+  // Level Progression Matrix Handlers (Kenaikan Level - Branch Isolated)
+  const addLevelColumn = useCallback((name: string, description?: string, branch?: string) => {
+    const targetBranch = branch || "Singkut";
     setLevelColumns((prev) => {
-      const nextNum = prev.length + 1;
+      const branchCols = prev.filter((c) => isBranchMatch(c.branch || "Singkut", targetBranch));
+      const nextNum = branchCols.length + 1;
       const newCol: LevelProgressionConfig = {
         id: `lvl-${Date.now()}`,
         levelNumber: nextNum,
         name: name.trim() || `Level ${nextNum}`,
         description: description?.trim() || "",
+        branch: targetBranch,
       };
       const updated = [...prev, newCol];
       save("mf_level_progression_columns", updated);
@@ -3973,14 +3990,21 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/level-progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "ADD_LEVEL_COLUMN", name, description }),
+      body: JSON.stringify({ action: "ADD_LEVEL_COLUMN", name, description, branch: targetBranch }),
     }).catch((err) => console.error("Error creating level column:", err));
   }, [save]);
 
-  const updateLevelColumn = useCallback((id: string, name: string, description?: string) => {
+  const updateLevelColumn = useCallback((id: string, name: string, description?: string, branch?: string) => {
     setLevelColumns((prev) => {
       const updated = prev.map((col) =>
-        col.id === id ? { ...col, name: name.trim(), ...(description !== undefined ? { description: description.trim() } : {}) } : col
+        col.id === id
+          ? {
+              ...col,
+              name: name.trim(),
+              ...(description !== undefined ? { description: description.trim() } : {}),
+              ...(branch ? { branch } : {}),
+            }
+          : col
       );
       save("mf_level_progression_columns", updated);
       return updated;
@@ -3989,7 +4013,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/level-progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "UPDATE_LEVEL_COLUMN", id, name, description }),
+      body: JSON.stringify({ action: "UPDATE_LEVEL_COLUMN", id, name, description, branch }),
     }).catch((err) => console.error("Error updating level column:", err));
   }, [save]);
 

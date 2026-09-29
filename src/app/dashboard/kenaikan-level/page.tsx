@@ -33,7 +33,7 @@ import {
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import { useAppStore, LevelProgressionConfig, StudentLevelRecord } from "@/lib/store";
+import { useAppStore, LevelProgressionConfig, StudentLevelRecord, isBranchMatch } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -177,7 +177,7 @@ function KenaikanLevelContent() {
   const classOptions = useMemo(() => {
     const list = [{ value: "ALL", label: "Semua Kelas" }];
     const branchFilteredClasses = selectedBranch !== "ALL"
-      ? classes.filter((c) => c.branch === selectedBranch)
+      ? classes.filter((c) => isBranchMatch(c.branch, selectedBranch))
       : classes;
     branchFilteredClasses.forEach((c) => {
       if (!list.some((item) => item.value === c.name)) {
@@ -187,11 +187,17 @@ function KenaikanLevelContent() {
     return list;
   }, [classes, selectedBranch]);
 
-  // Filtered Students
+  // Branch-scoped level columns (Strictly isolated per branch)
+  const scopedLevelColumns = useMemo(() => {
+    if (selectedBranch === "ALL") return levelColumns;
+    return levelColumns.filter((col) => isBranchMatch(col.branch || "Singkut", selectedBranch));
+  }, [levelColumns, selectedBranch]);
+
+  // Filtered Students (Strictly branch-isolated)
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
-      // Branch filter
-      if (selectedBranch !== "ALL" && s.branch !== selectedBranch) return false;
+      // Branch filter using isBranchMatch helper
+      if (selectedBranch !== "ALL" && !isBranchMatch(s.branch, selectedBranch)) return false;
 
       // Program filter
       if (selectedProgram !== "ALL") {
@@ -236,7 +242,7 @@ function KenaikanLevelContent() {
       name: "Belum Ada",
     };
 
-    levelColumns.forEach((col) => {
+    scopedLevelColumns.forEach((col) => {
       const rec = recordMap.get(`${studentId}_${col.id}`);
       if (rec && rec.passedDate) {
         if (col.levelNumber > highest.levelNumber) {
@@ -273,7 +279,7 @@ function KenaikanLevelContent() {
       });
     }
     return copy;
-  }, [filteredStudents, sortOrder, recordMap, levelColumns]);
+  }, [filteredStudents, sortOrder, recordMap, scopedLevelColumns]);
 
   // Statistics
   const stats = useMemo(() => {
@@ -283,7 +289,7 @@ function KenaikanLevelContent() {
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
 
     filteredStudents.forEach((st) => {
-      levelColumns.forEach((col) => {
+      scopedLevelColumns.forEach((col) => {
         const rec = recordMap.get(`${st.id}_${col.id}`);
         if (rec && rec.passedDate) {
           totalRecords += 1;
@@ -305,7 +311,7 @@ function KenaikanLevelContent() {
       thisMonthCount,
       highestLevelStudentCount,
     };
-  }, [filteredStudents, levelColumns, recordMap]);
+  }, [filteredStudents, scopedLevelColumns, recordMap]);
 
   // Handlers
   const handleOpenQuickDate = (student: StudentItem, level: LevelProgressionConfig) => {
@@ -341,7 +347,7 @@ function KenaikanLevelContent() {
   // Open Full Student Modal
   const handleOpenStudentModal = (student: StudentItem) => {
     const records: Record<string, { passedDate: string; notes: string }> = {};
-    levelColumns.forEach((col) => {
+    scopedLevelColumns.forEach((col) => {
       const rec = recordMap.get(`${student.id}_${col.id}`);
       records[col.id] = {
         passedDate: rec?.passedDate || "",
@@ -370,15 +376,17 @@ function KenaikanLevelContent() {
   // Add Level Column
   const handleCreateLevel = () => {
     if (!addLevelModal.name.trim()) return;
-    addLevelColumn(addLevelModal.name, addLevelModal.description);
-    showToast(`Kolom "${addLevelModal.name}" berhasil ditambahkan!`);
+    const branchToUse = selectedBranch !== "ALL" ? selectedBranch : "Singkut";
+    addLevelColumn(addLevelModal.name, addLevelModal.description, branchToUse);
+    showToast(`Kolom "${addLevelModal.name}" berhasil ditambahkan untuk Cabang ${branchToUse}!`);
     setAddLevelModal({ open: false, name: "", description: "" });
   };
 
   // Update Level Column
   const handleSaveEditLevel = () => {
     if (!editingLevel || !editingLevel.name.trim()) return;
-    updateLevelColumn(editingLevel.id, editingLevel.name, editingLevel.description);
+    const branchToUse = selectedBranch !== "ALL" ? selectedBranch : "Singkut";
+    updateLevelColumn(editingLevel.id, editingLevel.name, editingLevel.description, branchToUse);
     showToast(`Level "${editingLevel.name}" berhasil diperbarui!`);
     setEditingLevel(null);
   };
@@ -432,7 +440,7 @@ function KenaikanLevelContent() {
             <button
               type="button"
               onClick={() => {
-                const nextNum = levelColumns.length + 1;
+                const nextNum = scopedLevelColumns.length + 1;
                 setAddLevelModal({
                   open: true,
                   name: `Level ${nextNum}`,
@@ -627,7 +635,7 @@ function KenaikanLevelContent() {
                 <th className="py-3.5 px-4 w-28">Kelas</th>
 
                 {/* Dynamic Level Columns: Level 1, Level 2, Level 3, ... */}
-                {levelColumns.map((col) => (
+                {scopedLevelColumns.map((col) => (
                   <th
                     key={col.id}
                     className="py-3.5 px-3 min-w-[140px] text-center bg-emerald-50/40 dark:bg-emerald-950/20 border-l border-r border-slate-200/70 dark:border-[#1c2a4f]"
@@ -654,7 +662,7 @@ function KenaikanLevelContent() {
               {sortedStudents.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5 + levelColumns.length}
+                    colSpan={5 + scopedLevelColumns.length}
                     className="py-12 text-center text-slate-400 dark:text-slate-500"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -719,7 +727,7 @@ function KenaikanLevelContent() {
                       </td>
 
                       {/* Level Columns */}
-                      {levelColumns.map((col) => {
+                      {scopedLevelColumns.map((col) => {
                         const rec = recordMap.get(`${st.id}_${col.id}`);
                         const hasDate = Boolean(rec && rec.passedDate);
 
@@ -933,7 +941,7 @@ function KenaikanLevelContent() {
             </p>
 
             <div className="space-y-3">
-              {levelColumns.map((col) => {
+              {scopedLevelColumns.map((col) => {
                 const currentData = studentModal.records[col.id] || { passedDate: "", notes: "" };
                 const isPassed = Boolean(currentData.passedDate);
 
@@ -1214,7 +1222,7 @@ function KenaikanLevelContent() {
 
             {/* List of Levels */}
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {levelColumns.map((col, idx) => (
+              {scopedLevelColumns.map((col, idx) => (
                 <div
                   key={col.id}
                   className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#0a1125] border border-slate-200/70 dark:border-[#1c2a4f]"
@@ -1242,7 +1250,7 @@ function KenaikanLevelContent() {
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
-                    {levelColumns.length > 1 && (
+                    {scopedLevelColumns.length > 1 && (
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteLevel({ open: true, id: col.id, name: col.name })}
