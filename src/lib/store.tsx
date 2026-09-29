@@ -2014,7 +2014,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
-      const CURRENT_DATA_VERSION = "mf_live_sync_v4";
+      const CURRENT_DATA_VERSION = "mf_live_sync_v5";
       if (localStorage.getItem("mf_data_version") !== CURRENT_DATA_VERSION) {
         localStorage.removeItem("mf_students");
         localStorage.removeItem("mf_classes");
@@ -2023,6 +2023,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("mf_mutations");
         localStorage.removeItem("mf_branchAdmins");
         localStorage.removeItem("mf_curriculum");
+        localStorage.removeItem("mf_grades");
         localStorage.setItem("mf_data_version", CURRENT_DATA_VERSION);
       }
 
