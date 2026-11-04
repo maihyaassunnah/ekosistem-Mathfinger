@@ -927,6 +927,12 @@ export default function Home() {
                     src={currentStory.avatarUrl || "/images/landing/student-story.jpg"}
                     alt={currentStory.title || "Siswa Berprestasi Math Fingers"}
                     className="w-full h-[420px] object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.includes("/images/landing/student-story.jpg")) {
+                        target.src = "/images/landing/student-story.jpg";
+                      }
+                    }}
                   />
                   <div className="p-4 bg-white dark:bg-[#0f1a36] border-t border-slate-100 dark:border-[#1d2d5a]">
                     <div className="flex items-center gap-1 text-amber-400">
@@ -950,7 +956,7 @@ export default function Home() {
                   const isActive = safeStoryIdx === idx;
                   return (
                     <div
-                      key={story.id}
+                      key={`story-${story.id ?? idx}`}
                       onClick={() => setActiveStoryIdx(idx)}
                       className={`p-6 rounded-2xl transition-all cursor-pointer border ${
                         isActive

@@ -48,7 +48,8 @@ export default function WebsiteMediaHeroTab({ onNotify }: WebsiteMediaHeroTabPro
 
       const json = await res.json();
       setForm((prev) => ({ ...prev, [field]: json.url }));
-      onNotify("Gambar berhasil diunggah!");
+      updateLandingHero({ [field]: json.url });
+      onNotify("Foto berhasil diunggah dan langsung disimpan ke website!");
     } catch (err: any) {
       alert(err.message || "Gagal upload gambar");
     } finally {
@@ -59,21 +60,52 @@ export default function WebsiteMediaHeroTab({ onNotify }: WebsiteMediaHeroTabPro
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     updateLandingHero(form);
-    onNotify("Pengaturan Beranda, Media & Konten berhasil disimpan!");
+    onNotify("Pengaturan Beranda, Media & Konten berhasil disimpan ke database!");
   };
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      {/* Top Action Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 text-white shadow-md">
+        <div>
+          <h4 className="font-extrabold text-sm flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-200" />
+            Kelola Tampilan Beranda & Media Website
+          </h4>
+          <p className="text-xs text-emerald-100 mt-0.5">
+            Foto yang diunggah otomatis tersimpan. Untuk perubahan teks, klik tombol Simpan.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleSave}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-black shadow-md transition-all cursor-pointer hover:scale-102 active:scale-98"
+        >
+          <Save className="w-4 h-4 text-emerald-700" />
+          <span>Simpan Perubahan</span>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Form Fields */}
         <div className="lg:col-span-2 space-y-6">
           {/* 1. HERO BANNER & MEDIA SECTION */}
           <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] space-y-4 shadow-xs">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1d2d5a]">
-              <Sparkles className="w-4 h-4 text-emerald-600" />
-              <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
-                Hero Banner Utama & Video Tour
-              </h3>
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#1d2d5a]">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                  Hero Banner Utama & Video Tour
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold cursor-pointer transition-all"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Simpan</span>
+              </button>
             </div>
 
             <div className="space-y-4">
