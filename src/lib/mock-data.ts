@@ -16,6 +16,16 @@ export interface StudentItem {
   levelCurriculum: string;
   registeredDate: string;
   status?: string;
+  enrolledClasses?: {
+    id: string;
+    className: string;
+    programType?: string;
+    dayOfWeek?: string;
+    startTime?: string;
+    endTime?: string;
+    teacherName?: string;
+    room?: string;
+  }[];
 }
 
 export interface BranchItem {
@@ -28,6 +38,12 @@ export interface BranchItem {
   adminCount: number;
   monthlyRevenue: number;
   status: "ACTIVE" | "INACTIVE";
+  bankName?: string;
+  accountNumber?: string;
+  accountHolder?: string;
+  adminName?: string;
+  signatureUrl?: string;
+  programs?: string[] | string;
 }
 
 export const CURRENT_USER = {

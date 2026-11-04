@@ -14,12 +14,12 @@ async function resolveBranchId(branchParam?: string | null): Promise<string | nu
           ...(isBangkoTabir
             ? [
                 { branchCode: "BGK" },
-                { branchName: { contains: "Bangko", mode: "insensitive" } },
-                { branchName: { contains: "Tabir", mode: "insensitive" } },
+                { branchName: { contains: "Bangko", mode: "insensitive" as const } },
+                { branchName: { contains: "Tabir", mode: "insensitive" as const } },
               ]
             : []),
-          { branchName: { equals: branchParam, mode: "insensitive" } },
-          { branchCode: { equals: branchParam, mode: "insensitive" } },
+          { branchName: { equals: branchParam, mode: "insensitive" as const } },
+          { branchCode: { equals: branchParam, mode: "insensitive" as const } },
         ],
       },
     });
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
             OR: [
               { studentCode: studentId },
               ...(item.studentCode ? [{ studentCode: item.studentCode }] : []),
-              ...(item.studentName ? [{ studentName: { equals: item.studentName, mode: "insensitive" } }] : []),
+              ...(item.studentName ? [{ studentName: { equals: item.studentName, mode: "insensitive" as const } }] : []),
             ],
           },
         });

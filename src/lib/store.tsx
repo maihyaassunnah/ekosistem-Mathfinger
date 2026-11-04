@@ -79,6 +79,7 @@ export interface AttendanceItem {
 export interface GradeItem {
   id: string;
   studentId: string;
+  studentCode?: string;
   studentName: string;
   className: string;
   branch?: string;
