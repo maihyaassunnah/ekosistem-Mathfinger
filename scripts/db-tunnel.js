@@ -57,9 +57,13 @@ function connectSSH() {
   }
 }
 
+let reconnectTimeout = null;
+
 function scheduleReconnect() {
-  if (!isReconnecting) return;
-  setTimeout(() => {
+  if (reconnectTimeout) return;
+  isConnected = false;
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = null;
     isReconnecting = false;
     connectSSH();
   }, 3000);

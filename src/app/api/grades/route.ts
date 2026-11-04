@@ -5,13 +5,19 @@ import { requireAuth } from "@/lib/auth-guard";
 // Helper: Resolve branchId from branch name / code
 async function resolveBranchId(branchParam?: string | null): Promise<string | null> {
   if (!branchParam || branchParam === "ALL") return null;
-  const normalized = branchParam === "Bangko" ? "Tabir Timur" : branchParam;
+  const isBangkoTabir = /bangko|tabir/i.test(branchParam);
   try {
     const b = await prisma.branch.findFirst({
       where: {
         OR: [
           { id: branchParam },
-          { branchName: { equals: normalized, mode: "insensitive" } },
+          ...(isBangkoTabir
+            ? [
+                { branchCode: "BGK" },
+                { branchName: { contains: "Bangko", mode: "insensitive" } },
+                { branchName: { contains: "Tabir", mode: "insensitive" } },
+              ]
+            : []),
           { branchName: { equals: branchParam, mode: "insensitive" } },
           { branchCode: { equals: branchParam, mode: "insensitive" } },
         ],
@@ -47,19 +53,27 @@ export async function GET(req: Request) {
       orderBy: { examDate: "desc" },
     });
 
-    const formatted = grades.map((g) => ({
-      id: g.id,
-      studentId: g.studentId,
-      studentName: g.student?.studentName || "Siswa",
-      className: g.className || "Kelas Reguler",
-      branch: g.branch?.branchName || "Singkut",
-      branchId: g.branchId,
-      topic: g.topic,
-      examDate: g.examDate.toISOString().split("T")[0],
-      score: Number(g.score),
-      note: g.notes || "",
-      isJoined: g.isJoined,
-    }));
+    const formatted = grades.map((g) => {
+      const rawBranch = g.branch?.branchName || "";
+      const normalizedBranch = /bangko|tabir/i.test(rawBranch)
+        ? "Tabir Timur"
+        : rawBranch || "Singkut";
+
+      return {
+        id: g.id,
+        studentId: g.studentId,
+        studentCode: g.student?.studentCode || "",
+        studentName: g.student?.studentName || "Siswa",
+        className: g.className || g.student?.className || "Kelas Reguler",
+        branch: normalizedBranch,
+        branchId: g.branchId,
+        topic: g.topic,
+        examDate: g.examDate.toISOString().split("T")[0],
+        score: Number(g.score),
+        note: g.notes || "",
+        isJoined: g.isJoined,
+      };
+    });
 
     return NextResponse.json(formatted);
   } catch (error: any) {
@@ -88,8 +102,15 @@ export async function POST(req: Request) {
       });
 
       if (!student) {
-        // Try fallback find first student
-        student = await prisma.student.findFirst();
+        student = await prisma.student.findFirst({
+          where: {
+            OR: [
+              { studentCode: studentId },
+              ...(item.studentCode ? [{ studentCode: item.studentCode }] : []),
+              ...(item.studentName ? [{ studentName: { equals: item.studentName, mode: "insensitive" } }] : []),
+            ],
+          },
+        });
         if (!student) continue;
       }
 

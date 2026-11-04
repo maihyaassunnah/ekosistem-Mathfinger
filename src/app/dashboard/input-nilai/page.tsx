@@ -163,13 +163,23 @@ function InputNilaiContent() {
     let list = grades;
     if (activeBranch && activeBranch !== "ALL") {
       list = list.filter((g) => {
-        const st = students.find((s) => s.id === g.studentId);
+        const st = students.find(
+          (s) =>
+            s.id === g.studentId ||
+            (s.studentCode && s.studentCode === (g as any).studentCode) ||
+            (g.studentName && s.name.trim().toLowerCase() === g.studentName.trim().toLowerCase())
+        );
         const gBranch = g.branch || st?.branch;
         return isBranchMatch(gBranch, activeBranch);
       });
     }
     return list.filter((g) => {
-      const st = students.find((s) => s.id === g.studentId);
+      const st = students.find(
+        (s) =>
+          s.id === g.studentId ||
+          (s.studentCode && s.studentCode === (g as any).studentCode) ||
+          (g.studentName && s.name.trim().toLowerCase() === g.studentName.trim().toLowerCase())
+      );
       const gProg = (g as any).programType || (st as any)?.programType || "MATEMATIKA";
       return isMembaca ? gProg === "MEMBACA" : gProg !== "MEMBACA";
     });
@@ -573,15 +583,36 @@ function InputNilaiContent() {
     return Array.from(map.values()).sort((a, b) => a.examDate.localeCompare(b.examDate));
   }, [scopedGrades]);
 
-  // Fast score lookup: studentId___examDate___topic -> GradeItem
+  // Fast score lookup: (studentId | studentCode | studentName)___examDate___topic -> GradeItem
   const gradeMap = useMemo(() => {
     const map = new Map<string, GradeItem>();
     scopedGrades.forEach((g) => {
-      const key = `${g.studentId}___${g.examDate}___${g.topic}`;
-      map.set(key, g);
+      const dateStr = g.examDate ? g.examDate.split("T")[0] : "";
+      const topicStr = (g.topic || "").trim();
+
+      if (g.studentId) {
+        map.set(`${g.studentId}___${dateStr}___${topicStr}`, g);
+      }
+
+      const st = students.find(
+        (s) =>
+          s.id === g.studentId ||
+          (s.studentCode && s.studentCode === (g as any).studentCode) ||
+          (g.studentName && s.name.trim().toLowerCase() === g.studentName.trim().toLowerCase())
+      );
+
+      const code = (g as any).studentCode || st?.studentCode;
+      if (code) {
+        map.set(`${code}___${dateStr}___${topicStr}`, g);
+      }
+
+      const name = g.studentName || st?.name;
+      if (name) {
+        map.set(`${name.trim().toLowerCase()}___${dateStr}___${topicStr}`, g);
+      }
     });
     return map;
-  }, [scopedGrades]);
+  }, [scopedGrades, students]);
 
   // Filtered students for Leger Matrix
   const filteredLegerStudents = useMemo(() => {
@@ -669,7 +700,12 @@ function InputNilaiContent() {
     student: StudentItem,
     col: { topic: string; examDate: string }
   ) => {
-    const existing = gradeMap.get(`${student.id}___${col.examDate}___${col.topic}`);
+    const dateStr = col.examDate ? col.examDate.split("T")[0] : "";
+    const topicStr = (col.topic || "").trim();
+    const existing =
+      gradeMap.get(`${student.id}___${dateStr}___${topicStr}`) ||
+      (student.studentCode ? gradeMap.get(`${student.studentCode}___${dateStr}___${topicStr}`) : undefined) ||
+      gradeMap.get(`${student.name.trim().toLowerCase()}___${dateStr}___${topicStr}`);
     setEditingCell({
       student,
       col,
@@ -734,7 +770,12 @@ function InputNilaiContent() {
       let studentTotal = 0;
       let studentCount = 0;
       const scores = evaluationColumns.map((col) => {
-        const item = gradeMap.get(`${s.id}___${col.examDate}___${col.topic}`);
+        const dateStr = col.examDate ? col.examDate.split("T")[0] : "";
+        const topicStr = (col.topic || "").trim();
+        const item =
+          gradeMap.get(`${s.id}___${dateStr}___${topicStr}`) ||
+          (s.studentCode ? gradeMap.get(`${s.studentCode}___${dateStr}___${topicStr}`) : undefined) ||
+          gradeMap.get(`${s.name.trim().toLowerCase()}___${dateStr}___${topicStr}`);
         if (item !== undefined && item.score !== undefined) {
           studentTotal += item.score;
           studentCount++;
@@ -2243,7 +2284,12 @@ function InputNilaiContent() {
                     let evaluatedCount = 0;
 
                     const rowScores = evaluationColumns.map((col) => {
-                      const item = gradeMap.get(`${s.id}___${col.examDate}___${col.topic}`);
+                      const dateStr = col.examDate ? col.examDate.split("T")[0] : "";
+                      const topicStr = (col.topic || "").trim();
+                      const item =
+                        gradeMap.get(`${s.id}___${dateStr}___${topicStr}`) ||
+                        (s.studentCode ? gradeMap.get(`${s.studentCode}___${dateStr}___${topicStr}`) : undefined) ||
+                        gradeMap.get(`${s.name.trim().toLowerCase()}___${dateStr}___${topicStr}`);
                       if (item !== undefined && item.score !== undefined) {
                         totalScore += item.score;
                         evaluatedCount++;
