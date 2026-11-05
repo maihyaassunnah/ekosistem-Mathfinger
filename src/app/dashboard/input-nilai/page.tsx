@@ -394,15 +394,17 @@ export default function InputNilaiPage() {
 
   // Unique evaluations ordered chronologically
   const evaluationColumns = useMemo(() => {
+    const studentIds = new Set(scopedStudents.map((st) => st.id));
     const map = new Map<string, { key: string; topic: string; examDate: string }>();
     grades.forEach((g) => {
+      if (allowedBranch && !studentIds.has(g.studentId)) return;
       const key = `${g.examDate}___${g.topic}`;
       if (!map.has(key)) {
         map.set(key, { key, topic: g.topic, examDate: g.examDate });
       }
     });
     return Array.from(map.values()).sort((a, b) => a.examDate.localeCompare(b.examDate));
-  }, [grades]);
+  }, [grades, scopedStudents, allowedBranch]);
 
   // Fast score lookup: studentId___examDate___topic -> GradeItem
   const gradeMap = useMemo(() => {
