@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
-import { useAppStore, CashTransactionItem, isBranchMatch } from "@/lib/store";
+import { useAppStore, CashTransactionItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 function ArusKeuanganContent() {
@@ -76,7 +76,7 @@ function ArusKeuanganContent() {
   };
 
   // Effective branch filter (locked to allowedBranch for branch users)
-  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
+  const effectiveBranch = allowedBranch || selectedBranch;
 
   // Filtered transactions by program
   const programFilteredTransactions = useMemo(() => {
@@ -92,7 +92,8 @@ function ArusKeuanganContent() {
   // Filtered transactions by branch
   const branchFilteredTransactions = useMemo(() => {
     return programFilteredTransactions.filter((t) => {
-      return isBranchMatch(t.branch, effectiveBranch);
+      if (effectiveBranch === "ALL") return true;
+      return t.branch === effectiveBranch;
     });
   }, [programFilteredTransactions, effectiveBranch]);
 

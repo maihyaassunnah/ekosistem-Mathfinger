@@ -1,24 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/invoices - Fetch all invoices
 export async function GET(req: Request) {
   try {
-    const { error, session } = await requireAuth();
+    const { error } = await requireAuth();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
-    const effectiveBranchId = await getEffectiveBranchId(session, branch);
 
     const whereClause: any = {};
     if (program) {
       whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     }
-    if (effectiveBranchId) {
-      whereClause.branchId = effectiveBranchId;
+    if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
     }
 
     const invoices = await prisma.invoice.findMany({

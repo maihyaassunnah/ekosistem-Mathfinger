@@ -38,35 +38,12 @@ export async function GET() {
         orderBy: { passedDate: "asc" },
       });
 
-      const formattedColumns = dbLevels.map((lvl) => {
-        let branch = "Singkut";
-        let displayDesc = lvl.description || "";
-        if (lvl.description) {
-          const raw = lvl.description.trim();
-          if (raw.startsWith("{")) {
-            try {
-              const meta = JSON.parse(raw);
-              if (meta.branch) branch = meta.branch;
-              if (meta.desc !== undefined) displayDesc = meta.desc;
-            } catch {}
-          } else {
-            const lower = raw.toLowerCase();
-            if (lower.includes("tabir") || lower.includes("bangko") || lvl.id.startsWith("tabir-")) {
-              branch = "Tabir Timur";
-            }
-          }
-        } else if (lvl.id.startsWith("tabir-")) {
-          branch = "Tabir Timur";
-        }
-
-        return {
-          id: lvl.id,
-          levelNumber: lvl.levelNumber,
-          name: lvl.name,
-          description: displayDesc,
-          branch,
-        };
-      });
+      const formattedColumns = dbLevels.map((lvl) => ({
+        id: lvl.id,
+        levelNumber: lvl.levelNumber,
+        name: lvl.name,
+        description: lvl.description || "",
+      }));
 
       const formattedRecords = dbRecords.map((r) => ({
         id: r.id,
@@ -111,9 +88,7 @@ export async function POST(req: Request) {
 
     // --- Action: ADD_LEVEL_COLUMN ---
     if (action === "ADD_LEVEL_COLUMN") {
-      const { name, description, branch } = body;
-      const targetBranch = branch || "Singkut";
-      const descPayload = JSON.stringify({ branch: targetBranch, desc: description?.trim() || "" });
+      const { name, description } = body;
       try {
         const count = await prisma.levelProgression.count();
         const nextNum = count + 1;
@@ -121,7 +96,7 @@ export async function POST(req: Request) {
           data: {
             levelNumber: nextNum,
             name: name?.trim() || `Level ${nextNum}`,
-            description: descPayload,
+            description: description?.trim() || "",
             orderIndex: nextNum,
           },
         });
@@ -130,8 +105,7 @@ export async function POST(req: Request) {
           id: created.id,
           levelNumber: created.levelNumber,
           name: created.name,
-          description: description?.trim() || "",
-          branch: targetBranch,
+          description: created.description || "",
         };
         memoryColumns.push(newCol);
 
@@ -144,7 +118,6 @@ export async function POST(req: Request) {
           levelNumber: nextNum,
           name: name?.trim() || `Level ${nextNum}`,
           description: description?.trim() || "",
-          branch: targetBranch,
         };
         memoryColumns.push(fallbackCol);
         return NextResponse.json({ success: true, column: fallbackCol });
@@ -153,26 +126,13 @@ export async function POST(req: Request) {
 
     // --- Action: UPDATE_LEVEL_COLUMN ---
     if (action === "UPDATE_LEVEL_COLUMN") {
-      const { id, name, description, branch } = body;
+      const { id, name, description } = body;
       try {
-        const existing = await prisma.levelProgression.findUnique({ where: { id } });
-        let existingBranch = branch || "Singkut";
-        if (!branch && existing?.description?.trim().startsWith("{")) {
-          try {
-            const meta = JSON.parse(existing.description);
-            if (meta.branch) existingBranch = meta.branch;
-          } catch {}
-        }
-        const descPayload = JSON.stringify({
-          branch: existingBranch,
-          desc: description !== undefined ? description?.trim() : existing?.description || "",
-        });
-
         await prisma.levelProgression.update({
           where: { id },
           data: {
             name: name?.trim(),
-            description: descPayload,
+            description: description !== undefined ? description?.trim() : undefined,
           },
         });
       } catch (dbErr) {
@@ -185,7 +145,6 @@ export async function POST(req: Request) {
               ...c,
               name: name?.trim() || c.name,
               description: description !== undefined ? description : c.description,
-              branch: branch || (c as any).branch || "Singkut",
             }
           : c
       );

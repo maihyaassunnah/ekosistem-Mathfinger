@@ -27,104 +27,12 @@ export const authOptions: NextAuthOptions = {
 
         const normalizedEmail = credentials.email.toLowerCase().trim();
 
-        let user: any = null;
-        let dbReachable = true;
-        try {
-          const dbQuery = prisma.user.findUnique({
-            where: { email: normalizedEmail },
-            include: { branch: true },
-          });
-          const timeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("DB_TIMEOUT")), 1500)
-          );
-          user = await Promise.race([dbQuery, timeout]);
-        } catch (dbErr) {
-          dbReachable = false;
-          console.warn("Database unreachable during login, checking verified credentials:", dbErr);
-        }
+        const user = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+          include: { branch: true },
+        });
 
-        // Fallback verified accounts if PostgreSQL is offline or user not yet in DB
-        const DEFAULT_ACCOUNTS = [
-          {
-            email: "wahyudinhafiz123@gmail.com",
-            name: "Wahyudin Hafiz, S.Pd",
-            role: "SUPER_ADMIN",
-            branchName: "Semua Cabang (Pusat)",
-            passwords: ["password123", "admin123"],
-          },
-          {
-            email: "ma.ihyaassunnah@gmail.com",
-            name: "Wahyudin Hafiz, S.Pd",
-            role: "SUPER_ADMIN",
-            branchName: "Semua Cabang (Pusat)",
-            passwords: ["password123", "admin123"],
-          },
-          {
-            email: "febriantidewi043@gmail.com",
-            name: "Febrianti Dewi, S.Pd",
-            role: "BRANCH_ADMIN",
-            branchName: "Singkut",
-            passwords: ["password123"],
-          },
-          {
-            email: "singkut.mathfingers@gmail.com",
-            name: "Admin Singkut",
-            role: "BRANCH_ADMIN",
-            branchName: "Singkut",
-            passwords: ["password123"],
-          },
-          {
-            email: "dwsafitri97@gmail.com",
-            name: "Dewi Safitri, S.H",
-            role: "BRANCH_ADMIN",
-            branchName: "Tabir Timur",
-            passwords: ["password123"],
-          },
-          {
-            email: "bangko.mathfingers@gmail.com",
-            name: "Admin Tabir Timur",
-            role: "BRANCH_ADMIN",
-            branchName: "Tabir Timur",
-            passwords: ["password123"],
-          },
-        ];
-
-        // If DB unreachable or user not found, try fallback accounts
-        if (!user || !dbReachable) {
-          const fallbackAcc = DEFAULT_ACCOUNTS.find(
-            (a) => a.email.toLowerCase() === normalizedEmail
-          );
-          const isDev = process.env.NODE_ENV === "development";
-
-          if (fallbackAcc) {
-            const isMatch = isDev || fallbackAcc.passwords.includes(credentials.password);
-            if (isMatch) {
-              return {
-                id: `u-${fallbackAcc.role.toLowerCase()}`,
-                name: fallbackAcc.name,
-                email: fallbackAcc.email,
-                role: fallbackAcc.role,
-                branchName: fallbackAcc.branchName,
-                image: null,
-              };
-            }
-            throw new Error("Kata sandi yang Anda masukkan salah.");
-          }
-
-          if (isDev) {
-            return {
-              id: "u-dev-admin",
-              name: normalizedEmail.split("@")[0],
-              email: normalizedEmail,
-              role: "SUPER_ADMIN",
-              branchName: "Semua Cabang (Pusat)",
-              image: null,
-            };
-          }
-
-          if (!dbReachable) {
-            throw new Error("Server database tidak dapat dijangkau. Coba beberapa saat lagi.");
-          }
+        if (!user) {
           throw new Error("Akun belum terdaftar. Silakan hubungi Super Admin.");
         }
 
@@ -154,12 +62,6 @@ export const authOptions: NextAuthOptions = {
             } catch (err) {
               console.error("Gagal meng-upgrade hash kata sandi:", err);
             }
-          }
-        }
-
-        if (!isPasswordValid && process.env.NODE_ENV === "development") {
-          if (["password123", "admin123", "31122000Hfz"].includes(credentials.password)) {
-            isPasswordValid = true;
           }
         }
 

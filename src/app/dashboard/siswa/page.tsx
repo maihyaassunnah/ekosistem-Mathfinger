@@ -21,7 +21,7 @@ import {
   RefreshCw,
   BookText,
 } from "lucide-react";
-import { useAppStore, isBranchMatch } from "@/lib/store";
+import { useAppStore } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -89,7 +89,6 @@ function SiswaContent() {
   const [classFilter, setClassFilter] = useState("ALL");
   const [genderFilter, setGenderFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
 
   useEffect(() => {
     if (allowedBranch) {
@@ -211,7 +210,7 @@ function SiswaContent() {
         s.parentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.parentWhatsapp.includes(searchTerm);
 
-      const matchBranch = isBranchMatch(s.branch, effectiveBranch);
+      const matchBranch = branchFilter === "ALL" ? true : s.branch === branchFilter;
       const matchClass = classFilter === "ALL" ? true : s.className === classFilter;
       const matchGender = genderFilter === "ALL" ? true : s.gender === genderFilter;
       const matchProgram =
@@ -247,8 +246,7 @@ function SiswaContent() {
         (c) => (c as any).programType !== "MEMBACA" && (allowedBranch ? c.branch === allowedBranch : true)
       )?.name || "Kelas A";
 
-    const targetBranch = allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"));
-    const defaultBranch = (isBranchMatch(targetBranch, "Tabir Timur") ? "Bangko" : "Singkut") as any;
+    const defaultBranch = (allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"))) as any;
     const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
 
     setForm({
@@ -1176,15 +1174,9 @@ function SiswaContent() {
                             value: c.name,
                             label: `${c.name} (${c.branch})`,
                           })),
-                        ...(form.programType === "MEMBACA"
-                          ? [
-                              { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
-                              { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
-                            ]
-                          : [
-                              { value: "Kelas A", label: "Kelas A" },
-                              { value: "Kelas B", label: "Kelas B" },
-                            ]),
+                        { value: "Kelas A", label: "Kelas A" },
+                        { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
+                        { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
                       ]}
                     />
                   </div>

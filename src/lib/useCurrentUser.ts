@@ -76,11 +76,8 @@ export function useCurrentUser(): CurrentUserInfo {
     !isSuperAdmin &&
     (rawRole === "BRANCH_ASSISTANT" ||
       rawRole === "Asisten Cabang" ||
-      rawRole?.toLowerCase()?.includes("asisten") ||
-      rawRole?.toLowerCase()?.includes("assistant") ||
       rawEmail.toLowerCase().includes("asisten") ||
-      rawEmail.toLowerCase().includes("uswatun") ||
-      rawEmail.toLowerCase().includes("lailatus") || rawEmail.toLowerCase().includes("lailatus") || rawEmail.toLowerCase().includes("rini"));
+      rawEmail.toLowerCase().includes("uswatun"));
 
   const isBranchAdmin =
     !isSuperAdmin &&
@@ -96,11 +93,7 @@ export function useCurrentUser(): CurrentUserInfo {
     !isSuperAdmin &&
     !isBranchAdmin &&
     !isBranchAssistant &&
-    (rawRole === "TUTOR" ||
-      rawRole === "Tutor" ||
-      rawRole === "Pengajar" ||
-      rawRole?.toLowerCase()?.includes("tutor") ||
-      rawEmail.toLowerCase().includes("tutor"));
+    (rawRole === "TUTOR" || rawRole === "Tutor" || rawRole === "Pengajar");
 
   let allowedBranch: string | null = null;
   if (!isSuperAdmin) {
@@ -115,7 +108,6 @@ export function useCurrentUser(): CurrentUserInfo {
     } else if (
       rawEmail.toLowerCase().includes("febri") ||
       rawEmail.toLowerCase().includes("singkut") ||
-      rawEmail.toLowerCase().includes("rini") ||
       rawBranch.toLowerCase().includes("singkut")
     ) {
       allowedBranch = "Singkut";
@@ -139,31 +131,32 @@ export function useCurrentUser(): CurrentUserInfo {
       return true;
     }
 
-    // Role Tutor & Asisten Cabang: ONLY allow dashboard, absensi siswa, absensi tutor/scan qr tutor, jurnal guru, riwayat jurnal, input nilai
-    if (
-      isBranchAssistant ||
-      isTutor ||
-      rawRole?.toLowerCase()?.includes("tutor") ||
-      rawRole?.toLowerCase()?.includes("asisten") ||
-      rawRole?.toLowerCase()?.includes("assistant")
-    ) {
-      const cleanPath = pathname.split("?")[0].replace(/\/+$/, "");
-      if (
-        cleanPath === "/dashboard" ||
-        cleanPath === "/dashboard/absensi" ||
-        cleanPath.startsWith("/dashboard/absensi/") ||
-        cleanPath === "/dashboard/absensi-tutor" ||
-        cleanPath.startsWith("/dashboard/absensi-tutor/") ||
-        cleanPath === "/dashboard/jurnal" ||
-        cleanPath.startsWith("/dashboard/jurnal/") ||
-        cleanPath === "/dashboard/riwayat-jurnal" ||
-        cleanPath.startsWith("/dashboard/riwayat-jurnal/") ||
-        cleanPath === "/dashboard/input-nilai" ||
-        cleanPath.startsWith("/dashboard/input-nilai/")
-      ) {
-        return true;
-      }
-      return false;
+    // Asisten Cabang cannot access Cabang, Pengaturan, Database, Website, Kartu QR, Keuangan, and Presensi Tutor Admin
+    if (isBranchAssistant) {
+      if (pathname.startsWith("/dashboard/cabang")) return false;
+      if (pathname.startsWith("/dashboard/pengaturan")) return false;
+      if (pathname.startsWith("/dashboard/database")) return false;
+      if (pathname.startsWith("/dashboard/website")) return false;
+      if (pathname.startsWith("/dashboard/kartu-qr")) return false;
+      if (pathname.startsWith("/dashboard/presensi-tutor")) return false;
+      if (pathname.startsWith("/dashboard/arus-keuangan")) return false;
+      if (pathname.startsWith("/dashboard/riwayat-spp")) return false;
+      if (pathname.startsWith("/dashboard/spp")) return false;
+      return true;
+    }
+
+    // Tutor has same restrictions as assistant
+    if (isTutor) {
+      if (pathname.startsWith("/dashboard/cabang")) return false;
+      if (pathname.startsWith("/dashboard/pengaturan")) return false;
+      if (pathname.startsWith("/dashboard/database")) return false;
+      if (pathname.startsWith("/dashboard/website")) return false;
+      if (pathname.startsWith("/dashboard/kartu-qr")) return false;
+      if (pathname.startsWith("/dashboard/presensi-tutor")) return false;
+      if (pathname.startsWith("/dashboard/arus-keuangan")) return false;
+      if (pathname.startsWith("/dashboard/riwayat-spp")) return false;
+      if (pathname.startsWith("/dashboard/spp")) return false;
+      return true;
     }
 
     return true;

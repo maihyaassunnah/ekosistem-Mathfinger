@@ -1,51 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
-
-// Helper: Resolve branchId from branch name / code
-async function resolveBranchId(branchParam?: string | null): Promise<string | null> {
-  if (!branchParam || branchParam === "ALL") return null;
-  const isBangkoTabir = /bangko|tabir/i.test(branchParam);
-  try {
-    const b = await prisma.branch.findFirst({
-      where: {
-        OR: [
-          { id: branchParam },
-          ...(isBangkoTabir
-            ? [
-                { branchCode: "BGK" },
-                { branchName: { contains: "Bangko", mode: "insensitive" as const } },
-                { branchName: { contains: "Tabir", mode: "insensitive" as const } },
-              ]
-            : []),
-          { branchName: { equals: branchParam, mode: "insensitive" as const } },
-          { branchCode: { equals: branchParam, mode: "insensitive" as const } },
-        ],
-      },
-    });
-    return b?.id || null;
-  } catch {
-    return null;
-  }
-}
+import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/grades - Fetch all student grades
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const { error } = await requireAuth();
     if (error) return error;
 
-    const { searchParams } = new URL(req.url);
-    const branchParam = searchParams.get("branch") || searchParams.get("branchId");
-    const targetBranchId = await resolveBranchId(branchParam);
-
-    const whereClause: any = {};
-    if (targetBranchId) {
-      whereClause.branchId = targetBranchId;
-    }
-
     const grades = await prisma.studentGrade.findMany({
-      where: whereClause,
       include: {
         student: true,
         branch: true,
@@ -53,27 +16,17 @@ export async function GET(req: Request) {
       orderBy: { examDate: "desc" },
     });
 
-    const formatted = grades.map((g) => {
-      const rawBranch = g.branch?.branchName || "";
-      const normalizedBranch = /bangko|tabir/i.test(rawBranch)
-        ? "Tabir Timur"
-        : rawBranch || "Singkut";
-
-      return {
-        id: g.id,
-        studentId: g.studentId,
-        studentCode: g.student?.studentCode || "",
-        studentName: g.student?.studentName || "Siswa",
-        className: g.className || g.student?.className || "Kelas Reguler",
-        branch: normalizedBranch,
-        branchId: g.branchId,
-        topic: g.topic,
-        examDate: g.examDate.toISOString().split("T")[0],
-        score: Number(g.score),
-        note: g.notes || "",
-        isJoined: g.isJoined,
-      };
-    });
+    const formatted = grades.map((g) => ({
+      id: g.id,
+      studentId: g.studentId,
+      studentName: g.student?.studentName || "Siswa",
+      className: g.className || "Kelas Reguler",
+      topic: g.topic,
+      examDate: g.examDate.toISOString().split("T")[0],
+      score: Number(g.score),
+      note: g.notes || "",
+      isJoined: g.isJoined,
+    }));
 
     return NextResponse.json(formatted);
   } catch (error: any) {
@@ -102,15 +55,8 @@ export async function POST(req: Request) {
       });
 
       if (!student) {
-        student = await prisma.student.findFirst({
-          where: {
-            OR: [
-              { studentCode: studentId },
-              ...(item.studentCode ? [{ studentCode: item.studentCode }] : []),
-              ...(item.studentName ? [{ studentName: { equals: item.studentName, mode: "insensitive" as const } }] : []),
-            ],
-          },
-        });
+        // Try fallback find first student
+        student = await prisma.student.findFirst();
         if (!student) continue;
       }
 
@@ -188,7 +134,7 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, studentId, topic, examDate, score, note, isJoined, oldTopic, oldExamDate, newTopic, newExamDate, branch, branchId } = body;
+    const { id, studentId, topic, examDate, score, note, isJoined, oldTopic, oldExamDate, newTopic, newExamDate } = body;
 
     // Case A: Batch rename a test session column (topic and/or examDate)
     if (oldTopic && oldExamDate) {
@@ -197,17 +143,11 @@ export async function PUT(req: Request) {
       if (newTopic) updateData.topic = newTopic;
       if (newExamDate) updateData.examDate = new Date(newExamDate);
 
-      const whereClause: any = {
-        topic: oldTopic,
-        examDate: oldDateObj,
-      };
-      const targetBranchId = await resolveBranchId(branchId || branch);
-      if (targetBranchId) {
-        whereClause.branchId = targetBranchId;
-      }
-
       const updatedBatch = await prisma.studentGrade.updateMany({
-        where: whereClause,
+        where: {
+          topic: oldTopic,
+          examDate: oldDateObj,
+        },
         data: updateData,
       });
 
@@ -324,23 +264,15 @@ export async function DELETE(req: Request) {
     const id = searchParams.get("id");
     const topic = searchParams.get("topic");
     const examDate = searchParams.get("examDate");
-    const branch = searchParams.get("branch");
-    const branchId = searchParams.get("branchId");
 
     // Case A: Delete entire session column
     if (topic && examDate) {
       const dateObj = new Date(examDate);
-      const whereClause: any = {
-        topic,
-        examDate: dateObj,
-      };
-      const targetBranchId = await resolveBranchId(branchId || branch);
-      if (targetBranchId) {
-        whereClause.branchId = targetBranchId;
-      }
-
       const deletedBatch = await prisma.studentGrade.deleteMany({
-        where: whereClause,
+        where: {
+          topic,
+          examDate: dateObj,
+        },
       });
 
       return NextResponse.json({ success: true, count: deletedBatch.count });

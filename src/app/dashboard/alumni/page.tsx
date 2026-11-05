@@ -15,30 +15,14 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { useAppStore, isBranchMatch } from "@/lib/store";
+import { useAppStore } from "@/lib/store";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 function AlumniContent() {
-  const router = useRouter();
-  const currentUser = useCurrentUser();
-  const { isSuperAdmin, allowedBranch } = currentUser;
-  const isTutorOrAssistant =
-    currentUser.isBranchAssistant ||
-    currentUser.isTutor ||
-    currentUser.role === "Tutor" ||
-    currentUser.role === "Asisten Cabang" ||
-    currentUser.role?.toLowerCase()?.includes("tutor") ||
-    currentUser.role?.toLowerCase()?.includes("asisten") ||
-    currentUser.role?.toLowerCase()?.includes("assistant");
-
-  useEffect(() => {
-    if (isTutorOrAssistant) {
-      router.replace("/dashboard");
-    }
-  }, [isTutorOrAssistant, router]);
-
+  const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const { students, grades, branches, classes } = useAppStore();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const paramProgram = searchParams?.get("program");
   const isMembaca = paramProgram === "MEMBACA";
@@ -317,8 +301,7 @@ function AlumniContent() {
   // Filtered List for Peringkat Tab (Active Students only)
   const filteredRankings = useMemo(() => {
     return rankedActiveStudents.filter((item) => {
-      const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
-      const matchBranch = isBranchMatch(item.branch, effectiveBranch);
+      const matchBranch = branchFilter === "ALL" ? true : item.branch === branchFilter;
       const matchClass = classFilter === "ALL" ? true : item.className === classFilter;
       const matchSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -338,8 +321,7 @@ function AlumniContent() {
   // Filtered List for Daftar Tab
   const filteredDaftar = useMemo(() => {
     return allAlumni.filter((item) => {
-      const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
-      const matchBranch = isBranchMatch(item.branch, effectiveBranch);
+      const matchBranch = branchFilter === "ALL" ? true : item.branch === branchFilter;
       const matchSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||

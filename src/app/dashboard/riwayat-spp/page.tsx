@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
-import { useAppStore, CashMutationItem, isBranchMatch } from "@/lib/store";
+import { useAppStore, CashMutationItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 function RiwayatSppContent() {
@@ -39,13 +39,13 @@ function RiwayatSppContent() {
   const [selectedMethod, setSelectedMethod] = useState("ALL");
 
   // Scoped Data by Branch and Program
-  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
   const scopedStudents = useMemo(() => {
-    let list = effectiveBranch !== "ALL" ? students.filter((s) => isBranchMatch(s.branch, effectiveBranch)) : students;
+    let list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+    if (branchFilter !== "ALL") list = list.filter((s) => s.branch === branchFilter);
     return list.filter((s) =>
       isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
     );
-  }, [students, effectiveBranch, isMembaca]);
+  }, [students, allowedBranch, branchFilter, isMembaca]);
 
   const scopedInvoices = useMemo(() => {
     let list = invoices;

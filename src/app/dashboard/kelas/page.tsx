@@ -24,7 +24,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { useAppStore, ClassItem, isBranchMatch } from "@/lib/store";
+import { useAppStore, ClassItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -86,8 +86,7 @@ function KelasContent() {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
   // Helper to check if a student is enrolled in a class (via enrolledClasses or comma-separated className)
-  const isStudentEnrolled = (s: any, clsName: string, clsId?: string, classBranch?: string) => {
-    if (classBranch && !isBranchMatch(s.branch, classBranch)) return false;
+  const isStudentEnrolled = (s: any, clsName: string, clsId?: string) => {
     if (s.enrolledClasses && Array.isArray(s.enrolledClasses)) {
       if (clsId && s.enrolledClasses.some((c: any) => c.id === clsId)) return true;
       if (s.enrolledClasses.some((c: any) => c.className?.toLowerCase().trim() === clsName.toLowerCase().trim())) return true;
@@ -97,24 +96,20 @@ function KelasContent() {
     return splitNames.includes(clsName.toLowerCase().trim());
   };
 
-  // Helpers to get live enrolled students and candidates for a class (strictly program isolated!)
+  // Helpers to get live enrolled students and candidates for a class
   const getEnrolledStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
-    const prog = classProgType || activeProgram;
     return students.filter((s) => {
-      const branchMatch = isBranchMatch(s.branch, branch);
-      const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
-      const classMatch = isStudentEnrolled(s, clsName, clsId, branch);
-      return branchMatch && programMatch && classMatch;
+      const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const classMatch = isStudentEnrolled(s, clsName, clsId);
+      return branchMatch && classMatch;
     });
   };
 
   const getCandidateStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
-    const prog = classProgType || activeProgram;
     return students.filter((s) => {
-      const branchMatch = isBranchMatch(s.branch, branch);
-      const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
-      const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId, branch);
-      return branchMatch && programMatch && !alreadyInThisClass;
+      const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId);
+      return branchMatch && !alreadyInThisClass;
     });
   };
 
@@ -191,11 +186,10 @@ function KelasContent() {
   });
 
   // Calculate top stats based on active branch and program
-  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
   const scopedClassesForBranch =
-    effectiveBranch === "ALL"
+    selectedBranch === "ALL"
       ? classes
-      : classes.filter((c) => isBranchMatch(c.branch, effectiveBranch));
+      : classes.filter((c) => c.branch === selectedBranch);
 
   const mathClassesCount = scopedClassesForBranch.filter((c) => (c as any).programType !== "MEMBACA").length;
   const readingClassesCount = scopedClassesForBranch.filter((c) => (c as any).programType === "MEMBACA").length;
@@ -225,7 +219,7 @@ function KelasContent() {
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.teacher.toLowerCase().includes(search.toLowerCase()) ||
       c.days.toLowerCase().includes(search.toLowerCase());
-    const matchesBranch = isBranchMatch(c.branch, effectiveBranch);
+    const matchesBranch = selectedBranch === "ALL" ? true : c.branch === selectedBranch;
     const matchesProgram =
       activeProgram === "MEMBACA"
         ? (c as any).programType === "MEMBACA"

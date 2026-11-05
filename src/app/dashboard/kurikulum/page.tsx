@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import {
   BookOpen,
   Plus,
@@ -12,83 +12,23 @@ import {
   Layers,
   CheckCircle2,
   AlertTriangle,
-  Building2,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
-import { useAppStore, CurriculumModule, isBranchMatch } from "@/lib/store";
-import { useRouter } from "next/navigation";
-import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useAppStore, CurriculumModule } from "@/lib/store";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function KurikulumPage() {
-  const router = useRouter();
   const {
     curriculumModules,
     addCurriculumModule,
     updateCurriculumModule,
     deleteCurriculumModule,
     resetCurriculumModules,
-    branches,
   } = useAppStore();
 
-  const currentUser = useCurrentUser();
-  const { isSuperAdmin, allowedBranch } = currentUser;
-  const isTutorOrAssistant =
-    currentUser.isBranchAssistant ||
-    currentUser.isTutor ||
-    currentUser.role === "Tutor" ||
-    currentUser.role === "Asisten Cabang" ||
-    currentUser.role?.toLowerCase()?.includes("tutor") ||
-    currentUser.role?.toLowerCase()?.includes("asisten") ||
-    currentUser.role?.toLowerCase()?.includes("assistant");
-
-  useEffect(() => {
-    if (isTutorOrAssistant) {
-      router.replace("/dashboard");
-    }
-  }, [isTutorOrAssistant, router]);
-
-  // Branch isolation state
-  const [selectedBranch, setSelectedBranch] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("mf_selected_branch");
-      if (saved) return saved;
-    }
-    return allowedBranch || "Singkut";
-  });
-
-  const activeBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
-
-  useEffect(() => {
-    if (!isSuperAdmin && allowedBranch) {
-      setSelectedBranch(allowedBranch);
-    }
-  }, [isSuperAdmin, allowedBranch]);
-
-  const handleBranchChange = (branch: string) => {
-    setSelectedBranch(branch);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("mf_selected_branch", branch);
-    }
-  };
-
-  // Branch-scoped curriculum modules (Strictly isolated per branch)
-  const scopedModules = useMemo(() => {
-    return curriculumModules.filter((m) => isBranchMatch(m.branch || "Singkut", activeBranch));
-  }, [curriculumModules, activeBranch]);
-
-  const [selectedModuleId, setSelectedModuleId] = useState<string>("");
-
-  useEffect(() => {
-    if (scopedModules.length > 0) {
-      const found = scopedModules.find((m) => m.id === selectedModuleId);
-      if (!found) {
-        setSelectedModuleId(scopedModules[0].id);
-      }
-    } else {
-      setSelectedModuleId("");
-    }
-  }, [scopedModules, selectedModuleId]);
+  const [selectedModuleId, setSelectedModuleId] = useState<string>(
+    curriculumModules[0]?.id || ""
+  );
 
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -125,8 +65,8 @@ export default function KurikulumPage() {
   });
 
   const activeModule =
-    scopedModules.find((m) => m.id === selectedModuleId) ||
-    scopedModules[0];
+    curriculumModules.find((m) => m.id === selectedModuleId) ||
+    curriculumModules[0];
 
   const handleOpenAdd = () => {
     setForm({
@@ -161,10 +101,10 @@ export default function KurikulumPage() {
 
     setConfirmModalConfig({
       isOpen: true,
-      title: `Konfirmasi Tambah Materi Kurikulum (Cabang ${activeBranch})`,
+      title: "Konfirmasi Tambah Materi Kurikulum",
       message: (
         <div className="space-y-2">
-          <p>Apakah Anda yakin ingin menambahkan materi kurikulum baru untuk <strong>Cabang {activeBranch}</strong>?</p>
+          <p>Apakah Anda yakin ingin menambahkan materi kurikulum baru berikut?</p>
           <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1 text-xs">
             <p className="font-bold text-slate-800 dark:text-slate-100">{form.levelTitle}</p>
             {form.shortDesc && <p className="text-[11px] text-slate-500 dark:text-slate-400">{form.shortDesc}</p>}
@@ -186,7 +126,6 @@ export default function KurikulumPage() {
           competencies: form.competencies,
           learningMaterials: form.learningMaterials,
           indicators,
-          branch: activeBranch,
         });
         setIsAddOpen(false);
         setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
@@ -204,11 +143,10 @@ export default function KurikulumPage() {
 
     setConfirmModalConfig({
       isOpen: true,
-      title: `Konfirmasi Simpan Perubahan (Cabang ${activeBranch})`,
+      title: "Konfirmasi Simpan Perubahan Kurikulum",
       message: (
         <div className="space-y-2">
-          <p>Simpan perubahan materi kurikulum <strong>{editingModule.levelTitle}</strong> untuk <strong>Cabang {activeBranch}</strong>?</p>
-          <p className="text-xs text-slate-500">Perubahan ini hanya berlaku untuk cabang ini dan tidak akan memengaruhi cabang lain.</p>
+          <p>Apakah Anda yakin ingin menyimpan perubahan pada modul kurikulum <strong>{editingModule.levelTitle}</strong>?</p>
         </div>
       ),
       confirmText: "Ya, Simpan Perubahan",
@@ -226,7 +164,6 @@ export default function KurikulumPage() {
           competencies: form.competencies,
           learningMaterials: form.learningMaterials,
           indicators,
-          branch: activeBranch,
         });
         setEditingModule(null);
         setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
@@ -246,7 +183,7 @@ export default function KurikulumPage() {
             Kurikulum & Silabus
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Kelola silabus materi bimbingan Jaritmatika, simpan formula, dan panduan latihan siswa terisolasi per cabang.
+            Kelola silabus materi bimbingan Jaritmatika, simpan formula, dan panduan latihan siswa.
           </p>
         </div>
 
@@ -255,10 +192,10 @@ export default function KurikulumPage() {
           <button
             type="button"
             onClick={() => setIsResetConfirmOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-white dark:bg-[#0f1a36] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-bold text-rose-600 dark:text-rose-400 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-[#132042] text-xs font-bold text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer shadow-2xs"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Kosongkan Kurikulum Cabang
+            Kosongkan Kurikulum
           </button>
 
           <button
@@ -267,72 +204,28 @@ export default function KurikulumPage() {
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Tambah Materi ({activeBranch})
+            Tambah Materi Baru
           </button>
         </div>
       </div>
-
-      {/* Super Admin Branch Switcher Banner */}
-      {isSuperAdmin && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0f1a36] p-4 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <Building2 className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Pilih Cabang Kurikulum:</span>
-            <div className="flex items-center gap-1.5">
-              {["Singkut", "Tabir Timur"].map((b) => {
-                const isActive = activeBranch.toLowerCase().includes(b.toLowerCase().split(" ")[0]);
-                return (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => handleBranchChange(b)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-emerald-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    }`}
-                  >
-                    Cabang {b}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-            🔒 Data kurikulum terisolasi per cabang: perubahan di Cabang {activeBranch} tidak memengaruhi cabang lain.
-          </span>
-        </div>
-      )}
-
-      {!isSuperAdmin && allowedBranch && (
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-          <Building2 className="w-3.5 h-3.5" />
-          <span>Kurikulum Resmi Cabang {allowedBranch}</span>
-        </div>
-      )}
 
       {/* 2-Column Master-Detail Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Daftar Modul Silabus */}
         <div className="lg:col-span-4 space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-              MODUL SILABUS ({scopedModules.length})
-            </span>
-            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-              {activeBranch}
-            </span>
+          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase px-1">
+            DAFTAR MODUL SILABUS
           </div>
 
           <div className="space-y-2">
-            {scopedModules.length === 0 ? (
+            {curriculumModules.length === 0 ? (
               <div className="p-8 text-center bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-400">
-                Belum ada modul kurikulum untuk Cabang {activeBranch}. Klik "+ Tambah Materi" untuk membuat silabus baru.
+                Belum ada modul kurikulum. Klik "+ Tambah Materi Baru" untuk membuat silabus.
               </div>
             ) : (
-              scopedModules.map((mod, idx) => {
+              curriculumModules.map((mod, idx) => {
                 const isSelected =
-                  mod.id === (activeModule?.id || scopedModules[0]?.id);
+                  mod.id === (activeModule?.id || curriculumModules[0]?.id);
 
                 return (
                   <div
@@ -396,17 +289,17 @@ export default function KurikulumPage() {
                       if (!activeModule) return;
                       setConfirmModalConfig({
                         isOpen: true,
-                        title: `Konfirmasi Hapus Modul Kurikulum (Cabang ${activeBranch})`,
+                        title: "Konfirmasi Hapus Modul Kurikulum",
                         message: (
                           <div className="space-y-2">
-                            <p>Apakah Anda yakin ingin menghapus modul kurikulum <strong className="text-slate-900 dark:text-white">{activeModule.levelTitle}</strong> dari <strong>Cabang {activeBranch}</strong>?</p>
-                            <p className="text-[11px] text-rose-500 font-semibold">Tindakan ini hanya berlaku untuk Cabang {activeBranch} dan tidak dapat dibatalkan.</p>
+                            <p>Apakah Anda yakin ingin menghapus modul kurikulum <strong className="text-slate-900 dark:text-white">{activeModule.levelTitle}</strong>?</p>
+                            <p className="text-[11px] text-rose-500 font-semibold">Tindakan ini tidak dapat dibatalkan.</p>
                           </div>
                         ),
                         confirmText: "Ya, Hapus Modul",
                         variant: "danger",
                         onConfirm: () => {
-                          deleteCurriculumModule(activeModule.id, activeBranch);
+                          deleteCurriculumModule(activeModule.id);
                           setConfirmModalConfig((prev) => ({ ...prev, isOpen: false }));
                         },
                       });
@@ -717,10 +610,10 @@ export default function KurikulumPage() {
             </div>
             <div>
               <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                Kosongkan Kurikulum Cabang {activeBranch}?
+                Kosongkan Seluruh Kurikulum?
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
-                Tindakan ini hanya akan menghapus modul silabus untuk Cabang {activeBranch}. Kurikulum cabang lain tetap aman.
+                Tindakan ini akan menghapus semua modul silabus aktif saat ini.
               </p>
             </div>
             <div className="flex items-center justify-center gap-2 pt-2">
@@ -734,12 +627,12 @@ export default function KurikulumPage() {
               <button
                 type="button"
                 onClick={() => {
-                  resetCurriculumModules(activeBranch);
+                  resetCurriculumModules();
                   setIsResetConfirmOpen(false);
                 }}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 shadow-xs shadow-rose-500/20 text-white text-xs font-bold cursor-pointer"
               >
-                Ya, Kosongkan Cabang {activeBranch}
+                Ya, Kosongkan
               </button>
             </div>
           </div>
