@@ -86,7 +86,8 @@ function KelasContent() {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
   // Helper to check if a student is enrolled in a class (via enrolledClasses or comma-separated className)
-  const isStudentEnrolled = (s: any, clsName: string, clsId?: string) => {
+  const isStudentEnrolled = (s: any, clsName: string, clsId?: string, classBranch?: string) => {
+    if (classBranch && !isBranchMatch(s.branch, classBranch)) return false;
     if (s.enrolledClasses && Array.isArray(s.enrolledClasses)) {
       if (clsId && s.enrolledClasses.some((c: any) => c.id === clsId)) return true;
       if (s.enrolledClasses.some((c: any) => c.className?.toLowerCase().trim() === clsName.toLowerCase().trim())) return true;
@@ -102,7 +103,7 @@ function KelasContent() {
     return students.filter((s) => {
       const branchMatch = isBranchMatch(s.branch, branch);
       const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
-      const classMatch = isStudentEnrolled(s, clsName, clsId);
+      const classMatch = isStudentEnrolled(s, clsName, clsId, branch);
       return branchMatch && programMatch && classMatch;
     });
   };
@@ -112,7 +113,7 @@ function KelasContent() {
     return students.filter((s) => {
       const branchMatch = isBranchMatch(s.branch, branch);
       const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
-      const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId);
+      const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId, branch);
       return branchMatch && programMatch && !alreadyInThisClass;
     });
   };
