@@ -33,6 +33,9 @@ import {
   Printer,
   CheckSquare,
   Square,
+  Building2,
+  MapPin,
+  Lock,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -58,15 +61,47 @@ export default function InputNilaiPage() {
   const currentUser = useCurrentUser();
   const { isSuperAdmin, allowedBranch } = currentUser;
 
-  const scopedStudents = useMemo(() => {
-    const list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
-    return list.filter((s) => (s as any).programType !== "MEMBACA");
-  }, [students, allowedBranch]);
+  // Branch Sub-menu selection for Super Admin
+  const [selectedBranch, setSelectedBranch] = useState<string>(allowedBranch || "Singkut");
 
+  useEffect(() => {
+    if (allowedBranch) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [allowedBranch]);
+
+  const effectiveBranch = allowedBranch || selectedBranch;
+
+  // Student counts per branch for UI badges
+  const singkutStudentsCount = useMemo(() => {
+    return students.filter(
+      (s) => s.branch === "Singkut" && (s as any).programType !== "MEMBACA"
+    ).length;
+  }, [students]);
+
+  const bangkoStudentsCount = useMemo(() => {
+    return students.filter(
+      (s) => (s.branch === "Bangko" || (s.branch as string) === "Tabir Timur") && (s as any).programType !== "MEMBACA"
+    ).length;
+  }, [students]);
+
+  // Scoped students strictly isolated by branch
+  const scopedStudents = useMemo(() => {
+    return students.filter((s) => {
+      if ((s as any).programType === "MEMBACA") return false;
+      if (effectiveBranch === "Singkut") return s.branch === "Singkut";
+      return s.branch === "Bangko" || (s.branch as string) === "Tabir Timur";
+    });
+  }, [students, effectiveBranch]);
+
+  // Scoped classes strictly isolated by branch
   const scopedClasses = useMemo(() => {
-    const list = allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
-    return list.filter((c) => (c as any).programType !== "MEMBACA");
-  }, [classes, allowedBranch]);
+    return classes.filter((c) => {
+      if ((c as any).programType === "MEMBACA") return false;
+      if (effectiveBranch === "Singkut") return c.branch === "Singkut";
+      return c.branch === "Bangko" || (c.branch as string) === "Tabir Timur";
+    });
+  }, [classes, effectiveBranch]);
 
   const [activeSubTab, setActiveSubTab] = useState<
     "input" | "keaktifan" | "leger"
@@ -357,6 +392,16 @@ export default function InputNilaiPage() {
   const [legerClassFilter, setLegerClassFilter] = useState("ALL");
   const [legerSearchQuery, setLegerSearchQuery] = useState("");
 
+  // Reset all filters when switching branch
+  useEffect(() => {
+    setSelectedClass("ALL");
+    setLegerClassFilter("ALL");
+    setKeaktifanClassFilter("ALL");
+    setSearchQuery("");
+    setLegerSearchQuery("");
+    setKeaktifanSearchQuery("");
+  }, [effectiveBranch]);
+
   // A. Add Session Modal
   const [showAddSessionModal, setShowAddSessionModal] = useState(false);
   const [newSessionForm, setNewSessionForm] = useState({
@@ -392,29 +437,74 @@ export default function InputNilaiPage() {
 
   const [legerToast, setLegerToast] = useState<string | null>(null);
 
-  // Unique evaluations ordered chronologically
+  // Unique evaluations ordered chronologically strictly for active branch
   const evaluationColumns = useMemo(() => {
     const studentIds = new Set(scopedStudents.map((st) => st.id));
+    const studentNames = new Set(scopedStudents.map((st) => st.name.trim().toLowerCase()));
     const map = new Map<string, { key: string; topic: string; examDate: string }>();
+
     grades.forEach((g) => {
-      if (allowedBranch && !studentIds.has(g.studentId)) return;
+      const matchesBranch = effectiveBranch === "Singkut"
+        ? g.branch === "Singkut"
+        : (g.branch === "Bangko" || g.branch === "Tabir Timur");
+
+      const matchesStudent =
+        studentIds.has(g.studentId) ||
+        (g.studentName && studentNames.has(g.studentName.trim().toLowerCase()));
+
+      if (!matchesBranch && !matchesStudent) return;
+      if (
+        g.branch &&
+        (effectiveBranch === "Singkut"
+          ? g.branch !== "Singkut"
+          : g.branch !== "Bangko" && g.branch !== "Tabir Timur")
+      ) {
+        return;
+      }
+
       const key = `${g.examDate}___${g.topic}`;
       if (!map.has(key)) {
         map.set(key, { key, topic: g.topic, examDate: g.examDate });
       }
     });
+
     return Array.from(map.values()).sort((a, b) => a.examDate.localeCompare(b.examDate));
-  }, [grades, scopedStudents, allowedBranch]);
+  }, [grades, scopedStudents, effectiveBranch]);
 
   // Fast score lookup: studentId___examDate___topic -> GradeItem
+  // Also indexed by studentCode and branch___studentName for 100% robust cell matching
   const gradeMap = useMemo(() => {
     const map = new Map<string, GradeItem>();
     grades.forEach((g) => {
-      const key = `${g.studentId}___${g.examDate}___${g.topic}`;
-      map.set(key, g);
+      map.set(`${g.studentId}___${g.examDate}___${g.topic}`, g);
+      if (g.studentCode) {
+        map.set(`${g.studentCode}___${g.examDate}___${g.topic}`, g);
+      }
+      if (g.branch && g.studentName) {
+        map.set(
+          `${g.branch}___${g.studentName.trim().toLowerCase()}___${g.examDate}___${g.topic}`,
+          g
+        );
+      }
     });
     return map;
   }, [grades]);
+
+  // Robust cell getter for student grade
+  const getStudentCellGrade = useCallback(
+    (student: StudentItem, col: { topic: string; examDate: string }) => {
+      return (
+        gradeMap.get(`${student.id}___${col.examDate}___${col.topic}`) ||
+        (student.studentCode
+          ? gradeMap.get(`${student.studentCode}___${col.examDate}___${col.topic}`)
+          : undefined) ||
+        gradeMap.get(
+          `${student.branch}___${student.name.trim().toLowerCase()}___${col.examDate}___${col.topic}`
+        )
+      );
+    },
+    [gradeMap]
+  );
 
   // Filtered students for Leger Matrix
   const filteredLegerStudents = useMemo(() => {
@@ -444,8 +534,14 @@ export default function InputNilaiPage() {
     const newGradesToCreate: GradeItem[] = targetStudents.map((s) => ({
       id: `gr-${s.id}-${newSessionForm.examDate}-${Date.now().toString(36)}`,
       studentId: s.id,
+      studentCode: s.studentCode,
       studentName: s.name,
       className: s.className,
+      branch: s.branch || effectiveBranch,
+      branchId:
+        effectiveBranch === "Singkut"
+          ? "07a1fb4b-87af-4d88-9bed-d76168314f1b"
+          : "07a1fb4b-87af-4d88-9bed-d76168314f1c",
       topic: newSessionForm.topic.trim(),
       examDate: newSessionForm.examDate,
       score: Number(newSessionForm.defaultScore) || 80,
@@ -499,7 +595,7 @@ export default function InputNilaiPage() {
     student: StudentItem,
     col: { topic: string; examDate: string }
   ) => {
-    const existing = gradeMap.get(`${student.id}___${col.examDate}___${col.topic}`);
+    const existing = getStudentCellGrade(student, col);
     setEditingCell({
       student,
       col,
@@ -516,8 +612,10 @@ export default function InputNilaiPage() {
     await updateSingleGrade({
       id: editingCell.gradeId,
       studentId: editingCell.student.id,
+      studentCode: editingCell.student.studentCode,
       studentName: editingCell.student.name,
       className: editingCell.student.className,
+      branch: editingCell.student.branch || effectiveBranch,
       topic: editingCell.col.topic,
       examDate: editingCell.col.examDate,
       score: Number(editingCell.score) || 0,
@@ -562,7 +660,7 @@ export default function InputNilaiPage() {
       let studentTotal = 0;
       let studentCount = 0;
       const scores = evaluationColumns.map((col) => {
-        const item = gradeMap.get(`${s.id}___${col.examDate}___${col.topic}`);
+        const item = getStudentCellGrade(s, col);
         if (item !== undefined && item.score !== undefined) {
           studentTotal += item.score;
           studentCount++;
@@ -590,7 +688,7 @@ export default function InputNilaiPage() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `Leger_Nilai_MathFingers_${new Date().toISOString().split("T")[0]}.csv`
+      `Leger_Nilai_${effectiveBranch}_${new Date().toISOString().split("T")[0]}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -673,8 +771,10 @@ export default function InputNilaiPage() {
       .map((s) => ({
         id: `grade-${s.id}-${examDate}-${topic.replace(/\s+/g, "-")}`,
         studentId: s.id,
+        studentCode: s.studentCode,
         studentName: s.name,
         className: s.className,
+        branch: s.branch || effectiveBranch,
         topic,
         examDate,
         score:
@@ -715,6 +815,81 @@ export default function InputNilaiPage() {
             <span>{keaktifanToast || legerToast}</span>
           </div>
         )}
+      </div>
+
+      {/* Branch Selector Sub-Menu (Super Admin Toggle & Branch Indicator) */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Pilih Cabang Aktif
+              </h2>
+              {isSuperAdmin ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                  Super Admin (Pusat)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  <Lock className="w-2.5 h-2.5" /> Terkunci Cabang {allowedBranch}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Nilai, kelas, dan sesi uji kompetensi dipisahkan secara independen untuk setiap cabang.
+            </p>
+          </div>
+        </div>
+
+        {/* Branch Toggle Buttons */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          {/* Cabang Singkut */}
+          <button
+            type="button"
+            onClick={() => isSuperAdmin && setSelectedBranch("Singkut")}
+            disabled={!isSuperAdmin && allowedBranch !== "Singkut"}
+            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              effectiveBranch === "Singkut"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/30 font-extrabold"
+                : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            <span>Cabang Singkut</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              effectiveBranch === "Singkut"
+                ? "bg-white/20 text-white"
+                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+            }`}>
+              {singkutStudentsCount} Siswa
+            </span>
+          </button>
+
+          {/* Cabang Bangko / Tabir Timur */}
+          <button
+            type="button"
+            onClick={() => isSuperAdmin && setSelectedBranch("Bangko")}
+            disabled={!isSuperAdmin && allowedBranch !== "Bangko" && allowedBranch !== "Tabir Timur"}
+            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/30 font-extrabold"
+                : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            <span>Cabang Bangko / Tabir Timur</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
+                ? "bg-white/20 text-white"
+                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+            }`}>
+              {bangkoStudentsCount} Siswa
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* 3 Sub-tabs Centered Pill Switcher (Sesuai Gambar 2 dengan Background Hijau & Inactive Slate) */}
@@ -1741,10 +1916,13 @@ export default function InputNilaiPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
-                  Leger Nilai & Matriks Uji Kompetensi (CRUD)
+                  Leger Nilai & Matriks Uji Kompetensi ({effectiveBranch === "Singkut" ? "Cabang Singkut" : "Cabang Bangko / Tabir Timur"})
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold">
                   {evaluationColumns.length} Sesi Uji Kompetensi Berurutan
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
+                  {filteredLegerStudents.length} Siswa Terdaftar
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -1902,7 +2080,7 @@ export default function InputNilaiPage() {
                     let evaluatedCount = 0;
 
                     const rowScores = evaluationColumns.map((col) => {
-                      const item = gradeMap.get(`${s.id}___${col.examDate}___${col.topic}`);
+                      const item = getStudentCellGrade(s, col);
                       if (item !== undefined && item.score !== undefined) {
                         totalScore += item.score;
                         evaluatedCount++;
@@ -2065,10 +2243,10 @@ export default function InputNilaiPage() {
                       className="w-full"
                       size="sm"
                       options={[
-                        { value: "ALL", label: `Semua Siswa Terdaftar (${students.length})` },
-                        ...classes.map((c) => ({
+                        { value: "ALL", label: `Semua Siswa Cabang ${effectiveBranch === "Singkut" ? "Singkut" : "Bangko / Tabir Timur"} (${scopedStudents.length})` },
+                        ...scopedClasses.map((c) => ({
                           value: c.name,
-                          label: `${c.name} (${c.branch})`,
+                          label: c.name,
                         })),
                       ]}
                     />

@@ -311,8 +311,11 @@ interface AppStoreContextType {
   updateSingleGrade: (grade: {
     id?: string;
     studentId: string;
+    studentCode?: string;
     studentName?: string;
     className?: string;
+    branch?: string;
+    branchId?: string;
     topic: string;
     examDate: string;
     score: number;
@@ -13027,8 +13030,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const updateSingleGrade = async (grade: {
     id?: string;
     studentId: string;
+    studentCode?: string;
     studentName?: string;
     className?: string;
+    branch?: string;
+    branchId?: string;
     topic: string;
     examDate: string;
     score: number;
@@ -13050,8 +13056,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const newG: GradeItem = {
           id: grade.id || `gr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           studentId: grade.studentId,
+          studentCode: grade.studentCode,
           studentName: grade.studentName || "Siswa",
           className: grade.className || "Kelas Reguler",
+          branch: grade.branch,
+          branchId: grade.branchId,
           topic: grade.topic,
           examDate: grade.examDate,
           score: Number(grade.score),
