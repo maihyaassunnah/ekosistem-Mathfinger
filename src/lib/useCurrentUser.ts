@@ -79,7 +79,8 @@ export function useCurrentUser(): CurrentUserInfo {
       rawRole?.toLowerCase()?.includes("asisten") ||
       rawRole?.toLowerCase()?.includes("assistant") ||
       rawEmail.toLowerCase().includes("asisten") ||
-      rawEmail.toLowerCase().includes("uswatun"));
+      rawEmail.toLowerCase().includes("uswatun") ||
+      rawEmail.toLowerCase().includes("lailatus") || rawEmail.toLowerCase().includes("lailatus") || rawEmail.toLowerCase().includes("rini"));
 
   const isBranchAdmin =
     !isSuperAdmin &&
@@ -114,6 +115,7 @@ export function useCurrentUser(): CurrentUserInfo {
     } else if (
       rawEmail.toLowerCase().includes("febri") ||
       rawEmail.toLowerCase().includes("singkut") ||
+      rawEmail.toLowerCase().includes("rini") ||
       rawBranch.toLowerCase().includes("singkut")
     ) {
       allowedBranch = "Singkut";

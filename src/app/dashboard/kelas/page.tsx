@@ -24,7 +24,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { useAppStore, ClassItem } from "@/lib/store";
+import { useAppStore, ClassItem, isBranchMatch } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -100,7 +100,7 @@ function KelasContent() {
   const getEnrolledStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
     const prog = classProgType || activeProgram;
     return students.filter((s) => {
-      const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const branchMatch = isBranchMatch(s.branch, branch);
       const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
       const classMatch = isStudentEnrolled(s, clsName, clsId);
       return branchMatch && programMatch && classMatch;
@@ -110,7 +110,7 @@ function KelasContent() {
   const getCandidateStudents = (clsName: string, branch: string, classProgType?: "MATEMATIKA" | "MEMBACA", clsId?: string) => {
     const prog = classProgType || activeProgram;
     return students.filter((s) => {
-      const branchMatch = s.branch?.toLowerCase().trim() === branch?.toLowerCase().trim();
+      const branchMatch = isBranchMatch(s.branch, branch);
       const programMatch = prog === "MEMBACA" ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA";
       const alreadyInThisClass = isStudentEnrolled(s, clsName, clsId);
       return branchMatch && programMatch && !alreadyInThisClass;
@@ -190,10 +190,11 @@ function KelasContent() {
   });
 
   // Calculate top stats based on active branch and program
+  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
   const scopedClassesForBranch =
-    selectedBranch === "ALL"
+    effectiveBranch === "ALL"
       ? classes
-      : classes.filter((c) => c.branch === selectedBranch);
+      : classes.filter((c) => isBranchMatch(c.branch, effectiveBranch));
 
   const mathClassesCount = scopedClassesForBranch.filter((c) => (c as any).programType !== "MEMBACA").length;
   const readingClassesCount = scopedClassesForBranch.filter((c) => (c as any).programType === "MEMBACA").length;
@@ -223,7 +224,7 @@ function KelasContent() {
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.teacher.toLowerCase().includes(search.toLowerCase()) ||
       c.days.toLowerCase().includes(search.toLowerCase());
-    const matchesBranch = selectedBranch === "ALL" ? true : c.branch === selectedBranch;
+    const matchesBranch = isBranchMatch(c.branch, effectiveBranch);
     const matchesProgram =
       activeProgram === "MEMBACA"
         ? (c as any).programType === "MEMBACA"

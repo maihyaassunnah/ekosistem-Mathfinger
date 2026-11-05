@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-guard";
+import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
 
 // Helper: Resolve branchId from branch name / code
 async function resolveBranchId(branchParam?: string | null): Promise<string | null> {

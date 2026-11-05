@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, isBranchMatch } from "@/lib/store";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 function AlumniContent() {
@@ -317,7 +317,8 @@ function AlumniContent() {
   // Filtered List for Peringkat Tab (Active Students only)
   const filteredRankings = useMemo(() => {
     return rankedActiveStudents.filter((item) => {
-      const matchBranch = branchFilter === "ALL" ? true : item.branch === branchFilter;
+      const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
+      const matchBranch = isBranchMatch(item.branch, effectiveBranch);
       const matchClass = classFilter === "ALL" ? true : item.className === classFilter;
       const matchSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -337,7 +338,8 @@ function AlumniContent() {
   // Filtered List for Daftar Tab
   const filteredDaftar = useMemo(() => {
     return allAlumni.filter((item) => {
-      const matchBranch = branchFilter === "ALL" ? true : item.branch === branchFilter;
+      const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
+      const matchBranch = isBranchMatch(item.branch, effectiveBranch);
       const matchSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||

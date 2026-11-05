@@ -14928,7 +14928,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
-      const CURRENT_DATA_VERSION = "mf_live_sync_v7";
+      const CURRENT_DATA_VERSION = "mf_live_sync_v8";
       if (localStorage.getItem("mf_data_version") !== CURRENT_DATA_VERSION) {
         localStorage.removeItem("mf_students");
         localStorage.removeItem("mf_classes");

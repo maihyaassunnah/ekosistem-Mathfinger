@@ -1,33 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-guard";
+import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
 
 // GET /api/journals - Fetch all teacher journals
 export async function GET(req: Request) {
   try {
-    const { error } = await requireAuth();
+    const { error, session } = await requireAuth();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
+    const effectiveBranchId = await getEffectiveBranchId(session, branch);
 
     const whereClause: any = {};
     if (program) {
       whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     }
-    if (branch && branch !== "ALL") {
-      const lower = branch.toLowerCase().trim();
-      if (lower === "bangko" || lower.includes("tabir")) {
-        whereClause.branch = {
-          OR: [
-            { branchName: { contains: "Bangko", mode: "insensitive" } },
-            { branchName: { contains: "Tabir", mode: "insensitive" } },
-          ],
-        };
-      } else {
-        whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
-      }
+    if (effectiveBranchId) {
+      whereClause.branchId = effectiveBranchId;
     }
 
     const journals = await prisma.teacherJournal.findMany({

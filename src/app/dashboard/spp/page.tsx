@@ -28,7 +28,7 @@ import {
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import CustomSelect from "@/components/ui/CustomSelect";
 import MultiStudentSelect from "@/components/ui/MultiStudentSelect";
-import { useAppStore, InvoiceItem } from "@/lib/store";
+import { useAppStore, InvoiceItem, isBranchMatch } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
@@ -96,13 +96,13 @@ function SppContent() {
 
   const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
 
+  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
   const scopedStudents = useMemo(() => {
-    let list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
-    if (branchFilter !== "ALL") list = list.filter((s) => s.branch === branchFilter);
+    let list = effectiveBranch !== "ALL" ? students.filter((s) => isBranchMatch(s.branch, effectiveBranch)) : students;
     return list.filter((s) =>
       isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
     );
-  }, [students, allowedBranch, branchFilter, isMembaca]);
+  }, [students, effectiveBranch, isMembaca]);
 
   const scopedInvoices = useMemo(() => {
     let list = invoices;

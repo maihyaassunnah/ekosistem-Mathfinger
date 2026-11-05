@@ -22,7 +22,7 @@ import {
   BookText,
 } from "lucide-react";
 import QRCode from "qrcode";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, isBranchMatch } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -92,6 +92,7 @@ function KartuQrContent() {
   const [search, setSearch] = useState("");
   const [branchFilter, setBranchFilter] = useState(allowedBranch || "ALL");
   const [classFilter, setClassFilter] = useState("ALL");
+  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
   const [previewStudent, setPreviewStudent] = useState<StudentItem | null>(null);
   const [previewQrUrl, setPreviewQrUrl] = useState<string>("");
 
@@ -105,7 +106,7 @@ function KartuQrContent() {
     const matchSearch =
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.studentCode.includes(search);
-    const matchBranch = branchFilter === "ALL" ? true : s.branch === branchFilter;
+    const matchBranch = isBranchMatch(s.branch, effectiveBranch);
     const matchClass = classFilter === "ALL" ? true : s.className === classFilter;
     const matchProgram = isMembaca
       ? (s as any).programType === "MEMBACA"
@@ -260,7 +261,7 @@ function KartuQrContent() {
             options={[
               { value: "ALL", label: "Semua Kelas" },
               ...classes
-                .filter((c) => (branchFilter === "ALL" ? true : c.branch === branchFilter))
+                .filter((c) => isBranchMatch(c.branch, effectiveBranch))
                 .map((c) => ({
                   value: c.name,
                   label: c.name,

@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-guard";
+import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
 
 // GET /api/transactions - Fetch all cash transactions
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { error } = await requireAuth();
+    const { error, session } = await requireAuth();
     if (error) return error;
 
+    const { searchParams } = new URL(req.url);
+    const branch = searchParams.get("branch");
+    const effectiveBranchId = await getEffectiveBranchId(session, branch);
+
+    const whereClause: any = {};
+    if (effectiveBranchId) {
+      whereClause.branchId = effectiveBranchId;
+    }
+
     const transactions = await prisma.cashTransaction.findMany({
+      where: whereClause,
       include: { branch: true },
       orderBy: { transactionDate: "desc" },
     });

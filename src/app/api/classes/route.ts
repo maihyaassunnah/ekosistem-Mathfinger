@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-guard";
+import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
 
 // GET /api/classes - List all classes with branch details
 export async function GET(req: Request) {
   try {
-    const { error } = await requireAuth();
+    const { error, session } = await requireAuth();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
+    const effectiveBranchId = await getEffectiveBranchId(session, branch);
 
     const whereClause: any = {};
     if (program) {
       whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     }
-    if (branch && branch !== "ALL") {
-      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    if (effectiveBranchId) {
+      whereClause.branchId = effectiveBranchId;
     }
 
     const classes = await prisma.class.findMany({

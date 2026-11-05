@@ -357,7 +357,7 @@ function AbsensiContent() {
       return;
     }
 
-    if (allowedBranch && student.branch !== allowedBranch) {
+    if (allowedBranch && !isBranchMatch(student.branch, allowedBranch)) {
       setScanResult({
         type: "NOT_FOUND",
         message: `Siswa "${student.name}" terdaftar di Cabang ${student.branch}. Presensi hanya dapat diproses untuk Cabang ${allowedBranch}.`,

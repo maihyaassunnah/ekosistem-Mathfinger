@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-guard";
+import { requireAuth, getEffectiveBranchId } from "@/lib/auth-guard";
 
 // GET /api/behaviors - Ambil riwayat penilaian keaktifan siswa
 export async function GET(req: Request) {
   try {
-    const { error } = await requireAuth();
+    const { error, session } = await requireAuth();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
@@ -13,8 +13,13 @@ export async function GET(req: Request) {
     const date = searchParams.get("date");
     const studentId = searchParams.get("studentId");
     const programType = searchParams.get("programType");
+    const branch = searchParams.get("branch");
+    const effectiveBranchId = await getEffectiveBranchId(session, branch);
 
     const where: any = {};
+    if (effectiveBranchId) {
+      where.branchId = effectiveBranchId;
+    }
     if (className && className !== "ALL") {
       where.className = className;
     }

@@ -21,7 +21,7 @@ import {
   RefreshCw,
   BookText,
 } from "lucide-react";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, isBranchMatch } from "@/lib/store";
 import { StudentItem } from "@/lib/mock-data";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -89,6 +89,7 @@ function SiswaContent() {
   const [classFilter, setClassFilter] = useState("ALL");
   const [genderFilter, setGenderFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const effectiveBranch = !isSuperAdmin && allowedBranch ? allowedBranch : branchFilter;
 
   useEffect(() => {
     if (allowedBranch) {
@@ -210,7 +211,7 @@ function SiswaContent() {
         s.parentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.parentWhatsapp.includes(searchTerm);
 
-      const matchBranch = branchFilter === "ALL" ? true : s.branch === branchFilter;
+      const matchBranch = isBranchMatch(s.branch, effectiveBranch);
       const matchClass = classFilter === "ALL" ? true : s.className === classFilter;
       const matchGender = genderFilter === "ALL" ? true : s.gender === genderFilter;
       const matchProgram =
@@ -246,7 +247,8 @@ function SiswaContent() {
         (c) => (c as any).programType !== "MEMBACA" && (allowedBranch ? c.branch === allowedBranch : true)
       )?.name || "Kelas A";
 
-    const defaultBranch = (allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"))) as any;
+    const targetBranch = allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"));
+    const defaultBranch = (isBranchMatch(targetBranch, "Tabir Timur") ? "Bangko" : "Singkut") as any;
     const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
 
     setForm({
