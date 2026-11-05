@@ -3,12 +3,27 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 
 // GET /api/transactions - Fetch all cash transactions
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { error } = await requireAuth();
+    const { error, session } = await requireAuth();
     if (error) return error;
 
+    const user = session?.user as any;
+    const isSuperAdmin = user?.role === "SUPER_ADMIN" || user?.role === "Super Admin";
+    const userBranchId = user?.branchId;
+
+    const { searchParams } = new URL(req.url);
+    const branch = searchParams.get("branch");
+
+    const whereClause: any = {};
+    if (!isSuperAdmin && userBranchId) {
+      whereClause.branchId = userBranchId;
+    } else if (branch && branch !== "ALL") {
+      whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
+    }
+
     const transactions = await prisma.cashTransaction.findMany({
+      where: whereClause,
       include: { branch: true },
       orderBy: { transactionDate: "desc" },
     });

@@ -5,8 +5,12 @@ import { requireAuth } from "@/lib/auth-guard";
 // GET /api/invoices - Fetch all invoices
 export async function GET(req: Request) {
   try {
-    const { error } = await requireAuth();
+    const { error, session } = await requireAuth();
     if (error) return error;
+
+    const user = session?.user as any;
+    const isSuperAdmin = user?.role === "SUPER_ADMIN" || user?.role === "Super Admin";
+    const userBranchId = user?.branchId;
 
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
@@ -16,7 +20,10 @@ export async function GET(req: Request) {
     if (program) {
       whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     }
-    if (branch && branch !== "ALL") {
+
+    if (!isSuperAdmin && userBranchId) {
+      whereClause.branchId = userBranchId;
+    } else if (branch && branch !== "ALL") {
       whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
     }
 

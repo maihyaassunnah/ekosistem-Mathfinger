@@ -163,11 +163,15 @@ function DashboardContent() {
     selectedBranch === "ALL"
       ? invoices
       : invoices.filter((inv) => {
+          if (inv.branch && inv.branch === selectedBranch) return true;
           const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
           return st?.branch === selectedBranch;
         });
 
   const scopedInvoices = rawScopedInvoices.filter((inv) => {
+    if (inv.programType) {
+      return isMembaca ? inv.programType === "MEMBACA" : inv.programType !== "MEMBACA";
+    }
     const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
     return isMembaca
       ? (st as any)?.programType === "MEMBACA"
