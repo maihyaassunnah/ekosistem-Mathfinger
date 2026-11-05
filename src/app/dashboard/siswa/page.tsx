@@ -237,16 +237,15 @@ function SiswaContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleOpenAdd = () => {
-    const readingClassDefault =
-      classes.find(
-        (c) => (c as any).programType === "MEMBACA" && (allowedBranch ? c.branch === allowedBranch : true)
-      )?.name || "Kelas Membaca 1";
-    const mathClassDefault =
-      classes.find(
-        (c) => (c as any).programType !== "MEMBACA" && (allowedBranch ? c.branch === allowedBranch : true)
-      )?.name || "Kelas A";
-
     const defaultBranch = (allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"))) as any;
+    const branchClasses = classes.filter(
+      (c) =>
+        c.branch === defaultBranch &&
+        (activeProgram === "MEMBACA"
+          ? (c as any).programType === "MEMBACA"
+          : (c as any).programType !== "MEMBACA")
+    );
+    const defaultClass = branchClasses[0]?.name || (defaultBranch === "Singkut" ? "CLASS A" : "KELAS A1");
     const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
 
     setForm({
@@ -255,10 +254,10 @@ function SiswaContent() {
       gender: "P",
       codeLabel: "8P",
       branch: defaultBranch,
-      className: activeProgram === "MEMBACA" ? readingClassDefault : mathClassDefault,
+      className: defaultClass,
       birthPlace: defaultBranch,
       birthDate: "2019-01-01",
-      address: "Jl. Poros Singkut",
+      address: defaultBranch === "Singkut" ? "Jl. Poros Singkut" : "Jl. Bangko",
       gradeLevel: activeProgram === "MEMBACA" ? "Level 1: Pra-Membaca & Pengenalan Huruf" : "Ket: Kelas 3",
       parentName: "",
       parentWhatsapp: "0812-",
@@ -1144,7 +1143,22 @@ function SiswaContent() {
                     <CustomSelect
                       value={form.branch}
                       disabled={!isSuperAdmin}
-                      onChange={(val) => setForm({ ...form, branch: val as any })}
+                      onChange={(val) => {
+                        const newBranch = val as any;
+                        const branchClasses = classes.filter(
+                          (c) =>
+                            c.branch === newBranch &&
+                            (form.programType === "MEMBACA"
+                              ? (c as any).programType === "MEMBACA"
+                              : (c as any).programType !== "MEMBACA")
+                        );
+                        setForm((prev) => ({
+                          ...prev,
+                          branch: newBranch,
+                          className: branchClasses[0]?.name || (newBranch === "Singkut" ? "CLASS A" : "KELAS A1"),
+                          birthPlace: newBranch,
+                        }));
+                      }}
                       className="w-full"
                       align="right"
                       size="md"
@@ -1160,24 +1174,21 @@ function SiswaContent() {
                     </label>
                     <CustomSelect
                       value={form.className}
-                      onChange={(val) => setForm({ ...form, className: val })}
+                      onChange={(val) => setForm((prev) => ({ ...prev, className: val }))}
                       className="w-full"
                       size="md"
-                      options={[
-                        ...classes
-                          .filter((c) =>
-                            form.programType === "MEMBACA"
+                      options={classes
+                        .filter(
+                          (c) =>
+                            c.branch === form.branch &&
+                            (form.programType === "MEMBACA"
                               ? (c as any).programType === "MEMBACA"
-                              : (c as any).programType !== "MEMBACA"
-                          )
-                          .map((c) => ({
-                            value: c.name,
-                            label: `${c.name} (${c.branch})`,
-                          })),
-                        { value: "Kelas A", label: "Kelas A" },
-                        { value: "Kelas Membaca 1", label: "Kelas Membaca 1" },
-                        { value: "Kelas Membaca 2", label: "Kelas Membaca 2" },
-                      ]}
+                              : (c as any).programType !== "MEMBACA")
+                        )
+                        .map((c) => ({
+                          value: c.name,
+                          label: `${c.name} (${c.branch})`,
+                        }))}
                     />
                   </div>
                 </div>
