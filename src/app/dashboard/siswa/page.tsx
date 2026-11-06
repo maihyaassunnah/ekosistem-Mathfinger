@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
@@ -705,14 +705,19 @@ function SiswaContent() {
             options={[
               { value: "ALL", label: "Semua Kelas" },
               ...classes
-                .filter((c) =>
-                  activeProgram === "MEMBACA"
-                    ? (c as any).programType === "MEMBACA"
-                    : (c as any).programType !== "MEMBACA"
-                )
+                .filter((c) => {
+                  const matchProgram =
+                    activeProgram === "MEMBACA"
+                      ? (c as any).programType === "MEMBACA"
+                      : (c as any).programType !== "MEMBACA";
+                  // Isolasi kelas berdasarkan cabang yang dipilih di filter
+                  const matchBranch =
+                    branchFilter === "ALL" ? true : c.branch === branchFilter;
+                  return matchProgram && matchBranch;
+                })
                 .map((c) => ({
                   value: c.name,
-                  label: c.name,
+                  label: `${c.name} (${c.branch})`,
                 })),
             ]}
           />

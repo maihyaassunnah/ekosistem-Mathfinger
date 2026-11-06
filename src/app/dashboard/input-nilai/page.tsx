@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
@@ -439,27 +439,15 @@ export default function InputNilaiPage() {
 
   // Unique evaluations ordered chronologically strictly for active branch
   const evaluationColumns = useMemo(() => {
-    const studentIds = new Set(scopedStudents.map((st) => st.id));
-    const studentNames = new Set(scopedStudents.map((st) => st.name.trim().toLowerCase()));
     const map = new Map<string, { key: string; topic: string; examDate: string }>();
 
     grades.forEach((g) => {
-      const matchesBranch = effectiveBranch === "Singkut"
-        ? g.branch === "Singkut"
-        : (g.branch === "Bangko" || g.branch === "Tabir Timur");
-
-      const matchesStudent =
-        studentIds.has(g.studentId) ||
-        (g.studentName && studentNames.has(g.studentName.trim().toLowerCase()));
-
-      if (!matchesBranch && !matchesStudent) return;
-      if (
-        g.branch &&
-        (effectiveBranch === "Singkut"
-          ? g.branch !== "Singkut"
-          : g.branch !== "Bangko" && g.branch !== "Tabir Timur")
-      ) {
-        return;
+      // STRICT: hanya filter berdasarkan branch — TIDAK ada fallback ke nama siswa
+      // Ini mencegah sesi Bangko masuk ke kolom Singkut karena nama siswa yang sama
+      if (effectiveBranch === "Singkut") {
+        if (g.branch !== "Singkut") return;
+      } else {
+        if (g.branch !== "Bangko" && (g.branch as string) !== "Tabir Timur") return;
       }
 
       const key = `${g.examDate}___${g.topic}`;
