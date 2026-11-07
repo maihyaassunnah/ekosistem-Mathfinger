@@ -100,6 +100,7 @@ model Branch {
   readingGrades    ReadingGrade[]
   tutorAttendances TutorAttendance[]
   tutorQr          TutorAttendanceQr?
+  levels           Level[]
 
   @@map("branches")
 }
@@ -214,6 +215,7 @@ model TutorAttendanceQr {
 
 model Level {
   id                String    @id @default(uuid())
+  branchId          String?   @map("branch_id")
   levelName         String    @map("level_name")
   shortDesc         String?   @map("short_desc") @db.Text
   targetAge         String?   @map("target_age")
@@ -229,8 +231,10 @@ model Level {
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
   // Relations
+  branch   Branch?   @relation(fields: [branchId], references: [id], onDelete: Cascade)
   students Student[]
 
+  @@index([branchId])
   @@map("levels")
 }
 

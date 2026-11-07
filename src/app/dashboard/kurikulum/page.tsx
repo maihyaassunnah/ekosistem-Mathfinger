@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   BookOpen,
   Plus,
@@ -12,13 +12,16 @@ import {
   Layers,
   CheckCircle2,
   AlertTriangle,
+  Building2,
 } from "lucide-react";
 import TopStatusBar from "@/components/dashboard/TopStatusBar";
 import { useAppStore, CurriculumModule } from "@/lib/store";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function KurikulumPage() {
   const {
+    branches,
     curriculumModules,
     addCurriculumModule,
     updateCurriculumModule,
@@ -26,15 +29,83 @@ export default function KurikulumPage() {
     resetCurriculumModules,
   } = useAppStore();
 
-  const [selectedModuleId, setSelectedModuleId] = useState<string>(
-    curriculumModules[0]?.id || ""
-  );
+  const currentUser = useCurrentUser();
+  const { isSuperAdmin, allowedBranch } = currentUser;
+
+  // Branch Sub-menu selection for Super Admin
+  const [selectedBranch, setSelectedBranch] = useState<string>(allowedBranch || "Singkut");
+
+  useEffect(() => {
+    if (allowedBranch) {
+      setSelectedBranch(allowedBranch);
+    }
+  }, [allowedBranch]);
+
+  const effectiveBranch = allowedBranch || selectedBranch;
+
+  // Well-defined branch IDs
+  const singkutBranchId = "58fc6af5-537e-4dbf-9297-3a8b7859934f";
+  const bangkoBranchId = "07a1fb4b-87af-4d88-9bed-d76168314f1c";
+
+  const effectiveBranchId = useMemo(() => {
+    if (effectiveBranch === "Singkut") return singkutBranchId;
+    return bangkoBranchId;
+  }, [effectiveBranch]);
+
+  // Filter modules strictly scoped to the active branch
+  const scopedCurriculumModules = useMemo(() => {
+    return curriculumModules.filter((m) => {
+      if (effectiveBranch === "Singkut") {
+        return m.branch === "Singkut" || m.branchId === singkutBranchId;
+      }
+      return (
+        m.branch === "Bangko" ||
+        (m.branch as string) === "Tabir Timur" ||
+        m.branchId === bangkoBranchId
+      );
+    });
+  }, [curriculumModules, effectiveBranch]);
+
+  // Count modules per branch for tab badges
+  const singkutCount = useMemo(() => {
+    return curriculumModules.filter(
+      (m) => m.branch === "Singkut" || m.branchId === singkutBranchId
+    ).length;
+  }, [curriculumModules]);
+
+  const bangkoCount = useMemo(() => {
+    return curriculumModules.filter(
+      (m) =>
+        m.branch === "Bangko" ||
+        (m.branch as string) === "Tabir Timur" ||
+        m.branchId === bangkoBranchId
+    ).length;
+  }, [curriculumModules]);
+
+  const [selectedModuleId, setSelectedModuleId] = useState<string>("");
+
+  // Keep selectedModuleId in sync with active branch's modules
+  useEffect(() => {
+    if (scopedCurriculumModules.length > 0) {
+      if (!scopedCurriculumModules.some((m) => m.id === selectedModuleId)) {
+        setSelectedModuleId(scopedCurriculumModules[0].id);
+      }
+    } else {
+      setSelectedModuleId("");
+    }
+  }, [scopedCurriculumModules, selectedModuleId]);
+
+  const activeModule = useMemo(() => {
+    return (
+      scopedCurriculumModules.find((m) => m.id === selectedModuleId) ||
+      scopedCurriculumModules[0] ||
+      null
+    );
+  }, [scopedCurriculumModules, selectedModuleId]);
 
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingModule, setEditingModule] = useState<CurriculumModule | null>(
-    null
-  );
+  const [editingModule, setEditingModule] = useState<CurriculumModule | null>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Confirmation modal state
@@ -63,10 +134,6 @@ export default function KurikulumPage() {
     learningMaterials: "",
     indicatorsText: "",
   });
-
-  const activeModule =
-    curriculumModules.find((m) => m.id === selectedModuleId) ||
-    curriculumModules[0];
 
   const handleOpenAdd = () => {
     setForm({
@@ -99,15 +166,24 @@ export default function KurikulumPage() {
       return;
     }
 
+    const branchLabel = effectiveBranch === "Singkut" ? "Cabang Singkut" : "Cabang Bangko (Tabir Timur)";
+
     setConfirmModalConfig({
       isOpen: true,
       title: "Konfirmasi Tambah Materi Kurikulum",
       message: (
         <div className="space-y-2">
-          <p>Apakah Anda yakin ingin menambahkan materi kurikulum baru berikut?</p>
+          <p>
+            Apakah Anda yakin ingin menambahkan materi kurikulum baru untuk <strong>{branchLabel}</strong>?
+          </p>
           <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1 text-xs">
             <p className="font-bold text-slate-800 dark:text-slate-100">{form.levelTitle}</p>
-            {form.shortDesc && <p className="text-[11px] text-slate-500 dark:text-slate-400">{form.shortDesc}</p>}
+            {form.shortDesc && (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">{form.shortDesc}</p>
+            )}
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+              Dialokasikan ke: {branchLabel}
+            </p>
           </div>
         </div>
       ),
@@ -120,6 +196,8 @@ export default function KurikulumPage() {
           .filter(Boolean);
 
         addCurriculumModule({
+          branchId: effectiveBranchId,
+          branch: effectiveBranch === "Singkut" ? "Singkut" : "Bangko",
           levelTitle: form.levelTitle,
           shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
           learningGoals: form.learningGoals,
@@ -146,7 +224,10 @@ export default function KurikulumPage() {
       title: "Konfirmasi Simpan Perubahan Kurikulum",
       message: (
         <div className="space-y-2">
-          <p>Apakah Anda yakin ingin menyimpan perubahan pada modul kurikulum <strong>{editingModule.levelTitle}</strong>?</p>
+          <p>
+            Apakah Anda yakin ingin menyimpan perubahan pada modul kurikulum{" "}
+            <strong>{editingModule.levelTitle}</strong>?
+          </p>
         </div>
       ),
       confirmText: "Ya, Simpan Perubahan",
@@ -158,6 +239,8 @@ export default function KurikulumPage() {
           .filter(Boolean);
 
         updateCurriculumModule(editingModule.id, {
+          branchId: editingModule.branchId || effectiveBranchId,
+          branch: editingModule.branch || (effectiveBranch === "Singkut" ? "Singkut" : "Bangko"),
           levelTitle: form.levelTitle,
           shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
           learningGoals: form.learningGoals,
@@ -171,40 +254,98 @@ export default function KurikulumPage() {
     });
   };
 
+  const branchDisplayTitle = effectiveBranch === "Singkut" ? "Cabang Singkut" : "Cabang Bangko / Tabir Timur";
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
       {/* Top Status Bar */}
       <TopStatusBar title="Kurikulum" />
 
-      {/* Header with action buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-            Kurikulum & Silabus
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Kelola silabus materi bimbingan Jaritmatika, simpan formula, dan panduan latihan siswa.
-          </p>
+      {/* Header with Sub-menu Cabang Aktif and action buttons */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                Kurikulum & Silabus
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                {branchDisplayTitle}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Kelola silabus materi Jaritmatika, simpan formula, dan panduan latihan terisolasi per cabang.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsResetConfirmOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-[#132042] text-xs font-bold text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer shadow-2xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Kosongkan Kurikulum Cabang
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Materi Baru
+            </button>
+          </div>
         </div>
 
-        {/* Buttons (Kosongkan Kurikulum & Tambah Materi Baru) */}
-        <div className="flex items-center gap-3">
+        {/* Sub-menu Tabs Cabang Aktif (Singkut vs Bangko / Tabir Timur) */}
+        <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-[#0b1329] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] w-fit">
           <button
             type="button"
-            onClick={() => setIsResetConfirmOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-[#0f1a36] hover:bg-emerald-50 dark:hover:bg-[#132042] text-xs font-bold text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer shadow-2xs"
+            onClick={() => isSuperAdmin && setSelectedBranch("Singkut")}
+            disabled={!isSuperAdmin && allowedBranch !== "Singkut"}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              effectiveBranch === "Singkut"
+                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
+                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-[#0f1a36] disabled:opacity-50 disabled:cursor-not-allowed"
+            }`}
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            Kosongkan Kurikulum
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Cabang Singkut</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                effectiveBranch === "Singkut"
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+              }`}
+            >
+              {singkutCount}
+            </span>
           </button>
 
           <button
             type="button"
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            onClick={() => isSuperAdmin && setSelectedBranch("Bangko")}
+            disabled={!isSuperAdmin && allowedBranch !== "Bangko" && allowedBranch !== "Tabir Timur"}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
+                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
+                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-[#0f1a36] disabled:opacity-50 disabled:cursor-not-allowed"
+            }`}
           >
-            <Plus className="w-4 h-4" />
-            Tambah Materi Baru
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Cabang Bangko (Tabir Timur)</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+              }`}
+            >
+              {bangkoCount}
+            </span>
           </button>
         </div>
       </div>
@@ -213,19 +354,21 @@ export default function KurikulumPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Daftar Modul Silabus */}
         <div className="lg:col-span-4 space-y-3">
-          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase px-1">
-            DAFTAR MODUL SILABUS
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase px-1">
+            <span>DAFTAR MODUL SILABUS</span>
+            <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">
+              {scopedCurriculumModules.length} Level
+            </span>
           </div>
 
           <div className="space-y-2">
-            {curriculumModules.length === 0 ? (
+            {scopedCurriculumModules.length === 0 ? (
               <div className="p-8 text-center bg-white dark:bg-[#0f1a36] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] text-xs text-slate-400">
-                Belum ada modul kurikulum. Klik "+ Tambah Materi Baru" untuk membuat silabus.
+                Belum ada modul kurikulum untuk {branchDisplayTitle}. Klik &quot;+ Tambah Materi Baru&quot; untuk membuat silabus baru.
               </div>
             ) : (
-              curriculumModules.map((mod, idx) => {
-                const isSelected =
-                  mod.id === (activeModule?.id || curriculumModules[0]?.id);
+              scopedCurriculumModules.map((mod, idx) => {
+                const isSelected = mod.id === activeModule?.id;
 
                 return (
                   <div
@@ -237,7 +380,7 @@ export default function KurikulumPage() {
                         : "bg-white dark:bg-[#0f1a36] border-slate-200 dark:border-[#1d2d5a] hover:border-slate-300 dark:hover:border-slate-700"
                     }`}
                   >
-                    {/* Red Square Number Badge */}
+                    {/* Square Number Badge */}
                     <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                       {idx + 1}
                     </div>
@@ -264,9 +407,14 @@ export default function KurikulumPage() {
               {/* Header inside detail */}
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#1d2d5a] pb-4">
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/60 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                    <BookOpen className="w-3.5 h-3.5" />
-                    {activeModule.levelTitle}
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/60 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      {activeModule.levelTitle}
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      &bull; {branchDisplayTitle}
+                    </span>
                   </div>
                   <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
                     {activeModule.levelTitle}
@@ -292,8 +440,16 @@ export default function KurikulumPage() {
                         title: "Konfirmasi Hapus Modul Kurikulum",
                         message: (
                           <div className="space-y-2">
-                            <p>Apakah Anda yakin ingin menghapus modul kurikulum <strong className="text-slate-900 dark:text-white">{activeModule.levelTitle}</strong>?</p>
-                            <p className="text-[11px] text-rose-500 font-semibold">Tindakan ini tidak dapat dibatalkan.</p>
+                            <p>
+                              Apakah Anda yakin ingin menghapus modul kurikulum{" "}
+                              <strong className="text-slate-900 dark:text-white">
+                                {activeModule.levelTitle}
+                              </strong>{" "}
+                              ({branchDisplayTitle})?
+                            </p>
+                            <p className="text-[11px] text-rose-500 font-semibold">
+                              Tindakan ini tidak dapat dibatalkan.
+                            </p>
                           </div>
                         ),
                         confirmText: "Ya, Hapus Modul",
@@ -377,9 +533,14 @@ export default function KurikulumPage() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1d2d5a] pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Tambah Modul Kurikulum Baru
-              </h3>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Tambah Modul Kurikulum Baru
+                </h3>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                  Dialokasikan ke: {branchDisplayTitle}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAddOpen(false)}
@@ -399,9 +560,20 @@ export default function KurikulumPage() {
                   required
                   placeholder="Misal: Level 3: Kombinasi Rumus Teman Besar (+9 s/d +1)"
                   value={form.levelTitle}
-                  onChange={(e) =>
-                    setForm({ ...form, levelTitle: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, levelTitle: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  Deskripsi Singkat
+                </label>
+                <input
+                  type="text"
+                  placeholder="Misal: Formula teman besar dan kombinasi berhitung cepat"
+                  value={form.shortDesc}
+                  onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -415,9 +587,7 @@ export default function KurikulumPage() {
                   required
                   placeholder="Tujuan umum yang diharapkan dicapai siswa..."
                   value={form.learningGoals}
-                  onChange={(e) =>
-                    setForm({ ...form, learningGoals: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, learningGoals: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -431,9 +601,7 @@ export default function KurikulumPage() {
                   required
                   placeholder="KD 3.1 Menguasai rumus teman besar..."
                   value={form.competencies}
-                  onChange={(e) =>
-                    setForm({ ...form, competencies: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, competencies: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -445,11 +613,9 @@ export default function KurikulumPage() {
                 <textarea
                   rows={3}
                   required
-                  placeholder="1. Pasangan teman besar (1&9, 2&8)...\n2. Latihan jari..."
+                  placeholder={"1. Pasangan teman besar (1&9, 2&8)...\n2. Latihan jari..."}
                   value={form.learningMaterials}
-                  onChange={(e) =>
-                    setForm({ ...form, learningMaterials: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, learningMaterials: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -462,9 +628,7 @@ export default function KurikulumPage() {
                   rows={3}
                   placeholder="IPK 3.1.1 Mampu menyelesaikan kuis kombinasi 10..."
                   value={form.indicatorsText}
-                  onChange={(e) =>
-                    setForm({ ...form, indicatorsText: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, indicatorsText: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -494,9 +658,14 @@ export default function KurikulumPage() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1d2d5a] pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Edit Modul Kurikulum
-              </h3>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Edit Modul Kurikulum
+                </h3>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                  Cabang: {branchDisplayTitle}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setEditingModule(null)}
@@ -515,9 +684,19 @@ export default function KurikulumPage() {
                   type="text"
                   required
                   value={form.levelTitle}
-                  onChange={(e) =>
-                    setForm({ ...form, levelTitle: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, levelTitle: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  Deskripsi Singkat
+                </label>
+                <input
+                  type="text"
+                  value={form.shortDesc}
+                  onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -530,9 +709,7 @@ export default function KurikulumPage() {
                   rows={2}
                   required
                   value={form.learningGoals}
-                  onChange={(e) =>
-                    setForm({ ...form, learningGoals: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, learningGoals: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -545,9 +722,7 @@ export default function KurikulumPage() {
                   rows={3}
                   required
                   value={form.competencies}
-                  onChange={(e) =>
-                    setForm({ ...form, competencies: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, competencies: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -560,23 +735,19 @@ export default function KurikulumPage() {
                   rows={3}
                   required
                   value={form.learningMaterials}
-                  onChange={(e) =>
-                    setForm({ ...form, learningMaterials: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, learningMaterials: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 dark:text-slate-300">
-                  Indikator Pencapaian Kompetensi (IPK)
+                  Indikator Pencapaian Kompetensi (IPK) (Satu per baris)
                 </label>
                 <textarea
                   rows={3}
                   value={form.indicatorsText}
-                  onChange={(e) =>
-                    setForm({ ...form, indicatorsText: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, indicatorsText: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#1d2d5a] bg-white dark:bg-[#0b1329] text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -601,7 +772,7 @@ export default function KurikulumPage() {
         </div>
       )}
 
-      {/* Confirmation Modal: Kosongkan Kurikulum */}
+      {/* Confirmation Modal: Kosongkan Kurikulum Cabang */}
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
@@ -610,10 +781,10 @@ export default function KurikulumPage() {
             </div>
             <div>
               <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                Kosongkan Seluruh Kurikulum?
+                Kosongkan Kurikulum {branchDisplayTitle}?
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
-                Tindakan ini akan menghapus semua modul silabus aktif saat ini.
+                Tindakan ini hanya akan menghapus semua modul silabus aktif pada <strong>{branchDisplayTitle}</strong>. Modul di cabang lain tidak akan terpengaruh.
               </p>
             </div>
             <div className="flex items-center justify-center gap-2 pt-2">
@@ -627,7 +798,7 @@ export default function KurikulumPage() {
               <button
                 type="button"
                 onClick={() => {
-                  resetCurriculumModules();
+                  resetCurriculumModules(effectiveBranchId);
                   setIsResetConfirmOpen(false);
                 }}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 shadow-xs shadow-rose-500/20 text-white text-xs font-bold cursor-pointer"

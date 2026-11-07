@@ -92,6 +92,9 @@ export interface GradeItem {
 
 export interface CurriculumModule {
   id: string;
+  branchId?: string | null;
+  branch?: string | null;
+  branchCode?: string | null;
   orderIndex: number;
   levelTitle: string;
   shortDesc: string;
@@ -347,7 +350,7 @@ interface AppStoreContextType {
   addCurriculumModule: (mod: Omit<CurriculumModule, "id" | "orderIndex">) => void;
   updateCurriculumModule: (id: string, mod: Partial<CurriculumModule>) => void;
   deleteCurriculumModule: (id: string) => void;
-  resetCurriculumModules: () => void;
+  resetCurriculumModules: (branchId?: string) => void;
 
   // Invoices & SPP
   invoices: InvoiceItem[];
@@ -11473,15 +11476,29 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       });
   };
 
-  const resetCurriculumModules = () => {
-    setCurriculumModules([]);
-    save("mf_curriculum", []);
+  const resetCurriculumModules = (branchId?: string) => {
+    if (branchId) {
+      setCurriculumModules((prev) => {
+        const filtered = prev.filter((m) => m.branchId !== branchId && m.branch !== branchId);
+        save("mf_curriculum", filtered);
+        return filtered;
+      });
 
-    fetch("/api/curriculums?all=true", {
-      method: "DELETE",
-    })
-      .then(() => fetchAllLiveData())
-      .catch((err) => console.error("Error resetting curriculum in PostgreSQL:", err));
+      fetch(`/api/curriculums?all=true&branchId=${encodeURIComponent(branchId)}`, {
+        method: "DELETE",
+      })
+        .then(() => fetchAllLiveData())
+        .catch((err) => console.error("Error resetting curriculum in PostgreSQL:", err));
+    } else {
+      setCurriculumModules([]);
+      save("mf_curriculum", []);
+
+      fetch("/api/curriculums?all=true", {
+        method: "DELETE",
+      })
+        .then(() => fetchAllLiveData())
+        .catch((err) => console.error("Error resetting curriculum in PostgreSQL:", err));
+    }
   };
 
   // Invoices & SPP

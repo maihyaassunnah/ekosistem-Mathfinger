@@ -125,21 +125,6 @@ function SiswaContent() {
     onConfirm: () => {},
   });
 
-  // Dynamic level options matching curriculum modules
-  const mathLevelOptions = useMemo(() => {
-    if (curriculumModules && curriculumModules.length > 0) {
-      return curriculumModules.map((m) => ({
-        value: m.levelTitle,
-        label: m.levelTitle,
-      }));
-    }
-    return [
-      { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
-      { value: "Level 1: Penjumlahan & Pengurangan Angka Satuan", label: "Level 1: Penjumlahan & Pengurangan Angka Satuan" },
-      { value: "Level 2: Kombinasi Rumus Teman Kecil", label: "Level 2: Kombinasi Rumus Teman Kecil" },
-      { value: "Level 3: Mahir & Olimpiade", label: "Level 3: Mahir & Olimpiade" },
-    ];
-  }, [curriculumModules]);
 
   const readingLevelOptions = useMemo(
     () => [
@@ -186,6 +171,36 @@ function SiswaContent() {
     programType: "MATEMATIKA" as "MATEMATIKA" | "MEMBACA",
     status: "ACTIVE",
   });
+
+  // Dynamic level options matching curriculum modules strictly scoped by branch
+  const mathLevelOptions = useMemo(() => {
+    if (curriculumModules && curriculumModules.length > 0) {
+      const activeBranch = form.branch || (branchFilter !== "ALL" ? branchFilter : null);
+      const filtered = curriculumModules.filter((m) => {
+        if (!activeBranch) return true;
+        if (activeBranch === "Singkut") {
+          return m.branch === "Singkut" || m.branchId === "58fc6af5-537e-4dbf-9297-3a8b7859934f";
+        }
+        return (
+          m.branch === "Bangko" ||
+          (m.branch as string) === "Tabir Timur" ||
+          m.branchId === "07a1fb4b-87af-4d88-9bed-d76168314f1c"
+        );
+      });
+      if (filtered.length > 0) {
+        return filtered.map((m) => ({
+          value: m.levelTitle,
+          label: m.levelTitle,
+        }));
+      }
+    }
+    return [
+      { value: "Level Dasar: Pengenalan Simbol Jari", label: "Level Dasar: Pengenalan Simbol Jari" },
+      { value: "Level 1: Penjumlahan dan Pengurangan Dasar", label: "Level 1: Penjumlahan dan Pengurangan Dasar" },
+      { value: "Level 2: Kunci jempol", label: "Level 2: Kunci jempol" },
+      { value: "Level 3: Mahir & Olimpiade", label: "Level 3: Mahir & Olimpiade" },
+    ];
+  }, [curriculumModules, form.branch, branchFilter]);
 
   const currentLevelOptions = useMemo(() => {
     const base = form.programType === "MEMBACA" ? readingLevelOptions : mathLevelOptions;

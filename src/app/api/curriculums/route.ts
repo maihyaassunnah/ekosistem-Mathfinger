@@ -2,14 +2,55 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 
-// GET /api/curriculums - Fetch all curriculum levels
-export async function GET() {
+// Helper to resolve branchId
+async function resolveBranchId(branchId?: string | null, branchName?: string | null) {
+  if (branchId) return branchId;
+  if (!branchName) return null;
+
+  const targetName =
+    branchName.toLowerCase().includes("bangko") || branchName.toLowerCase().includes("tabir")
+      ? "Bangko"
+      : "Singkut";
+
+  const branch = await prisma.branch.findFirst({
+    where: {
+      OR: [
+        { branchName: { contains: targetName, mode: "insensitive" } },
+        { branchCode: targetName === "Bangko" ? "BGK" : "SKT" },
+      ],
+    },
+  });
+  return branch?.id || null;
+}
+
+// GET /api/curriculums - Fetch curriculum levels (optionally filtered by branch)
+export async function GET(req: Request) {
   try {
     const { error } = await requireAuth();
     if (error) return error;
 
+    const { searchParams } = new URL(req.url);
+    const branchParam = searchParams.get("branchId") || searchParams.get("branch");
+
+    let whereClause: any = {};
+    if (branchParam && branchParam !== "ALL") {
+      const resolvedBranchId = await resolveBranchId(
+        branchParam.length > 20 ? branchParam : null,
+        branchParam
+      );
+      if (resolvedBranchId) {
+        whereClause.branchId = resolvedBranchId;
+      }
+    }
+
     const levels = await prisma.level.findMany({
-      orderBy: { orderIndex: "asc" },
+      where: whereClause,
+      include: {
+        branch: {
+          select: { id: true, branchName: true, branchCode: true },
+        },
+      },
+      orderBy: [{ branchId: "asc" }, { orderIndex: "asc" }],
     });
 
     const formatted = levels.map((l) => {
@@ -24,8 +65,15 @@ export async function GET() {
         parsedIndicators = l.indicators ? [String(l.indicators)] : [];
       }
 
+      const branchName =
+        l.branch?.branchName ||
+        (l.description?.includes("Tabir") ? "Bangko" : "Singkut");
+
       return {
         id: l.id,
+        branchId: l.branchId,
+        branch: branchName,
+        branchCode: l.branch?.branchCode || (branchName === "Bangko" ? "BGK" : "SKT"),
         orderIndex: l.orderIndex,
         levelTitle: l.levelName,
         shortDesc: l.shortDesc || "",
@@ -43,26 +91,52 @@ export async function GET() {
   }
 }
 
-// POST /api/curriculums - Add curriculum module
+// POST /api/curriculums - Add curriculum module scoped to branch
 export async function POST(req: Request) {
   try {
     const { error } = await requireAuth(["SUPER_ADMIN", "BRANCH_ADMIN"]);
     if (error) return error;
 
     const body = await req.json();
-    const { levelTitle, shortDesc, learningGoals, competencies, learningMaterials, indicators } = body;
+    const {
+      branchId,
+      branch: branchName,
+      levelTitle,
+      shortDesc,
+      learningGoals,
+      competencies,
+      learningMaterials,
+      indicators,
+    } = body;
 
-    const count = await prisma.level.count();
+    const resolvedBranchId = await resolveBranchId(branchId, branchName);
+    if (!resolvedBranchId) {
+      return NextResponse.json(
+        { error: "Cabang wajib ditentukan untuk modul kurikulum ini." },
+        { status: 400 }
+      );
+    }
+
+    // Compute orderIndex scoped per branch
+    const branchLevelCount = await prisma.level.count({
+      where: { branchId: resolvedBranchId },
+    });
 
     const created = await prisma.level.create({
       data: {
+        branchId: resolvedBranchId,
         levelName: levelTitle || "Level Baru",
         shortDesc: shortDesc || "",
         learningGoals: learningGoals || "",
         competencies: competencies || "",
         learningMaterials: learningMaterials || "",
         indicators: indicators ? JSON.stringify(indicators) : JSON.stringify([]),
-        orderIndex: count + 1,
+        orderIndex: branchLevelCount + 1,
+      },
+      include: {
+        branch: {
+          select: { id: true, branchName: true, branchCode: true },
+        },
       },
     });
 
@@ -78,6 +152,9 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         id: created.id,
+        branchId: created.branchId,
+        branch: created.branch?.branchName || "Singkut",
+        branchCode: created.branch?.branchCode || "SKT",
         orderIndex: created.orderIndex,
         levelTitle: created.levelName,
         shortDesc: created.shortDesc || "",
@@ -101,13 +178,22 @@ export async function PUT(req: Request) {
     if (error) return error;
 
     const body = await req.json();
-    const { id, levelTitle, shortDesc, learningGoals, competencies, learningMaterials, indicators } = body;
+    const {
+      id,
+      branchId,
+      branch: branchName,
+      levelTitle,
+      shortDesc,
+      learningGoals,
+      competencies,
+      learningMaterials,
+      indicators,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID modul kurikulum diperlukan" }, { status: 400 });
     }
 
-    // Try finding by ID first
     let target = await prisma.level.findUnique({ where: { id } });
 
     // Fallback: If id is a mock ID like cur-1, match by orderIndex or levelTitle
@@ -126,11 +212,14 @@ export async function PUT(req: Request) {
       }
     }
 
-    // If still not found, create a new record
     if (!target) {
-      const count = await prisma.level.count();
+      const resolvedBranchId = await resolveBranchId(branchId, branchName);
+      const count = await prisma.level.count({
+        where: resolvedBranchId ? { branchId: resolvedBranchId } : {},
+      });
       const created = await prisma.level.create({
         data: {
+          branchId: resolvedBranchId,
           levelName: levelTitle || "Level Baru",
           shortDesc: shortDesc || "",
           learningGoals: learningGoals || "",
@@ -139,10 +228,16 @@ export async function PUT(req: Request) {
           indicators: indicators ? JSON.stringify(indicators) : JSON.stringify([]),
           orderIndex: count + 1,
         },
+        include: {
+          branch: { select: { id: true, branchName: true, branchCode: true } },
+        },
       });
 
       return NextResponse.json({
         id: created.id,
+        branchId: created.branchId,
+        branch: created.branch?.branchName || "Singkut",
+        branchCode: created.branch?.branchCode || "SKT",
         orderIndex: created.orderIndex,
         levelTitle: created.levelName,
         shortDesc: created.shortDesc || "",
@@ -153,15 +248,21 @@ export async function PUT(req: Request) {
       });
     }
 
+    const resolvedBranchId = branchId || (branchName ? await resolveBranchId(null, branchName) : undefined);
+
     const updated = await prisma.level.update({
       where: { id: target.id },
       data: {
+        ...(resolvedBranchId ? { branchId: resolvedBranchId } : {}),
         ...(levelTitle ? { levelName: levelTitle } : {}),
         ...(shortDesc !== undefined ? { shortDesc } : {}),
         ...(learningGoals !== undefined ? { learningGoals } : {}),
         ...(competencies !== undefined ? { competencies } : {}),
         ...(learningMaterials !== undefined ? { learningMaterials } : {}),
         ...(indicators !== undefined ? { indicators: JSON.stringify(indicators) } : {}),
+      },
+      include: {
+        branch: { select: { id: true, branchName: true, branchCode: true } },
       },
     });
 
@@ -176,6 +277,9 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({
       id: updated.id,
+      branchId: updated.branchId,
+      branch: updated.branch?.branchName || "Singkut",
+      branchCode: updated.branch?.branchCode || "SKT",
       orderIndex: updated.orderIndex,
       levelTitle: updated.levelName,
       shortDesc: updated.shortDesc || "",
@@ -190,7 +294,7 @@ export async function PUT(req: Request) {
   }
 }
 
-// DELETE /api/curriculums - Delete module
+// DELETE /api/curriculums - Delete module with branch isolation
 export async function DELETE(req: Request) {
   try {
     const { error } = await requireAuth(["SUPER_ADMIN", "BRANCH_ADMIN"]);
@@ -199,28 +303,49 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const isResetAll = searchParams.get("all") === "true" || id === "all";
+    const branchParam = searchParams.get("branchId") || searchParams.get("branch");
 
-    // Handle Reset All ("Kosongkan Kurikulum")
+    // Handle Reset ("Kosongkan Kurikulum") strictly isolated per branch
     if (isResetAll) {
-      const studentCount = await prisma.student.count();
-      if (studentCount > 0) {
-        // Create baseline level so students are not orphaned
-        const baseLevel = await prisma.level.create({
-          data: {
-            levelName: "Level Dasar: Pengenalan Simbol Jari",
-            shortDesc: "Level awal pembelajaran",
-            orderIndex: 1,
-          },
+      const resolvedBranchId = await resolveBranchId(
+        branchParam && branchParam.length > 20 ? branchParam : null,
+        branchParam
+      );
+
+      if (resolvedBranchId) {
+        const studentCount = await prisma.student.count({
+          where: { branchId: resolvedBranchId },
         });
-        await prisma.student.updateMany({
-          data: { currentLevelId: baseLevel.id },
-        });
-        await prisma.level.deleteMany({
-          where: { id: { not: baseLevel.id } },
-        });
+
+        if (studentCount > 0) {
+          const baseLevel = await prisma.level.create({
+            data: {
+              branchId: resolvedBranchId,
+              levelName: "Level Dasar: Pengenalan Simbol Jari",
+              shortDesc: "Level awal pembelajaran",
+              orderIndex: 1,
+            },
+          });
+          await prisma.student.updateMany({
+            where: { branchId: resolvedBranchId },
+            data: { currentLevelId: baseLevel.id },
+          });
+          await prisma.level.deleteMany({
+            where: {
+              branchId: resolvedBranchId,
+              id: { not: baseLevel.id },
+            },
+          });
+        } else {
+          await prisma.level.deleteMany({
+            where: { branchId: resolvedBranchId },
+          });
+        }
       } else {
+        // Global reset if no branch specified
         await prisma.level.deleteMany({});
       }
+
       return NextResponse.json({ success: true, reset: true });
     }
 
@@ -239,7 +364,6 @@ export async function DELETE(req: Request) {
     }
 
     if (!target) {
-      // If it doesn't exist in DB at all, consider it successfully deleted
       return NextResponse.json({ success: true, notFoundInDb: true });
     }
 
@@ -249,9 +373,12 @@ export async function DELETE(req: Request) {
     });
 
     if (studentsUsingLevel > 0) {
-      // Reassign students to another level if available
+      // Reassign students to another level OF THE SAME BRANCH
       const fallbackLevel = await prisma.level.findFirst({
-        where: { id: { not: target.id } },
+        where: {
+          id: { not: target.id },
+          ...(target.branchId ? { branchId: target.branchId } : {}),
+        },
         orderBy: { orderIndex: "asc" },
       });
 
@@ -263,7 +390,7 @@ export async function DELETE(req: Request) {
       } else {
         return NextResponse.json(
           {
-            error: `Tidak dapat menghapus modul ini karena masih digunakan oleh ${studentsUsingLevel} siswa aktif.`,
+            error: `Tidak dapat menghapus modul ini karena masih digunakan oleh ${studentsUsingLevel} siswa aktif di cabang ini.`,
           },
           { status: 400 }
         );
