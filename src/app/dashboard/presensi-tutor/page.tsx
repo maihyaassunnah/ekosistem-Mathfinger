@@ -190,7 +190,29 @@ export default function PresensiTutorAdminPage() {
     notes: "",
   });
 
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<TutorAttendanceItem | null>(null);
+  const [isDeletingRecord, setIsDeletingRecord] = useState(false);
+
+  const handleConfirmDeleteRecord = async () => {
+    if (!recordToDelete) return;
+    setIsDeletingRecord(true);
+    try {
+      const res = await fetch(`/api/tutor-attendance?id=${recordToDelete.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setRecordToDelete(null);
+        await fetchAttendances(false);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Gagal menghapus riwayat presensi tutor.");
+      }
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan saat menghapus presensi.");
+    } finally {
+      setIsDeletingRecord(false);
+    }
+  };
 
   // Determine active branch scope
   const targetBranch = !isSuperAdmin && allowedBranch ? allowedBranch : selectedBranch;
@@ -1609,18 +1631,18 @@ export default function PresensiTutorAdminPage() {
           {/* Table */}
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs whitespace-nowrap">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-[#0b1329] text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-[#1d2d5a]">
-                    <th className="py-3 px-4">Tutor / Staff</th>
-                    <th className="py-3 px-4">Tanggal</th>
-                    <th className="py-3 px-4">Sesi</th>
-                    <th className="py-3 px-4">Jam Masuk</th>
-                    <th className="py-3 px-4">Jam Pulang</th>
-                    <th className="py-3 px-4">Jarak GPS</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Keterangan</th>
-                    <th className="py-3 px-4 text-center">Aksi</th>
+                  <tr className="bg-slate-50 dark:bg-[#0b1329] text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-[#1d2d5a] whitespace-nowrap">
+                    <th className="py-2.5 px-4 whitespace-nowrap">Tutor / Staff</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Tanggal</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Sesi</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Jam Masuk</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Jam Pulang</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Jarak GPS</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Status</th>
+                    <th className="py-2.5 px-4 whitespace-nowrap">Keterangan</th>
+                    <th className="py-2.5 px-4 text-center whitespace-nowrap">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1628,35 +1650,35 @@ export default function PresensiTutorAdminPage() {
                     filteredAttendances.map((att) => (
                       <tr
                         key={att.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-[#132042]/50 transition-colors"
+                        className="hover:bg-slate-50/80 dark:hover:bg-[#132042]/50 transition-colors whitespace-nowrap"
                       >
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black flex items-center justify-center text-xs shrink-0">
+                        <td className="py-2.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2.5 whitespace-nowrap">
+                            <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black flex items-center justify-center text-xs shrink-0">
                               {att.tutorName.charAt(0)}
                             </div>
-                            <div>
-                              <div className="font-extrabold text-slate-900 dark:text-white">
+                            <div className="whitespace-nowrap">
+                              <span className="font-extrabold text-slate-900 dark:text-white">
                                 {att.tutorName}
-                              </div>
-                              <div className="text-[10px] text-slate-400">
-                                {att.tutorRole === "BRANCH_ASSISTANT" ? "Asisten Cabang" : att.tutorRole} • Cabang {att.branchName}
-                              </div>
+                              </span>
+                              <span className="text-[10px] text-slate-400 ml-1.5 font-medium">
+                                • {att.tutorRole === "BRANCH_ASSISTANT" ? "Asisten Cabang" : att.tutorRole} ({att.branchName})
+                              </span>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-slate-700 dark:text-slate-300">
+                        <td className="py-2.5 px-4 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {att.date}
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className="px-2.5 py-1 rounded-xl text-[10px] font-black tracking-wide bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1 shadow-2xs">
+                        <td className="py-2.5 px-4 whitespace-nowrap">
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black tracking-wide bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
                             {att.sessionName || "Sesi 1"}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 font-extrabold text-emerald-600 dark:text-emerald-400">
+                        <td className="py-2.5 px-4 font-extrabold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                           {att.checkInTime}
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300">
+                        <td className="py-2.5 px-4 font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           <span>{att.checkOutTime || "-"}</span>
                           {att.earlyLeaveMinutes && att.earlyLeaveMinutes > 0 ? (
                             <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
@@ -1664,25 +1686,25 @@ export default function PresensiTutorAdminPage() {
                             </span>
                           ) : null}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2.5 px-4 whitespace-nowrap">
                           {att.distanceMeter !== null ? (
                             <span
-                              className={`inline-flex items-center gap-1 font-bold text-[11px] ${
+                              className={`inline-flex items-center gap-1 font-bold text-[11px] whitespace-nowrap ${
                                 att.isLocationValid
                                   ? "text-emerald-600 dark:text-emerald-400"
                                   : "text-rose-600 dark:text-rose-400"
                               }`}
                             >
-                              <MapPin className="w-3 h-3" />
+                              <MapPin className="w-3.5 h-3.5 shrink-0" />
                               {att.distanceMeter} meter
                             </span>
                           ) : (
-                            <span className="text-slate-400 text-[11px]">Manual / Web</span>
+                            <span className="text-slate-400 text-[11px] whitespace-nowrap">Manual / Web</span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2.5 px-4 whitespace-nowrap">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border inline-flex items-center gap-1 ${
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border inline-flex items-center gap-1 whitespace-nowrap ${
                               att.status === "HADIR"
                                 ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                                 : att.status === "TERLAMBAT"
@@ -1702,28 +1724,38 @@ export default function PresensiTutorAdminPage() {
                             ) : null}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 max-w-xs truncate">
+                        <td className="py-2.5 px-4 text-slate-500 dark:text-slate-400 max-w-xs truncate whitespace-nowrap" title={att.notes || "-"}>
                           {att.notes || "-"}
                         </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingRecord(att);
-                              setEditForm({
-                                status: att.status,
-                                sessionName: att.sessionName || "Sesi 1",
-                                checkInTime: att.checkInTime,
-                                checkOutTime: att.checkOutTime || "-",
-                                notes: att.notes || "",
-                              });
-                              setIsEditModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950 cursor-pointer transition-colors mr-1"
-                            title="Edit Presensi"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
+                        <td className="py-2.5 px-4 text-center whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1 justify-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingRecord(att);
+                                setEditForm({
+                                  status: att.status,
+                                  sessionName: att.sessionName || "Sesi 1",
+                                  checkInTime: att.checkInTime,
+                                  checkOutTime: att.checkOutTime || "-",
+                                  notes: att.notes || "",
+                                });
+                                setIsEditModalOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950 cursor-pointer transition-colors"
+                              title="Edit Presensi"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRecordToDelete(att)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer transition-colors"
+                              title="Hapus Rekap Presensi"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1943,6 +1975,19 @@ export default function PresensiTutorAdminPage() {
         isLoading={isSavingSchedule}
         onConfirm={handleConfirmDeleteSession}
         onClose={() => setSessionToDelete(null)}
+      />
+
+      {/* Modal Konfirmasi Hapus Rekapan Presensi */}
+      <ConfirmModal
+        isOpen={!!recordToDelete}
+        title="Hapus Rekap Presensi?"
+        message={`Apakah Anda yakin ingin menghapus data presensi "${recordToDelete?.tutorName}" pada tanggal ${recordToDelete?.date} (${recordToDelete?.sessionName || "Sesi"})? Data yang dihapus tidak dapat dipulihkan kembali.`}
+        confirmText="Ya, Hapus Presensi"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={isDeletingRecord}
+        onConfirm={handleConfirmDeleteRecord}
+        onClose={() => setRecordToDelete(null)}
       />
     </div>
   );
