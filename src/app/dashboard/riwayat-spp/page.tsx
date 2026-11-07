@@ -54,14 +54,14 @@ function RiwayatSppContent() {
         const st = students.find(
           (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
         );
-        return st?.branch === allowedBranch || i.branch === allowedBranch;
+        return st ? st.branch === allowedBranch : i.branch === allowedBranch;
       });
     } else if (branchFilter !== "ALL") {
       list = list.filter((i) => {
         const st = students.find(
           (s) => s.id === i.studentId || s.name.toLowerCase() === i.studentName.toLowerCase()
         );
-        return st?.branch === branchFilter || i.branch === branchFilter;
+        return st ? st.branch === branchFilter : i.branch === branchFilter;
       });
     }
     return list.filter((i) => {
@@ -76,14 +76,15 @@ function RiwayatSppContent() {
 
   const scopedMutations = useMemo(() => {
     let list = cashMutations;
-    if (allowedBranch) {
+    const targetBranch = allowedBranch || (branchFilter !== "ALL" ? branchFilter : null);
+    if (targetBranch) {
       list = list.filter((m) => {
         const st = students.find((s) => s.name.toLowerCase() === m.studentName.toLowerCase());
-        if (st) return st.branch === allowedBranch;
+        if (st) return st.branch === targetBranch;
         const inv = invoices.find((i) => i.invoiceNo.toLowerCase() === m.invoiceNo.toLowerCase());
         if (inv) {
           const invSt = students.find((s) => s.id === inv.studentId || s.name.toLowerCase() === inv.studentName.toLowerCase());
-          return invSt?.branch === allowedBranch;
+          return invSt ? invSt.branch === targetBranch : inv.branch === targetBranch;
         }
         return false;
       });
@@ -98,7 +99,7 @@ function RiwayatSppContent() {
       }
       return !isMembaca;
     });
-  }, [cashMutations, students, invoices, allowedBranch, isMembaca]);
+  }, [cashMutations, students, invoices, allowedBranch, branchFilter, isMembaca]);
 
   // Filtered mutations
   const filteredMutations = useMemo(() => {

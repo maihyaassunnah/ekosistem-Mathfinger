@@ -528,7 +528,7 @@ export default function InputNilaiPage() {
       branch: s.branch || effectiveBranch,
       branchId:
         effectiveBranch === "Singkut"
-          ? "07a1fb4b-87af-4d88-9bed-d76168314f1b"
+          ? "58fc6af5-537e-4dbf-9297-3a8b7859934f"
           : "07a1fb4b-87af-4d88-9bed-d76168314f1c",
       topic: newSessionForm.topic.trim(),
       examDate: newSessionForm.examDate,

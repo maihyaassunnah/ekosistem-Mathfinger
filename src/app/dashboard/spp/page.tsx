@@ -109,12 +109,12 @@ function SppContent() {
     if (allowedBranch) {
       list = list.filter((inv) => {
         const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
-        return st?.branch === allowedBranch || inv.branch === allowedBranch;
+        return st ? st.branch === allowedBranch : inv.branch === allowedBranch;
       });
     } else if (branchFilter !== "ALL") {
       list = list.filter((inv) => {
         const st = students.find((s) => s.id === inv.studentId || s.name === inv.studentName);
-        return st?.branch === branchFilter || inv.branch === branchFilter;
+        return st ? st.branch === branchFilter : inv.branch === branchFilter;
       });
     }
     const currentProgType = isMembaca ? "MEMBACA" : "MATEMATIKA";
@@ -330,7 +330,7 @@ Salam Hangat,
         s.name.toLowerCase().trim() === inv.studentName.toLowerCase().trim()
     );
 
-    const branchName = inv.branch || st?.branch || "Singkut";
+    const branchName = st?.branch || inv.branch || "Singkut";
     const branchObj = branches.find(
       (b) =>
         b.name.toLowerCase() === branchName.toLowerCase() ||
@@ -655,7 +655,7 @@ Salam Hangat,
                         <div className="flex items-center gap-2">
                           <span>{inv.studentName}</span>
                           <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                            Cabang {inv.branch || students.find((s) => s.id === inv.studentId)?.branch || "Singkut"}
+                            Cabang {students.find((s) => s.id === inv.studentId || s.name === inv.studentName)?.branch || inv.branch || "Singkut"}
                           </span>
                         </div>
                       </td>

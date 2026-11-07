@@ -30,7 +30,11 @@ export async function GET(req: Request) {
     const invoices = await prisma.invoice.findMany({
       where: whereClause,
       include: {
-        student: true,
+        student: {
+          include: {
+            branch: true,
+          },
+        },
         branch: true,
       },
       orderBy: { createdAt: "desc" },
@@ -41,7 +45,7 @@ export async function GET(req: Request) {
       invoiceNo: inv.invoiceNumber,
       studentId: inv.studentId,
       studentName: inv.student?.studentName || "Siswa",
-      branch: (inv.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+      branch: (inv.student?.branch?.branchName as "Singkut" | "Bangko") || (inv.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
       period: inv.period || "Bulan Berjalan",
       dueDate: inv.dueDate.toISOString().split("T")[0],
       amount: Number(inv.amount),
@@ -63,7 +67,14 @@ async function syncInvoiceCashTransaction(invoiceId: string, paidDate?: string, 
   try {
     const inv = await prisma.invoice.findUnique({
       where: { id: invoiceId },
-      include: { student: true, branch: true },
+      include: {
+        student: {
+          include: {
+            branch: true,
+          },
+        },
+        branch: true,
+      },
     });
     if (!inv) return;
 
@@ -101,7 +112,7 @@ async function syncInvoiceCashTransaction(invoiceId: string, paidDate?: string, 
         await prisma.cashTransaction.update({
           where: { id: existingTx.id },
           data: {
-            branchId: inv.branchId,
+            branchId: inv.student?.branchId || inv.branchId,
             type: "INCOME",
             category: "SPP",
             title,
@@ -115,7 +126,7 @@ async function syncInvoiceCashTransaction(invoiceId: string, paidDate?: string, 
       } else {
         await prisma.cashTransaction.create({
           data: {
-            branchId: inv.branchId,
+            branchId: inv.student?.branchId || inv.branchId,
             type: "INCOME",
             category: "SPP",
             title,
@@ -394,7 +405,14 @@ export async function PUT(req: Request) {
         paidAt: isPaid ? (paidDate ? new Date(paidDate) : new Date()) : null,
         paidMethod: isPaid ? (paidMethod || "Tunai") : null,
       },
-      include: { student: true, branch: true },
+      include: {
+        student: {
+          include: {
+            branch: true,
+          },
+        },
+        branch: true,
+      },
     });
 
     // Synchronize CashTransaction and CashMutation automatically
@@ -405,7 +423,7 @@ export async function PUT(req: Request) {
       invoiceNo: updated.invoiceNumber,
       studentId: updated.studentId,
       studentName: updated.student.studentName,
-      branch: (updated.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+      branch: (updated.student?.branch?.branchName as "Singkut" | "Bangko") || (updated.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
       period: updated.period,
       dueDate: updated.dueDate.toISOString().split("T")[0],
       amount: Number(updated.amount),

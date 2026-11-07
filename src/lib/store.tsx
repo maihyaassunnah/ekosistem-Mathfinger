@@ -539,7 +539,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Dzakiyyah Al Fajri",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "levek 1 hlm  30",
     "examDate": "2026-09-05",
     "score": 100,
@@ -553,7 +553,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Ghumaisha",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "levek 1 hlm  30",
     "examDate": "2026-09-05",
     "score": 70,
@@ -567,7 +567,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Musyaffa'",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "levek 1 hlm  30",
     "examDate": "2026-09-05",
     "score": 0,
@@ -581,7 +581,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Muwaffaq",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "levek 1 hlm  30",
     "examDate": "2026-09-05",
     "score": 0,
@@ -595,7 +595,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Rayendra Azzan Pramana",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "levek 1 hlm  30",
     "examDate": "2026-09-05",
     "score": 0,
@@ -609,7 +609,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Shofiyah",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "levek 1 hlm  30",
     "examDate": "2026-09-05",
     "score": 0,
@@ -623,24 +623,10 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Aishwa Rahma Annida",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Level 1 hlm 1-2",
     "examDate": "2026-08-22",
     "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c76503ff-a1d9-45ee-815e-35e24c8f7c7c-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "c76503ff-a1d9-45ee-815e-35e24c8f7c7c",
-    "studentCode": "10087",
-    "studentName": "Calista Azkadina",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 83,
     "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
@@ -651,137 +637,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Ghumaisha",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Level 1 hlm 1-2",
     "examDate": "2026-08-22",
     "score": 86,
     "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-2643a6e6-fcc0-4c9f-81b1-db1d116e37cd-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "2643a6e6-fcc0-4c9f-81b1-db1d116e37cd",
-    "studentCode": "10083",
-    "studentName": "Arsyila Nasha Razita",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-48721968-d3f2-4319-92be-7a5e972c106b-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "48721968-d3f2-4319-92be-7a5e972c106b",
-    "studentCode": "10086",
-    "studentName": "Bilqis Ufairah",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b",
-    "studentCode": "10090",
-    "studentName": "Fakhri Al-Ghifari",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 95,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f20782b9-17ab-40f2-b315-7ad3aadc2739-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "f20782b9-17ab-40f2-b315-7ad3aadc2739",
-    "studentCode": "10112",
-    "studentName": "Syakira Nur Aini",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 98,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-15de4d83-1d1b-4042-9bb4-9fdc65db1d3c-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "15de4d83-1d1b-4042-9bb4-9fdc65db1d3c",
-    "studentCode": "10092",
-    "studentName": "Hafiz Al-Faruq",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-1d157032-9563-4b12-933f-f45078bd1646-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "1d157032-9563-4b12-933f-f45078bd1646",
-    "studentCode": "10104",
-    "studentName": "Nabila Putri Ramadhani",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 83,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-aa3fff59-d27e-4851-a660-ceaf1d8e9ade-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "aa3fff59-d27e-4851-a660-ceaf1d8e9ade",
-    "studentCode": "10101",
-    "studentName": "Muhammad Azka",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 86,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f9ce8b07-5738-4c29-8ecc-048807666d4c-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "f9ce8b07-5738-4c29-8ecc-048807666d4c",
-    "studentCode": "10088",
-    "studentName": "Dimas Arya Sena",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-e02583be-1443-414b-a37c-90e612bcd317-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "e02583be-1443-414b-a37c-90e612bcd317",
-    "studentCode": "10085",
-    "studentName": "Bagas Pratama Putra",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
     "isJoined": true
   },
   {
@@ -791,7 +651,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Dzakiyyah Al Fajri",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Level 1 hlm 1-2",
     "examDate": "2026-08-22",
     "score": 95,
@@ -805,25 +665,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Haris",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Level 1 hlm 1-2",
     "examDate": "2026-08-22",
     "score": 98,
     "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-b42ef79c-f9c9-4972-8f36-525ec014240e-2026-08-22-Level-1-hlm-1-2",
-    "studentId": "b42ef79c-f9c9-4972-8f36-525ec014240e",
-    "studentCode": "10100",
-    "studentName": "Maulana Syarif Wardani",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Level 1 hlm 1-2",
-    "examDate": "2026-08-22",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
   {
@@ -833,24 +679,10 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Aishwa Rahma Annida",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 2",
     "examDate": "2026-08-16",
     "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c76503ff-a1d9-45ee-815e-35e24c8f7c7c-2026-08-16-Menulis-angka-p",
-    "studentId": "c76503ff-a1d9-45ee-815e-35e24c8f7c7c",
-    "studentCode": "10087",
-    "studentName": "Calista Azkadina",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 83,
     "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
@@ -861,137 +693,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Ghumaisha",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 2",
     "examDate": "2026-08-16",
     "score": 86,
     "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-2643a6e6-fcc0-4c9f-81b1-db1d116e37cd-2026-08-16-Menulis-angka-p",
-    "studentId": "2643a6e6-fcc0-4c9f-81b1-db1d116e37cd",
-    "studentCode": "10083",
-    "studentName": "Arsyila Nasha Razita",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-48721968-d3f2-4319-92be-7a5e972c106b-2026-08-16-Menulis-angka-p",
-    "studentId": "48721968-d3f2-4319-92be-7a5e972c106b",
-    "studentCode": "10086",
-    "studentName": "Bilqis Ufairah",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b-2026-08-16-Menulis-angka-p",
-    "studentId": "c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b",
-    "studentCode": "10090",
-    "studentName": "Fakhri Al-Ghifari",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 95,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f20782b9-17ab-40f2-b315-7ad3aadc2739-2026-08-16-Menulis-angka-p",
-    "studentId": "f20782b9-17ab-40f2-b315-7ad3aadc2739",
-    "studentCode": "10112",
-    "studentName": "Syakira Nur Aini",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 98,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-15de4d83-1d1b-4042-9bb4-9fdc65db1d3c-2026-08-16-Menulis-angka-p",
-    "studentId": "15de4d83-1d1b-4042-9bb4-9fdc65db1d3c",
-    "studentCode": "10092",
-    "studentName": "Hafiz Al-Faruq",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-1d157032-9563-4b12-933f-f45078bd1646-2026-08-16-Menulis-angka-p",
-    "studentId": "1d157032-9563-4b12-933f-f45078bd1646",
-    "studentCode": "10104",
-    "studentName": "Nabila Putri Ramadhani",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 83,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-aa3fff59-d27e-4851-a660-ceaf1d8e9ade-2026-08-16-Menulis-angka-p",
-    "studentId": "aa3fff59-d27e-4851-a660-ceaf1d8e9ade",
-    "studentCode": "10101",
-    "studentName": "Muhammad Azka",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 86,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f9ce8b07-5738-4c29-8ecc-048807666d4c-2026-08-16-Menulis-angka-p",
-    "studentId": "f9ce8b07-5738-4c29-8ecc-048807666d4c",
-    "studentCode": "10088",
-    "studentName": "Dimas Arya Sena",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-e02583be-1443-414b-a37c-90e612bcd317-2026-08-16-Menulis-angka-p",
-    "studentId": "e02583be-1443-414b-a37c-90e612bcd317",
-    "studentCode": "10085",
-    "studentName": "Bagas Pratama Putra",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
     "isJoined": true
   },
   {
@@ -1001,7 +707,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Dzakiyyah Al Fajri",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 2",
     "examDate": "2026-08-16",
     "score": 95,
@@ -1015,25 +721,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Haris",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 2",
     "examDate": "2026-08-16",
     "score": 98,
     "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-b42ef79c-f9c9-4972-8f36-525ec014240e-2026-08-16-Menulis-angka-p",
-    "studentId": "b42ef79c-f9c9-4972-8f36-525ec014240e",
-    "studentCode": "10100",
-    "studentName": "Maulana Syarif Wardani",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 2",
-    "examDate": "2026-08-16",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
   {
@@ -1043,24 +735,10 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Aishwa Rahma Annida",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Hitung dan tulis",
     "examDate": "2026-08-16",
     "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c76503ff-a1d9-45ee-815e-35e24c8f7c7c-2026-08-16-Hitung-dan-tuli",
-    "studentId": "c76503ff-a1d9-45ee-815e-35e24c8f7c7c",
-    "studentCode": "10087",
-    "studentName": "Calista Azkadina",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 83,
     "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
@@ -1071,137 +749,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Ghumaisha",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Hitung dan tulis",
     "examDate": "2026-08-16",
     "score": 86,
     "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-2643a6e6-fcc0-4c9f-81b1-db1d116e37cd-2026-08-16-Hitung-dan-tuli",
-    "studentId": "2643a6e6-fcc0-4c9f-81b1-db1d116e37cd",
-    "studentCode": "10083",
-    "studentName": "Arsyila Nasha Razita",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-48721968-d3f2-4319-92be-7a5e972c106b-2026-08-16-Hitung-dan-tuli",
-    "studentId": "48721968-d3f2-4319-92be-7a5e972c106b",
-    "studentCode": "10086",
-    "studentName": "Bilqis Ufairah",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b-2026-08-16-Hitung-dan-tuli",
-    "studentId": "c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b",
-    "studentCode": "10090",
-    "studentName": "Fakhri Al-Ghifari",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 95,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f20782b9-17ab-40f2-b315-7ad3aadc2739-2026-08-16-Hitung-dan-tuli",
-    "studentId": "f20782b9-17ab-40f2-b315-7ad3aadc2739",
-    "studentCode": "10112",
-    "studentName": "Syakira Nur Aini",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 98,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-15de4d83-1d1b-4042-9bb4-9fdc65db1d3c-2026-08-16-Hitung-dan-tuli",
-    "studentId": "15de4d83-1d1b-4042-9bb4-9fdc65db1d3c",
-    "studentCode": "10092",
-    "studentName": "Hafiz Al-Faruq",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-1d157032-9563-4b12-933f-f45078bd1646-2026-08-16-Hitung-dan-tuli",
-    "studentId": "1d157032-9563-4b12-933f-f45078bd1646",
-    "studentCode": "10104",
-    "studentName": "Nabila Putri Ramadhani",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 83,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-aa3fff59-d27e-4851-a660-ceaf1d8e9ade-2026-08-16-Hitung-dan-tuli",
-    "studentId": "aa3fff59-d27e-4851-a660-ceaf1d8e9ade",
-    "studentCode": "10101",
-    "studentName": "Muhammad Azka",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 86,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f9ce8b07-5738-4c29-8ecc-048807666d4c-2026-08-16-Hitung-dan-tuli",
-    "studentId": "f9ce8b07-5738-4c29-8ecc-048807666d4c",
-    "studentCode": "10088",
-    "studentName": "Dimas Arya Sena",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-e02583be-1443-414b-a37c-90e612bcd317-2026-08-16-Hitung-dan-tuli",
-    "studentId": "e02583be-1443-414b-a37c-90e612bcd317",
-    "studentCode": "10085",
-    "studentName": "Bagas Pratama Putra",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
     "isJoined": true
   },
   {
@@ -1211,7 +763,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Dzakiyyah Al Fajri",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Hitung dan tulis",
     "examDate": "2026-08-16",
     "score": 95,
@@ -1225,25 +777,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Haris",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Hitung dan tulis",
     "examDate": "2026-08-16",
     "score": 98,
     "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-b42ef79c-f9c9-4972-8f36-525ec014240e-2026-08-16-Hitung-dan-tuli",
-    "studentId": "b42ef79c-f9c9-4972-8f36-525ec014240e",
-    "studentCode": "10100",
-    "studentName": "Maulana Syarif Wardani",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Hitung dan tulis",
-    "examDate": "2026-08-16",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
   {
@@ -1253,24 +791,10 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Aishwa Rahma Annida",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 1",
     "examDate": "2026-08-15",
     "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c76503ff-a1d9-45ee-815e-35e24c8f7c7c-2026-08-15-Menulis-angka-p",
-    "studentId": "c76503ff-a1d9-45ee-815e-35e24c8f7c7c",
-    "studentCode": "10087",
-    "studentName": "Calista Azkadina",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 83,
     "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
@@ -1281,137 +805,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Ghumaisha",
     "className": "CLASS A",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 1",
     "examDate": "2026-08-15",
     "score": 86,
     "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-2643a6e6-fcc0-4c9f-81b1-db1d116e37cd-2026-08-15-Menulis-angka-p",
-    "studentId": "2643a6e6-fcc0-4c9f-81b1-db1d116e37cd",
-    "studentCode": "10083",
-    "studentName": "Arsyila Nasha Razita",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-48721968-d3f2-4319-92be-7a5e972c106b-2026-08-15-Menulis-angka-p",
-    "studentId": "48721968-d3f2-4319-92be-7a5e972c106b",
-    "studentCode": "10086",
-    "studentName": "Bilqis Ufairah",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b-2026-08-15-Menulis-angka-p",
-    "studentId": "c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b",
-    "studentCode": "10090",
-    "studentName": "Fakhri Al-Ghifari",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 95,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f20782b9-17ab-40f2-b315-7ad3aadc2739-2026-08-15-Menulis-angka-p",
-    "studentId": "f20782b9-17ab-40f2-b315-7ad3aadc2739",
-    "studentCode": "10112",
-    "studentName": "Syakira Nur Aini",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 98,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-15de4d83-1d1b-4042-9bb4-9fdc65db1d3c-2026-08-15-Menulis-angka-p",
-    "studentId": "15de4d83-1d1b-4042-9bb4-9fdc65db1d3c",
-    "studentCode": "10092",
-    "studentName": "Hafiz Al-Faruq",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-1d157032-9563-4b12-933f-f45078bd1646-2026-08-15-Menulis-angka-p",
-    "studentId": "1d157032-9563-4b12-933f-f45078bd1646",
-    "studentCode": "10104",
-    "studentName": "Nabila Putri Ramadhani",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 83,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-aa3fff59-d27e-4851-a660-ceaf1d8e9ade-2026-08-15-Menulis-angka-p",
-    "studentId": "aa3fff59-d27e-4851-a660-ceaf1d8e9ade",
-    "studentCode": "10101",
-    "studentName": "Muhammad Azka",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 86,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-f9ce8b07-5738-4c29-8ecc-048807666d4c-2026-08-15-Menulis-angka-p",
-    "studentId": "f9ce8b07-5738-4c29-8ecc-048807666d4c",
-    "studentCode": "10088",
-    "studentName": "Dimas Arya Sena",
-    "className": "CLASS A",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 89,
-    "note": "Akurasi gerakan jari jemari bagus",
-    "isJoined": true
-  },
-  {
-    "id": "gr-e02583be-1443-414b-a37c-90e612bcd317-2026-08-15-Menulis-angka-p",
-    "studentId": "e02583be-1443-414b-a37c-90e612bcd317",
-    "studentCode": "10085",
-    "studentName": "Bagas Pratama Putra",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
     "isJoined": true
   },
   {
@@ -1421,7 +819,7 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Dzakiyyah Al Fajri",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 1",
     "examDate": "2026-08-15",
     "score": 95,
@@ -1435,25 +833,11 @@ export const INITIAL_GRADES: GradeItem[] = [
     "studentName": "Haris",
     "className": "CLASS B",
     "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
+    "branchId": "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     "topic": "Menulis angka puluhan berdasarkan simbol 1",
     "examDate": "2026-08-15",
     "score": 98,
     "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true
-  },
-  {
-    "id": "gr-b42ef79c-f9c9-4972-8f36-525ec014240e-2026-08-15-Menulis-angka-p",
-    "studentId": "b42ef79c-f9c9-4972-8f36-525ec014240e",
-    "studentCode": "10100",
-    "studentName": "Maulana Syarif Wardani",
-    "className": "CLASS B",
-    "branch": "Singkut",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1b",
-    "topic": "Menulis angka puluhan berdasarkan simbol 1",
-    "examDate": "2026-08-15",
-    "score": 80,
-    "note": "Akurasi gerakan jari jemari bagus",
     "isJoined": true
   },
   {
@@ -1757,21 +1141,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "c69fc03b-f310-40ca-b5af-d859e8e6693d",
-    "studentId": "4c5462b2-a318-45de-8ffd-293df12e4334",
-    "studentCode": "40736",
-    "studentName": "Aira Anatasya Putri",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 97,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "fe77d5c7-e370-464d-8550-381e29ff4ee3",
     "studentId": "4fae6a4c-8c08-4351-bb25-71e9db2e4ecb",
     "studentCode": "17055",
@@ -1798,21 +1167,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "examDate": "2026-09-06",
     "score": 90,
     "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "f1c3a5b3-d15a-4ee0-946b-3d7f68d69eca",
-    "studentId": "51f2f51b-16db-42bc-8e24-c12e01e57977",
-    "studentCode": "65815",
-    "studentName": "Alesha Rafani Marta",
-    "className": "KELAS A2",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 88,
-    "note": "Gerakan jari cepat dan tepat",
     "isJoined": true,
     "programType": "MATEMATIKA"
   },
@@ -1888,21 +1242,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "examDate": "2026-09-06",
     "score": 89,
     "note": "Gerakan jari cepat dan tepat",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "5272c75a-1655-4a6d-9f7d-6d6846b2a6f7",
-    "studentId": "5c74b85c-f840-4649-ab72-e572843d8848",
-    "studentCode": "29797",
-    "studentName": "Aqila Fahmida",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 91,
-    "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
   },
@@ -2082,21 +1421,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penguatan Simbol + Persiapan Level 1",
     "examDate": "2026-09-06",
     "score": 89,
-    "note": "Gerakan jari cepat dan tepat",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "63375ea6-ce89-4f06-950e-d5d0e033b3e9",
-    "studentId": "8f01e65d-d43c-4d38-8e10-16f48712cffe",
-    "studentCode": "14999",
-    "studentName": "Adeeva Afsheen Myesha",
-    "className": "KELAS C",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 86,
     "note": "Gerakan jari cepat dan tepat",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -2327,36 +1651,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "91668587-aadc-49fa-9ca1-3d31d18a48f3",
-    "studentId": "c5767e1d-86a4-4fdd-9bb1-f1a64bed4a6f",
-    "studentCode": "17366",
-    "studentName": "Abizar Rahandika Alghifari",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 96,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "e113d49e-9a53-4043-87e0-ed7647de4e67",
-    "studentId": "ca9930de-9661-4823-a0e9-29621ef4f208",
-    "studentCode": "32460",
-    "studentName": "Shaqia Azzahra Rahayu",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 88,
-    "note": "Gerakan jari cepat dan tepat",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "94d8f550-0e08-4f9c-8c99-8b32941ea1b6",
     "studentId": "cb436508-3a4d-49c9-85c5-636ea9e93e88",
     "studentCode": "89123",
@@ -2432,21 +1726,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "eca6874b-cc7e-4359-b64a-5dc6e0539ea0",
-    "studentId": "d6be9a6d-26fa-43ac-a80a-6ee5f30b80b4",
-    "studentCode": "95452",
-    "studentName": "Ananta Virya",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 93,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "cd1caf29-0ac3-4a2b-8d69-ed8402d757db",
     "studentId": "d8340cb1-f138-425b-84ee-080de2586ece",
     "studentCode": "77435",
@@ -2458,21 +1737,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "examDate": "2026-09-06",
     "score": 90,
     "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "1f840b5d-0abe-4500-a9f4-3b84c6b2b520",
-    "studentId": "d83505ed-0060-453a-9689-4dbf49f87bb8",
-    "studentCode": "81124",
-    "studentName": "Abrisam",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 87,
-    "note": "Gerakan jari cepat dan tepat",
     "isJoined": true,
     "programType": "MATEMATIKA"
   },
@@ -2577,21 +1841,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penguatan Simbol + Persiapan Level 1",
     "examDate": "2026-09-06",
     "score": 83,
-    "note": "Gerakan jari cepat dan tepat",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "f347112b-a671-45c3-9c6b-79902cf4d0a8",
-    "studentId": "f552cd7d-a33f-441a-b8f2-f529514df6ed",
-    "studentCode": "77599",
-    "studentName": "Aida Syafira N.A",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penguatan Simbol + Persiapan Level 1",
-    "examDate": "2026-09-06",
-    "score": 84,
     "note": "Gerakan jari cepat dan tepat",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -2942,21 +2191,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "f9155922-c206-4a4a-bb9e-3173373f7c23",
-    "studentId": "4c5462b2-a318-45de-8ffd-293df12e4334",
-    "studentCode": "40736",
-    "studentName": "Aira Anatasya Putri",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 93,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "cf3e6a0d-99bb-4ae3-a487-7ffdbb59b50f",
     "studentId": "4fae6a4c-8c08-4351-bb25-71e9db2e4ecb",
     "studentCode": "17055",
@@ -2982,21 +2216,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Modul Level 1",
     "examDate": "2026-09-13",
     "score": 86,
-    "note": "Fokus dan teliti menyelesaikan latihan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "c189adcf-a5b1-4320-bc13-88b7a7d92d86",
-    "studentId": "51f2f51b-16db-42bc-8e24-c12e01e57977",
-    "studentCode": "65815",
-    "studentName": "Alesha Rafani Marta",
-    "className": "KELAS A2",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 84,
     "note": "Fokus dan teliti menyelesaikan latihan",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -3072,21 +2291,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Modul Level 1",
     "examDate": "2026-09-13",
     "score": 85,
-    "note": "Fokus dan teliti menyelesaikan latihan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "93a3a3c6-aa8e-4896-bab8-98e5c2f6a6ee",
-    "studentId": "5c74b85c-f840-4649-ab72-e572843d8848",
-    "studentCode": "29797",
-    "studentName": "Aqila Fahmida",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 87,
     "note": "Fokus dan teliti menyelesaikan latihan",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -3267,21 +2471,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Modul Level 1",
     "examDate": "2026-09-13",
     "score": 85,
-    "note": "Fokus dan teliti menyelesaikan latihan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "573b609b-0135-4454-ae97-de7fb0ef7e74",
-    "studentId": "8f01e65d-d43c-4d38-8e10-16f48712cffe",
-    "studentCode": "14999",
-    "studentName": "Adeeva Afsheen Myesha",
-    "className": "KELAS C",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 82,
     "note": "Fokus dan teliti menyelesaikan latihan",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -3512,36 +2701,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "57b027fe-7b68-42f9-ba02-514b9c4bdc6a",
-    "studentId": "c5767e1d-86a4-4fdd-9bb1-f1a64bed4a6f",
-    "studentCode": "17366",
-    "studentName": "Abizar Rahandika Alghifari",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "73abe8c5-9ee3-44c3-94b7-6489b0fcf944",
-    "studentId": "ca9930de-9661-4823-a0e9-29621ef4f208",
-    "studentCode": "32460",
-    "studentName": "Shaqia Azzahra Rahayu",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 84,
-    "note": "Fokus dan teliti menyelesaikan latihan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "9c2befb0-b086-410c-a535-dafefe09fe53",
     "studentId": "cb436508-3a4d-49c9-85c5-636ea9e93e88",
     "studentCode": "89123",
@@ -3617,21 +2776,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "11cfa1b8-c1e2-4ec1-99b0-401b9bca93ca",
-    "studentId": "d6be9a6d-26fa-43ac-a80a-6ee5f30b80b4",
-    "studentCode": "95452",
-    "studentName": "Ananta Virya",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 89,
-    "note": "Fokus dan teliti menyelesaikan latihan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "5a80b527-2d57-4f67-9ad7-98f77470bc5f",
     "studentId": "d8340cb1-f138-425b-84ee-080de2586ece",
     "studentCode": "77435",
@@ -3642,21 +2786,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Modul Level 1",
     "examDate": "2026-09-13",
     "score": 86,
-    "note": "Fokus dan teliti menyelesaikan latihan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "8b1ebc8f-6e60-4291-a6f4-2f44c655e4d4",
-    "studentId": "d83505ed-0060-453a-9689-4dbf49f87bb8",
-    "studentCode": "81124",
-    "studentName": "Abrisam",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 83,
     "note": "Fokus dan teliti menyelesaikan latihan",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -3762,21 +2891,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Modul Level 1",
     "examDate": "2026-09-13",
     "score": 94,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "47164657-ddb0-4e1d-b870-e10a31947280",
-    "studentId": "f552cd7d-a33f-441a-b8f2-f529514df6ed",
-    "studentCode": "77599",
-    "studentName": "Aida Syafira N.A",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul Level 1",
-    "examDate": "2026-09-13",
-    "score": 95,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -4127,21 +3241,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "283bacb0-a706-4610-92cf-a251e25957c5",
-    "studentId": "4c5462b2-a318-45de-8ffd-293df12e4334",
-    "studentCode": "40736",
-    "studentName": "Aira Anatasya Putri",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 86,
-    "note": "Akurasi formasi jari sangat baik",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "fc9f74e4-834d-4578-80ab-0c738740072a",
     "studentId": "4fae6a4c-8c08-4351-bb25-71e9db2e4ecb",
     "studentCode": "17055",
@@ -4167,21 +3266,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penjumlahan Puluhan Satuan",
     "examDate": "2026-09-15",
     "score": 94,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "05747d30-413e-42f8-b1d2-cad6befb6a98",
-    "studentId": "51f2f51b-16db-42bc-8e24-c12e01e57977",
-    "studentCode": "65815",
-    "studentName": "Alesha Rafani Marta",
-    "className": "KELAS A2",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 92,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -4257,21 +3341,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penjumlahan Puluhan Satuan",
     "examDate": "2026-09-15",
     "score": 93,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "b40ad0f1-9f0e-488e-ad9f-e5a6f8895469",
-    "studentId": "5c74b85c-f840-4649-ab72-e572843d8848",
-    "studentCode": "29797",
-    "studentName": "Aqila Fahmida",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 95,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -4452,21 +3521,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penjumlahan Puluhan Satuan",
     "examDate": "2026-09-15",
     "score": 93,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "76e7c948-8895-4449-a035-b4445601d7b4",
-    "studentId": "8f01e65d-d43c-4d38-8e10-16f48712cffe",
-    "studentCode": "14999",
-    "studentName": "Adeeva Afsheen Myesha",
-    "className": "KELAS C",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 90,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -4697,36 +3751,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "bf4314ed-9b85-43d6-93a6-c3769a734ed5",
-    "studentId": "c5767e1d-86a4-4fdd-9bb1-f1a64bed4a6f",
-    "studentCode": "17366",
-    "studentName": "Abizar Rahandika Alghifari",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 85,
-    "note": "Akurasi formasi jari sangat baik",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "95a9fe78-a9b0-4be3-82dd-b045c40bfa02",
-    "studentId": "ca9930de-9661-4823-a0e9-29621ef4f208",
-    "studentCode": "32460",
-    "studentName": "Shaqia Azzahra Rahayu",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "0ce29a1b-e8c0-42ec-9d0b-ce84516bfa2d",
     "studentId": "cb436508-3a4d-49c9-85c5-636ea9e93e88",
     "studentCode": "89123",
@@ -4802,21 +3826,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "fc6fddfb-9269-4513-b116-3590afeb6d2f",
-    "studentId": "d6be9a6d-26fa-43ac-a80a-6ee5f30b80b4",
-    "studentCode": "95452",
-    "studentName": "Ananta Virya",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 97,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "4181ba7e-39cf-47bc-98a1-e2945ebc09e2",
     "studentId": "d8340cb1-f138-425b-84ee-080de2586ece",
     "studentCode": "77435",
@@ -4827,21 +3836,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penjumlahan Puluhan Satuan",
     "examDate": "2026-09-15",
     "score": 94,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "4244e387-6380-4149-bfde-5ea0dc656de0",
-    "studentId": "d83505ed-0060-453a-9689-4dbf49f87bb8",
-    "studentCode": "81124",
-    "studentName": "Abrisam",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 91,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -4947,21 +3941,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Penjumlahan Puluhan Satuan",
     "examDate": "2026-09-15",
     "score": 87,
-    "note": "Akurasi formasi jari sangat baik",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "fbc81290-3488-4952-bb52-386fe3bf5f7d",
-    "studentId": "f552cd7d-a33f-441a-b8f2-f529514df6ed",
-    "studentCode": "77599",
-    "studentName": "Aida Syafira N.A",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Penjumlahan Puluhan Satuan",
-    "examDate": "2026-09-15",
-    "score": 88,
     "note": "Akurasi formasi jari sangat baik",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -5612,36 +4591,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "b10fa09b-5255-4a10-81c3-4b5ef1e4ebb3",
-    "studentId": "4c5462b2-a318-45de-8ffd-293df12e4334",
-    "studentCode": "40736",
-    "studentName": "Aira Anatasya Putri",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 95,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "8b93dd74-375d-4200-ad5f-f20cfd67cc56",
-    "studentId": "4c5462b2-a318-45de-8ffd-293df12e4334",
-    "studentCode": "40736",
-    "studentName": "Aira Anatasya Putri",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 91,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "aa583212-fc0a-4a4b-a926-e20c888cd694",
     "studentId": "4fae6a4c-8c08-4351-bb25-71e9db2e4ecb",
     "studentCode": "17055",
@@ -5697,36 +4646,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "LV 1  Pengurangan",
     "examDate": "2026-09-21",
     "score": 84,
-    "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "1337f0ad-6847-4360-8f84-4cd68fbf3cc0",
-    "studentId": "51f2f51b-16db-42bc-8e24-c12e01e57977",
-    "studentCode": "65815",
-    "studentName": "Alesha Rafani Marta",
-    "className": "KELAS A2",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 86,
-    "note": "Peningkatan kecepatan hitung jari",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "10afc653-7b5f-49b8-90a0-a21563749471",
-    "studentId": "51f2f51b-16db-42bc-8e24-c12e01e57977",
-    "studentCode": "65815",
-    "studentName": "Alesha Rafani Marta",
-    "className": "KELAS A2",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 82,
     "note": "Mampu membedakan gerakan jari turun",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -5877,36 +4796,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "LV 1  Pengurangan",
     "examDate": "2026-09-21",
     "score": 83,
-    "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "c305c391-bed5-4dd0-b6c9-9c1379371f12",
-    "studentId": "5c74b85c-f840-4649-ab72-e572843d8848",
-    "studentCode": "29797",
-    "studentName": "Aqila Fahmida",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 89,
-    "note": "Peningkatan kecepatan hitung jari",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "6e56f6bc-1f1e-4bcb-a4df-7261593fbf74",
-    "studentId": "5c74b85c-f840-4649-ab72-e572843d8848",
-    "studentCode": "29797",
-    "studentName": "Aqila Fahmida",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 85,
     "note": "Mampu membedakan gerakan jari turun",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -6267,36 +5156,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Modul LV 1 P+P",
     "examDate": "2026-09-21",
     "score": 87,
-    "note": "Peningkatan kecepatan hitung jari",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "8927c533-08af-4a21-a2e3-b20b8e16c435",
-    "studentId": "8f01e65d-d43c-4d38-8e10-16f48712cffe",
-    "studentCode": "14999",
-    "studentName": "Adeeva Afsheen Myesha",
-    "className": "KELAS C",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 80,
-    "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "8239e868-0616-41eb-b9a5-7b372a3a52c5",
-    "studentId": "8f01e65d-d43c-4d38-8e10-16f48712cffe",
-    "studentCode": "14999",
-    "studentName": "Adeeva Afsheen Myesha",
-    "className": "KELAS C",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 84,
     "note": "Peningkatan kecepatan hitung jari",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -6752,66 +5611,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "b033ac8b-b2d5-486a-a502-950b864c7449",
-    "studentId": "c5767e1d-86a4-4fdd-9bb1-f1a64bed4a6f",
-    "studentCode": "17366",
-    "studentName": "Abizar Rahandika Alghifari",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 94,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "21556900-fec7-41b8-9541-8f6d9ce1edb9",
-    "studentId": "c5767e1d-86a4-4fdd-9bb1-f1a64bed4a6f",
-    "studentCode": "17366",
-    "studentName": "Abizar Rahandika Alghifari",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 90,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "997ba3ab-2910-4a9a-bb4a-006ab1c9c6f7",
-    "studentId": "ca9930de-9661-4823-a0e9-29621ef4f208",
-    "studentCode": "32460",
-    "studentName": "Shaqia Azzahra Rahayu",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 82,
-    "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "a10bf7c6-d245-428f-81ed-1091d7a4ba69",
-    "studentId": "ca9930de-9661-4823-a0e9-29621ef4f208",
-    "studentCode": "32460",
-    "studentName": "Shaqia Azzahra Rahayu",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 86,
-    "note": "Peningkatan kecepatan hitung jari",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "bb8d40f7-4bf2-4697-a297-b91a4488e0d0",
     "studentId": "cb436508-3a4d-49c9-85c5-636ea9e93e88",
     "studentCode": "89123",
@@ -6962,36 +5761,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "d3d484c7-2de9-4133-8bb3-55f07206e1ac",
-    "studentId": "d6be9a6d-26fa-43ac-a80a-6ee5f30b80b4",
-    "studentCode": "95452",
-    "studentName": "Ananta Virya",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 87,
-    "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "0a8615c4-5c91-49e6-a00c-68ef421586e6",
-    "studentId": "d6be9a6d-26fa-43ac-a80a-6ee5f30b80b4",
-    "studentCode": "95452",
-    "studentName": "Ananta Virya",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 91,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "9411d147-cc2c-48a1-822f-16642961049b",
     "studentId": "d8340cb1-f138-425b-84ee-080de2586ece",
     "studentCode": "77435",
@@ -7018,36 +5787,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "examDate": "2026-09-21",
     "score": 84,
     "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "a22e126c-5bdd-452d-a69f-be94c49c3f81",
-    "studentId": "d83505ed-0060-453a-9689-4dbf49f87bb8",
-    "studentCode": "81124",
-    "studentName": "Abrisam",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 81,
-    "note": "Mampu membedakan gerakan jari turun",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "d6afd2f6-0449-44c3-bb9c-6a37fa13883b",
-    "studentId": "d83505ed-0060-453a-9689-4dbf49f87bb8",
-    "studentCode": "81124",
-    "studentName": "Abrisam",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 85,
-    "note": "Peningkatan kecepatan hitung jari",
     "isJoined": true,
     "programType": "MATEMATIKA"
   },
@@ -7257,36 +5996,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "LV 1  Pengurangan",
     "examDate": "2026-09-21",
     "score": 92,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "6623ce01-fb8a-44fc-b900-0771ea2c9194",
-    "studentId": "f552cd7d-a33f-441a-b8f2-f529514df6ed",
-    "studentCode": "77599",
-    "studentName": "Aida Syafira N.A",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Modul LV 1 P+P",
-    "examDate": "2026-09-21",
-    "score": 82,
-    "note": "Peningkatan kecepatan hitung jari",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "cb8fa904-d08e-46e0-9d49-cbdd70190b89",
-    "studentId": "f552cd7d-a33f-441a-b8f2-f529514df6ed",
-    "studentCode": "77599",
-    "studentName": "Aida Syafira N.A",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "LV 1  Pengurangan",
-    "examDate": "2026-09-21",
-    "score": 93,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -7682,21 +6391,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "0a35589b-eb06-497d-a328-5851c02ae390",
-    "studentId": "4c5462b2-a318-45de-8ffd-293df12e4334",
-    "studentCode": "40736",
-    "studentName": "Aira Anatasya Putri",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 90,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "982296bc-ff31-47e9-a322-4584b5afeab5",
     "studentId": "4fae6a4c-8c08-4351-bb25-71e9db2e4ecb",
     "studentCode": "17055",
@@ -7722,21 +6416,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Operasi Campuran (+,-,x)",
     "examDate": "2026-09-27",
     "score": 98,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "3ca10e7d-6875-4d3d-877a-7fc5841d3ecc",
-    "studentId": "51f2f51b-16db-42bc-8e24-c12e01e57977",
-    "studentCode": "65815",
-    "studentName": "Alesha Rafani Marta",
-    "className": "KELAS A2",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 96,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -7812,21 +6491,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Operasi Campuran (+,-,x)",
     "examDate": "2026-09-27",
     "score": 97,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "30864760-776e-4efe-a56e-2d872a542a06",
-    "studentId": "5c74b85c-f840-4649-ab72-e572843d8848",
-    "studentCode": "29797",
-    "studentName": "Aqila Fahmida",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 99,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -8007,21 +6671,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Operasi Campuran (+,-,x)",
     "examDate": "2026-09-27",
     "score": 97,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "7f06a2eb-22b5-45c4-a28f-48c5a36f6f38",
-    "studentId": "8f01e65d-d43c-4d38-8e10-16f48712cffe",
-    "studentCode": "14999",
-    "studentName": "Adeeva Afsheen Myesha",
-    "className": "KELAS C",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 94,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -8252,36 +6901,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "78100ac3-7b88-416c-b0a7-ec85251a05ba",
-    "studentId": "c5767e1d-86a4-4fdd-9bb1-f1a64bed4a6f",
-    "studentCode": "17366",
-    "studentName": "Abizar Rahandika Alghifari",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 89,
-    "note": "Sangat baik dalam operasi gabungan",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "c037f37e-99f3-4465-a176-7f8dba43fbb8",
-    "studentId": "ca9930de-9661-4823-a0e9-29621ef4f208",
-    "studentCode": "32460",
-    "studentName": "Shaqia Azzahra Rahayu",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 96,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "1fda90e9-f14c-4fd9-b834-97b5335ca119",
     "studentId": "cb436508-3a4d-49c9-85c5-636ea9e93e88",
     "studentCode": "89123",
@@ -8357,21 +6976,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "f9856e91-5eac-457c-a336-3db61de21658",
-    "studentId": "d6be9a6d-26fa-43ac-a80a-6ee5f30b80b4",
-    "studentCode": "95452",
-    "studentName": "Ananta Virya",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 100,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "fed1976d-0c96-4e7e-b300-1bb35f209127",
     "studentId": "d8340cb1-f138-425b-84ee-080de2586ece",
     "studentCode": "77435",
@@ -8382,21 +6986,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Operasi Campuran (+,-,x)",
     "examDate": "2026-09-27",
     "score": 98,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "20e876fd-ffca-4ad7-8071-3b00a48a9322",
-    "studentId": "d83505ed-0060-453a-9689-4dbf49f87bb8",
-    "studentCode": "81124",
-    "studentName": "Abrisam",
-    "className": "KELAS B",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 95,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -8502,21 +7091,6 @@ export const INITIAL_GRADES: GradeItem[] = [
     "topic": "Operasi Campuran (+,-,x)",
     "examDate": "2026-09-27",
     "score": 91,
-    "note": "Sangat cepat / fokus tinggi",
-    "isJoined": true,
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "a2218754-2fb3-4435-b4c1-7db138462ad8",
-    "studentId": "f552cd7d-a33f-441a-b8f2-f529514df6ed",
-    "studentCode": "77599",
-    "studentName": "Aida Syafira N.A",
-    "className": "KELAS A1",
-    "branch": "Bangko",
-    "branchId": "07a1fb4b-87af-4d88-9bed-d76168314f1c",
-    "topic": "Operasi Campuran (+,-,x)",
-    "examDate": "2026-09-27",
-    "score": 92,
     "note": "Sangat cepat / fokus tinggi",
     "isJoined": true,
     "programType": "MATEMATIKA"
@@ -8706,6 +7280,33 @@ const INITIAL_LEVEL_COLUMNS: LevelProgressionConfig[] = [
 const INITIAL_STUDENT_LEVEL_RECORDS: StudentLevelRecord[] = [];
 
 const INITIAL_INVOICES: InvoiceItem[] = [
+  {
+    "id": "f02400ce-3e01-440e-af31-129cbb16a1bb",
+    "invoiceNo": "INV/MF/2608/1047",
+    "studentId": "497ef1bb-d078-42af-a596-85d9d8c60bf0",
+    "studentName": "Arsyila Nasha Razita",
+    "branch": "Bangko",
+    "period": "September 2026",
+    "dueDate": "2026-09-10",
+    "amount": 350000,
+    "status": "LUNAS",
+    "paidDate": "2026-09-04",
+    "paidMethod": "Tunai",
+    "programType": "MATEMATIKA"
+  },
+  {
+    "id": "470fd3ec-d553-412c-8e46-66c525c51122",
+    "invoiceNo": "INV/MF/2608/1319",
+    "studentId": "7169f097-8bf5-40dd-934e-0f5460261c04",
+    "studentName": "M. Hannan Habibillah",
+    "branch": "Bangko",
+    "period": "September 2026",
+    "dueDate": "2026-09-10",
+    "amount": 100000,
+    "status": "BELUM BAYAR",
+    "paidMethod": "MANUAL_CASH",
+    "programType": "MATEMATIKA"
+  },
   {
     "id": "d08d61cb-2a95-41f9-a3e3-cbebf1cebf9a",
     "invoiceNo": "INV/MF/2608/3668",
@@ -9079,42 +7680,6 @@ const INITIAL_INVOICES: InvoiceItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "1c8a8e65-5a0f-41b9-8a0d-ab58d17a059a",
-    "invoiceNo": "INV/MF/2608/1353",
-    "studentId": "aa3fff59-d27e-4851-a660-ceaf1d8e9ade",
-    "studentName": "Muhammad Azka",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 100000,
-    "status": "BELUM BAYAR",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "3579bd45-b302-4821-83e2-3a055c99ebec",
-    "invoiceNo": "INV/MF/2608/1336",
-    "studentId": "b42ef79c-f9c9-4972-8f36-525ec014240e",
-    "studentName": "Maulana Syarif Wardani",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 100000,
-    "status": "BELUM BAYAR",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "470fd3ec-d553-412c-8e46-66c525c51122",
-    "invoiceNo": "INV/MF/2608/1319",
-    "studentId": "20f9a9ba-13c7-4650-a900-61abd09ea07a",
-    "studentName": "M. Hannan Habibillah",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 100000,
-    "status": "BELUM BAYAR",
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "95bac68c-2bef-4006-aba4-1d1b941ddb75",
     "invoiceNo": "INV/MF/2608/1302",
     "studentId": "9d9977fb-1a91-47b4-99df-288cc648d437",
@@ -9151,46 +7716,10 @@ const INITIAL_INVOICES: InvoiceItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "bb27afd8-8dce-458b-a2b1-95161961ae22",
-    "invoiceNo": "INV/MF/2608/1251",
-    "studentId": "5a5302cf-3115-45c1-ae89-20208f8bd5f5",
-    "studentName": "Keysha Anindya",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 100000,
-    "status": "BELUM BAYAR",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "7084b3e8-b9f4-43e9-abda-ce3c29f7f7eb",
-    "invoiceNo": "INV/MF/2608/1234",
-    "studentId": "c3dd210c-9220-4055-b57e-5ced60c906c7",
-    "studentName": "Kenzo Alvaro",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 100000,
-    "status": "BELUM BAYAR",
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "2cad77c3-e390-4bf4-9b2e-e1ed590b9de1",
     "invoiceNo": "INV/MF/2608/1217",
     "studentId": "90d546d9-0f7c-4cdf-8351-5e854cce406c",
     "studentName": "Haris",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 100000,
-    "status": "BELUM BAYAR",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "69c568bb-4343-4cd5-8c9c-20e5f4e2e489",
-    "invoiceNo": "INV/MF/2608/1200",
-    "studentId": "15de4d83-1d1b-4042-9bb4-9fdc65db1d3c",
-    "studentName": "Hafiz Al-Faruq",
     "branch": "Singkut",
     "period": "September 2026",
     "dueDate": "2026-09-10",
@@ -9211,20 +7740,6 @@ const INITIAL_INVOICES: InvoiceItem[] = [
     "programType": "MATEMATIKA"
   },
   {
-    "id": "4c4c35a3-9660-4b87-a9ea-71662aa6f895",
-    "invoiceNo": "INV/MF/2608/1166",
-    "studentId": "c1ccae6d-ae43-4bbf-b539-4c1c96c9c16b",
-    "studentName": "Fakhri Al-Ghifari",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 300000,
-    "status": "LUNAS",
-    "paidDate": "2026-09-01",
-    "paidMethod": "Transfer Bank",
-    "programType": "MATEMATIKA"
-  },
-  {
     "id": "3f15e463-edfa-4628-8e42-cd7f1d9ca301",
     "invoiceNo": "INV/MF/2608/1149",
     "studentId": "edfa74c0-7a6c-421e-b5a3-142f80563a3c",
@@ -9235,62 +7750,6 @@ const INITIAL_INVOICES: InvoiceItem[] = [
     "amount": 300000,
     "status": "LUNAS",
     "paidDate": "2026-09-01",
-    "paidMethod": "Tunai",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "e847400b-b8ed-4b8e-bc6a-35f338e6437b",
-    "invoiceNo": "INV/MF/2608/1132",
-    "studentId": "f9ce8b07-5738-4c29-8ecc-048807666d4c",
-    "studentName": "Dimas Arya Sena",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 300000,
-    "status": "LUNAS",
-    "paidDate": "2026-09-02",
-    "paidMethod": "Tunai",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "eeeef80d-54e4-4097-a8f1-31e18121039c",
-    "invoiceNo": "INV/MF/2608/1115",
-    "studentId": "c76503ff-a1d9-45ee-815e-35e24c8f7c7c",
-    "studentName": "Calista Azkadina",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 300000,
-    "status": "LUNAS",
-    "paidDate": "2026-09-02",
-    "paidMethod": "Transfer Bank",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "794237b4-5575-475b-94ce-bcee73bf852d",
-    "invoiceNo": "INV/MF/2608/1098",
-    "studentId": "48721968-d3f2-4319-92be-7a5e972c106b",
-    "studentName": "Bilqis Ufairah",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 300000,
-    "status": "LUNAS",
-    "paidDate": "2026-09-03",
-    "paidMethod": "Tunai",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "594ec10a-d21d-4410-a4a5-e6d6c6236add",
-    "invoiceNo": "INV/MF/2608/1081",
-    "studentId": "e02583be-1443-414b-a37c-90e612bcd317",
-    "studentName": "Bagas Pratama Putra",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 350000,
-    "status": "LUNAS",
-    "paidDate": "2026-09-03",
     "paidMethod": "Tunai",
     "programType": "MATEMATIKA"
   },
@@ -9306,20 +7765,6 @@ const INITIAL_INVOICES: InvoiceItem[] = [
     "status": "LUNAS",
     "paidDate": "2026-09-04",
     "paidMethod": "Transfer Bank",
-    "programType": "MATEMATIKA"
-  },
-  {
-    "id": "f02400ce-3e01-440e-af31-129cbb16a1bb",
-    "invoiceNo": "INV/MF/2608/1047",
-    "studentId": "2643a6e6-fcc0-4c9f-81b1-db1d116e37cd",
-    "studentName": "Arsyila Nasha Razita",
-    "branch": "Singkut",
-    "period": "September 2026",
-    "dueDate": "2026-09-10",
-    "amount": 350000,
-    "status": "LUNAS",
-    "paidDate": "2026-09-04",
-    "paidMethod": "Tunai",
     "programType": "MATEMATIKA"
   },
   {
@@ -9444,26 +7889,6 @@ const INITIAL_MUTATIONS: CashMutationItem[] = [
     "amount": 350000
   },
   {
-    "id": "08d510c1-3b91-41db-92a3-e5463804d77c",
-    "date": "2026-09-03",
-    "invoiceNo": "INV/MF/2608/1098",
-    "studentName": "Bilqis Ufairah",
-    "period": "September 2026",
-    "method": "TUNAI",
-    "description": "Pelunasan Penuh",
-    "amount": 300000
-  },
-  {
-    "id": "0d991902-9ed9-45b2-9d0e-40b9bd435a0d",
-    "date": "2026-09-03",
-    "invoiceNo": "INV/MF/2608/1081",
-    "studentName": "Bagas Pratama Putra",
-    "period": "September 2026",
-    "method": "TUNAI",
-    "description": "Pelunasan Penuh",
-    "amount": 350000
-  },
-  {
     "id": "dfce4fbe-7fdf-4e1c-b11c-1eb313462d42",
     "date": "2026-09-03",
     "invoiceNo": "INV/MF/2608/3162",
@@ -9482,26 +7907,6 @@ const INITIAL_MUTATIONS: CashMutationItem[] = [
     "method": "TUNAI",
     "description": "Pelunasan Penuh",
     "amount": 400000
-  },
-  {
-    "id": "e908a471-206f-4964-a1a9-c051346196fd",
-    "date": "2026-09-02",
-    "invoiceNo": "INV/MF/2608/1132",
-    "studentName": "Dimas Arya Sena",
-    "period": "September 2026",
-    "method": "TUNAI",
-    "description": "Pelunasan Penuh",
-    "amount": 300000
-  },
-  {
-    "id": "edf752c8-96a9-47f2-a74d-5b75ac26e2e6",
-    "date": "2026-09-02",
-    "invoiceNo": "INV/MF/2608/1115",
-    "studentName": "Calista Azkadina",
-    "period": "September 2026",
-    "method": "TRANSFER",
-    "description": "Pelunasan Penuh",
-    "amount": 300000
   },
   {
     "id": "bb647052-0a3c-4a40-a493-0150c1e58840",
@@ -9552,16 +7957,6 @@ const INITIAL_MUTATIONS: CashMutationItem[] = [
     "method": "TUNAI",
     "description": "Pelunasan Penuh",
     "amount": 350000
-  },
-  {
-    "id": "a5ab7398-cd9c-42c7-af2b-620f858f36a1",
-    "date": "2026-09-01",
-    "invoiceNo": "INV/MF/2608/1166",
-    "studentName": "Fakhri Al-Ghifari",
-    "period": "September 2026",
-    "method": "TRANSFER",
-    "description": "Pelunasan Penuh",
-    "amount": 300000
   },
   {
     "id": "8400fafe-fbee-4f0a-b3d1-71a65914cf29",
@@ -10245,7 +8640,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
-      const CURRENT_DATA_VERSION = "mf_live_sync_v14";
+      const CURRENT_DATA_VERSION = "mf_live_sync_v15";
       if (localStorage.getItem("mf_data_version") !== CURRENT_DATA_VERSION) {
         localStorage.removeItem("mf_students");
         localStorage.removeItem("mf_classes");
@@ -11161,7 +9556,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Grades / Nilai
-  const saveGrades = (newGrades: GradeItem[]) => {
+  const saveGrades = async (newGrades: GradeItem[]) => {
     setGrades((prev) => {
       const filtered = prev.filter((g) => !newGrades.some((ng) => ng.id === g.id));
       const updated = [...newGrades, ...filtered];
@@ -11169,11 +9564,18 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
-    fetch("/api/grades", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newGrades),
-    }).catch((err) => console.error("Error saving grades to PostgreSQL:", err));
+    try {
+      const res = await fetch("/api/grades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newGrades),
+      });
+      if (res.ok) {
+        fetchAllLiveData(false);
+      }
+    } catch (err) {
+      console.error("Error saving grades to PostgreSQL:", err);
+    }
   };
 
   const updateSingleGrade = async (grade: {
@@ -11241,6 +9643,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             save("mf_grades", next);
             return next;
           });
+          fetchAllLiveData(false);
         }
       }
     } catch (err) {
@@ -11256,9 +9659,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     try {
-      await fetch(`/api/grades?topic=${encodeURIComponent(topic)}&examDate=${encodeURIComponent(examDate)}`, {
+      const res = await fetch(`/api/grades?topic=${encodeURIComponent(topic)}&examDate=${encodeURIComponent(examDate)}`, {
         method: "DELETE",
       });
+      if (res.ok) {
+        fetchAllLiveData(false);
+      }
     } catch (err) {
       console.error("Error deleting grade session:", err);
     }
@@ -11299,7 +9705,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     try {
-      await fetch(`/api/grades?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const res = await fetch(`/api/grades?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchAllLiveData(false);
+      }
     } catch (err) {
       console.error("Error deleting single grade:", err);
     }
