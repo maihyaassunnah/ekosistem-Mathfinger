@@ -69,10 +69,12 @@ export async function POST(req: Request) {
       },
       update: {
         status: "ACTIVE",
+        branchId: targetClass.branchId || student.branchId,
       },
       create: {
         studentId,
         classId,
+        branchId: targetClass.branchId || student.branchId,
         status: "ACTIVE",
       },
       include: {

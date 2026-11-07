@@ -198,6 +198,57 @@ export async function POST(req: Request) {
       },
     });
 
+    // Automatically enroll in ClassEnrollment if className is specified
+    let targetClass = null;
+    const requestedClass = body.className || created.className;
+    if (requestedClass && requestedClass !== "-") {
+      targetClass = await prisma.class.findFirst({
+        where: {
+          className: { equals: requestedClass.trim(), mode: "insensitive" },
+          branchId: branch!.id,
+        },
+      });
+      if (targetClass) {
+        await prisma.classEnrollment.upsert({
+          where: {
+            studentId_classId: {
+              studentId: created.id,
+              classId: targetClass.id,
+            },
+          },
+          update: {
+            status: "ACTIVE",
+            branchId: targetClass.branchId,
+          },
+          create: {
+            studentId: created.id,
+            classId: targetClass.id,
+            branchId: targetClass.branchId,
+            status: "ACTIVE",
+          },
+        });
+        const newCount = await prisma.classEnrollment.count({
+          where: { classId: targetClass.id, status: "ACTIVE" },
+        });
+        await prisma.class.update({
+          where: { id: targetClass.id },
+          data: { enrolledCount: newCount },
+        });
+      }
+    }
+
+    const enrolledClasses = targetClass
+      ? [
+          {
+            id: targetClass.id,
+            className: targetClass.className,
+            programType: targetClass.programType,
+            days: targetClass.days,
+            time: targetClass.time,
+          },
+        ]
+      : [];
+
     const formatted = {
       id: created.id,
       index: 1,
@@ -208,7 +259,8 @@ export async function POST(req: Request) {
       codeLabel: created.gender === "L" ? "6L" : "8P",
       branch: created.branch?.branchName || "Singkut",
       branchId: created.branchId,
-      className: created.className || "Kelas A",
+      className: targetClass?.className || created.className || "Kelas A",
+      enrolledClasses,
       birthPlace: created.birthPlace || "-",
       birthDate: created.birthDate || "-",
       address: created.address || "-",
@@ -244,6 +296,21 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 });
     }
 
+    const currentStudent = await prisma.student.findUnique({
+      where: { id },
+      include: {
+        branch: true,
+        enrollments: {
+          where: { status: "ACTIVE" },
+          include: { class: true },
+        },
+      },
+    });
+
+    if (!currentStudent) {
+      return NextResponse.json({ error: "Siswa tidak ditemukan" }, { status: 404 });
+    }
+
     let branchId: string | undefined = undefined;
     if (branch) {
       const b = await prisma.branch.findFirst({
@@ -251,6 +318,9 @@ export async function PUT(req: Request) {
       });
       if (b) branchId = b.id;
     }
+
+    const effectiveBranchId = branchId || currentStudent.branchId;
+    const effectiveProgramType = (body.programType || currentStudent.programType || "MATEMATIKA") as any;
 
     let currentLevelId: string | undefined = undefined;
     if (levelCurriculum) {
@@ -272,6 +342,112 @@ export async function PUT(req: Request) {
       }
     }
 
+    // Synchronize ClassEnrollment when className is provided
+    let finalClassName: string | null | undefined = className;
+    if (className !== undefined) {
+      const cleanClassName = (className || "").trim();
+      if (!cleanClassName || cleanClassName === "-") {
+        // Unenroll from current active classes in this program
+        const prevEnrollments = await prisma.classEnrollment.findMany({
+          where: {
+            studentId: id,
+            class: { programType: effectiveProgramType },
+          },
+          select: { classId: true },
+        });
+
+        if (prevEnrollments.length > 0) {
+          const prevClassIds = prevEnrollments.map((e) => e.classId);
+          await prisma.classEnrollment.deleteMany({
+            where: {
+              studentId: id,
+              classId: { in: prevClassIds },
+            },
+          });
+          for (const cid of prevClassIds) {
+            const count = await prisma.classEnrollment.count({
+              where: { classId: cid, status: "ACTIVE" },
+            });
+            await prisma.class.update({
+              where: { id: cid },
+              data: { enrolledCount: count },
+            });
+          }
+        }
+        finalClassName = null;
+      } else {
+        // Find target class strictly scoped by effectiveBranchId
+        const targetClass = await prisma.class.findFirst({
+          where: {
+            className: { equals: cleanClassName, mode: "insensitive" },
+            branchId: effectiveBranchId,
+          },
+        });
+
+        if (targetClass) {
+          finalClassName = targetClass.className;
+
+          // Remove old active enrollments for this student in this program (except target class)
+          const oldEnrollments = await prisma.classEnrollment.findMany({
+            where: {
+              studentId: id,
+              class: { programType: effectiveProgramType },
+              classId: { not: targetClass.id },
+            },
+            select: { classId: true },
+          });
+
+          if (oldEnrollments.length > 0) {
+            const oldClassIds = oldEnrollments.map((e) => e.classId);
+            await prisma.classEnrollment.deleteMany({
+              where: {
+                studentId: id,
+                classId: { in: oldClassIds },
+              },
+            });
+            for (const oldId of oldClassIds) {
+              const count = await prisma.classEnrollment.count({
+                where: { classId: oldId, status: "ACTIVE" },
+              });
+              await prisma.class.update({
+                where: { id: oldId },
+                data: { enrolledCount: count },
+              });
+            }
+          }
+
+          // Enroll student into targetClass
+          await prisma.classEnrollment.upsert({
+            where: {
+              studentId_classId: {
+                studentId: id,
+                classId: targetClass.id,
+              },
+            },
+            update: {
+              status: "ACTIVE",
+              branchId: targetClass.branchId,
+            },
+            create: {
+              studentId: id,
+              classId: targetClass.id,
+              branchId: targetClass.branchId,
+              status: "ACTIVE",
+            },
+          });
+
+          // Recalculate enrolledCount for targetClass
+          const newTargetCount = await prisma.classEnrollment.count({
+            where: { classId: targetClass.id, status: "ACTIVE" },
+          });
+          await prisma.class.update({
+            where: { id: targetClass.id },
+            data: { enrolledCount: newTargetCount },
+          });
+        }
+      }
+    }
+
     const updated = await prisma.student.update({
       where: { id },
       data: {
@@ -279,7 +455,7 @@ export async function PUT(req: Request) {
         ...(parentName ? { parentName } : {}),
         ...(parentWhatsapp ? { parentWhatsapp } : {}),
         ...(gender ? { gender } : {}),
-        ...(className !== undefined ? { className: (!className || className === "-") ? null : className } : {}),
+        ...(className !== undefined ? { className: finalClassName } : {}),
         ...(birthPlace ? { birthPlace } : {}),
         ...(birthDate ? { birthDate } : {}),
         ...(address ? { address } : {}),
@@ -292,17 +468,34 @@ export async function PUT(req: Request) {
       include: {
         branch: true,
         currentLevel: true,
+        enrollments: {
+          where: { status: "ACTIVE" },
+          include: { class: true },
+        },
       },
     });
+
+    const enrolledClasses = (updated.enrollments || []).map((e) => ({
+      id: e.class.id,
+      className: e.class.className,
+      programType: e.class.programType,
+      days: e.class.days,
+      time: e.class.time,
+    }));
+    const activeClassNames = enrolledClasses.map((c) => c.className);
+    const displayClassName = activeClassNames.length > 0 ? activeClassNames.join(", ") : (updated.className || "-");
 
     return NextResponse.json({
       id: updated.id,
       studentCode: updated.studentCode,
       name: updated.studentName,
+      studentName: updated.studentName,
       gender: updated.gender,
       codeLabel: updated.gender === "L" ? "6L" : "8P",
       branch: updated.branch?.branchName || "Singkut",
-      className: updated.className || "-",
+      branchId: updated.branchId,
+      className: displayClassName,
+      enrolledClasses,
       birthPlace: updated.birthPlace,
       birthDate: updated.birthDate,
       address: updated.address,
@@ -380,7 +573,23 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 });
     }
 
-    await prisma.student.delete({ where: { id } });
+    const student = await prisma.student.findUnique({
+      where: { id },
+      include: { enrollments: true },
+    });
+    if (student) {
+      const classIds = student.enrollments.map((e) => e.classId);
+      await prisma.student.delete({ where: { id } });
+      for (const cid of classIds) {
+        const count = await prisma.classEnrollment.count({
+          where: { classId: cid, status: "ACTIVE" },
+        });
+        await prisma.class.update({
+          where: { id: cid },
+          data: { enrolledCount: count },
+        });
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

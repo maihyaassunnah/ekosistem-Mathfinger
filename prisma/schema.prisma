@@ -100,7 +100,12 @@ model Branch {
   readingGrades    ReadingGrade[]
   tutorAttendances TutorAttendance[]
   tutorQr          TutorAttendanceQr?
-  levels           Level[]
+  levels               Level[]
+  cashMutations        CashMutation[]
+  classEnrollments     ClassEnrollment[]
+  readingLevels        ReadingLevel[]
+  levelProgressions    LevelProgression[]
+  studentLevelProgress StudentLevelProgress[]
 
   @@map("branches")
 }
@@ -302,16 +307,19 @@ model Class {
 
 model ClassEnrollment {
   id        String       @id @default(uuid())
+  branchId  String?      @map("branch_id")
   studentId String       @map("student_id")
   classId   String       @map("class_id")
   status    CommonStatus @default(ACTIVE)
   joinedAt  DateTime     @default(now()) @map("joined_at")
 
   // Relations
+  branch  Branch? @relation(fields: [branchId], references: [id], onDelete: Cascade)
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, classId])
+  @@index([branchId])
   @@index([studentId])
   @@index([classId])
   @@map("class_enrollments")
@@ -443,6 +451,7 @@ model Invoice {
 
 model CashMutation {
   id           String   @id @default(uuid())
+  branchId     String?  @map("branch_id")
   invoiceId    String?  @map("invoice_id")
   studentName  String?  @map("student_name")
   period       String?
@@ -454,8 +463,10 @@ model CashMutation {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
+  branch  Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
   invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
 
+  @@index([branchId])
   @@map("cash_mutations")
 }
 
@@ -487,6 +498,7 @@ model CashTransaction {
 // e.g. Pra-Membaca → Mengenal Huruf → Suku Kata → Kata → Kalimat → Paragraf → Lancar
 model ReadingLevel {
   id          String   @id @default(uuid())
+  branchId    String?  @map("branch_id")
   levelName   String   @map("level_name")   // e.g. "Pra-Membaca"
   description String?  @db.Text             // Deskripsi level
   orderIndex  Int      @default(1) @map("order_index") // Urutan level
@@ -495,8 +507,10 @@ model ReadingLevel {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
+  branch        Branch?        @relation(fields: [branchId], references: [id], onDelete: Cascade)
   readingGrades ReadingGrade[]
 
+  @@index([branchId])
   @@map("reading_levels")
 }
 
@@ -660,6 +674,7 @@ model WebsiteLead {
 
 model LevelProgression {
   id          String   @id @default(uuid())
+  branchId    String?  @map("branch_id")
   levelNumber Int      @map("level_number")
   name        String
   description String?  @db.Text
@@ -668,13 +683,16 @@ model LevelProgression {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
+  branch  Branch?                @relation(fields: [branchId], references: [id], onDelete: Cascade)
   records StudentLevelProgress[]
 
+  @@index([branchId])
   @@map("level_progressions")
 }
 
 model StudentLevelProgress {
   id                 String           @id @default(uuid())
+  branchId           String?          @map("branch_id")
   studentId          String           @map("student_id")
   levelProgressionId String           @map("level_progression_id")
   passedDate         DateTime         @map("passed_date")
@@ -683,10 +701,12 @@ model StudentLevelProgress {
   updatedAt          DateTime         @updatedAt @map("updated_at")
 
   // Relations
+  branch           Branch?          @relation(fields: [branchId], references: [id], onDelete: Cascade)
   student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   levelProgression LevelProgression @relation(fields: [levelProgressionId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, levelProgressionId])
+  @@index([branchId])
   @@index([studentId])
   @@index([levelProgressionId])
   @@map("student_level_progress")

@@ -10449,11 +10449,30 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     try {
-      await fetch("/api/students", {
+      const res = await fetch("/api/students", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...updated }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.id) {
+          setStudents((prev) => {
+            const list = prev.map((s) =>
+              s.id === id
+                ? {
+                    ...s,
+                    ...data,
+                    enrolledClasses: data.enrolledClasses || s.enrolledClasses,
+                  }
+                : s
+            );
+            save("mf_students", list);
+            return list;
+          });
+          fetchAllLiveData(false);
+        }
+      }
     } catch (err) {
       console.error("Error updating student in PostgreSQL:", err);
     }
