@@ -1654,9 +1654,17 @@ export default function PresensiTutorAdminPage() {
                       >
                         <td className="py-2.5 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-2.5 whitespace-nowrap">
-                            <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black flex items-center justify-center text-xs shrink-0">
-                              {att.tutorName.charAt(0)}
-                            </div>
+                            {att.avatarUrl ? (
+                              <img
+                                src={att.avatarUrl}
+                                alt={att.tutorName}
+                                className="w-7 h-7 rounded-full object-cover shrink-0 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+                              />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black flex items-center justify-center text-xs shrink-0">
+                                {att.tutorName.charAt(0)}
+                              </div>
+                            )}
                             <div className="whitespace-nowrap">
                               <span className="font-extrabold text-slate-900 dark:text-white">
                                 {att.tutorName}
@@ -1777,9 +1785,27 @@ export default function PresensiTutorAdminPage() {
       {isEditModalOpen && editingRecord && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-[#1d2d5a] shadow-2xl">
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-              Edit Presensi {editingRecord.tutorName}
-            </h3>
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
+              {editingRecord.avatarUrl ? (
+                <img
+                  src={editingRecord.avatarUrl}
+                  alt={editingRecord.tutorName}
+                  className="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-emerald-500 shadow-xs"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black flex items-center justify-center text-sm shrink-0">
+                  {editingRecord.tutorName.charAt(0)}
+                </div>
+              )}
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
+                  Edit Presensi {editingRecord.tutorName}
+                </h3>
+                <p className="text-xs text-slate-400 font-medium">
+                  {editingRecord.date} • {editingRecord.branchName}
+                </p>
+              </div>
+            </div>
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">

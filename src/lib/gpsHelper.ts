@@ -44,13 +44,13 @@ export const getBrowserCoordinates = (): Promise<GpsCoordinateResult> => {
         },
         {
           enableHighAccuracy: false,
-          timeout: 12000,
-          maximumAge: 300000, // 5 minutes cache
+          timeout: 15000,
+          maximumAge: 60000,
         }
       );
     };
 
-    // Stage 1: Try High Accuracy (mobile GPS)
+    // Stage 1: Try High Accuracy (mobile GPS with 10s timeout to allow cold/warm fix)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         resolve({
@@ -71,8 +71,8 @@ export const getBrowserCoordinates = (): Promise<GpsCoordinateResult> => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 3500,
-        maximumAge: 60000,
+        timeout: 10000,
+        maximumAge: 30000,
       }
     );
   });

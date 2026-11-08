@@ -73,7 +73,7 @@ function calculateTimeMinus(timeStr?: string, minutesToSubtract?: string | numbe
 }
 
 export default function AbsensiTutorScanPage() {
-  const { name: userName, email: userEmail, role: userRole, allowedBranch } = useCurrentUser();
+  const { name: userName, email: userEmail, role: userRole, allowedBranch, avatarUrl } = useCurrentUser();
 
   const [scanType, setScanType] = useState<"IN" | "OUT">("IN");
   const [cameraActive, setCameraActive] = useState(false);
@@ -133,9 +133,45 @@ export default function AbsensiTutorScanPage() {
     return (timeParts[0] || 0) * 60 + (timeParts[1] || 0);
   };
 
+  // My Monthly Attendance History
+  const [myHistory, setMyHistory] = useState<AttendanceRecord[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // Today's WIB date string (YYYY-MM-DD)
+  const todayWibDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+  const todayRecords = myHistory.filter((r) => r.date === todayWibDate);
+  const openRecord = todayRecords.find((r) => !r.checkOutTime || r.checkOutTime === "-");
+  const todayRecord = openRecord || todayRecords[0];
+
   const todayDayKey = getTodayWibDayOfWeek();
   const todaySessions = (weeklySchedule[todayDayKey] || []).filter((s) => s.isActive);
-  const currentSession = todaySessions.find((s) => s.id === selectedSessionId) || todaySessions[0] || null;
+
+  // Auto-detect current active session by WIB time if not manually selected
+  const autoSession = React.useMemo(() => {
+    if (!todaySessions.length) return null;
+    const nowMin = getTodayWibMinutes();
+    const running = todaySessions.find((s) => {
+      const [sh, sm] = (s.startTime || "08:00").split(":").map(Number);
+      const [eh, em] = (s.endTime || "17:00").split(":").map(Number);
+      const sMin = (sh || 0) * 60 + (sm || 0);
+      const eMin = (eh || 0) * 60 + (em || 0);
+      return nowMin >= sMin - 45 && nowMin <= eMin + 45;
+    });
+    if (running) return running;
+    return todaySessions[0];
+  }, [todaySessions]);
+
+  const currentSession =
+    todaySessions.find((s) => s.id === selectedSessionId) ||
+    (scanType === "OUT" && openRecord?.sessionName
+      ? todaySessions.find((s) => s.name?.toLowerCase() === openRecord.sessionName?.toLowerCase()) || autoSession
+      : autoSession);
 
   // GPS State
   const [gpsLocation, setGpsLocation] = useState<{
@@ -145,10 +181,6 @@ export default function AbsensiTutorScanPage() {
   } | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [isTrackingGps, setIsTrackingGps] = useState(false);
-
-  // My Monthly Attendance History
-  const [myHistory, setMyHistory] = useState<AttendanceRecord[]>([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // Video & Canvas Refs
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -255,6 +287,7 @@ export default function AbsensiTutorScanPage() {
   const startCamera = async () => {
     setCameraError(null);
     setScanFeedback(null);
+    requestGpsLocation();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -325,12 +358,19 @@ export default function AbsensiTutorScanPage() {
     // 1. Get latest GPS coordinate with fallback
     let lat = gpsLocation?.latitude;
     let lon = gpsLocation?.longitude;
+    let acc = gpsLocation?.accuracy;
 
     if (!lat || !lon) {
       try {
         const pos = await getBrowserCoordinates();
         lat = pos.latitude;
         lon = pos.longitude;
+        acc = pos.accuracy;
+        setGpsLocation({
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          accuracy: pos.accuracy ?? 0,
+        });
       } catch {
         // Fallback or send null
       }
@@ -344,9 +384,10 @@ export default function AbsensiTutorScanPage() {
           qrData: rawQrData,
           latitude: lat,
           longitude: lon,
+          accuracy: acc,
           isCheckOut: scanType === "OUT",
-          sessionId: currentSession?.id,
-          sessionName: currentSession?.name,
+          sessionId: (scanType === "OUT" && openRecord?.sessionId) ? openRecord.sessionId : currentSession?.id,
+          sessionName: (scanType === "OUT" && openRecord?.sessionName) ? openRecord.sessionName : currentSession?.name,
         }),
       });
 
@@ -421,27 +462,37 @@ export default function AbsensiTutorScanPage() {
 
   // Count stats
   const totalMyHadir = myHistory.filter((r) => r.status === "HADIR" || r.status === "TERLAMBAT").length;
-  const todayRecord = myHistory.find(
-    (r) => r.date === new Date().toISOString().split("T")[0]
-  );
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl mx-auto animate-in fade-in duration-300">
       {/* Header */}
       <div className="bg-white dark:bg-[#0f1a36] p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-              {userRole}
-            </span>
-            <span className="text-xs font-bold text-slate-400">Cabang {allowedBranch || "Singkut"}</span>
+        <div className="flex items-center gap-4">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={userName || "Tutor"}
+              className="w-14 h-14 rounded-2xl object-cover shrink-0 border-2 border-emerald-500 shadow-md"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black flex items-center justify-center text-xl shrink-0 shadow-xs">
+              {userName?.charAt(0) || "T"}
+            </div>
+          )}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                {userRole === "BRANCH_ASSISTANT" ? "Asisten Cabang" : userRole}
+              </span>
+              <span className="text-xs font-bold text-slate-400">Cabang {allowedBranch || "Singkut"}</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              {userName || "Presensi Kehadiran Tutor"}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Pindai QR Code di kantor cabang untuk mencatat presensi kehadiran masuk dan pulang secara otomatis dengan validasi lokasi GPS.
+            </p>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Presensi Kehadiran Tutor
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Pindai QR Code di kantor cabang untuk mencatat presensi kehadiran masuk dan pulang secara otomatis dengan validasi lokasi GPS.
-          </p>
         </div>
 
         {/* Live Date/Time Badge */}
@@ -490,7 +541,7 @@ export default function AbsensiTutorScanPage() {
               const isSelected = (currentSession?.id === sess.id);
               const todayAttForSession = myHistory.find(
                 (r) =>
-                  r.date === new Date().toISOString().split("T")[0] &&
+                  r.date === todayWibDate &&
                   (r.sessionName?.toLowerCase() === sess.name.toLowerCase() || r.sessionId === sess.id)
               );
 
@@ -523,7 +574,11 @@ export default function AbsensiTutorScanPage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-600" />
                 <span className="font-bold text-slate-800 dark:text-slate-200">
-                  Target Sesi: <strong className="text-emerald-600 dark:text-emerald-400">{currentSession.name}</strong>
+                  {scanType === "OUT" ? (
+                    <>Target Pulang: <strong className="text-emerald-600 dark:text-emerald-400">{openRecord?.sessionName || currentSession.name}</strong></>
+                  ) : (
+                    <>Target Masuk: <strong className="text-emerald-600 dark:text-emerald-400">{currentSession.name}</strong></>
+                  )}
                 </span>
                 <span className="text-slate-400">•</span>
                 <span className="text-slate-600 dark:text-slate-400">
@@ -572,7 +627,10 @@ export default function AbsensiTutorScanPage() {
               <div className="flex bg-slate-100 dark:bg-[#0b1329] p-1 rounded-xl text-xs font-bold border border-slate-200 dark:border-[#1d2d5a]">
                 <button
                   type="button"
-                  onClick={() => setScanType("IN")}
+                  onClick={() => {
+                    setScanType("IN");
+                    requestGpsLocation();
+                  }}
                   className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     scanType === "IN"
                       ? "bg-emerald-600 text-white font-extrabold shadow-xs"
@@ -583,7 +641,10 @@ export default function AbsensiTutorScanPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setScanType("OUT")}
+                  onClick={() => {
+                    setScanType("OUT");
+                    requestGpsLocation();
+                  }}
                   className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     scanType === "OUT"
                       ? "bg-emerald-600 text-white font-extrabold shadow-xs"

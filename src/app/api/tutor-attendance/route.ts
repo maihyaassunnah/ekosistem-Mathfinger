@@ -302,31 +302,58 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Geofencing GPS Distance Calculation
+    // 3. Fetch branch work schedule & weekly_schedule from tutor_attendance_qrs
+    let branchScheduleRow: any = null;
+    try {
+      const rows = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT * FROM "tutor_attendance_qrs" WHERE "branch_id" = $1 LIMIT 1`,
+        branch.id
+      );
+      if (rows.length > 0) branchScheduleRow = rows[0];
+    } catch {}
+
+    const weeklySchedule = branchScheduleRow?.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE;
+
+    // 4. Geofencing GPS Distance Calculation
     let distanceMeter: number | null = null;
     let isLocationValid = true;
-    const branchLat = branch.setting?.latitude;
-    const branchLon = branch.setting?.longitude;
-    const maxRadius = branch.setting?.radiusMeters || 100;
+    const branchLat = branchScheduleRow?.latitude ?? branch.setting?.latitude;
+    const branchLon = branchScheduleRow?.longitude ?? branch.setting?.longitude;
+    const configuredRadius = Number(branchScheduleRow?.radius_meters ?? branch.setting?.radiusMeters ?? 100);
+
+    // Dynamic radius with minimum 150m buffer + client accuracy allowance
+    const clientAccuracy = Number(body.accuracy || 0);
+    const baseRadius = Math.max(configuredRadius, 150);
+    const maxRadius = baseRadius + Math.min(clientAccuracy, 100);
 
     if (latitude !== undefined && longitude !== undefined && branchLat && branchLon) {
       distanceMeter = calculateDistance(Number(latitude), Number(longitude), branchLat, branchLon);
 
-      if (distanceMeter > maxRadius) {
-        isLocationValid = false;
-        return NextResponse.json(
-          {
-            error: `Lokasi Anda berada di luar jangkauan cabang! Jarak Anda: ${distanceMeter} meter (Batas Maksimal: ${maxRadius} meter). Harap lakukan presensi di area cabang.`,
-            distanceMeter,
-            maxRadius,
-            isLocationValid: false,
-          },
-          { status: 400 }
-        );
+      // During Check-Out: tutor is already verified on site from Check-In.
+      // Indoor smartphone signal jitter / cell tower jump should not trap the tutor.
+      const checkoutGraceRadius = isCheckOut ? Math.max(maxRadius * 2, 400) : maxRadius;
+
+      if (distanceMeter > checkoutGraceRadius) {
+        if (isCheckOut) {
+          // If check-out and distance exceeds grace radius, permit check-out with warning flag
+          console.warn(`Tutor checkout GPS distance (${distanceMeter}m) exceeds radius (${checkoutGraceRadius}m) - permitting checkout.`);
+          isLocationValid = false;
+        } else {
+          isLocationValid = false;
+          return NextResponse.json(
+            {
+              error: `Lokasi Anda berada di luar jangkauan cabang! Jarak Anda: ${distanceMeter} meter (Batas Maksimal: ${maxRadius} meter). Harap lakukan presensi di area cabang.`,
+              distanceMeter,
+              maxRadius,
+              isLocationValid: false,
+            },
+            { status: 400 }
+          );
+        }
       }
     }
 
-    // 4. Determine Date & Time in WIB (Asia/Jakarta, UTC+7)
+    // 5. Determine Date & Time in WIB (Asia/Jakarta, UTC+7)
     const now = new Date();
     const wibDateParts = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Jakarta",
@@ -347,25 +374,13 @@ export async function POST(req: Request) {
     const currentTimeStr = `${timeFormatter.format(now).replace(".", ":")} WIB`;
     const currentWibMinutes = parseTimeToMinutes(currentTimeStr) ?? 0;
 
-    // Fetch branch work schedule & weekly_schedule from tutor_attendance_qrs
-    let branchScheduleRow: any = null;
-    try {
-      const rows = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT * FROM "tutor_attendance_qrs" WHERE "branch_id" = $1 LIMIT 1`,
-        branch.id
-      );
-      if (rows.length > 0) branchScheduleRow = rows[0];
-    } catch {}
-
-    const weeklySchedule = branchScheduleRow?.weekly_schedule || DEFAULT_WEEKLY_SCHEDULE;
-
     // Calculate day of week in WIB (0 = Minggu, 1 = Senin, ..., 6 = Sabtu)
     const dayOfWeek = String(todayMidnight.getUTCDay());
     const daySessions: any[] = (weeklySchedule && Array.isArray(weeklySchedule[dayOfWeek]))
       ? weeklySchedule[dayOfWeek]
       : [];
 
-    // 5. Match Active Work Session for today
+    // 6. Match Active Work Session for today
     let matchedSession: any = null;
     if (sessionId) {
       matchedSession = daySessions.find((s) => s.id === sessionId);
@@ -410,35 +425,98 @@ export async function POST(req: Request) {
     const lateTolerance = matchedSession?.lateTolerance ?? (branchScheduleRow?.late_tolerance_minutes ?? branch.setting?.lateToleranceMinutes ?? 15);
     const earlyLeaveTolerance = matchedSession?.earlyLeaveTolerance ?? (branchScheduleRow?.early_leave_tolerance_minutes ?? branch.setting?.earlyLeaveToleranceMinutes ?? 0);
 
-    // 6. Check existing attendance for this user, date, and specific sessionName
-    const existingAttendance = await prisma.tutorAttendance.findFirst({
-      where: {
-        userId: userRecord.id,
-        attendanceDate: todayMidnight,
-        sessionName: activeSessionName,
-      },
-    });
+    // 7. Check existing attendance for this user and date
+    let existingAttendance: any = null;
 
     if (isCheckOut) {
+      // Check-Out: prioritize finding an OPEN check-in today for this user
+      // 1. Try to match activeSessionName with an open status
+      existingAttendance = await prisma.tutorAttendance.findFirst({
+        where: {
+          userId: userRecord.id,
+          attendanceDate: todayMidnight,
+          sessionName: activeSessionName,
+          OR: [
+            { checkOutTime: null },
+            { checkOutTime: "-" },
+            { checkOutTime: "" },
+          ],
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // 2. If not found, match ANY open check-in today (in case session switched or shift was named differently)
       if (!existingAttendance) {
+        existingAttendance = await prisma.tutorAttendance.findFirst({
+          where: {
+            userId: userRecord.id,
+            attendanceDate: todayMidnight,
+            OR: [
+              { checkOutTime: null },
+              { checkOutTime: "-" },
+              { checkOutTime: "" },
+            ],
+          },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+
+      // 3. If STILL not found, check if user already completed checkout today
+      if (!existingAttendance) {
+        const closedAttendance = await prisma.tutorAttendance.findFirst({
+          where: {
+            userId: userRecord.id,
+            attendanceDate: todayMidnight,
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (closedAttendance && closedAttendance.checkOutTime && closedAttendance.checkOutTime !== "-") {
+          return NextResponse.json(
+            {
+              error: `Anda sudah menyelesaikan presensi pulang hari ini (${closedAttendance.sessionName || "Sesi"}) pada pukul ${closedAttendance.checkOutTime}.`,
+              alreadyCheckedOut: true,
+              checkOutTime: closedAttendance.checkOutTime,
+            },
+            { status: 400 }
+          );
+        }
+
         return NextResponse.json(
-          { error: `Anda belum melakukan presensi masuk untuk ${activeSessionName} hari ini.` },
+          { error: `Anda belum melakukan presensi masuk hari ini. Silakan lakukan presensi masuk terlebih dahulu.` },
           { status: 400 }
         );
       }
+    } else {
+      // Check-In: find existing record for this exact session
+      existingAttendance = await prisma.tutorAttendance.findFirst({
+        where: {
+          userId: userRecord.id,
+          attendanceDate: todayMidnight,
+          sessionName: activeSessionName,
+        },
+      });
+    }
 
-      const workEndMinutes = parseTimeToMinutes(workEndStr) ?? 1020; // 17:00 default
+    if (isCheckOut) {
+      // Determine effective session & end times
+      const effectiveSessionName = existingAttendance.sessionName || activeSessionName;
+      const sessionForTimes = daySessions.find((s) => s.name?.toLowerCase() === effectiveSessionName?.toLowerCase()) || matchedSession;
+      const effectiveWorkEndStr = sessionForTimes?.endTime || workEndStr;
+      const effectiveEarlyLeaveTolerance = sessionForTimes?.earlyLeaveTolerance ?? earlyLeaveTolerance;
+
+      const workEndMinutes = parseTimeToMinutes(effectiveWorkEndStr) ?? 1020; // 17:00 default
 
       let isEarlyLeave = false;
       let earlyMinutes = 0;
-      if (currentWibMinutes < workEndMinutes - earlyLeaveTolerance) {
+      if (currentWibMinutes < workEndMinutes - effectiveEarlyLeaveTolerance) {
         isEarlyLeave = true;
         earlyMinutes = workEndMinutes - currentWibMinutes;
       }
 
       let checkoutNote = notes ? `Pulang: ${notes.trim()}` : "";
       if (isEarlyLeave) {
-        const earlyNote = `Pulang Awal ${earlyMinutes} mnt (${activeSessionName}: ${workEndStr})`;
+        const earlyNote = `Pulang Awal ${earlyMinutes} mnt (${effectiveSessionName}: ${effectiveWorkEndStr})`;
         checkoutNote = checkoutNote ? `${checkoutNote} | ${earlyNote}` : earlyNote;
       }
 
@@ -471,14 +549,14 @@ export async function POST(req: Request) {
         isCheckOut: true,
         isEarlyLeave,
         earlyMinutes,
-        sessionName: activeSessionName,
-        sessionId: activeSessionId,
-        workStartTime: workStartStr,
-        workEndTime: workEndStr,
-        earlyLeaveToleranceMinutes: earlyLeaveTolerance,
+        sessionName: effectiveSessionName,
+        sessionId: existingAttendance.sessionId || activeSessionId,
+        workStartTime: sessionForTimes?.startTime || workStartStr,
+        workEndTime: effectiveWorkEndStr,
+        earlyLeaveToleranceMinutes: effectiveEarlyLeaveTolerance,
         message: isEarlyLeave
-          ? `Presensi Pulang ${activeSessionName} berhasil dicatat pada ${currentTimeStr} (Pulang lebih awal ${earlyMinutes} menit).`
-          : `Presensi Pulang ${activeSessionName} berhasil dicatat pada ${currentTimeStr}!`,
+          ? `Presensi Pulang ${effectiveSessionName} berhasil dicatat pada ${currentTimeStr} (Pulang lebih awal ${earlyMinutes} menit).`
+          : `Presensi Pulang ${effectiveSessionName} berhasil dicatat pada ${currentTimeStr}! 🏠`,
         attendance: updated,
         distanceMeter,
       });
