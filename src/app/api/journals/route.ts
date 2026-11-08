@@ -11,12 +11,15 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const program = searchParams.get("program");
     const branch = searchParams.get("branch");
+    const branchId = searchParams.get("branchId");
 
     const whereClause: any = {};
     if (program) {
       whereClause.programType = program.toUpperCase() === "MEMBACA" ? "MEMBACA" : "MATEMATIKA";
     }
-    if (branch && branch !== "ALL") {
+    if (branchId && branchId !== "ALL") {
+      whereClause.branchId = branchId;
+    } else if (branch && branch !== "ALL") {
       whereClause.branch = { branchName: { contains: branch, mode: "insensitive" } };
     }
 
@@ -28,6 +31,8 @@ export async function GET(req: Request) {
 
     const formatted = journals.map((j) => ({
       id: j.id,
+      branchId: j.branchId,
+      studentId: j.studentId,
       studentName: j.studentName || "Semua Siswa",
       className: j.className || "Kelas Reguler",
       branch: (j.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
@@ -46,7 +51,6 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/journals - Create new teacher journal
 // POST /api/journals - Create new teacher journal (supports single or bulk)
 export async function POST(req: Request) {
   try {
@@ -55,6 +59,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const {
+      branchId: rawBranchId,
       studentName,
       studentNames,
       students: rawStudents,
@@ -71,10 +76,16 @@ export async function POST(req: Request) {
     const generateRefCode = () => `#${Math.random().toString(16).substring(2, 8)}`;
     const journalDate = date ? new Date(date) : new Date();
 
-    // Find branch
-    let branch = await prisma.branch.findFirst({
-      where: { branchName: { contains: branchName || "Singkut", mode: "insensitive" } },
-    });
+    // Find default branch
+    let branch = null;
+    if (rawBranchId) {
+      branch = await prisma.branch.findUnique({ where: { id: rawBranchId } });
+    }
+    if (!branch && branchName) {
+      branch = await prisma.branch.findFirst({
+        where: { branchName: { contains: branchName, mode: "insensitive" } },
+      });
+    }
     if (!branch) {
       branch = await prisma.branch.findFirst();
     }
@@ -86,7 +97,10 @@ export async function POST(req: Request) {
         if (!item.topic || !item.content) continue;
 
         let itemBranch = branch;
-        if (item.branch) {
+        if (item.branchId) {
+          const foundById = await prisma.branch.findUnique({ where: { id: item.branchId } });
+          if (foundById) itemBranch = foundById;
+        } else if (item.branch) {
           const found = await prisma.branch.findFirst({
             where: { branchName: { contains: item.branch, mode: "insensitive" } },
           });
@@ -120,6 +134,8 @@ export async function POST(req: Request) {
 
         createdList.push({
           id: created.id,
+          branchId: created.branchId,
+          studentId: created.studentId,
           studentName: created.studentName,
           className: created.className,
           branch: created.branch?.branchName || "Singkut",
@@ -186,6 +202,8 @@ export async function POST(req: Request) {
 
         createdList.push({
           id: created.id,
+          branchId: created.branchId,
+          studentId: created.studentId,
           studentName: created.studentName,
           className: created.className,
           branch: created.branch?.branchName || "Singkut",
@@ -232,6 +250,8 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         id: created.id,
+        branchId: created.branchId,
+        studentId: created.studentId,
         studentName: created.studentName,
         className: created.className,
         branch: created.branch?.branchName || "Singkut",

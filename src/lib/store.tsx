@@ -48,6 +48,8 @@ export interface BehaviorItem {
 
 export interface JournalItem {
   id: string;
+  branchId?: string;
+  studentId?: string;
   studentName: string;
   className: string;
   branch: "Singkut" | "Bangko";
@@ -7149,6 +7151,7 @@ const INITIAL_JOURNALS: JournalItem[] = [
     id: "j-1",
     studentName: "Aishwa Rahma Annida",
     className: "Kelas A",
+    branchId: "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     branch: "Singkut",
     topic: "Pengurangan (jari turun)",
     content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
@@ -7160,6 +7163,7 @@ const INITIAL_JOURNALS: JournalItem[] = [
     id: "j-welcome-1",
     studentName: "Aishwa Rahma Annida",
     className: "Kelas A",
+    branchId: "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     branch: "Singkut",
     topic: "Welcome to level 1",
     content: "Ananda menunjukkan perkembangan yang sangat baik. Meskipun baru pertama kali mengikuti pembelajaran, Ananda sudah sangat menguasai simbol jari dan mampu mengerjakan beberapa soal Level 1 dengan cepat. InsyaAllah, pada pertemuan berikutnya Ananda sudah siap mengikuti pembelajaran Level 1 bersama teman-teman.",
@@ -7171,6 +7175,7 @@ const INITIAL_JOURNALS: JournalItem[] = [
     id: "j-2",
     studentName: "Dzakiyyah Al Fajri",
     className: "Kelas B",
+    branchId: "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     branch: "Singkut",
     topic: "Pengurangan (jari turun)",
     content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
@@ -7182,6 +7187,7 @@ const INITIAL_JOURNALS: JournalItem[] = [
     id: "j-3",
     studentName: "Ghumaisha",
     className: "Kelas A",
+    branchId: "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     branch: "Singkut",
     topic: "Pengurangan (jari turun)",
     content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah mulai memahami materi yang dipelajari, namun masih sedikit bingung pada gerakan mundur yang melibatkan perpindahan kelompok jari. Yuk, terus latihan agar Ananda semakin terbiasa dan gerakannya semakin lancar. ✌️✨",
@@ -7193,6 +7199,7 @@ const INITIAL_JOURNALS: JournalItem[] = [
     id: "j-4",
     studentName: "Haris",
     className: "Kelas B",
+    branchId: "58fc6af5-537e-4dbf-9297-3a8b7859934f",
     branch: "Singkut",
     topic: "Pengurangan (jari turun)",
     content: "Alhamdulillah, hari ini Ananda dapat mengikuti pembelajaran dengan baik. Ananda sudah memahami materi yang dipelajari dan mampu mengikuti gerakan jari dengan benar. Pertahankan semangat belajarnya ya! 💪✨",
@@ -9292,16 +9299,28 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.error("Error updating admin in PostgreSQL:", err));
   };
 
-  const deleteBranchAdmin = (id: string) => {
+  const deleteBranchAdmin = async (id: string) => {
     setBranchAdmins((prev) => {
       const filtered = prev.filter((a) => a.id !== id);
       save("mf_branchAdmins", filtered);
       return filtered;
     });
 
-    fetch(`/api/admins?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    }).catch((err) => console.error("Error deleting admin from PostgreSQL:", err));
+    try {
+      const res = await fetch(`/api/admins?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        console.error("Error deleting admin from PostgreSQL:", res.statusText);
+        const fresh = await fetch("/api/admins").then((r) => r.json());
+        if (Array.isArray(fresh)) {
+          setBranchAdmins(fresh);
+          save("mf_branchAdmins", fresh);
+        }
+      }
+    } catch (err) {
+      console.error("Error deleting admin from PostgreSQL:", err);
+    }
   };
 
   // Attendance
@@ -9526,7 +9545,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
               const tempId = newItems[i]?.tempId;
               const idx = mapped.findIndex((m) => m.id === tempId);
               if (idx !== -1) {
-                mapped[idx] = { ...mapped[idx], id: c.id, refCode: c.refCode };
+                mapped[idx] = { ...mapped[idx], id: c.id, branchId: c.branchId || mapped[idx].branchId, refCode: c.refCode };
               }
             });
             save("mf_journals", mapped);

@@ -1,21 +1,35 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { History, Calendar, User, BookOpen, MapPin } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 function RiwayatJurnalContent() {
-  const { journals, students } = useAppStore();
+  const { journals, students, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
   const searchParams = useSearchParams();
   const paramProgram = searchParams?.get("program");
   const isMembaca = paramProgram === "MEMBACA";
 
+  const [branchFilter, setBranchFilter] = useState<string>(allowedBranch || "ALL");
+  const effectiveBranch = allowedBranch || (branchFilter === "ALL" ? null : branchFilter);
+
   const currentProgType = isMembaca ? "MEMBACA" : "MATEMATIKA";
   const scopedJournals = journals.filter((j) => {
-    const matchBranch = allowedBranch ? j.branch === allowedBranch : true;
+    let matchBranch = true;
+    if (effectiveBranch) {
+      const targetBranchObj = branches.find(
+        (b) => b.name?.toLowerCase() === effectiveBranch.toLowerCase() || b.id === effectiveBranch
+      );
+      if (j.branchId && targetBranchObj) {
+        matchBranch = j.branchId === targetBranchObj.id || j.branch === targetBranchObj.name;
+      } else {
+        matchBranch = j.branch?.toLowerCase() === effectiveBranch.toLowerCase();
+      }
+    }
     const matchProgram = j.programType
       ? j.programType === currentProgType
       : (() => {
@@ -50,7 +64,21 @@ function RiwayatJurnalContent() {
           </p>
         </div>
 
-        {!isSuperAdmin && (
+        {isSuperAdmin ? (
+          <CustomSelect
+            value={branchFilter}
+            onChange={setBranchFilter}
+            size="md"
+            className="min-w-[150px]"
+            options={[
+              { value: "ALL", label: "Semua Cabang" },
+              ...branches.map((b) => ({
+                value: b.name,
+                label: `Cabang: ${b.name}`,
+              })),
+            ]}
+          />
+        ) : (
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-bold text-emerald-700 dark:text-emerald-300 self-start">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
             <span>Cabang {allowedBranch}</span>

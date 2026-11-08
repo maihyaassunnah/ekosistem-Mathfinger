@@ -12,6 +12,7 @@ import {
   Trash2,
   Key,
   CheckCircle2,
+  AlertTriangle,
   UserPlus,
   Mail,
   Lock,
@@ -69,6 +70,11 @@ export default function CabangDanAdminPage() {
   // Admin Form Modal State
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<BranchAdminItem | null>(null);
+  const [passwordModalAdmin, setPasswordModalAdmin] = useState<BranchAdminItem | null>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordAlert, setPasswordAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
   const [adminForm, setAdminForm] = useState({
     fullName: "",
     email: "",
@@ -164,7 +170,7 @@ export default function CabangDanAdminPage() {
     setAdminForm({
       fullName: a.fullName,
       email: a.email,
-      password: a.password || "password123",
+      password: "",
       phone: a.phone,
       branchName: a.branchName,
       role: a.role,
@@ -177,40 +183,97 @@ export default function CabangDanAdminPage() {
     });
   };
 
-  const handleSubmitAdmin = (e: React.FormEvent) => {
+  const handleSaveNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingAdmin) {
-      updateBranchAdmin(editingAdmin.id, {
-        fullName: adminForm.fullName,
-        email: adminForm.email,
-        phone: adminForm.phone,
-        branchName: adminForm.branchName,
-        role: adminForm.role,
-        status: adminForm.status,
-        password: adminForm.password,
-        avatarUrl: adminForm.avatarUrl,
-        ttl: adminForm.ttl,
-        address: adminForm.address,
-        lastEducation: adminForm.lastEducation,
-        gender: adminForm.gender,
+    if (!passwordModalAdmin || !newPasswordInput.trim()) return;
+    setIsSavingPassword(true);
+    setPasswordAlert(null);
+
+    try {
+      const res = await fetch("/api/admins", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: passwordModalAdmin.id,
+          password: newPasswordInput.trim(),
+        }),
       });
-      setEditingAdmin(null);
-    } else {
-      addBranchAdmin({
-        fullName: adminForm.fullName,
-        email: adminForm.email,
-        phone: adminForm.phone,
-        branchName: adminForm.branchName,
-        role: adminForm.role,
-        status: adminForm.status,
-        password: adminForm.password,
-        avatarUrl: adminForm.avatarUrl,
-        ttl: adminForm.ttl,
-        address: adminForm.address,
-        lastEducation: adminForm.lastEducation,
-        gender: adminForm.gender,
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Gagal mengubah kata sandi.");
+      }
+
+      updateBranchAdmin(passwordModalAdmin.id, {
+        password: newPasswordInput.trim(),
       });
-      setIsAddAdminOpen(false);
+
+      setPasswordAlert({
+        type: "success",
+        message: "Kata sandi berhasil diperbarui permanen di database server!",
+      });
+      setSuccessToast(`Kata sandi untuk ${passwordModalAdmin.fullName} berhasil diperbarui!`);
+
+      setTimeout(() => {
+        setPasswordModalAdmin(null);
+        setPasswordAlert(null);
+        setIsSavingPassword(false);
+        setSuccessToast(null);
+      }, 1500);
+    } catch (err: any) {
+      setPasswordAlert({
+        type: "error",
+        message: err.message || "Gagal memperbarui kata sandi akun.",
+      });
+      setIsSavingPassword(false);
+    }
+  };
+
+  const handleSubmitAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingAdmin(true);
+    try {
+      if (editingAdmin) {
+        const updatePayload: any = {
+          fullName: adminForm.fullName,
+          email: adminForm.email,
+          phone: adminForm.phone,
+          branchName: adminForm.branchName,
+          role: adminForm.role,
+          status: adminForm.status,
+          avatarUrl: adminForm.avatarUrl,
+          ttl: adminForm.ttl,
+          address: adminForm.address,
+          lastEducation: adminForm.lastEducation,
+          gender: adminForm.gender,
+        };
+        if (adminForm.password && adminForm.password.trim().length > 0) {
+          updatePayload.password = adminForm.password.trim();
+        }
+        updateBranchAdmin(editingAdmin.id, updatePayload);
+        setEditingAdmin(null);
+        setSuccessToast("Data akun berhasil diperbarui!");
+      } else {
+        addBranchAdmin({
+          fullName: adminForm.fullName,
+          email: adminForm.email,
+          phone: adminForm.phone,
+          branchName: adminForm.branchName,
+          role: adminForm.role,
+          status: adminForm.status,
+          password: adminForm.password,
+          avatarUrl: adminForm.avatarUrl,
+          ttl: adminForm.ttl,
+          address: adminForm.address,
+          lastEducation: adminForm.lastEducation,
+          gender: adminForm.gender,
+        });
+        setIsAddAdminOpen(false);
+        setSuccessToast("Akun baru berhasil diterbitkan!");
+      }
+    } finally {
+      setIsSubmittingAdmin(false);
+      setTimeout(() => setSuccessToast(null), 3500);
     }
   };
 
@@ -533,9 +596,13 @@ export default function CabangDanAdminPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => alert(`Password baru dikirim ke email: ${adm.email}`)}
-                    className="p-1.5 rounded-lg hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                    title="Reset Password"
+                    onClick={() => {
+                      setPasswordModalAdmin(adm);
+                      setNewPasswordInput("");
+                      setPasswordAlert(null);
+                    }}
+                    className="p-1.5 rounded-lg hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-slate-400 hover:text-amber-600 cursor-pointer transition-colors"
+                    title="Ubah Password Akun"
                   >
                     <Key className="w-3.5 h-3.5" />
                   </button>
@@ -847,11 +914,11 @@ export default function CabangDanAdminPage() {
                     type="text"
                     value={adminForm.password}
                     onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
-                    placeholder="password123"
+                    placeholder={editingAdmin ? "Kosongkan jika tidak diubah" : "password123"}
                     className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                   <span className="text-[10px] text-slate-400 mt-0.5 block">
-                    Untuk opsi login manual
+                    {editingAdmin ? "Biarkan kosong jika kata sandi tidak ingin diubah" : "Untuk opsi login manual"}
                   </span>
                 </div>
               </div>
@@ -998,7 +1065,7 @@ export default function CabangDanAdminPage() {
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-500/20 text-white font-extrabold cursor-pointer transition-colors"
                 >
-                  {editingAdmin ? "Simpan Akun" : "Terbitkan Akun"}
+                  {isSubmittingAdmin ? "Menyimpan..." : (editingAdmin ? "Simpan Akun" : "Terbitkan Akun")}
                 </button>
               </div>
             </form>
@@ -1012,6 +1079,97 @@ export default function CabangDanAdminPage() {
           <span>{successToast}</span>
         </div>
       )}
+
+      {/* Modal Ubah Password Akun */}
+      {passwordModalAdmin && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0f1a36] rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-[#1d2d5a]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1d2d5a]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-sm">
+                    Ubah Kata Sandi
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {passwordModalAdmin.fullName}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordModalAdmin(null);
+                  setPasswordAlert(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {passwordAlert && (
+              <div
+                className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                  passwordAlert.type === "success"
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                    : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
+                }`}
+              >
+                {passwordAlert.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                )}
+                <span>{passwordAlert.message}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveNewPassword} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-extrabold mb-1">
+                  Kata Sandi Baru
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  placeholder="Masukkan kata sandi baru..."
+                  className="w-full p-2.5 bg-white dark:bg-[#0b1329] border border-slate-300 dark:border-[#1d2d5a] text-slate-900 dark:text-white rounded-xl font-mono focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Password akan dienkripsi dan langsung disimpan ke database server.
+                </span>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordModalAdmin(null);
+                    setPasswordAlert(null);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingPassword || !newPasswordInput.trim()}
+                  className="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 shadow-xs text-white font-extrabold cursor-pointer transition-colors disabled:opacity-50"
+                >
+                  {isSavingPassword ? "Menyimpan..." : "Simpan Kata Sandi"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

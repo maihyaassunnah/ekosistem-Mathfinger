@@ -157,17 +157,37 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "ID admin wajib disertakan" }, { status: 400 });
     }
 
-    const currentUserId = (session?.user as any)?.id;
-    const currentUserRole = (session?.user as any)?.role;
-    const isSuperAdmin =
-      currentUserRole === "SUPER_ADMIN" ||
-      currentUserRole === "Super Admin" ||
-      session?.user?.email === "wahyudinhafiz123@gmail.com";
+    const sessionEmail = session?.user?.email?.toLowerCase().trim();
+    let dbCurrentUser = null;
+    let isSuperAdmin = sessionEmail === "wahyudinhafiz123@gmail.com";
+
+    if (sessionEmail) {
+      dbCurrentUser = await prisma.user.findUnique({
+        where: { email: sessionEmail },
+      });
+      if (dbCurrentUser?.role === "SUPER_ADMIN") {
+        isSuperAdmin = true;
+      }
+    }
+
+    const currentUserId = (session?.user as any)?.id || dbCurrentUser?.id;
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
+    }
+
+    const isSelf =
+      currentUserId === id ||
+      (sessionEmail && sessionEmail === targetUser.email.toLowerCase().trim());
 
     // Only SUPER_ADMIN can edit other admins or change role/status
-    if (!isSuperAdmin && currentUserId !== id) {
+    if (!isSuperAdmin && !isSelf) {
       return NextResponse.json(
-        { error: "Forbidden: Hanya Super Admin yang dapat mengubah akun admin lain." },
+        { error: "Forbidden: Hanya Super Admin yang dapat mengubah akun pengguna lain." },
         { status: 403 }
       );
     }
@@ -258,6 +278,44 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "ID admin wajib disertakan" }, { status: 400 });
     }
 
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
+    }
+
+    // 1. Clean up TutorAttendance
+    await prisma.tutorAttendance.deleteMany({ where: { userId: id } });
+
+    // 2. Detach or reassign TeacherJournal
+    await prisma.teacherJournal.updateMany({
+      where: { tutorId: id },
+      data: { tutorId: null },
+    });
+
+    // 3. Handle Attendance foreign key (reassign to another admin/tutor in branch or super admin)
+    const fallbackUser = await prisma.user.findFirst({
+      where: {
+        id: { not: id },
+        OR: [
+          { branchId: targetUser.branchId },
+          { role: "SUPER_ADMIN" },
+        ],
+      },
+    });
+
+    if (fallbackUser) {
+      await prisma.attendance.updateMany({
+        where: { tutorId: id },
+        data: { tutorId: fallbackUser.id },
+      });
+    } else {
+      await prisma.attendance.deleteMany({ where: { tutorId: id } });
+    }
+
+    // 4. Delete user permanently
     await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({ success: true });

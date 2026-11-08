@@ -298,37 +298,54 @@ export default function PengaturanPage() {
     setStatusAlert(null);
 
     try {
-      const adminId = matchedAdmin?.id;
+      let adminId = matchedAdmin?.id || (currentUser as any)?.id;
+
+      // Fallback: If not found in memory, query /api/admins by email
+      if (!adminId && currentUser.email) {
+        try {
+          const adminsRes = await fetch("/api/admins").then((r) => r.json());
+          if (Array.isArray(adminsRes)) {
+            const found = adminsRes.find(
+              (a: any) => a.email?.toLowerCase().trim() === currentUser.email?.toLowerCase().trim()
+            );
+            if (found?.id) adminId = found.id;
+          }
+        } catch (fetchErr) {
+          console.error("Error fetching admin id fallback:", fetchErr);
+        }
+      }
+
+      if (!adminId) {
+        throw new Error("ID Akun tidak ditemukan di database. Pastikan sesi Anda valid.");
+      }
 
       // Update in PostgreSQL via /api/admins
-      if (adminId) {
-        const payload: any = {
-          id: adminId,
-          fullName,
-          phone,
-          avatarUrl,
-        };
-        if (password.trim()) {
-          payload.password = password.trim();
-        }
-
-        const res = await fetch("/api/admins", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || "Gagal menyimpan perubahan ke server.");
-        }
-
-        updateBranchAdmin(adminId, {
-          fullName,
-          phone,
-          avatarUrl,
-        });
+      const payload: any = {
+        id: adminId,
+        fullName,
+        phone,
+        avatarUrl,
+      };
+      if (password.trim()) {
+        payload.password = password.trim();
       }
+
+      const res = await fetch("/api/admins", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Gagal menyimpan perubahan ke server.");
+      }
+
+      updateBranchAdmin(adminId, {
+        fullName,
+        phone,
+        avatarUrl,
+      });
 
       // Update local storage so sidebar immediately reflects new name/avatar
       try {
@@ -345,15 +362,17 @@ export default function PengaturanPage() {
         );
       } catch {}
 
+      const hasPasswordChange = password.trim().length > 0;
       setStatusAlert({
         type: "success",
-        message: "Profil dan foto berhasil diperbarui di database!",
+        message: hasPasswordChange
+          ? "Profil dan kata sandi baru berhasil diperbarui di database server!"
+          : "Profil akun berhasil diperbarui di database!",
       });
       setPassword("");
       setTimeout(() => {
         setStatusAlert(null);
-        window.location.reload();
-      }, 1500);
+      }, 3500);
     } catch (err: any) {
       setStatusAlert({
         type: "error",

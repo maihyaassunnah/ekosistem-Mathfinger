@@ -13,6 +13,7 @@ import {
   Check,
   X,
   BookText,
+  MapPin,
 } from "lucide-react";
 import { useAppStore, JournalItem } from "@/lib/store";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -20,13 +21,14 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function JurnalGuruContent() {
-  const { journals, addJournal, addJournalsBulk, deleteJournal, classes, students } = useAppStore();
+  const { journals, addJournal, addJournalsBulk, deleteJournal, classes, students, branches } = useAppStore();
   const { isSuperAdmin, allowedBranch, name: currentUserName } = useCurrentUser();
   const searchParams = useSearchParams();
   const paramProgram = searchParams?.get("program");
   const isMembaca = paramProgram === "MEMBACA";
 
   const [search, setSearch] = useState("");
+  const [branchFilter, setBranchFilter] = useState<string>(allowedBranch || "ALL");
   const [classFilter, setClassFilter] = useState("ALL");
   const [studentFilter, setStudentFilter] = useState("ALL");
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -54,10 +56,21 @@ function JurnalGuruContent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const scopedStudents = (allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students).filter((s) =>
+  const effectiveBranch = allowedBranch || (branchFilter === "ALL" ? null : branchFilter);
+
+  const scopedStudents = (
+    effectiveBranch
+      ? students.filter((s) => s.branch === effectiveBranch || (s as any).branchId === effectiveBranch)
+      : students
+  ).filter((s) =>
     isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
   );
-  const scopedClasses = (allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes).filter((c) =>
+
+  const scopedClasses = (
+    effectiveBranch
+      ? classes.filter((c) => c.branch === effectiveBranch || (c as any).branchId === effectiveBranch)
+      : classes
+  ).filter((c) =>
     isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA"
   );
 
@@ -76,15 +89,42 @@ function JurnalGuruContent() {
     date: new Date().toISOString().split("T")[0],
   });
 
+  const modalTargetBranch = isSuperAdmin
+    ? form.branch
+    : ((allowedBranch || "Singkut") as "Singkut" | "Bangko");
+
+  const currentModalStudents = (
+    isSuperAdmin
+      ? students.filter((s) => s.branch === modalTargetBranch || (s as any).branchId === modalTargetBranch)
+      : scopedStudents
+  ).filter((s) =>
+    isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA"
+  );
+
+  const currentModalClasses = (
+    isSuperAdmin
+      ? classes.filter((c) => c.branch === modalTargetBranch || (c as any).branchId === modalTargetBranch)
+      : scopedClasses
+  ).filter((c) =>
+    isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA"
+  );
+
   const handleOpenAddModal = () => {
-    // Select all scoped active students by default (e.g. 50 Terpilih)
-    setSelectedStudentIds(scopedStudents.map((s) => s.id));
+    const defaultBranch = (allowedBranch || (branchFilter !== "ALL" ? branchFilter : "Singkut")) as "Singkut" | "Bangko";
+    const initialClasses = classes.filter(
+      (c) => (c.branch || "Singkut") === defaultBranch && (isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA")
+    );
+    const initialStudents = students.filter(
+      (s) => (s.branch || "Singkut") === defaultBranch && (isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA")
+    );
+
+    setSelectedStudentIds(initialStudents.map((s) => s.id));
     setCustomStudentNotes({});
     setModalClassFilter("ALL");
     setModalSearch("");
     setForm({
-      className: scopedClasses[0]?.name || "Kelas A",
-      branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
+      className: initialClasses[0]?.name || "Kelas A",
+      branch: defaultBranch,
       topic: "",
       content: "",
       teacher: currentUserName || "Kak Guru",
@@ -93,7 +133,7 @@ function JurnalGuruContent() {
     setIsAddOpen(true);
   };
 
-  const visibleModalStudents = scopedStudents.filter((st) => {
+  const visibleModalStudents = currentModalStudents.filter((st) => {
     const matchClass = modalClassFilter === "ALL" ? true : st.className === modalClassFilter;
     const matchSearch = modalSearch.trim()
       ? st.name.toLowerCase().includes(modalSearch.toLowerCase())
@@ -132,7 +172,17 @@ function JurnalGuruContent() {
   };
 
   const filteredJournals = journals.filter((j) => {
-    const matchBranch = allowedBranch ? j.branch === allowedBranch : true;
+    let matchBranch = true;
+    if (effectiveBranch) {
+      const targetBranchObj = branches.find(
+        (b) => b.name?.toLowerCase() === effectiveBranch.toLowerCase() || b.id === effectiveBranch
+      );
+      if (j.branchId && targetBranchObj) {
+        matchBranch = j.branchId === targetBranchObj.id || j.branch === targetBranchObj.name;
+      } else {
+        matchBranch = j.branch?.toLowerCase() === effectiveBranch.toLowerCase();
+      }
+    }
     const matchSearch =
       j.topic.toLowerCase().includes(search.toLowerCase()) ||
       j.content.toLowerCase().includes(search.toLowerCase()) ||
@@ -155,21 +205,26 @@ function JurnalGuruContent() {
   });
 
   const executeSubmitAdd = () => {
-    const selectedStudents = scopedStudents.filter((s) => selectedStudentIds.includes(s.id));
+    const selectedStudents = currentModalStudents.filter((s) => selectedStudentIds.includes(s.id));
     if (selectedStudents.length === 0) return;
 
     const defaultContent = form.content.trim();
 
     const journalsToCreate = selectedStudents.map((st) => {
       const customNote = customStudentNotes[st.id]?.trim();
-      // If individual custom note is filled, use it; otherwise fallback to general evaluation note
       const finalContent = customNote ? customNote : defaultContent;
 
+      const studentBranchName = st.branch || form.branch || "Singkut";
+      const branchObj = branches.find(
+        (b) => b.name?.toLowerCase() === studentBranchName.toLowerCase() || b.id === (st as any).branchId
+      );
+
       return {
+        branchId: branchObj?.id,
         studentId: st.id,
         studentName: st.name,
         className: st.className || form.className || "Kelas A",
-        branch: (st.branch || form.branch) as "Singkut" | "Bangko",
+        branch: (branchObj?.name || studentBranchName) as "Singkut" | "Bangko",
         topic: form.topic.trim(),
         content: finalContent,
         teacher: form.teacher.trim() || currentUserName || "Kak Guru",
@@ -306,6 +361,32 @@ function JurnalGuruContent() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Branch Filter for Super Admin */}
+          {isSuperAdmin ? (
+            <CustomSelect
+              value={branchFilter}
+              onChange={(val) => {
+                setBranchFilter(val);
+                setClassFilter("ALL");
+                setStudentFilter("ALL");
+              }}
+              size="md"
+              className="min-w-[150px]"
+              options={[
+                { value: "ALL", label: "Semua Cabang" },
+                ...branches.map((b) => ({
+                  value: b.name,
+                  label: `Cabang: ${b.name}`,
+                })),
+              ]}
+            />
+          ) : (
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Cabang {allowedBranch}</span>
+            </div>
+          )}
+
           <CustomSelect
             value={classFilter}
             onChange={setClassFilter}
@@ -353,13 +434,19 @@ function JurnalGuruContent() {
             {/* Header: Name, Class Badge, Actions */}
             <div>
               <div className="flex items-center justify-between gap-2 pb-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                     {j.studentName}
                   </h3>
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60">
                     {j.className}
                   </span>
+                  {isSuperAdmin && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-900/60 flex items-center gap-1">
+                      <MapPin className="w-2.5 h-2.5" />
+                      {j.branch}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -455,7 +542,37 @@ function JurnalGuruContent() {
             </div>
 
             <form onSubmit={handleSubmitAdd} className="flex-1 overflow-y-auto pr-1 space-y-4 text-xs mt-2">
-              {/* Row 1: Tanggal & Nama Pengajar */}
+              {/* Row 1: Tanggal, Cabang (Super Admin), & Nama Pengajar */}
+              {isSuperAdmin && (
+                <div>
+                  <label className="block text-[11px] font-extrabold tracking-wider uppercase text-slate-700 dark:text-slate-300 mb-1.5">
+                    CABANG BIMBINGAN *
+                  </label>
+                  <select
+                    value={form.branch}
+                    onChange={(e) => {
+                      const newBranch = e.target.value as "Singkut" | "Bangko";
+                      const newClasses = classes.filter(
+                        (c) => (c.branch || "Singkut") === newBranch && (isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA")
+                      );
+                      const newStudents = students.filter(
+                        (s) => (s.branch || "Singkut") === newBranch && (isMembaca ? (s as any).programType === "MEMBACA" : (s as any).programType !== "MEMBACA")
+                      );
+                      setForm({ ...form, branch: newBranch, className: newClasses[0]?.name || "Kelas A" });
+                      setSelectedStudentIds(newStudents.map((s) => s.id));
+                      setModalClassFilter("ALL");
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        Cabang {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-[11px] font-extrabold tracking-wider uppercase text-slate-700 dark:text-slate-300 mb-1.5">
@@ -538,7 +655,7 @@ function JurnalGuruContent() {
                     className="px-3 py-1.5 bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
                   >
                     <option value="ALL">Semua Kelas</option>
-                    {scopedClasses.map((c) => (
+                    {currentModalClasses.map((c) => (
                       <option key={c.id} value={c.name}>
                         {c.name}
                       </option>
