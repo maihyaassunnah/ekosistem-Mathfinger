@@ -18,11 +18,12 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return Math.round(R * c);
 }
 
-// Helper: Build branch filter supporting aliases (Bangko, Tabir Timur, Singkut)
+// Helper: Build branch filter supporting aliases (Bangko, Tabir Timur, Singkut, Sarolangun)
 function buildBranchFilter(branchStr: string) {
   const clean = branchStr.replace(/^Cabang\s+/i, "").trim();
   const isBangkoOrTabir = /^(bangko|tabir|bgk)/i.test(clean);
   const isSingkut = /^(singkut|skt)/i.test(clean);
+  const isSarolangun = /^(sarolangun|srl)/i.test(clean);
 
   if (isBangkoOrTabir) {
     return {
@@ -39,6 +40,15 @@ function buildBranchFilter(branchStr: string) {
       OR: [
         { branchName: { contains: "Singkut", mode: "insensitive" as const } },
         { branchCode: { equals: "SKT", mode: "insensitive" as const } },
+      ],
+    };
+  }
+
+  if (isSarolangun) {
+    return {
+      OR: [
+        { branchName: { contains: "Sarolangun", mode: "insensitive" as const } },
+        { branchCode: { equals: "SRL", mode: "insensitive" as const } },
       ],
     };
   }

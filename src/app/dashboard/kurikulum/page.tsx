@@ -44,43 +44,40 @@ export default function KurikulumPage() {
   const effectiveBranch = allowedBranch || selectedBranch;
 
   // Well-defined branch IDs
-  const singkutBranchId = "58fc6af5-537e-4dbf-9297-3a8b7859934f";
-  const bangkoBranchId = "07a1fb4b-87af-4d88-9bed-d76168314f1c";
-
   const effectiveBranchId = useMemo(() => {
-    if (effectiveBranch === "Singkut") return singkutBranchId;
-    return bangkoBranchId;
-  }, [effectiveBranch]);
+    const matched = branches.find(
+      (b) => b.name?.toLowerCase().trim() === effectiveBranch?.toLowerCase().trim()
+    );
+    if (matched) return matched.id;
+    if (effectiveBranch === "Singkut") return "58fc6af5-537e-4dbf-9297-3a8b7859934f";
+    if (effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur") return "07a1fb4b-87af-4d88-9bed-d76168314f1c";
+    return "fb12e23c-526c-4fb5-9f60-b5a01438fc82";
+  }, [branches, effectiveBranch]);
 
   // Filter modules strictly scoped to the active branch
   const scopedCurriculumModules = useMemo(() => {
+    const eClean = effectiveBranch.toLowerCase().trim();
     return curriculumModules.filter((m) => {
-      if (effectiveBranch === "Singkut") {
-        return m.branch === "Singkut" || m.branchId === singkutBranchId;
-      }
-      return (
-        m.branch === "Bangko" ||
-        (m.branch as string) === "Tabir Timur" ||
-        m.branchId === bangkoBranchId
-      );
+      const mClean = (m.branch || "").toLowerCase().trim();
+      if (mClean === eClean) return true;
+      if (m.branchId && m.branchId === effectiveBranchId) return true;
+      if ((eClean === "bangko" || eClean === "tabir timur") && (mClean === "bangko" || mClean === "tabir timur")) return true;
+      return false;
     });
-  }, [curriculumModules, effectiveBranch]);
+  }, [curriculumModules, effectiveBranch, effectiveBranchId]);
 
   // Count modules per branch for tab badges
-  const singkutCount = useMemo(() => {
-    return curriculumModules.filter(
-      (m) => m.branch === "Singkut" || m.branchId === singkutBranchId
-    ).length;
-  }, [curriculumModules]);
-
-  const bangkoCount = useMemo(() => {
-    return curriculumModules.filter(
-      (m) =>
-        m.branch === "Bangko" ||
-        (m.branch as string) === "Tabir Timur" ||
-        m.branchId === bangkoBranchId
-    ).length;
-  }, [curriculumModules]);
+  const branchCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const b of branches) {
+      const bClean = b.name.toLowerCase().trim();
+      counts[b.name] = curriculumModules.filter((m) => {
+        const mClean = (m.branch || "").toLowerCase().trim();
+        return mClean === bClean || (m.branchId && m.branchId === b.id);
+      }).length;
+    }
+    return counts;
+  }, [curriculumModules, branches]);
 
   const [selectedModuleId, setSelectedModuleId] = useState<string>("");
 
@@ -197,7 +194,7 @@ export default function KurikulumPage() {
 
         addCurriculumModule({
           branchId: effectiveBranchId,
-          branch: effectiveBranch === "Singkut" ? "Singkut" : "Bangko",
+          branch: effectiveBranch,
           levelTitle: form.levelTitle,
           shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
           learningGoals: form.learningGoals,
@@ -240,7 +237,7 @@ export default function KurikulumPage() {
 
         updateCurriculumModule(editingModule.id, {
           branchId: editingModule.branchId || effectiveBranchId,
-          branch: editingModule.branch || (effectiveBranch === "Singkut" ? "Singkut" : "Bangko"),
+          branch: editingModule.branch || effectiveBranch,
           levelTitle: form.levelTitle,
           shortDesc: form.shortDesc || form.learningMaterials.slice(0, 45) + "...",
           learningGoals: form.learningGoals,
@@ -254,7 +251,7 @@ export default function KurikulumPage() {
     });
   };
 
-  const branchDisplayTitle = effectiveBranch === "Singkut" ? "Cabang Singkut" : "Cabang Bangko / Tabir Timur";
+  const branchDisplayTitle = `Cabang ${effectiveBranch}`;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto min-h-screen">
@@ -300,53 +297,42 @@ export default function KurikulumPage() {
           </div>
         </div>
 
-        {/* Sub-menu Tabs Cabang Aktif (Singkut vs Bangko / Tabir Timur) */}
-        <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-[#0b1329] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] w-fit">
-          <button
-            type="button"
-            onClick={() => isSuperAdmin && setSelectedBranch("Singkut")}
-            disabled={!isSuperAdmin && allowedBranch !== "Singkut"}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              effectiveBranch === "Singkut"
-                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-[#0f1a36] disabled:opacity-50 disabled:cursor-not-allowed"
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Cabang Singkut</span>
-            <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                effectiveBranch === "Singkut"
-                  ? "bg-white/20 text-white"
-                  : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              {singkutCount}
-            </span>
-          </button>
+        {/* Sub-menu Tabs Cabang Aktif Dinamis */}
+        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 dark:bg-[#0b1329] rounded-2xl border border-slate-200 dark:border-[#1d2d5a] w-fit">
+          {branches.map((b) => {
+            const isSelected =
+              effectiveBranch?.toLowerCase().trim() === b.name?.toLowerCase().trim() ||
+              ((b.name === "Bangko" || b.name === "Tabir Timur") &&
+                (effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"));
+            const count = branchCounts[b.name] ?? 0;
+            const isAllowed = isSuperAdmin || allowedBranch?.toLowerCase().trim() === b.name?.toLowerCase().trim();
 
-          <button
-            type="button"
-            onClick={() => isSuperAdmin && setSelectedBranch("Bangko")}
-            disabled={!isSuperAdmin && allowedBranch !== "Bangko" && allowedBranch !== "Tabir Timur"}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
-                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-[#0f1a36] disabled:opacity-50 disabled:cursor-not-allowed"
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Cabang Bangko (Tabir Timur)</span>
-            <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
-                  ? "bg-white/20 text-white"
-                  : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              {bangkoCount}
-            </span>
-          </button>
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => isSuperAdmin && setSelectedBranch(b.name)}
+                disabled={!isAllowed}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-emerald-600 text-white shadow-sm font-extrabold"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-[#0f1a36] disabled:opacity-50 disabled:cursor-not-allowed"
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Cabang {b.name}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                    isSelected
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

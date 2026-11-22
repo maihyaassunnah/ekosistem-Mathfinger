@@ -178,14 +178,10 @@ function SiswaContent() {
       const activeBranch = form.branch || (branchFilter !== "ALL" ? branchFilter : null);
       const filtered = curriculumModules.filter((m) => {
         if (!activeBranch) return true;
-        if (activeBranch === "Singkut") {
-          return m.branch === "Singkut" || m.branchId === "58fc6af5-537e-4dbf-9297-3a8b7859934f";
-        }
-        return (
-          m.branch === "Bangko" ||
-          (m.branch as string) === "Tabir Timur" ||
-          m.branchId === "07a1fb4b-87af-4d88-9bed-d76168314f1c"
-        );
+        const bClean = activeBranch.toLowerCase().trim();
+        const mClean = (m.branch || "").toLowerCase().trim();
+        const matchedBranchId = branches.find((b) => b.name?.toLowerCase().trim() === bClean)?.id;
+        return mClean === bClean || (matchedBranchId && m.branchId === matchedBranchId);
       });
       if (filtered.length > 0) {
         return filtered.map((m) => ({
@@ -255,12 +251,14 @@ function SiswaContent() {
     const defaultBranch = (allowedBranch || (branchFilter !== "ALL" ? branchFilter : (branches[0]?.name || "Singkut"))) as any;
     const branchClasses = classes.filter(
       (c) =>
-        c.branch === defaultBranch &&
+        c.branch?.toLowerCase().trim() === String(defaultBranch).toLowerCase().trim() &&
         (activeProgram === "MEMBACA"
           ? (c as any).programType === "MEMBACA"
           : (c as any).programType !== "MEMBACA")
     );
-    const defaultClass = branchClasses[0]?.name || (defaultBranch === "Singkut" ? "CLASS A" : "KELAS A1");
+    const defaultClass = branchClasses[0]?.name || "";
+    const matchedBranchObj = branches.find((b) => b.name?.toLowerCase().trim() === String(defaultBranch).toLowerCase().trim());
+    const defaultAddress = matchedBranchObj?.address || (defaultBranch === "Singkut" ? "Payolebar, Kec. Singkut" : (defaultBranch === "Bangko" ? "Jl. Murai, Kec. Tabir Timur" : "Perumahan Mutiara Gunung Kembang, Sarolangun"));
     const defaultMathLevel = curriculumModules[0]?.levelTitle || "Level Dasar: Pengenalan Simbol Jari";
 
     setForm({
@@ -272,7 +270,7 @@ function SiswaContent() {
       className: defaultClass,
       birthPlace: defaultBranch,
       birthDate: "2019-01-01",
-      address: defaultBranch === "Singkut" ? "Jl. Poros Singkut" : "Jl. Bangko",
+      address: defaultAddress,
       gradeLevel: activeProgram === "MEMBACA" ? "Level 1: Pra-Membaca & Pengenalan Huruf" : "Ket: Kelas 3",
       parentName: "",
       parentWhatsapp: "0812-",
@@ -393,7 +391,7 @@ function SiswaContent() {
         className: finalProgram === "MEMBACA" ? "Kelas Membaca 1" : "Kelas A",
         birthPlace: finalBranch,
         birthDate: "2019-01-01",
-        address: "Jl. Poros Singkut",
+        address: branches.find((b) => b.name === finalBranch)?.address || (finalBranch === "Singkut" ? "Payolebar, Kec. Singkut" : (finalBranch === "Bangko" ? "Jl. Murai, Kec. Tabir Timur" : "Perumahan Mutiara Gunung Kembang, Sarolangun")),
         gradeLevel:
           finalProgram === "MEMBACA"
             ? "Level 1: Pra-Membaca & Pengenalan Huruf"
@@ -1167,16 +1165,18 @@ function SiswaContent() {
                         const newBranch = val as any;
                         const branchClasses = classes.filter(
                           (c) =>
-                            c.branch === newBranch &&
+                            c.branch?.toLowerCase().trim() === String(newBranch).toLowerCase().trim() &&
                             (form.programType === "MEMBACA"
                               ? (c as any).programType === "MEMBACA"
                               : (c as any).programType !== "MEMBACA")
                         );
+                        const matchedB = branches.find((b) => b.name?.toLowerCase().trim() === String(newBranch).toLowerCase().trim());
                         setForm((prev) => ({
                           ...prev,
                           branch: newBranch,
-                          className: branchClasses[0]?.name || (newBranch === "Singkut" ? "CLASS A" : "KELAS A1"),
+                          className: branchClasses[0]?.name || "",
                           birthPlace: newBranch,
+                          address: matchedB?.address || prev.address,
                         }));
                       }}
                       className="w-full"
@@ -1197,18 +1197,22 @@ function SiswaContent() {
                       onChange={(val) => setForm((prev) => ({ ...prev, className: val }))}
                       className="w-full"
                       size="md"
-                      options={classes
-                        .filter(
+                      options={(() => {
+                        const branchFilteredClasses = classes.filter(
                           (c) =>
-                            c.branch === form.branch &&
+                            c.branch?.toLowerCase().trim() === form.branch?.toLowerCase().trim() &&
                             (form.programType === "MEMBACA"
                               ? (c as any).programType === "MEMBACA"
                               : (c as any).programType !== "MEMBACA")
-                        )
-                        .map((c) => ({
+                        );
+                        if (branchFilteredClasses.length === 0) {
+                          return [{ value: "", label: `-- Belum ada kelas Cabang ${form.branch} (Buat di Menu Kelas) --` }];
+                        }
+                        return branchFilteredClasses.map((c) => ({
                           value: c.name,
                           label: `${c.name} (${c.branch})`,
-                        }))}
+                        }));
+                      })()}
                     />
                   </div>
                 </div>

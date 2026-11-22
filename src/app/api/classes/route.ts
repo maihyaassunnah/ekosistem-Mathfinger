@@ -50,7 +50,7 @@ export async function GET(req: Request) {
         return {
           id: c.id,
           name: c.className,
-          branch: (c.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+          branch: c.branch?.branchName || "Singkut",
           days: c.days,
           time: c.time,
           teacher: c.teacherName || "Tutor Belum Ditentukan",
@@ -83,8 +83,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nama kelas, hari, dan jam wajib diisi" }, { status: 400 });
     }
 
+    const cleanBranch = (branchName || "").replace(/^Cabang\s+/i, "").trim();
     let branch = await prisma.branch.findFirst({
-      where: { branchName: { contains: branchName || "Singkut", mode: "insensitive" } },
+      where: {
+        OR: [
+          { branchName: { equals: cleanBranch, mode: "insensitive" } },
+          { branchName: { contains: cleanBranch || "Singkut", mode: "insensitive" } },
+          { branchCode: { equals: cleanBranch.toUpperCase(), mode: "insensitive" } },
+        ],
+      },
     });
     if (!branch) {
       branch = await prisma.branch.findFirst();

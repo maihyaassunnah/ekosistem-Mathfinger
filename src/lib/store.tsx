@@ -8518,10 +8518,15 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
         const enriched = branchesRes.map((b: any) => {
           const custom = financeMap[b.id] || financeMap[b.name] || {};
-          const bankName = b.bankName || custom.bankName || (b.name === "Singkut" ? "BCA" : "BRI");
-          const accountNumber = b.accountNumber || custom.accountNumber || (b.name === "Singkut" ? "7825-119-021" : "0123-01-002345-50-8");
-          const accountHolder = b.accountHolder || custom.accountHolder || `Math Fingers ${b.name}`;
-          const adminName = b.adminName || custom.adminName || (b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : "M. Hafiz, S.Pd");
+          const defaultBank = b.name === "Singkut" ? "BCA" : b.name === "Sarolangun" ? "BSI" : "BRI";
+          const defaultAcc = b.name === "Singkut" ? "7825-119-021" : b.name === "Sarolangun" ? "7181347656" : "0123-01-002345-50-8";
+          const defaultAdmin = b.name === "Singkut" ? "Febrianti Dewi, S.Pd" : b.name === "Sarolangun" ? "Asriaturrahmah, S.Pd" : "M. Hafiz, S.Pd";
+          const defaultHolder = b.name === "Sarolangun" ? "Asriaturrahmah" : `Math Fingers ${b.name}`;
+
+          const bankName = b.bankName || custom.bankName || defaultBank;
+          const accountNumber = b.accountNumber || custom.accountNumber || defaultAcc;
+          const accountHolder = b.accountHolder || custom.accountHolder || defaultHolder;
+          const adminName = b.adminName || custom.adminName || defaultAdmin;
           const signatureUrl = b.signatureUrl || custom.signatureUrl || "";
 
           financeMap[b.id] = { bankName, accountNumber, accountHolder, adminName, signatureUrl };

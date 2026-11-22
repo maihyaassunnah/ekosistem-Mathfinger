@@ -56,6 +56,7 @@ export default function InputNilaiPage() {
     behaviors,
     saveStudentKeaktifan,
     deleteBehavior,
+    branches,
   } = useAppStore();
 
   const currentUser = useCurrentUser();
@@ -73,33 +74,44 @@ export default function InputNilaiPage() {
   const effectiveBranch = allowedBranch || selectedBranch;
 
   // Student counts per branch for UI badges
-  const singkutStudentsCount = useMemo(() => {
-    return students.filter(
-      (s) => s.branch === "Singkut" && (s as any).programType !== "MEMBACA"
-    ).length;
-  }, [students]);
-
-  const bangkoStudentsCount = useMemo(() => {
-    return students.filter(
-      (s) => (s.branch === "Bangko" || (s.branch as string) === "Tabir Timur") && (s as any).programType !== "MEMBACA"
-    ).length;
-  }, [students]);
+  const branchStudentsCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const b of branches) {
+      const bClean = b.name.toLowerCase().trim();
+      counts[b.name] = students.filter((s) => {
+        if ((s as any).programType === "MEMBACA") return false;
+        const sClean = (s.branch || "").toLowerCase().trim();
+        return (
+          sClean === bClean ||
+          ((bClean === "bangko" || bClean === "tabir timur") &&
+            (sClean === "bangko" || sClean === "tabir timur"))
+        );
+      }).length;
+    }
+    return counts;
+  }, [students, branches]);
 
   // Scoped students strictly isolated by branch
   const scopedStudents = useMemo(() => {
+    const eClean = effectiveBranch.toLowerCase().trim();
     return students.filter((s) => {
       if ((s as any).programType === "MEMBACA") return false;
-      if (effectiveBranch === "Singkut") return s.branch === "Singkut";
-      return s.branch === "Bangko" || (s.branch as string) === "Tabir Timur";
+      const sClean = (s.branch || "").toLowerCase().trim();
+      if (sClean === eClean) return true;
+      if ((eClean === "bangko" || eClean === "tabir timur") && (sClean === "bangko" || sClean === "tabir timur")) return true;
+      return false;
     });
   }, [students, effectiveBranch]);
 
   // Scoped classes strictly isolated by branch
   const scopedClasses = useMemo(() => {
+    const eClean = effectiveBranch.toLowerCase().trim();
     return classes.filter((c) => {
       if ((c as any).programType === "MEMBACA") return false;
-      if (effectiveBranch === "Singkut") return c.branch === "Singkut";
-      return c.branch === "Bangko" || (c.branch as string) === "Tabir Timur";
+      const cClean = (c.branch || "").toLowerCase().trim();
+      if (cClean === eClean) return true;
+      if ((eClean === "bangko" || eClean === "tabir timur") && (cClean === "bangko" || cClean === "tabir timur")) return true;
+      return false;
     });
   }, [classes, effectiveBranch]);
 
@@ -441,14 +453,15 @@ export default function InputNilaiPage() {
   const evaluationColumns = useMemo(() => {
     const map = new Map<string, { key: string; topic: string; examDate: string }>();
 
+    const eClean = effectiveBranch.toLowerCase().trim();
     grades.forEach((g) => {
       // STRICT: hanya filter berdasarkan branch — TIDAK ada fallback ke nama siswa
-      // Ini mencegah sesi Bangko masuk ke kolom Singkut karena nama siswa yang sama
-      if (effectiveBranch === "Singkut") {
-        if (g.branch !== "Singkut") return;
-      } else {
-        if (g.branch !== "Bangko" && (g.branch as string) !== "Tabir Timur") return;
-      }
+      const gClean = (g.branch || "").toLowerCase().trim();
+      const match =
+        gClean === eClean ||
+        ((eClean === "bangko" || eClean === "tabir timur") &&
+          (gClean === "bangko" || gClean === "tabir timur"));
+      if (!match) return;
 
       const key = `${g.examDate}___${g.topic}`;
       if (!map.has(key)) {
@@ -527,9 +540,10 @@ export default function InputNilaiPage() {
       className: s.className,
       branch: s.branch || effectiveBranch,
       branchId:
-        effectiveBranch === "Singkut"
+        branches.find((b) => b.name?.toLowerCase().trim() === effectiveBranch?.toLowerCase().trim())?.id ||
+        (effectiveBranch === "Singkut"
           ? "58fc6af5-537e-4dbf-9297-3a8b7859934f"
-          : "07a1fb4b-87af-4d88-9bed-d76168314f1c",
+          : "07a1fb4b-87af-4d88-9bed-d76168314f1c"),
       topic: newSessionForm.topic.trim(),
       examDate: newSessionForm.examDate,
       score: Number(newSessionForm.defaultScore) || 80,
@@ -833,50 +847,41 @@ export default function InputNilaiPage() {
         </div>
 
         {/* Branch Toggle Buttons */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          {/* Cabang Singkut */}
-          <button
-            type="button"
-            onClick={() => isSuperAdmin && setSelectedBranch("Singkut")}
-            disabled={!isSuperAdmin && allowedBranch !== "Singkut"}
-            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              effectiveBranch === "Singkut"
-                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/30 font-extrabold"
-                : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
-            <span>Cabang Singkut</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-              effectiveBranch === "Singkut"
-                ? "bg-white/20 text-white"
-                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-            }`}>
-              {singkutStudentsCount} Siswa
-            </span>
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {branches.map((b) => {
+            const isSelected =
+              effectiveBranch?.toLowerCase().trim() === b.name?.toLowerCase().trim() ||
+              ((b.name === "Bangko" || b.name === "Tabir Timur") &&
+                (effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"));
+            const count = branchStudentsCount[b.name] ?? 0;
+            const isAllowed = isSuperAdmin || allowedBranch?.toLowerCase().trim() === b.name?.toLowerCase().trim();
 
-          {/* Cabang Bangko / Tabir Timur */}
-          <button
-            type="button"
-            onClick={() => isSuperAdmin && setSelectedBranch("Bangko")}
-            disabled={!isSuperAdmin && allowedBranch !== "Bangko" && allowedBranch !== "Tabir Timur"}
-            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
-                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/30 font-extrabold"
-                : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
-            <span>Cabang Bangko / Tabir Timur</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-              effectiveBranch === "Bangko" || effectiveBranch === "Tabir Timur"
-                ? "bg-white/20 text-white"
-                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-            }`}>
-              {bangkoStudentsCount} Siswa
-            </span>
-          </button>
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => isSuperAdmin && setSelectedBranch(b.name)}
+                disabled={!isAllowed}
+                className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/30 font-extrabold"
+                    : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                }`}
+              >
+                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                <span>Cabang {b.name}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    isSelected
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                  }`}
+                >
+                  {count} Siswa
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -1904,7 +1909,7 @@ export default function InputNilaiPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
-                  Leger Nilai & Matriks Uji Kompetensi ({effectiveBranch === "Singkut" ? "Cabang Singkut" : "Cabang Bangko / Tabir Timur"})
+                  Leger Nilai & Matriks Uji Kompetensi (Cabang {effectiveBranch})
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold">
                   {evaluationColumns.length} Sesi Uji Kompetensi Berurutan
@@ -2231,7 +2236,7 @@ export default function InputNilaiPage() {
                       className="w-full"
                       size="sm"
                       options={[
-                        { value: "ALL", label: `Semua Siswa Cabang ${effectiveBranch === "Singkut" ? "Singkut" : "Bangko / Tabir Timur"} (${scopedStudents.length})` },
+                        { value: "ALL", label: `Semua Siswa Cabang ${effectiveBranch} (${scopedStudents.length})` },
                         ...scopedClasses.map((c) => ({
                           value: c.name,
                           label: c.name,

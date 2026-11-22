@@ -7,16 +7,14 @@ async function resolveBranchId(branchId?: string | null, branchName?: string | n
   if (branchId) return branchId;
   if (!branchName) return null;
 
-  const targetName =
-    branchName.toLowerCase().includes("bangko") || branchName.toLowerCase().includes("tabir")
-      ? "Bangko"
-      : "Singkut";
+  const clean = branchName.replace(/^Cabang\s+/i, "").trim();
 
   const branch = await prisma.branch.findFirst({
     where: {
       OR: [
-        { branchName: { contains: targetName, mode: "insensitive" } },
-        { branchCode: targetName === "Bangko" ? "BGK" : "SKT" },
+        { branchName: { equals: clean, mode: "insensitive" } },
+        { branchName: { contains: clean, mode: "insensitive" } },
+        { branchCode: { equals: clean.toUpperCase(), mode: "insensitive" } },
       ],
     },
   });
@@ -65,15 +63,13 @@ export async function GET(req: Request) {
         parsedIndicators = l.indicators ? [String(l.indicators)] : [];
       }
 
-      const branchName =
-        l.branch?.branchName ||
-        (l.description?.includes("Tabir") ? "Bangko" : "Singkut");
+      const branchName = l.branch?.branchName || "Singkut";
 
       return {
         id: l.id,
         branchId: l.branchId,
         branch: branchName,
-        branchCode: l.branch?.branchCode || (branchName === "Bangko" ? "BGK" : "SKT"),
+        branchCode: l.branch?.branchCode || (branchName === "Bangko" ? "BGK" : (branchName === "Sarolangun" ? "SRL" : "SKT")),
         orderIndex: l.orderIndex,
         levelTitle: l.levelName,
         shortDesc: l.shortDesc || "",

@@ -489,9 +489,12 @@ function AbsensiContent() {
   const currentProgram = searchParams?.get("program");
   const isMembacaProgram = currentProgram === "MEMBACA";
 
+  const [selectedBranch, setSelectedBranch] = useState<string>("Singkut");
+  const effectiveBranch = allowedBranch || selectedBranch;
+
   // Filter students for today list (scoped by branch, program, and active status)
-  const branchScopedStudents = (allowedBranch
-    ? students.filter((s) => s.branch === allowedBranch)
+  const branchScopedStudents = (effectiveBranch
+    ? students.filter((s) => s.branch === effectiveBranch)
     : students
   )
     .filter((s) =>
@@ -500,8 +503,8 @@ function AbsensiContent() {
         : (s as any).programType !== "MEMBACA"
     )
     .filter((s) => isStudentActive(s.status));
-  const branchScopedClasses = (allowedBranch
-    ? classes.filter((c) => c.branch === allowedBranch)
+  const branchScopedClasses = (effectiveBranch
+    ? classes.filter((c) => c.branch === effectiveBranch)
     : classes
   ).filter((c) =>
     isMembacaProgram
@@ -928,6 +931,32 @@ function AbsensiContent() {
         </div>
       )}
 
+      {/* Super Admin Branch Switcher */}
+      {isSuperAdmin && (
+        <div className="flex items-center gap-2 flex-wrap bg-white dark:bg-[#0f1a36] p-3 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">
+            Cabang:
+          </span>
+          {branches.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => {
+                setSelectedBranch(b.name);
+                setSelectedClass("ALL");
+              }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                effectiveBranch === b.name
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+            >
+              Cabang {b.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Top Header with Mode Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Mobile: Top Bar with Title + QR Scanner button */}
@@ -935,9 +964,9 @@ function AbsensiContent() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                <span className="sm:hidden">Absensi Siswa</span>
+                <span className="sm:hidden">Absensi ({effectiveBranch})</span>
                 <span className="hidden sm:inline">
-                  {isMembacaProgram ? "Absensi Siswa Les Membaca" : "Absensi Siswa Les Matematika"}
+                  {isMembacaProgram ? "Absensi Siswa Les Membaca" : "Absensi Siswa Les Matematika"} ({effectiveBranch})
                 </span>
               </h1>
               <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold">
@@ -945,7 +974,7 @@ function AbsensiContent() {
               </span>
             </div>
             <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Pencatatan harian, scanner QR presensi sesuai jadwal kelas, dan rekapitulasi riwayat kehadiran.
+              Pencatatan harian, scanner QR presensi sesuai jadwal kelas, dan rekapitulasi riwayat kehadiran Cabang {effectiveBranch}.
             </p>
           </div>
 

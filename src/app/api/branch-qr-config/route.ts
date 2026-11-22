@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 
-// Helper: Build branch filter supporting aliases (Bangko, Tabir Timur, Singkut)
+// Helper: Build branch filter supporting aliases (Bangko, Tabir Timur, Singkut, Sarolangun)
 function buildBranchFilter(branchStr: string) {
   const clean = branchStr.replace(/^Cabang\s+/i, "").trim();
   const isBangkoOrTabir = /^(bangko|tabir|bgk)/i.test(clean);
   const isSingkut = /^(singkut|skt)/i.test(clean);
+  const isSarolangun = /^(sarolangun|srl)/i.test(clean);
 
   if (isBangkoOrTabir) {
     return {
@@ -23,6 +24,15 @@ function buildBranchFilter(branchStr: string) {
       OR: [
         { branchName: { contains: "Singkut", mode: "insensitive" as const } },
         { branchCode: { equals: "SKT", mode: "insensitive" as const } },
+      ],
+    };
+  }
+
+  if (isSarolangun) {
+    return {
+      OR: [
+        { branchName: { contains: "Sarolangun", mode: "insensitive" as const } },
+        { branchCode: { equals: "SRL", mode: "insensitive" as const } },
       ],
     };
   }
@@ -82,6 +92,8 @@ export async function GET(req: Request) {
         branchName = authUser.branchName.replace(/^Cabang\s+/i, "").trim();
       } else if (authUser?.email?.toLowerCase().includes("bangko") || authUser?.email?.toLowerCase().includes("dwsafitri")) {
         branchName = "Tabir Timur";
+      } else if (authUser?.email?.toLowerCase().includes("aturrahmah") || authUser?.email?.toLowerCase().includes("sarolangun")) {
+        branchName = "Sarolangun";
       } else {
         branchName = "Singkut";
       }
@@ -226,6 +238,8 @@ export async function PUT(req: Request) {
         queryBranchName = authUser.branchName.replace(/^Cabang\s+/i, "").trim();
       } else if (authUser?.email?.toLowerCase().includes("bangko") || authUser?.email?.toLowerCase().includes("dwsafitri")) {
         queryBranchName = "Tabir Timur";
+      } else if (authUser?.email?.toLowerCase().includes("aturrahmah") || authUser?.email?.toLowerCase().includes("sarolangun")) {
+        queryBranchName = "Sarolangun";
       } else {
         queryBranchName = "Singkut";
       }

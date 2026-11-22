@@ -93,6 +93,23 @@ export const BRANCHES_DATA: BranchItem[] = [
     "accountHolder": "Math Fingers Bangko",
     "adminName": "M. Hafiz, S.Pd",
     "signatureUrl": ""
+  },
+  {
+    "id": "fb12e23c-526c-4fb5-9f60-b5a01438fc82",
+    "code": "SRL",
+    "name": "Sarolangun",
+    "address": "Perumahan Mutiara Gunung Kembang, Sarolangun",
+    "phone": "082259167510",
+    "activeStudents": 0,
+    "adminCount": 1,
+    "monthlyRevenue": 0,
+    "status": "ACTIVE",
+    "programs": ["MATEMATIKA", "MEMBACA"],
+    "bankName": "BSI",
+    "accountNumber": "7181347656",
+    "accountHolder": "Asriaturrahmah",
+    "adminName": "Asriaturrahmah, S.Pd",
+    "signatureUrl": ""
   }
 ];
 

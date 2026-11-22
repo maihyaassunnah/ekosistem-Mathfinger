@@ -60,6 +60,8 @@ function LoginForm() {
           ? "Ustadzah Febri"
           : email.toLowerCase().includes("wahyudin")
           ? "Wahyudin Hafiz, S.Pd"
+          : email.toLowerCase().includes("aturrahmah")
+          ? "Asriaturrahmah, S.Pd"
           : email.split("@")[0];
 
         setSuccessUserName(userName);

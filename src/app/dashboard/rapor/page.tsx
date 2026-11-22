@@ -23,25 +23,28 @@ export default function RaporPage() {
     useAppStore();
   const { isSuperAdmin, allowedBranch } = useCurrentUser();
 
+  const [selectedBranch, setSelectedBranch] = useState<string>("Singkut");
+  const effectiveBranch = allowedBranch || selectedBranch;
+
   const scopedStudents = useMemo(() => {
-    const list = allowedBranch ? students.filter((s) => s.branch === allowedBranch) : students;
+    const list = effectiveBranch ? students.filter((s) => s.branch === effectiveBranch) : students;
     return list.filter((s) => (s as any).programType !== "MEMBACA");
-  }, [students, allowedBranch]);
+  }, [students, effectiveBranch]);
 
   const scopedClasses = useMemo(() => {
-    const list = allowedBranch ? classes.filter((c) => c.branch === allowedBranch) : classes;
+    const list = effectiveBranch ? classes.filter((c) => c.branch === effectiveBranch) : classes;
     return list.filter((c) => (c as any).programType !== "MEMBACA");
-  }, [classes, allowedBranch]);
+  }, [classes, effectiveBranch]);
 
   const [selectedClass, setSelectedClass] = useState("ALL");
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
-    scopedStudents[0]?.id || "s-1"
+    scopedStudents[0]?.id || ""
   );
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   // Selected student
   const activeStudent =
-    scopedStudents.find((s) => s.id === selectedStudentId) || scopedStudents[0];
+    scopedStudents.find((s) => s.id === selectedStudentId) || scopedStudents[0] || null;
 
   // Filter student list by class
   const classFilteredStudents = useMemo(() => {
@@ -205,6 +208,32 @@ export default function RaporPage() {
         <TopStatusBar title="Rapor Perkembangan" />
       </div>
 
+      {/* Super Admin Branch Switcher */}
+      {isSuperAdmin && (
+        <div className="no-print flex items-center gap-2 flex-wrap bg-white dark:bg-[#0f1a36] p-3 rounded-2xl border border-slate-200 dark:border-[#1d2d5a] shadow-xs">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">
+            Cabang:
+          </span>
+          {branches.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => {
+                setSelectedBranch(b.name);
+                setSelectedClass("ALL");
+              }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                effectiveBranch === b.name
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+            >
+              Cabang {b.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Control Banner: Title, Filter Kelas, Pilih Siswa, and Action Buttons */}
       <div className="no-print flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#0f1a36] p-5 rounded-2xl border border-slate-200/80 dark:border-[#1d2d5a] shadow-xs">
         <div>
@@ -213,7 +242,7 @@ export default function RaporPage() {
               Rapor Resmi
             </span>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-              Rapor Digital Perkembangan Siswa
+              Rapor Digital Perkembangan Siswa {effectiveBranch ? `(${effectiveBranch})` : ""}
             </h1>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -249,17 +278,22 @@ export default function RaporPage() {
             onChange={setSelectedStudentId}
             size="md"
             className="min-w-[180px]"
-            options={classFilteredStudents.map((s) => ({
-              value: s.id,
-              label: `${s.name} (${s.className})`,
-            }))}
+            options={
+              classFilteredStudents.length > 0
+                ? classFilteredStudents.map((s) => ({
+                    value: s.id,
+                    label: `${s.name} (${s.className})`,
+                  }))
+                : [{ value: "", label: "-- Belum ada siswa --" }]
+            }
           />
 
           {/* Actions */}
           <button
             type="button"
             onClick={() => setIsPreviewModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs"
+            disabled={!activeStudent}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-white dark:bg-[#0f1a36] hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Eye className="w-3.5 h-3.5 text-emerald-600" />
             Preview Full
@@ -268,7 +302,8 @@ export default function RaporPage() {
           <button
             type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            disabled={!activeStudent}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Printer className="w-3.5 h-3.5" />
             Unduh / Cetak PDF
@@ -277,7 +312,8 @@ export default function RaporPage() {
           <button
             type="button"
             onClick={handleShareWA}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer"
+            disabled={!activeStudent}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1d2d5a] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Share2 className="w-3.5 h-3.5" />
             WhatsApp
@@ -285,7 +321,23 @@ export default function RaporPage() {
         </div>
       </div>
 
-      {/* Sleek Canvas Container (Dark blue-slate canvas background like Screenshot 2) */}
+      {/* Empty State when no student exists in branch */}
+      {!activeStudent ? (
+        <div className="bg-white dark:bg-[#0f1a36] p-12 rounded-3xl border border-slate-200 dark:border-[#1d2d5a] shadow-md text-center max-w-xl mx-auto space-y-4 my-8">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+            <UserCheck className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-slate-800 dark:text-white">
+              Belum Ada Siswa Terdaftar di Cabang {effectiveBranch}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+              Saat ini belum ada data siswa untuk Cabang {effectiveBranch}. Silakan tambahkan siswa terlebih dahulu di menu <strong>Siswa</strong> dan masukkan nilai di menu <strong>Input Nilai</strong>.
+            </p>
+          </div>
+        </div>
+      ) : (
+      /* Sleek Canvas Container (Dark blue-slate canvas background like Screenshot 2) */
       <div className="bg-[#0b131b] p-4 sm:p-8 md:p-12 rounded-3xl shadow-xl flex justify-center items-center">
         {/* Printable Report Document Card (Exact match with Screenshot 2) */}
         <div
@@ -569,9 +621,10 @@ export default function RaporPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Modal: Fullscreen Preview */}
-      {isPreviewModalOpen && (
+      {isPreviewModalOpen && activeStudent && (
         <div className="no-print fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0b131b] rounded-3xl border border-slate-800 shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-white">

@@ -52,7 +52,7 @@ export async function GET(req: Request) {
         studentCode: att.student?.studentCode || "-",
         className: att.class?.className || att.student?.className || "-",
         classId: att.classId,
-        branch: (att.branch?.branchName as "Singkut" | "Bangko") || "Singkut",
+        branch: (att.branch?.branchName as any) || "Singkut",
         date: dateStr,
         time: recordedTime,
         status: att.status === "ALPHA" ? "ABSEN" : att.status,

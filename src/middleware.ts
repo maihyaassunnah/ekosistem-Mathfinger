@@ -14,11 +14,14 @@ export function middleware(req: NextRequest) {
     // - next-auth.session-token
     // - __Secure-next-auth.session-token
     // - Chunked cookies: next-auth.session-token.0, __Secure-next-auth.session-token.0, etc.
+    // - authjs.session-token
     const hasSessionCookie =
-      rawCookie.includes("next-auth.session-token") ||
+      rawCookie.includes("session-token") ||
+      rawCookie.includes("next-auth") ||
       cookies.some(
         (c) =>
-          c.name.includes("next-auth.session-token") &&
+          (c.name.toLowerCase().includes("session-token") ||
+           c.name.toLowerCase().includes("next-auth")) &&
           Boolean(c.value && c.value.trim().length > 0)
       );
 
