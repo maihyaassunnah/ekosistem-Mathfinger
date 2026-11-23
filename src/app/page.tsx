@@ -40,7 +40,13 @@ export default function Home() {
     landingEvents,
     landingPartners,
     addLandingLead,
+    refreshData,
   } = useAppStore();
+
+  React.useEffect(() => {
+    // Refresh live website data directly from PostgreSQL on mount
+    refreshData(true);
+  }, [refreshData]);
 
   // Dropdown Submenus & Mobile Drawer States
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -322,6 +328,22 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-white dark:bg-[#070d1e] text-slate-900 dark:text-white font-sans selection:bg-emerald-600 selection:text-white transition-colors duration-200">
       {/* ========================================================================= */}
+      {/* 0. PROMO BANNER (Dynamic from Admin / Database) */}
+      {/* ========================================================================= */}
+      {landingHero.promoActive && landingHero.promoBanner && (
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 text-white text-xs py-2 px-4 text-center font-bold tracking-wide border-b border-emerald-600/40 flex items-center justify-center gap-2 shadow-xs">
+          <span>{landingHero.promoBanner}</span>
+          <button
+            type="button"
+            onClick={() => handleOpenTrial()}
+            className="underline underline-offset-2 hover:text-amber-300 transition-colors cursor-pointer text-[11px] font-black uppercase ml-1"
+          >
+            Daftar Sekarang →
+          </button>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* 1. TOP UTILITY BAR (Deep Emerald Green Accent) */}
       {/* ========================================================================= */}
       <div className="bg-[#047857] text-white text-[11px] font-medium py-2 px-4 sm:px-6 lg:px-8 border-b border-emerald-800">
@@ -595,9 +617,12 @@ export default function Home() {
             <img
               src={landingHero.heroImage || "/images/landing/hero-kids.jpg"}
               alt="Anak-anak belajar jaritmatika Math Fingers"
-              className="w-full h-full object-cover object-center opacity-35"
+              className="w-full h-full object-cover object-center opacity-65 dark:opacity-45 transition-opacity duration-300"
+              onError={(e) => {
+                (e.target as any).src = "/images/landing/hero-kids.jpg";
+              }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-emerald-950/80 to-slate-950/90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/75" />
           </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center space-y-6">
@@ -670,6 +695,9 @@ export default function Home() {
                     src={landingHero.aboutImage || "/images/landing/about-teacher.jpg"}
                     alt="Pembelajaran Jaritmatika Math Fingers"
                     className="w-full h-auto object-cover hover:scale-102 transition-transform duration-500"
+                    onError={(e) => {
+                      (e.target as any).src = "/images/landing/about-teacher.jpg";
+                    }}
                   />
                 </div>
                 {/* Decorative Badge Overlay */}
@@ -830,6 +858,9 @@ export default function Home() {
                     src={currentStory.avatarUrl || "/images/landing/student-story.jpg"}
                     alt={currentStory.title || "Siswa Berprestasi Math Fingers"}
                     className="w-full h-[420px] object-cover"
+                    onError={(e) => {
+                      (e.target as any).src = "/images/landing/student-story.jpg";
+                    }}
                   />
                   <div className="p-4 bg-white dark:bg-[#0f1a36] border-t border-slate-100 dark:border-[#1d2d5a]">
                     <div className="flex items-center gap-1 text-amber-400">
@@ -905,6 +936,9 @@ export default function Home() {
               src={landingHero.programsBgImage || "/images/landing/programs-bg.jpg"}
               alt="Program Belajar Math Fingers"
               className="w-full h-full object-cover object-center opacity-30"
+              onError={(e) => {
+                (e.target as any).src = "/images/landing/programs-bg.jpg";
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-slate-950/95 to-emerald-950" />
           </div>
@@ -1082,6 +1116,9 @@ export default function Home() {
                         src={item.image}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.target as any).src = "/images/landing/student-story.jpg";
+                        }}
                       />
                       <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-md shadow-xs">
                         {item.category}
@@ -1795,6 +1832,9 @@ export default function Home() {
                       src={landingHero.heroImage || "/images/landing/hero-kids.jpg"}
                       alt="Video Preview"
                       className="w-full h-full object-cover opacity-80"
+                      onError={(e) => {
+                        (e.target as any).src = "/images/landing/hero-kids.jpg";
+                      }}
                     />
                     <div className="absolute inset-0 bg-slate-950/50 flex flex-col items-center justify-center text-center p-6 text-white space-y-3">
                       <div className="w-16 h-16 rounded-full bg-emerald-600/90 text-white flex items-center justify-center shadow-lg">

@@ -275,7 +275,7 @@ interface AppStoreContextType {
   addBranch: (branch: Omit<BranchItem, "id" | "activeStudents" | "adminCount" | "monthlyRevenue">) => void;
   updateBranch: (id: string, updated: Partial<BranchItem>) => void;
   deleteBranch: (id: string) => void;
-  refreshData: () => Promise<void>;
+  refreshData: (includeWebsite?: boolean) => Promise<void>;
 
   // Branch Admins
   branchAdmins: BranchAdminItem[];
@@ -8101,16 +8101,16 @@ const INITIAL_TRANSACTIONS: CashTransactionItem[] = [
 ];
 
 const INITIAL_LANDING_HERO: LandingHeroConfig = {
-  tagline: "Bimbel Berhitung Cepat Jaritmatika No. 1 di Sarolangun & Merangin",
-  headline: "SELAMAT DATANG DI MATH FINGERS INDONESIA",
+  tagline: "Bimbingan Belajar Jaritmatika No. 1 di Sarolangun & Merangin",
+  headline: "Bimbel Berhitung Cepat Jaritmatika Math Fingers",
   subheadline:
-    "Mengoptimalkan potensi kecerdasan otak kanan dan kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, berhitung cepat akurat, dan percaya diri!",
-  promoBanner: "🎉 PROMO SPESIAL GELOMBANG BARU: Diskon Biaya Pendaftaran 50% + Modul Belajar & Kartu Digital!",
+    "Mengoptimalkan potensi kecerdasan otak kanan & kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, cepat, berhitung akurat, dan percaya diri!",
+  promoBanner: "🎉 PROMO SPESIAL: GRATIS Kelas Percobaan (Trial Class) & Diskon Pendaftaran 50% Bulan Ini!",
   promoActive: true,
   whatsappNumber: "6281279498907",
-  whatsappGreeting: "Halo Math Fingers, saya ingin info pendaftaran les Jaritmatika dan jadwal Trial Class gratis untuk anak saya.",
+  whatsappGreeting: "Halo Admin Math Fingers, saya ingin info pendaftaran les Jaritmatika dan jadwal Trial Class gratis untuk anak saya.",
   targetDiscount: "50% OFF",
-  heroImage: "/images/landing/hero-kids.jpg",
+  heroImage: "/uploads/Screenshot_2026-10-02_085717-1792138569516.png",
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   aboutTitle: "Metode 10 Jari Alami: Kalkulator Pintar yang Selalu Melekat",
   aboutDesc1:
@@ -8784,7 +8784,23 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("focus", handleRevalidate);
     document.addEventListener("visibilitychange", handleRevalidate);
 
-    // 3. Real-time background sync every 45 seconds (optimized from 12s)
+    // 3. Real-time cross-tab synchronization via StorageEvent
+    const handleStorageChange = (e: StorageEvent) => {
+      if (!e.key || !e.newValue) return;
+      try {
+        const val = JSON.parse(e.newValue);
+        if (e.key === "mf_landing_hero") setLandingHero(val);
+        else if (e.key === "mf_landing_programs") setLandingPrograms(val);
+        else if (e.key === "mf_landing_testi") setLandingTestimonials(val);
+        else if (e.key === "mf_landing_news") setLandingNews(val);
+        else if (e.key === "mf_landing_events") setLandingEvents(val);
+        else if (e.key === "mf_landing_partners") setLandingPartners(val);
+        else if (e.key === "mf_landing_leads") setLandingLeads(val);
+      } catch {}
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // 4. Real-time background sync every 45 seconds (optimized from 12s)
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
         fetchAllLiveData(false);
@@ -8794,6 +8810,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener("focus", handleRevalidate);
       document.removeEventListener("visibilitychange", handleRevalidate);
+      window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
   }, [fetchAllLiveData]);

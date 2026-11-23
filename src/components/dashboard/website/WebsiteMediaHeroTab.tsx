@@ -47,8 +47,10 @@ export default function WebsiteMediaHeroTab({ onNotify }: WebsiteMediaHeroTabPro
       }
 
       const json = await res.json();
-      setForm((prev) => ({ ...prev, [field]: json.url }));
-      onNotify("Gambar berhasil diunggah!");
+      const updated = { ...form, [field]: json.url };
+      setForm(updated);
+      updateLandingHero(updated);
+      onNotify("Gambar berhasil diunggah dan langsung disimpan ke Beranda!");
     } catch (err: any) {
       alert(err.message || "Gagal upload gambar");
     } finally {
