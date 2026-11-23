@@ -61,7 +61,7 @@ export default function Home() {
     studentAge: "",
     parentName: "",
     phone: "",
-    branch: "Singkut" as "Singkut" | "Bangko",
+    branch: "Singkut" as "Singkut" | "Bangko" | "Sarolangun",
     notes: "",
   });
 
@@ -92,7 +92,11 @@ export default function Home() {
 
   const handleDirectWhatsAppFromModal = () => {
     const cleanPhone =
-      trialForm.branch === "Singkut" ? "6281279498907" : "6281379720841";
+      trialForm.branch === "Singkut"
+        ? "6281279498907"
+        : trialForm.branch === "Bangko"
+        ? "6281379720841"
+        : "6282259167510";
 
     const message = encodeURIComponent(
       `Halo Admin Math Fingers Cabang ${trialForm.branch},\n\nSaya (${trialForm.parentName}) ingin mendaftar Coba Kelas Gratis (Trial Class) untuk anak saya:\n- Nama Anak: ${trialForm.studentName}\n- Usia/Kelas: ${trialForm.studentAge}\n- No. WA: ${trialForm.phone}\n${
@@ -371,7 +375,7 @@ export default function Home() {
             <span className="hidden sm:inline-block text-emerald-300/60">•</span>
             <div className="hidden sm:flex items-center gap-1.5 text-emerald-100">
               <Phone className="w-3 h-3 text-emerald-300" />
-              <span>Hotline Singkut: +62 812-7949-8907 | Bangko: +62 813-7972-0841</span>
+              <span>Hotline Singkut: +62 812-7949-8907 | Bangko: +62 813-7972-0841 | Sarolangun: +62 822-5916-7510</span>
             </div>
           </div>
 
@@ -1214,7 +1218,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {/* Cabang Singkut */}
               <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-[#0f1a36] border-2 border-emerald-500 shadow-md space-y-5">
                 <div className="flex items-center justify-between">
@@ -1298,6 +1302,49 @@ export default function Home() {
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Hubungi Admin Cabang Bangko</span>
+                </a>
+              </div>
+
+              {/* Cabang Sarolangun */}
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-md space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black">
+                      SRL
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white">Cabang Sarolangun</h3>
+                      <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Kota Sarolangun</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                    Aktif
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Perumahan Mutiara Gunung Kembang, Sarolangun</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>+62 822-5916-7510 (Admin Asriaturrahmah)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Senin – Sabtu (08.00 – 17.00 WIB)</span>
+                  </div>
+                </div>
+
+                <a
+                  href="https://wa.me/6282259167510?text=Halo%20Admin%20Math%20Fingers%20Sarolangun,%20saya%20ingin%20konsultasi%20pendaftaran%20les."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Hubungi Admin Cabang Sarolangun</span>
                 </a>
               </div>
             </div>
@@ -1385,6 +1432,7 @@ export default function Home() {
               <div className="pt-2 text-xs text-slate-400 space-y-1.5">
                 <div><strong>Cabang Singkut:</strong> Jl. Lintas Sumatera, Sarolangun</div>
                 <div><strong>Cabang Bangko:</strong> Tabir Timur, Merangin, Jambi</div>
+                <div><strong>Cabang Sarolangun:</strong> Perumahan Mutiara Gunung Kembang, Sarolangun</div>
                 <div><strong>Hotline WhatsApp:</strong> +62 812-7949-8907</div>
               </div>
             </div>
@@ -1612,13 +1660,14 @@ export default function Home() {
                         onChange={(e) =>
                           setTrialForm({
                             ...trialForm,
-                            branch: e.target.value as "Singkut" | "Bangko",
+                            branch: e.target.value as "Singkut" | "Bangko" | "Sarolangun",
                           })
                         }
                         className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[#1d2d5a] rounded-xl text-xs text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="Singkut">Cabang Singkut</option>
                         <option value="Bangko">Cabang Bangko</option>
+                        <option value="Sarolangun">Cabang Sarolangun</option>
                       </select>
                     </div>
                   </div>

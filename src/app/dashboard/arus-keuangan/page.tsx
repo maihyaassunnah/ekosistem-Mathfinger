@@ -65,7 +65,7 @@ function ArusKeuanganContent() {
     category: "SPP",
     title: "",
     amount: 100000,
-    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
+    branch: (allowedBranch || "Singkut") as any,
     sourceOrRecipient: "",
     notes: "",
   });

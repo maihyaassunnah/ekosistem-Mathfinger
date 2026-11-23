@@ -175,7 +175,7 @@ function KelasContent() {
   // Form states for Add/Edit
   const [formData, setFormData] = useState({
     name: "",
-    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
+    branch: (allowedBranch || "Singkut") as string,
     days: "Sabtu & Ahad",
     time: "14:00 - 15:30",
     teacher: "Febrianti Dewi, S.Pd",

@@ -226,16 +226,18 @@ export default function PresensiTutorAdminPage() {
         const data = await res.json();
         setConfigs(data);
         if (data.length > 0) {
-          const isTargetTabir =
-            targetBranch.toLowerCase().includes("bangko") ||
-            targetBranch.toLowerCase().includes("tabir");
+          const tClean = targetBranch.toLowerCase().trim();
+          const isTargetTabir = tClean.includes("bangko") || tClean.includes("tabir");
+          const isTargetSarolangun = tClean.includes("sarolangun") || tClean === "srl";
 
           const cfg =
             data.find((c: any) => {
-              const name = (c.branchName || "").toLowerCase();
-              const code = (c.branchCode || "").toUpperCase();
+              const name = (c.branchName || "").toLowerCase().trim();
+              const code = (c.branchCode || "").toUpperCase().trim();
               if (isTargetTabir) {
                 return name.includes("tabir") || name.includes("bangko") || code === "BGK";
+              } else if (isTargetSarolangun) {
+                return name.includes("sarolangun") || code === "SRL";
               } else {
                 return name.includes("singkut") || code === "SKT";
               }
@@ -243,8 +245,8 @@ export default function PresensiTutorAdminPage() {
 
           if (cfg) {
             setGpsForm({
-              latitude: cfg.latitude ? String(cfg.latitude) : isTargetTabir ? "-2.0717" : "-2.3125",
-              longitude: cfg.longitude ? String(cfg.longitude) : isTargetTabir ? "102.2655" : "102.6847",
+              latitude: cfg.latitude ? String(cfg.latitude) : isTargetTabir ? "-2.0717" : isTargetSarolangun ? "-2.2986" : "-2.3125",
+              longitude: cfg.longitude ? String(cfg.longitude) : isTargetTabir ? "102.2655" : isTargetSarolangun ? "102.6506" : "102.6847",
               radiusMeters: String(cfg.radiusMeters || 100),
             });
             setWorkTimeForm({
@@ -869,6 +871,16 @@ export default function PresensiTutorAdminPage() {
                     >
                       <span>📍</span>
                       <span>Titik Koordinat Resmi Cabang Tabir Timur</span>
+                    </button>
+                  )}
+                  {targetBranch.toLowerCase().includes("sarolangun") && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPreset("-2.298600", "102.650600", "Cabang Sarolangun")}
+                      className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/80 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <span>📍</span>
+                      <span>Titik Koordinat Resmi Cabang Sarolangun</span>
                     </button>
                   )}
                 </div>

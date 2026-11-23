@@ -6,7 +6,7 @@ import { StudentItem, BranchItem, STUDENTS_DATA, BRANCHES_DATA } from "./mock-da
 export interface ClassItem {
   id: string;
   name: string;
-  branch: "Singkut" | "Bangko";
+  branch: string;
   days: string;
   time: string;
   teacher: string;
@@ -52,7 +52,7 @@ export interface JournalItem {
   studentId?: string;
   studentName: string;
   className: string;
-  branch: "Singkut" | "Bangko";
+  branch: string;
   topic: string;
   content: string;
   teacher: string;
@@ -139,7 +139,7 @@ export interface CashTransactionItem {
   category: string;
   title: string;
   amount: number;
-  branch: "Singkut" | "Bangko";
+  branch: string;
   sourceOrRecipient: string;
   notes?: string;
   programType?: "MATEMATIKA" | "MEMBACA";
@@ -223,7 +223,7 @@ export interface LandingLeadItem {
   studentAge: string;
   parentName: string;
   phone: string;
-  branch: "Singkut" | "Bangko";
+  branch: string;
   createdAt: string;
   status: "Baru" | "Dihubungi" | "Trial Terjadwal" | "Terdaftar";
   notes?: string;

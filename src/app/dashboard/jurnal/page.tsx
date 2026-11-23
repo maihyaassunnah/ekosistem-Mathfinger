@@ -82,7 +82,7 @@ function JurnalGuruContent() {
 
   const [form, setForm] = useState({
     className: scopedClasses[0]?.name || "Kelas A",
-    branch: (allowedBranch || "Singkut") as "Singkut" | "Bangko",
+    branch: (allowedBranch || "Singkut") as any,
     topic: "",
     content: "",
     teacher: currentUserName || "Kak Guru",
@@ -91,7 +91,7 @@ function JurnalGuruContent() {
 
   const modalTargetBranch = isSuperAdmin
     ? form.branch
-    : ((allowedBranch || "Singkut") as "Singkut" | "Bangko");
+    : ((allowedBranch || "Singkut") as any);
 
   const currentModalStudents = (
     isSuperAdmin
@@ -551,7 +551,7 @@ function JurnalGuruContent() {
                   <select
                     value={form.branch}
                     onChange={(e) => {
-                      const newBranch = e.target.value as "Singkut" | "Bangko";
+                      const newBranch = e.target.value as any;
                       const newClasses = classes.filter(
                         (c) => (c.branch || "Singkut") === newBranch && (isMembaca ? (c as any).programType === "MEMBACA" : (c as any).programType !== "MEMBACA")
                       );
