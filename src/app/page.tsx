@@ -1352,47 +1352,95 @@ export default function Home() {
         {/* ========================================================================= */}
         {/* 11. PARTNER STRIP (Image 2 style: Clean Logo Showcase) */}
         {/* ========================================================================= */}
-        <section id="mitra" className="py-12 bg-slate-50 dark:bg-[#0b1329] border-b border-slate-200 dark:border-[#1d2d5a] transition-colors duration-200">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6">
+        <section id="mitra" className="py-12 bg-slate-50 dark:bg-[#0b1329] border-b border-slate-200 dark:border-[#1d2d5a] transition-colors duration-200 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 text-center mb-6 animate-partner-fade-in">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Dipercaya Oleh Berbagai Mitra Sekolah & Yayasan Pendidikan di Jambi
             </p>
-            <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap opacity-90">
-              {(landingPartners && landingPartners.filter((p) => p.active !== false).length > 0) ? (
-                landingPartners
-                  .filter((p) => p.active !== false)
-                  .map((partner) => (
-                    <div
-                      key={partner.id}
-                      className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-2xs font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center">
-                        {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
+          </div>
+
+          {/* Infinite Marquee Track with Smooth Left & Right Edge Fade */}
+          <div className="relative w-full overflow-hidden py-2">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-slate-50 dark:from-[#0b1329] to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-slate-50 dark:from-[#0b1329] to-transparent z-10" />
+
+            {(() => {
+              const activePartners =
+                landingPartners && landingPartners.filter((p) => p.active !== false).length > 0
+                  ? landingPartners.filter((p) => p.active !== false)
+                  : [];
+
+              if (activePartners.length === 0) return null;
+
+              // Duplicate partners so each half fills wide screens
+              const partnerBatch =
+                activePartners.length < 4
+                  ? [...activePartners, ...activePartners, ...activePartners]
+                  : [...activePartners, ...activePartners];
+
+              return (
+                <div className="animate-partner-marquee flex items-center">
+                  {/* Half 1 */}
+                  <div className="flex items-center gap-4 sm:gap-6 shrink-0 pr-4 sm:pr-6">
+                    {partnerBatch.map((partner, pIdx) => (
+                      <div
+                        key={`part-a-${partner.id}-${pIdx}`}
+                        className="flex items-center gap-3 px-4 sm:px-5 py-2.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs hover:border-emerald-500/60 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer shrink-0 select-none"
+                      >
+                        {partner.logoUrl ? (
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden bg-slate-50 dark:bg-slate-900/60 p-0.5">
+                            <img
+                              src={partner.logoUrl}
+                              alt={partner.name}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                            {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap">
+                          {partner.name}
+                        </span>
                       </div>
-                      <span>{partner.name}</span>
-                    </div>
-                  ))
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                    <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    <span>TK / PAUD Terpadu</span>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                    <GraduationCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    <span>SD IT Al-Madani</span>
+
+                  {/* Half 2 (Exact duplicate for seamless 0% -> -50% infinite translation) */}
+                  <div
+                    className="flex items-center gap-4 sm:gap-6 shrink-0 pr-4 sm:pr-6"
+                    aria-hidden="true"
+                  >
+                    {partnerBatch.map((partner, pIdx) => (
+                      <div
+                        key={`part-b-${partner.id}-${pIdx}`}
+                        className="flex items-center gap-3 px-4 sm:px-5 py-2.5 rounded-2xl bg-white dark:bg-[#0f1a36] border border-slate-200 dark:border-[#1d2d5a] shadow-xs hover:border-emerald-500/60 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer shrink-0 select-none"
+                      >
+                        {partner.logoUrl ? (
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden bg-slate-50 dark:bg-slate-900/60 p-0.5">
+                            <img
+                              src={partner.logoUrl}
+                              alt={partner.name}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                            {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap">
+                          {partner.name}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Yayasan Bina Prestasi</span>
-                  </div>
-                  <div className="flex items-center gap-2 font-black text-slate-700 dark:text-slate-200 text-sm">
-                    <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Koperasi Pendidikan Sarolangun</span>
-                  </div>
-                </>
-              )}
-            </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
       </main>

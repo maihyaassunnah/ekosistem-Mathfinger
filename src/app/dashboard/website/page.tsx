@@ -25,6 +25,7 @@ import {
   CalendarDays,
   Image as ImageIcon,
   MessageCircle,
+  Upload,
 } from "lucide-react";
 import {
   useAppStore,
@@ -165,10 +166,12 @@ function WebsiteManagementContent() {
   const [showPartnerModal, setShowPartnerModal] = useState(false);
   const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
   const [partnerFilter, setPartnerFilter] = useState<string>("Semua");
+  const [isUploadingPartnerLogo, setIsUploadingPartnerLogo] = useState(false);
   const [partnerForm, setPartnerForm] = useState<Omit<LandingPartnerItem, "id">>({
     name: "",
     category: "Sekolah Dasar Mitra",
     logoText: "",
+    logoUrl: "",
     website: "",
     active: true,
   });
@@ -179,6 +182,7 @@ function WebsiteManagementContent() {
       name: "",
       category: "Sekolah Dasar Mitra",
       logoText: "",
+      logoUrl: "",
       website: "",
       active: true,
     });
@@ -190,11 +194,42 @@ function WebsiteManagementContent() {
     setPartnerForm({
       name: p.name,
       category: p.category,
-      logoText: p.logoText,
+      logoText: p.logoText || "",
+      logoUrl: p.logoUrl || "",
       website: p.website || "",
       active: p.active,
     });
     setShowPartnerModal(true);
+  };
+
+  const handleUploadPartnerLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPartnerLogo(true);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Gagal upload logo");
+      }
+
+      const json = await res.json();
+      setPartnerForm((prev) => ({ ...prev, logoUrl: json.url }));
+      setSaveAlert("Logo mitra berhasil diunggah!");
+      setTimeout(() => setSaveAlert(null), 3500);
+    } catch (err: any) {
+      alert(err.message || "Gagal upload logo mitra");
+    } finally {
+      setIsUploadingPartnerLogo(false);
+    }
   };
 
   const handleSavePartner = (e: React.FormEvent) => {
@@ -858,7 +893,7 @@ function WebsiteManagementContent() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-[#09130f] border-b border-slate-200 dark:border-[#1d2d5a] font-bold text-slate-600 dark:text-slate-400">
                   <tr>
-                    <th className="py-3.5 px-4">Logo Monogram</th>
+                    <th className="py-3.5 px-4">Logo Mitra</th>
                     <th className="py-3.5 px-4">Nama Mitra / Instansi</th>
                     <th className="py-3.5 px-4">Kategori Kerjasama</th>
                     <th className="py-3.5 px-4">Tautan Website</th>
@@ -873,9 +908,19 @@ function WebsiteManagementContent() {
                       className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       <td className="py-3.5 px-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                          {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
-                        </div>
+                        {partner.logoUrl ? (
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-xs overflow-hidden">
+                            <img
+                              src={partner.logoUrl}
+                              alt={partner.name}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                            {partner.logoText || partner.name.slice(0, 3).toUpperCase()}
+                          </div>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
                         {partner.name}
@@ -1011,13 +1056,59 @@ function WebsiteManagementContent() {
                 />
               </div>
 
+              {/* Upload Logo File */}
+              <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-[#1d2d5a]">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Logo Mitra (Upload File Gambar)
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                    {partnerForm.logoUrl ? (
+                      <img
+                        src={partnerForm.logoUrl}
+                        alt="Preview Logo"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-lg bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center uppercase">
+                        {partnerForm.logoText || (partnerForm.name ? partnerForm.name.slice(0, 3).toUpperCase() : "LOGO")}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold cursor-pointer hover:bg-emerald-100 transition-colors">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{isUploadingPartnerLogo ? "Mengunggah..." : "Pilih File Logo"}</span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                        onChange={handleUploadPartnerLogo}
+                        className="hidden"
+                        disabled={isUploadingPartnerLogo}
+                      />
+                    </label>
+                    {partnerForm.logoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPartnerForm({ ...partnerForm, logoUrl: "" })}
+                        className="text-[11px] text-red-500 hover:text-red-600 block hover:underline cursor-pointer"
+                      >
+                        Hapus file logo (gunakan teks monogram)
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Format didukung: PNG (transparan disarankan), JPG, SVG, WEBP.
+                </p>
+              </div>
+
               <div>
                 <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Singkatan Monogram Logo (2-6 Karakter) *
+                  Singkatan Monogram Logo (Opsional jika ada file logo)
                 </label>
                 <input
                   type="text"
-                  required
                   maxLength={6}
                   value={partnerForm.logoText}
                   onChange={(e) =>

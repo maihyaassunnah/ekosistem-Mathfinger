@@ -31,17 +31,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, category, logoText, logoUrl, website, active } = body;
 
-    if (!name || !logoText) {
-      return NextResponse.json({ error: "Nama mitra dan logo text wajib diisi" }, { status: 400 });
+    if (!name) {
+      return NextResponse.json({ error: "Nama mitra wajib diisi" }, { status: 400 });
     }
 
+    const finalLogoText = logoText?.trim() || name.slice(0, 4).toUpperCase();
     const count = await prisma.websitePartner.count();
 
     const created = await prisma.websitePartner.create({
       data: {
         name,
         category: category || "Mitra Sekolah",
-        logoText,
+        logoText: finalLogoText,
         logoUrl: logoUrl || null,
         website: website || null,
         isActive: active ?? true,
