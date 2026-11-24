@@ -7,7 +7,7 @@ async function deploy() {
   console.log('📦 Step 1: Creating git bundle locally...');
   const bundlePath = path.join(__dirname, '..', 'update.bundle');
   if (fs.existsSync(bundlePath)) fs.unlinkSync(bundlePath);
-  execSync('git bundle create update.bundle 178b04f..HEAD HEAD', { stdio: 'inherit' });
+  execSync('git bundle create update.bundle 8f3e7c6..HEAD HEAD', { stdio: 'inherit' });
   console.log('✅ Bundle created successfully.');
 
   console.log('🚀 Step 2: Connecting to VPS via SSH...');
