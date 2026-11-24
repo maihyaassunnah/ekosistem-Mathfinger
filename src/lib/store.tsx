@@ -8101,7 +8101,7 @@ const INITIAL_TRANSACTIONS: CashTransactionItem[] = [
 ];
 
 const INITIAL_LANDING_HERO: LandingHeroConfig = {
-  tagline: "Bimbingan Belajar Jaritmatika No. 1 di Sarolangun & Merangin",
+  tagline: "Bimbingan Belajar Jarimatika No. 1 di Singkut, Sarolangun & Merangin",
   headline: "Bimbel Berhitung Cepat Jaritmatika Math Fingers",
   subheadline:
     "Mengoptimalkan potensi kecerdasan otak kanan & kiri anak melalui formasi 10 jari tangan tanpa sempoa dan tanpa kalkulator. Belajar asyik, cepat, berhitung akurat, dan percaya diri!",
@@ -8110,17 +8110,17 @@ const INITIAL_LANDING_HERO: LandingHeroConfig = {
   whatsappNumber: "6281279498907",
   whatsappGreeting: "Halo Admin Math Fingers, saya ingin info pendaftaran les Jaritmatika dan jadwal Trial Class gratis untuk anak saya.",
   targetDiscount: "50% OFF",
-  heroImage: "/uploads/Screenshot_2026-10-02_085717-1792138569516.png",
-  videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  heroImage: "/uploads/331068-1795406789409.jpg",
+  videoUrl: "https://www.youtube.com",
   aboutTitle: "Metode 10 Jari Alami: Kalkulator Pintar yang Selalu Melekat",
   aboutDesc1:
     "Math Fingers hadir memberikan solusi belajar berhitung yang membahagiakan. Melalui formasi 10 jari tangan yang terstandarisasi, anak diajarkan mengolah logika matematika tanpa memerlukan alat bantu sempoa fisik atau kalkulator.",
   aboutDesc2:
     "Metode ini secara aktif melatih sinkronisasi otak kiri (daya logika dan rumus hitung) dengan otak kanan (imajinasi visual gerak jari). Anak tidak lagi menghafal rumus secara mekanis, melainkan memahami konsep angka dengan cepat, tepat, dan gembira.",
-  aboutImage: "/images/landing/about-teacher.jpg",
+  aboutImage: "/uploads/331071-1795406803959.jpg",
   teacherBadgeText: "8+ Tutor Pengajar",
   teacherBadgeDesc: "Tersertifikasi Nasional & Ramah Anak",
-  programsBgImage: "/images/landing/programs-bg.jpg",
+  programsBgImage: "/uploads/331084-1795406861922.jpg",
   curriculumTitle: "Eksplorasi Program Unggulan Math Fingers",
   curriculumDesc:
     "Setiap anak memiliki ritme belajar unik. Kami menyusun kurikulum berjenjang dari usia 4 hingga 12 tahun yang diuji secara berkala dengan Rapor Kompetensi Digital dan Sertifikat Resmi.",
@@ -8189,45 +8189,45 @@ const INITIAL_LANDING_PROGRAMS: LandingProgramItem[] = [
   },
 ];
 
-const INITIAL_LANDING_TESTIMONIALS: LandingTestimonialItem[] = [
+export const INITIAL_LANDING_TESTIMONIALS: LandingTestimonialItem[] = [
   {
-    id: "testi-1",
+    id: "4a0f0c65-bc4d-4889-bc48-12f01fae96bf",
     storyNumber: "01",
-    title: "Dari Takut Matematika, Kini Jadi Juara Berhitung di Sekolah",
-    parentName: "Bunda Rasyid",
-    studentName: "M. Rasyid Al-Fatih",
-    role: "Siswa SD IT Al-Madani (Level Dasar)",
+    title: "Prestasi Siswa Math Fingers",
+    parentName: "Bunda Rini Astuti",
+    studentName: "Aishwa (7 thn)",
+    role: "Siswa Math Fingers",
     branch: "Cabang Singkut",
     rating: 5,
     comment:
-      "Awalnya Rasyid selalu cemas tiap PR berhitung. Setelah 4 bulan di Math Fingers Singkut, jarinya bergerak lincah dan nilai matematikanya naik drastis jadi 95!",
-    avatarUrl: "/images/landing/student-story.jpg",
+      "Luar biasa! Dulu anak saya takut dan menangis kalau PR matematika. Baru 2 bulan di Math Fingers, sekarang berhitung 1-99 refleks pakai jari tanpa kertas cakar!",
+    avatarUrl: "/uploads/WhatsApp_Image_2026-11-23_at_10_47_08_AM__1_-1795407509779.jpeg",
   },
   {
-    id: "testi-2",
+    id: "da9aa0be-a06c-4764-a68d-9ff94f9340fd",
     storyNumber: "02",
-    title: "Metode Jari Tangan Praktis, Ujian Sekolah Tanpa Alat Bantu",
-    parentName: "Ayahanda Kayla",
-    studentName: "Kayla Putri Azzahra",
-    role: "Alumni Level Mahir (SDN 02 Bangko)",
-    branch: "Cabang Bangko",
-    rating: 5,
-    comment:
-      "Sangat puas dengan metode Math Fingers. Waktu ujian di sekolah kan dilarang bawa kalkulator atau sempoa, jari tangan Kayla langsung jadi kalkulator kilat yang selalu siap.",
-    avatarUrl: "/images/landing/about-teacher.jpg",
-  },
-  {
-    id: "testi-3",
-    storyNumber: "03",
-    title: "Belajar Membaca Menyenangkan, 3 Bulan Langsung Lancar Tanpa Mengeja",
-    parentName: "Mama Rayyan",
-    studentName: "Rayyan Danendra (5 Tahun)",
-    role: "Kelas Les Membaca Cepat Fonik",
+    title: "Prestasi Siswa Math Fingers",
+    parentName: "Ayah Hendra Pratama",
+    studentName: "Bagas (8 thn)",
+    role: "Siswa Math Fingers",
     branch: "Cabang Singkut",
     rating: 5,
     comment:
-      "Tutornya luar biasa sabar dan penuh kasih. Rayyan yang tadinya sulit fokus sekarang antusias membaca buku cerita sendiri setiap malam sebelum tidur.",
-    avatarUrl: "/images/landing/hero-kids.jpg",
+      "Metode jaritmatikanya sangat praktis. Sistem presensi QR di HP sangat transparan, ada laporan jurnal harian guru yang masuk ke WhatsApp kami.",
+    avatarUrl: "/uploads/WhatsApp_Image_2026-11-23_at_10_47_17_AM__1_-1795407540328.jpeg",
+  },
+  {
+    id: "eae1e02e-fcbc-4dbb-a90c-9cefa8158f79",
+    storyNumber: "03",
+    title: "Prestasi Siswa Math Fingers",
+    parentName: "Ibu Desi Ratnasari",
+    studentName: "Ajeng (6 thn)",
+    role: "Siswa Math Fingers",
+    branch: "Cabang Tabir Timur",
+    rating: 5,
+    comment:
+      "Tutornya ramah dan telaten mengajar anak usia dini. Metode jari tangannya bikin anak saya ketagihan berhitung setiap hari di rumah!",
+    avatarUrl: "/uploads/331075-1795406625251.jpg",
   },
 ];
 
@@ -8652,7 +8652,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // Initial Load from LocalStorage and Realtime PostgreSQL Sync
   useEffect(() => {
     try {
-      const CURRENT_DATA_VERSION = "mf_live_sync_v15";
+      const CURRENT_DATA_VERSION = "mf_live_sync_v16";
       if (localStorage.getItem("mf_data_version") !== CURRENT_DATA_VERSION) {
         localStorage.removeItem("mf_students");
         localStorage.removeItem("mf_classes");
@@ -8661,6 +8661,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("mf_mutations");
         localStorage.removeItem("mf_branchAdmins");
         localStorage.removeItem("mf_curriculum");
+        localStorage.removeItem("mf_landing_hero");
+        localStorage.removeItem("mf_landing_programs");
+        localStorage.removeItem("mf_landing_testi");
+        localStorage.removeItem("mf_landing_leads");
+        localStorage.removeItem("mf_landing_partners");
+        localStorage.removeItem("mf_landing_news");
+        localStorage.removeItem("mf_landing_events");
         localStorage.setItem("mf_data_version", CURRENT_DATA_VERSION);
       }
 

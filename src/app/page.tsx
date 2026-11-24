@@ -27,7 +27,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, INITIAL_LANDING_TESTIMONIALS } from "@/lib/store";
 import { useTheme } from "@/lib/theme";
 
 export default function Home() {
@@ -115,49 +115,10 @@ export default function Home() {
   };
 
   // Student Stories Data from Store (with fallback)
-  const storiesList = (landingTestimonials && landingTestimonials.length > 0)
-    ? landingTestimonials
-    : [
-        {
-          id: "1",
-          storyNumber: "01",
-          title: "Dari Takut Matematika, Kini Jadi Juara Berhitung di Sekolah",
-          studentName: "Ananda Farhan (Usia 8 Th)",
-          parentName: "Bunda Rina Hartati (Wali Murid)",
-          branch: "Singkut",
-          role: "Siswa Jaritmatika Level 3 - Cabang Singkut",
-          rating: 5,
-          comment:
-            "Dulu Farhan sering menangis kalau ada PR matematika. Setelah 4 bulan belajar formasi 10 jari di Math Fingers, dia sekarang paling cepat menghitung di kelas dan selalu dapat nilai 100!",
-          avatarUrl: "/images/landing/student-story.jpg",
-        },
-        {
-          id: "2",
-          storyNumber: "02",
-          title: "Metode Jari Tangan Praktis, Ujian Sekolah Tanpa Alat Bantu",
-          studentName: "Kayla Az-Zahra (Usia 7 Th)",
-          parentName: "Bapak Hendra, S.Pd (Wali Murid)",
-          branch: "Bangko",
-          role: "Siswa Jaritmatika Level 2 - Cabang Bangko",
-          rating: 5,
-          comment:
-            "Sangat bersyukur kenal metode Math Fingers. Anak saya tidak perlu bawa sempoa fisik atau sembunyi kalkulator. 10 jari tangannya sendiri sudah jadi kalkulator alami yang selalu siap saat ujian.",
-          avatarUrl: "/images/landing/student-story.jpg",
-        },
-        {
-          id: "3",
-          storyNumber: "03",
-          title: "Belajar Membaca Menyenangkan, 3 Bulan Langsung Lancar Tanpa Mengeja",
-          studentName: "Rayyan Al-Fatih (Usia 5 Th)",
-          parentName: "Ibu Desi Ratnasari (Wali Murid)",
-          branch: "Singkut",
-          role: "Siswa Program Les Membaca Fonik",
-          rating: 5,
-          comment:
-            "Metode fonik di Math Fingers sangat ceria dan ramah anak. Rayyan yang awalnya sulit fokus, kini sudah bisa membaca buku cerita sendiri dengan lancar tanpa terbata-bata.",
-          avatarUrl: "/images/landing/student-story.jpg",
-        },
-      ];
+  const storiesList =
+    landingTestimonials && landingTestimonials.length > 0
+      ? landingTestimonials
+      : INITIAL_LANDING_TESTIMONIALS;
 
   const safeStoryIdx = activeStoryIdx >= storiesList.length ? 0 : activeStoryIdx;
   const currentStory = storiesList[safeStoryIdx];
@@ -898,7 +859,7 @@ export default function Home() {
                             isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-300 dark:text-slate-600"
                           }`}
                         >
-                          {story.storyNumber || (idx + 1).toString().padStart(2, "0")}
+                          {(idx + 1).toString().padStart(2, "0")}
                         </span>
                         <div className="space-y-1.5 flex-1">
                           <h3

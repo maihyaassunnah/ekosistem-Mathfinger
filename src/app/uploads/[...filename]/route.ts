@@ -17,12 +17,33 @@ export async function GET(
     const filePath = path.join(uploadsDir, safePath);
 
     if (!fs.existsSync(filePath)) {
-      // Check if file exists in /app/public/uploads or /tmp/vps_uploads as fallback
+      // 1. Check if file exists in /app/public/uploads or /tmp/vps_uploads as fallback
       const altPath = path.join("/app/public/uploads", safePath);
       if (fs.existsSync(altPath)) {
         const fileBuffer = fs.readFileSync(altPath);
         return createResponse(altPath, fileBuffer);
       }
+
+      // 2. Fallback: Auto-fetch & cache from VPS production domain if running on local
+      try {
+        const vpsBaseUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith("http") && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
+          ? process.env.NEXT_PUBLIC_APP_URL
+          : "https://mathfingers.my.id";
+        const remoteUrl = `${vpsBaseUrl}/uploads/${safePath}`;
+        const remoteRes = await fetch(remoteUrl, { cache: "no-store" });
+        if (remoteRes.ok) {
+          const arrayBuffer = await remoteRes.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          try {
+            await fs.promises.mkdir(uploadsDir, { recursive: true });
+            await fs.promises.writeFile(filePath, buffer);
+          } catch {}
+          return createResponse(filePath, buffer);
+        }
+      } catch (proxyErr) {
+        console.warn("Auto-sync from VPS failed:", proxyErr);
+      }
+
       return new NextResponse("File Not Found", { status: 404 });
     }
 
